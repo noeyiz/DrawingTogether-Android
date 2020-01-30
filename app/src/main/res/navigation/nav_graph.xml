@@ -7,8 +7,23 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.hansung.drawingtogether.MainFragment"
+        android:name="com.hansung.drawingtogether.view.main.MainFragment"
         android:label="MainFragment"
         tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_mainFragment_to_topicFragment"
+            app:destination="@id/topicFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/drawingFragment"
+        android:name="com.hansung.drawingtogether.view.drawing.DrawingFragment"
+        android:label="DrawingFragment" />
+    <fragment
+        android:id="@+id/topicFragment"
+        android:name="com.hansung.drawingtogether.view.topic.TopicFragment"
+        android:label="TopicFragment" >
+        <action
+            android:id="@+id/action_topicFragment_to_drawingFragment"
+            app:destination="@id/drawingFragment" />
     </fragment>
 </navigation>

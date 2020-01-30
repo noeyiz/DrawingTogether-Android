@@ -1,4 +1,4 @@
-package com.hansung.drawingtogether;
+package com.hansung.drawingtogether.view.main;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
