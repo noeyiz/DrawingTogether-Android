@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.view.View;
 
+import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
 
@@ -22,5 +23,13 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void clickShape(View view) {
         drawingCommands.postValue(new DrawingCommand.ShapeMode(view));
+    }
+
+    public void clickSearch(View view) {
+        navigate(R.id.action_drawingFragment_to_searchFragment);
+    }
+
+    public void clickImage(View view) {
+        //
     }
 }

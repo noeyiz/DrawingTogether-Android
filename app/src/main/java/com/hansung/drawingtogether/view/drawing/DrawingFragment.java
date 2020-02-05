@@ -1,11 +1,15 @@
 package com.hansung.drawingtogether.view.drawing;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
@@ -13,11 +17,19 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
+import com.hansung.drawingtogether.databinding.FragmentMainBinding;
+import com.hansung.drawingtogether.view.NavigationCommand;
+
+import static android.app.Activity.RESULT_OK;
 
 public class DrawingFragment extends Fragment {
+
+    private final int PICK_FROM_GALLERY = 1;
+
     private DrawingViewModel drawingViewModel;
 
     @Nullable
@@ -43,8 +55,18 @@ public class DrawingFragment extends Fragment {
                 }
             }
         });
+        drawingViewModel.navigationCommands.observe(this, new Observer<NavigationCommand>() {
+            @Override
+            public void onChanged(NavigationCommand navigationCommand) {
+                if (navigationCommand instanceof NavigationCommand.To) {
+                    NavHostFragment.findNavController(DrawingFragment.this)
+                            .navigate(((NavigationCommand.To) navigationCommand).getDestinationId());
+                }
+            }
+        });
 
         binding.setVm(drawingViewModel);
+
         return binding.getRoot();
     }
 

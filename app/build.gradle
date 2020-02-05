@@ -31,8 +31,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
 
     //navigation
-    implementation "android.arch.navigation:navigation-fragment-ktx:$navigation_version"
-    implementation "android.arch.navigation:navigation-ui-ktx:$navigation_version"
+    implementation "android.arch.navigation:navigation-fragment:$navigation_version"
+    implementation "android.arch.navigation:navigation-ui:$navigation_version"
 
     //lifecycle
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
