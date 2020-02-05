@@ -37,14 +37,14 @@ public class SearchFragment extends Fragment {
         binding.searchDictionary.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                callFragment(new SearchDictionaryFragment());
+                callFragment(new SearchDictionaryFragment(), binding.searchEdit.getText().toString());
             }
         });
 
         binding.searchMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                callFragment(new SearchMapFragment());
+                callFragment(new SearchMapFragment(), binding.searchEdit.getText().toString());
             }
         });
         return binding.getRoot();
