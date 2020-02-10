@@ -47,7 +47,6 @@ public class SearchDictionaryFragment extends Fragment {
                         return;
                     }
                     Log.e("success", response.toString());
-
 //                    imageSearchList = image.documents;
 
                 }
