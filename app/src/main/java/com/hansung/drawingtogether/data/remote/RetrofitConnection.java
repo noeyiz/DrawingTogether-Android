@@ -13,6 +13,6 @@ public class RetrofitConnection{
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         retrofitAPI = retrofit.create(RetrofitAPI.class);
-        
+
     }
 }
