@@ -7,6 +7,7 @@ buildscript {
         rxjava_version = '2.2.6'
         rxandroid_version = '2.1.0'
         rxkotlin_version = '2.3.0'
+        tedpermission_version = '2.2.3'
     }
     repositories {
         google()

@@ -6,11 +6,11 @@ import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.view.BaseViewModel;
 
 public class MainViewModel extends BaseViewModel {
-    public void clickOnline(View view) {
-        navigate(R.id.action_mainFragment_to_topicFragment);
+    public void startDrawing(View view) {
+        navigate(R.id.action_mainFragment_to_drawingFragment);
     }
 
-    public void clickOffline(View view) {
+    public void showLocalHistory(View view) {
         navigate(R.id.action_mainFragment_to_historyFragment);
     }
 }

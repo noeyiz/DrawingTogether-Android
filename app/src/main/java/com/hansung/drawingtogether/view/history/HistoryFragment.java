@@ -22,7 +22,6 @@ import java.util.ArrayList;
 public class HistoryFragment extends Fragment {
 
     private HistoryViewModel historyViewModel;
-//    private ArrayList<HistoryData> historyData = new ArrayList<HistoryData>();
 
     @Nullable
     @Override

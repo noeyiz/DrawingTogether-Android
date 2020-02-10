@@ -42,4 +42,7 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:$rxjava_version"
     implementation "io.reactivex.rxjava2:rxandroid:$rxandroid_version"
     implementation "io.reactivex.rxjava2:rxkotlin:$rxkotlin_version"
+
+    //ted permission
+    implementation "gun0912.ted:tedpermission:$tedpermission_version"
 }
