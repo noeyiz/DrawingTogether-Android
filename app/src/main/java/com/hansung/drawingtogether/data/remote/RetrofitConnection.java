@@ -5,19 +5,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitConnection{
 
-    private String URL;
+    private String URL = "https://dapi.kakao.com/";
     public RetrofitAPI retrofitAPI;
 
-    public RetrofitConnection(String category) {
-        if (category.equals("map")) {
-            URL = "m.map.kakao.com/actions/";
-        } else
-            URL = "https://dapi.kakao.com/";
-
+    public RetrofitConnection() {
         Retrofit retrofit = new Retrofit.Builder().baseUrl(URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         retrofitAPI = retrofit.create(RetrofitAPI.class);
+        
     }
-
 }
