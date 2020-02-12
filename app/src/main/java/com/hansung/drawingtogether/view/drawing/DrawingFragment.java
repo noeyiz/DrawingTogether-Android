@@ -18,7 +18,6 @@ import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -76,6 +75,9 @@ public class DrawingFragment extends Fragment {
                 if (navigationCommand instanceof NavigationCommand.To) {
                     NavHostFragment.findNavController(DrawingFragment.this)
                             .navigate(((NavigationCommand.To) navigationCommand).getDestinationId());
+                }
+                if (navigationCommand instanceof  NavigationCommand.Back) {
+                    NavHostFragment.findNavController(DrawingFragment.this).popBackStack();
                 }
             }
         });

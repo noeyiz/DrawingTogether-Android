@@ -24,9 +24,6 @@
         <action
             android:id="@+id/action_drawingFragment_to_searchFragment"
             app:destination="@id/searchFragment" />
-        <action
-            android:id="@+id/action_drawingFragment_to_mainFragment"
-            app:destination="@id/mainFragment" />
     </fragment>
     <fragment
         android:id="@+id/historyFragment"

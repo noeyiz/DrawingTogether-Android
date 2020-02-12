@@ -3,4 +3,7 @@
 
     <!-- Ted Permission -->
     <string name="permission_camera">[설정]-[권한]에서 권한을 허용할 수 있습니다.</string>
+
+    <!-- Kakao App Key -->
+    <string name="kakao_app_key">fa419f18aa210b34ecfb4fd94c008551</string>
 </resources>

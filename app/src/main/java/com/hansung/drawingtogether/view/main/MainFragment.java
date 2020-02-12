@@ -24,9 +24,6 @@ public class MainFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         FragmentMainBinding binding = FragmentMainBinding.inflate(inflater, container, false);
 
-//        ActionBar actioinBar = ((MainActivity)getActivity()).getSupportActionBar();
-//        actioinBar.setTitle("Drawing Together");
-
         mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         mainViewModel.navigationCommands.observe(this, new Observer<NavigationCommand>() {
             @Override

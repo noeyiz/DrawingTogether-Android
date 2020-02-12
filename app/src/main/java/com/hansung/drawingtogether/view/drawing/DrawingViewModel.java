@@ -32,6 +32,6 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickExit(View view) {
-        navigate(R.id.action_drawingFragment_to_mainFragment);
+        back();
     }
 }
