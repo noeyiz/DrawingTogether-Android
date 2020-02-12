@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -16,6 +17,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.databinding.FragmentHistoryBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
+import com.hansung.drawingtogether.view.main.MainActivity;
 
 import java.util.ArrayList;
 
@@ -50,5 +52,11 @@ public class HistoryFragment extends Fragment {
         });
 
         return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        ((MainActivity)getActivity()).setTitleBar("History");
     }
 }

@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -23,6 +24,9 @@ public class MainFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         FragmentMainBinding binding = FragmentMainBinding.inflate(inflater, container, false);
 
+//        ActionBar actioinBar = ((MainActivity)getActivity()).getSupportActionBar();
+//        actioinBar.setTitle("Drawing Together");
+
         mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         mainViewModel.navigationCommands.observe(this, new Observer<NavigationCommand>() {
             @Override
@@ -36,5 +40,11 @@ public class MainFragment extends Fragment {
         binding.setVm(mainViewModel);
 
         return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        ((MainActivity)getActivity()).setTitleBar("Drawing Together");
     }
 }

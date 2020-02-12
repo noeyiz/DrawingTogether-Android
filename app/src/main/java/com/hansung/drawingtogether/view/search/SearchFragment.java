@@ -7,11 +7,13 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.databinding.FragmentSearchBinding;
+import com.hansung.drawingtogether.view.main.MainActivity;
 
 public class SearchFragment extends Fragment {
 
@@ -58,5 +60,11 @@ public class SearchFragment extends Fragment {
         fragment.setArguments(bundle);
         transaction.replace(R.id.search_container, fragment);
         transaction.commit();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        ((MainActivity)getActivity()).setTitleBar("Search");
     }
 }
