@@ -4,6 +4,9 @@
         <variable
             name="vm"
             type="com.hansung.drawingtogether.view.drawing.DrawingViewModel" />
+        <variable
+            name="imageUri"
+            type="android.net.Uri" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -33,6 +36,7 @@
             app:layout_constraintBottom_toBottomOf="@id/top_menu_bottom_guideline">
 
             <Button
+                android:id="@+id/exitBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -56,9 +60,11 @@
                 android:background="@null"/>
 
             <Button
+                android:id="@+id/inviteBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:text="친구초대"/>
 
         </LinearLayout>
 
@@ -127,7 +133,9 @@
             <ImageView
                 android:id="@+id/drawing_background"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:src="@{imageUri}"/>
 
             <!-- Draw View -->
             <View
@@ -137,8 +145,5 @@
                 android:background="@null"/>
 
         </FrameLayout>
-
-
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </layout>

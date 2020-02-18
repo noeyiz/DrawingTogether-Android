@@ -1,5 +1,6 @@
 package com.hansung.drawingtogether.view.main;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +19,7 @@ import com.hansung.drawingtogether.view.NavigationCommand;
 public class MainFragment extends Fragment {
 
     private MainViewModel mainViewModel;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

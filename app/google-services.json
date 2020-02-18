@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "432881317992",
+    "firebase_url": "https://drawingtogether-31b69.firebaseio.com",
+    "project_id": "drawingtogether-31b69",
+    "storage_bucket": "drawingtogether-31b69.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:432881317992:android:2995dd2afc02b892b6a3dd",
+        "android_client_info": {
+          "package_name": "com.hansung.drawingtogether"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "432881317992-4gvijfno8vtdisjugt80b075njp1elvn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hansung.drawingtogether",
+            "certificate_hash": "982d72835045de25b4a7d2265d0c2840573feee7"
+          }
+        },
+        {
+          "client_id": "432881317992-lse7eakl0mgqgvuitagq4rt34mof9orh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDu6gIhQ2Bpo3uJxBzksd7T7nQ5seDfZSU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "432881317992-lse7eakl0mgqgvuitagq4rt34mof9orh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

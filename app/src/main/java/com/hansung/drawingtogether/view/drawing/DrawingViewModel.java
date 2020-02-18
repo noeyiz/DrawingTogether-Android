@@ -1,6 +1,8 @@
 package com.hansung.drawingtogether.view.drawing;
 
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.PopupMenu;
 
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.view.BaseViewModel;
@@ -29,7 +31,4 @@ public class DrawingViewModel extends BaseViewModel {
         navigate(R.id.action_drawingFragment_to_searchFragment);
     }
 
-    public void clickImage(View view) {
-        //
-    }
 }

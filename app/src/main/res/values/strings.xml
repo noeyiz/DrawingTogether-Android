@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">DrawingTogether</string>
+
+    <string name="kakao_app_key">1c67e4a427399c4e4f83d2bd9ff1ba48</string>
+    <string name="kakao_scheme">kakao1c67e4a427399c4e4f83d2bd9ff1ba48</string>
+    <string name="kakaolink_host">kakaolink</string>
+
+    <string-array name="exit">
+        <item>"나가기"</item>
+        <item>"topic삭제 후 나가기"</item>
+    </string-array>
+
+    <!-- Ted Permission -->
+    <string name="permission_camera">[설정]-[권한]에서 권한을 허용할 수 있습니다.</string>
 </resources>

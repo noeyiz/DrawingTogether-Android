@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="vm"
             type="com.hansung.drawingtogether.view.topic.TopicViewModel" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        android:layout_height="match_parent">
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/view_start_guide"
@@ -35,7 +35,8 @@
             app:layout_constraintBottom_toTopOf="@id/password"
             app:layout_constraintVertical_chainStyle="packed"
             android:layout_margin="10dp"
-            android:hint="topic"/>
+            android:hint="topic"
+            android:text="@={vm.topicEditText}"/>
 
         <EditText
             android:id="@+id/password"
@@ -46,7 +47,8 @@
             app:layout_constraintTop_toBottomOf="@id/topic"
             app:layout_constraintBottom_toTopOf="@id/name"
             android:layout_margin="10dp"
-            android:hint="password"/>
+            android:hint="password"
+            android:text="@={vm.passwordEditText}"/>
 
         <EditText
             android:id="@+id/name"
@@ -55,9 +57,21 @@
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/password"
-            app:layout_constraintBottom_toTopOf="@id/login"
+            app:layout_constraintBottom_toTopOf="@id/mastercheck"
             android:layout_margin="10dp"
-            android:hint="name"/>
+            android:hint="name"
+            android:text="@={vm.nameEditText}"/>
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/mastercheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@+id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toBottomOf="@id/name"
+            app:layout_constraintBottom_toTopOf="@id/login"
+            android:text="마스터"
+            android:checked="@={vm.masterCheck}"/>
 
         <Button
             android:id="@+id/login"
@@ -65,7 +79,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/name"
+            app:layout_constraintTop_toBottomOf="@id/mastercheck"
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_margin="20dp"
             android:text="start"
