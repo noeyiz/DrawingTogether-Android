@@ -73,7 +73,6 @@ public class HistoryAdapter extends BaseAdapter {
 
         public void bind(HistoryData data) {
             binding.setData(data);
-            binding.setVm(historyViewModel);
             binding.historyMore.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(final View v) {

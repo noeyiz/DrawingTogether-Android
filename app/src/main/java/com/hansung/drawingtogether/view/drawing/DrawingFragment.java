@@ -1,19 +1,24 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
@@ -41,7 +46,8 @@ public class DrawingFragment extends Fragment {
 
     private final int PICK_FROM_GALLERY = 0;
     private final int PICK_FROM_CAMERA = 1;
-    private String photoPath;
+
+    Point size;
 
     FragmentDrawingBinding binding;
     private DrawingViewModel drawingViewModel;
@@ -51,6 +57,16 @@ public class DrawingFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
+
+        // 디바이스 화면 size 구하기
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        size = new Point();
+        display.getSize(size);
+
+        // 디바이스 화면 넓이의 3배 = 드로잉뷰 넓이
+        ViewGroup.LayoutParams layoutParams = binding.drawingView.getLayoutParams();
+        layoutParams.width = size.x*3;
+        binding.drawingView.setLayoutParams(layoutParams);
 
         drawingViewModel.drawingCommands.observe(this, new Observer<DrawingCommand>() {
             @Override
@@ -69,6 +85,7 @@ public class DrawingFragment extends Fragment {
                 }
             }
         });
+
         drawingViewModel.navigationCommands.observe(this, new Observer<NavigationCommand>() {
             @Override
             public void onChanged(NavigationCommand navigationCommand) {
@@ -82,34 +99,13 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        binding.drawingImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PopupMenu pop = new PopupMenu(v.getContext(), v);
-                pop.getMenuInflater().inflate(R.menu.image_menu, pop.getMenu());
-                pop.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        switch(item.getItemId()) {
-                            case R.id.gallery:
-                                getImageFromGallery();
-                                break;
-                            case R.id.camera:
-                                getImageFromCamera();
-                                break;
-                            case R.id.clear:
-                                clearImage();
-                        }
-                        return true;
-                    }
-                });
-                pop.show();
-            }
-        });
-
         binding.setVm(drawingViewModel);
 
+        // 현재 사용자 수. 지금은 그냥 2로 해놓음
+        binding.setUserNum(Integer.toString(2));
+
         checkPermission();
+        setHasOptionsMenu(true);
 
         return binding.getRoot();
     }
@@ -124,54 +120,6 @@ public class DrawingFragment extends Fragment {
         view.getLocationOnScreen(location);
         popupWindow.showAtLocation(penSettingPopup, Gravity.NO_GRAVITY, location[0], location[1] - penSettingPopup.getMeasuredHeight());
         popupWindow.setElevation(20);
-    }
-
-    public void getImageFromGallery() {
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK);
-        galleryIntent.setType(MediaStore.Images.Media.CONTENT_TYPE);
-        startActivityForResult(galleryIntent, PICK_FROM_GALLERY);
-    }
-
-    public void getImageFromCamera() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (cameraIntent.resolveActivity(getContext().getPackageManager()) != null) {
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (photoFile != null) {
-                Uri uri = FileProvider.getUriForFile(getContext(), "com.hansung.drawingtogether.fileprovider", photoFile);
-                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-                startActivityForResult(cameraIntent, PICK_FROM_CAMERA);
-            }
-        }
-    }
-
-    public void clearImage() {
-        binding.drawingBackground.setImageResource(0);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case PICK_FROM_GALLERY:
-                Uri uri = data.getData();
-                binding.drawingBackground.setImageURI(uri);
-                break;
-            case PICK_FROM_CAMERA:
-                try {
-                    File file = new File(photoPath);
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file));
-                    if (bitmap != null) {
-                        binding.drawingBackground.setImageBitmap(bitmap);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
-        }
     }
 
     private void checkPermission() {
@@ -193,18 +141,65 @@ public class DrawingFragment extends Fragment {
                 .check();
     }
 
-    private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File  image = File.createTempFile(imageFileName, ".jpg", storageDir);
-        photoPath = image.getAbsolutePath();
-        return image;
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (data == null) {
+            return;
+        }
+
+        switch (requestCode) {
+            case PICK_FROM_GALLERY:
+                Uri uri = data.getData();
+                ImageView imageView = new ImageView(getContext());
+                imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
+                imageView.setImageURI(uri);
+
+                binding.backgroundView.addView(imageView);
+                break;
+            case PICK_FROM_CAMERA:
+                try {
+                    File file = new File(drawingViewModel.getPhotoPath());
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file));
+                    if (bitmap != null) {
+                        imageView = new ImageView(getContext());
+                        imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
+                        imageView.setImageBitmap(bitmap);
+                        binding.backgroundView.addView(imageView);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        ((MainActivity)getActivity()).setTitleBar("Drawing");
+        ((MainActivity)getActivity()).setToolbarTitle("Drawing");
+        ((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.application_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.drawing_search:
+                drawingViewModel.clickSearch(getView());
+                break;
+            case R.id.gallery:
+                drawingViewModel.getImageFromGallery(DrawingFragment.this);
+                break;
+            case R.id.camera:
+                drawingViewModel.getImageFromCamera(DrawingFragment.this);
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

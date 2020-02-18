@@ -3,7 +3,16 @@
     <data>
         <variable
             name="vm"
-            type="com.hansung.drawingtogether.view.main.MainViewModel" />
+            type="com.hansung.drawingtogether.view.main.MainViewModel"/>
+        <variable
+            name="topicError"
+            type="String" />
+        <variable
+            name="passwordError"
+            type="String" />
+        <variable
+            name="nameError"
+            type="String" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -58,9 +67,9 @@
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/topic"
             app:layout_constraintBottom_toTopOf="@id/password"
-            android:text="에러입니다"
+            android:text="@{topicError}"
             android:textSize="12dp"
-            android:textColor="#FF0000"/>
+            android:textColor="@color/colorAccent"/>
 
         <EditText
             android:id="@+id/password"
@@ -80,9 +89,9 @@
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/password"
             app:layout_constraintBottom_toTopOf="@id/name"
-            android:text="에러입니다"
+            android:text="@{passwordError}"
             android:textSize="12dp"
-            android:textColor="#FF0000"/>
+            android:textColor="@color/colorAccent"/>
 
         <EditText
             android:id="@+id/name"
@@ -102,9 +111,9 @@
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/name"
             app:layout_constraintBottom_toTopOf="@id/mastercheck"
-            android:text="에러입니다"
+            android:text="@{nameError}"
             android:textSize="12dp"
-            android:textColor="#FF0000"/>
+            android:textColor="@color/colorAccent"/>
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/mastercheck"

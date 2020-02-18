@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 29
@@ -47,12 +48,12 @@ dependencies {
     implementation "gun0912.ted:tedpermission:$tedpermission_version"
 
     // kakao
-    implementation group:'com.kakao.sdk', name:'usermgmt', version:"$kakao_version"
-    implementation group:'com.kakao.sdk', name:'kakaolink', version:"$kakao_version"
-    implementation group:'com.kakao.sdk', name:'kakaotalk', version:"$kakao_version"
-    implementation group:'com.kakao.sdk', name:'kakaonavi', version:"$kakao_version"
-    implementation group:'com.kakao.sdk', name:'kakaostory', version:"$kakao_version"
-    implementation group:'com.kakao.sdk', name:'push', version:"$kakao_version"
+    implementation group: 'com.kakao.sdk', name: 'usermgmt', version: "$kakao_version"
+    implementation group: 'com.kakao.sdk', name: 'kakaolink', version: "$kakao_version"
+    implementation group: 'com.kakao.sdk', name: 'kakaotalk', version: "$kakao_version"
+    implementation group: 'com.kakao.sdk', name: 'kakaonavi', version: "$kakao_version"
+    implementation group: 'com.kakao.sdk', name: 'kakaostory', version: "$kakao_version"
+    implementation group: 'com.kakao.sdk', name: 'push', version: "$kakao_version"
 
     // lombok
     compileOnly "org.projectlombok:lombok:$lombok_version"
@@ -70,8 +71,12 @@ dependencies {
     annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
 
     // map api
-    implementation fileTree(include:['*.jar'], dir:'libs')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation files('libs/libDaumMapAndroid.jar')
+
+    // firebase
+    implementation 'com.google.firebase:firebase-storage:16.0.4'
+    implementation 'com.google.firebase:firebase-auth:16.0.5'
 
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 }

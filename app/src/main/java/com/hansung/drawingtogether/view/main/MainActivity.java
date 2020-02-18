@@ -1,26 +1,32 @@
 package com.hansung.drawingtogether.view.main;
 
 import android.os.Bundle;
+import android.view.MenuItem;
+import android.widget.TextView;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.hansung.drawingtogether.R;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ActionBar actionBar;
+    private Toolbar toolbar;
+    private TextView title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        actionBar = getSupportActionBar();
+        toolbar = (Toolbar)findViewById(R.id.toolbar);
+        title = (TextView)findViewById(R.id.toolbar_title);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false); // 기본 title 안 보이게
     }
 
-    public void setTitleBar(String title) {
-        if (actionBar != null)
-            actionBar.setTitle(title);
+    // title 설정
+    public void setToolbarTitle(String title) {
+        this.title.setText(title);
     }
 }
