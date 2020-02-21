@@ -56,7 +56,7 @@ public class HistoryAdapter extends BaseAdapter {
             view.setTag(holder);
         }
         else {
-            holder = (HistoryViewHolder) view.getTag();
+            holder = (HistoryViewHolder)view.getTag();
         }
 
         holder.bind(historyData.get(position));

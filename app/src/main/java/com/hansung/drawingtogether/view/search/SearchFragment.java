@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.databinding.FragmentSearchBinding;
@@ -16,38 +17,16 @@ import com.hansung.drawingtogether.view.main.MainActivity;
 
 public class SearchFragment extends Fragment {
 
+    private SearchViewModel searchViewModel;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final FragmentSearchBinding binding = FragmentSearchBinding.inflate(inflater, container, false);
+        searchViewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
 
-        /*
-        !지금은 검색 버튼에 리스너 달아놓지 않은 상태 !
+        binding.setVm(searchViewModel);
 
-        할 일
-        - fragment 디폴트로 이미지 보이게 하기
-        - 이미지, 사전, 지도 버튼 눌렀을 때 누른 버튼 표시하기
-         */
-        binding.searchImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                callFragment(new SearchImageFragment(), binding.searchEdit.getText().toString());
-            }
-        });
-
-        binding.searchDictionary.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                callFragment(new SearchDictionaryFragment());
-            }
-        });
-
-        binding.searchMap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                callFragment(new SearchMapFragment());
-            }
-        });
         return binding.getRoot();
     }
 

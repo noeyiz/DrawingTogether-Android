@@ -1,10 +1,12 @@
 package com.hansung.drawingtogether.view.drawing;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -12,6 +14,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
@@ -20,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 public class DrawingViewModel extends BaseViewModel {
     public final SingleLiveEvent<DrawingCommand> drawingCommands = new SingleLiveEvent<>();
@@ -53,12 +58,16 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void getImageFromGallery(Fragment fragment) {
+        checkPermission(fragment.getContext());
+
         Intent galleryIntent = new Intent(Intent.ACTION_PICK);
         galleryIntent.setType(MediaStore.Images.Media.CONTENT_TYPE);
         fragment.startActivityForResult(galleryIntent, PICK_FROM_GALLERY);
     }
 
     public void getImageFromCamera(Fragment fragment) {
+        checkPermission(fragment.getContext());
+
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (cameraIntent.resolveActivity(fragment.getContext().getPackageManager()) != null) {
             File photoFile = null;
@@ -78,13 +87,35 @@ public class DrawingViewModel extends BaseViewModel {
     public File createImageFile(Fragment fragment) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = fragment.getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+//        File storageDir = fragment.getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File storageDir = new File(Environment.getExternalStorageDirectory() + "/Pictures", "drawingtogether");
+        if (!storageDir.exists()) storageDir.mkdirs();
         File  image = File.createTempFile(imageFileName, ".jpg", storageDir);
         photoPath = image.getAbsolutePath();
+        Log.e("kkankkan", photoPath);
         return image;
     }
 
     public String getPhotoPath() {
         return photoPath;
+    }
+
+    private void checkPermission(Context context) {
+        PermissionListener permissionListener = new PermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+                //
+            }
+            @Override
+            public void onPermissionDenied(List<String> deniedPermissions) {
+                //
+            }
+        };
+
+        TedPermission.with(context)
+                .setPermissionListener(permissionListener)
+                .setDeniedMessage(context.getResources().getString(R.string.permission_camera))
+                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+                .check();
     }
 }

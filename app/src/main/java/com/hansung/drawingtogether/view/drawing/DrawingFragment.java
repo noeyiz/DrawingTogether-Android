@@ -4,11 +4,14 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.Point;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -104,7 +107,6 @@ public class DrawingFragment extends Fragment {
         // 현재 사용자 수. 지금은 그냥 2로 해놓음
         binding.setUserNum(Integer.toString(2));
 
-        checkPermission();
         setHasOptionsMenu(true);
 
         return binding.getRoot();
@@ -122,44 +124,25 @@ public class DrawingFragment extends Fragment {
         popupWindow.setElevation(20);
     }
 
-    private void checkPermission() {
-        PermissionListener permissionListener = new PermissionListener() {
-            @Override
-            public void onPermissionGranted() {
-                //
-            }
-            @Override
-            public void onPermissionDenied(List<String> deniedPermissions) {
-                //
-            }
-        };
-
-        TedPermission.with(getContext())
-                .setPermissionListener(permissionListener)
-                .setDeniedMessage(getResources().getString(R.string.permission_camera))
-                .setPermissions(Manifest.permission.CAMERA)
-                .check();
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (data == null) {
-            return;
-        }
 
         switch (requestCode) {
             case PICK_FROM_GALLERY:
+                if (data == null) {
+                    return;
+                }
                 Uri uri = data.getData();
                 ImageView imageView = new ImageView(getContext());
                 imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
                 imageView.setImageURI(uri);
-
                 binding.backgroundView.addView(imageView);
                 break;
             case PICK_FROM_CAMERA:
                 try {
                     File file = new File(drawingViewModel.getPhotoPath());
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file));
+                    Bitmap bitmap = rotateBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file)));
+
                     if (bitmap != null) {
                         imageView = new ImageView(getContext());
                         imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -201,5 +184,40 @@ public class DrawingFragment extends Fragment {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public Bitmap rotateBitmap(Bitmap bitmap) {
+        ExifInterface exif = null;
+        try {
+            exif = new ExifInterface(drawingViewModel.getPhotoPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_UNDEFINED);
+
+        Matrix matrix = new Matrix();
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.setRotate(90);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                matrix.setRotate(180);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                matrix.setRotate(-90);
+                break;
+            default:
+                return bitmap;
+        }
+        try {
+            Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            bitmap.recycle();
+            return bmRotated;
+        }
+        catch (OutOfMemoryError e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
