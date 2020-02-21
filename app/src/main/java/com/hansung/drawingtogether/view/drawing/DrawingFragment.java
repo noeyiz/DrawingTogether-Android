@@ -1,5 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -8,6 +10,7 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -28,9 +31,16 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.main.MainActivity;
+import com.kakao.kakaolink.v2.KakaoLinkResponse;
+import com.kakao.kakaolink.v2.KakaoLinkService;
+import com.kakao.message.template.LinkObject;
+import com.kakao.message.template.TextTemplate;
+import com.kakao.network.ErrorResult;
+import com.kakao.network.callback.ResponseCallback;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +52,13 @@ public class DrawingFragment extends Fragment {
 
     Point size;
 
+    private String topic;
+    private String name;
+    private String password;
+    private boolean master;
+
+    private MQTTClient client;
+
     FragmentDrawingBinding binding;
     private DrawingViewModel drawingViewModel;
 
@@ -50,6 +67,11 @@ public class DrawingFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
+
+        topic = getArguments().getString("topic");
+        name = getArguments().getString("name");
+        password = getArguments().getString("password");
+        master = Boolean.parseBoolean(getArguments().getString("master"));
 
         // 디바이스 화면 size 구하기
         Display display = getActivity().getWindowManager().getDefaultDisplay();
@@ -92,10 +114,16 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        binding.setVm(drawingViewModel);
+        client = new MQTTClient(topic, name, master, drawingViewModel);
+        client.setCallback();
+        client.subscribe(topic + "_join");
+        client.subscribe(topic + "_exit");
+        client.subscribe(topic + "_delete");
+        client.subscribe(topic + "_data");
+        client.publish(topic + "_join", ("name:" + name).getBytes());
 
-        // 현재 사용자 수. 지금은 그냥 2로 해놓음
-        binding.setUserNum(Integer.toString(2));
+        binding.setVm(drawingViewModel);
+        binding.setLifecycleOwner(this);
 
         setHasOptionsMenu(true);
 
@@ -112,6 +140,23 @@ public class DrawingFragment extends Fragment {
         view.getLocationOnScreen(location);
         popupWindow.showAtLocation(penSettingPopup, Gravity.NO_GRAVITY, location[0], location[1] - penSettingPopup.getMeasuredHeight());
         popupWindow.setElevation(20);
+    }
+
+    public void exit() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setItems(R.array.exit, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == 0) {
+                    client.publish(topic + "_exit", name.getBytes());
+                }
+                else if (which == 1){
+                    client.publish(topic + "_delete", name.getBytes());
+                }
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     @Override
@@ -170,6 +215,9 @@ public class DrawingFragment extends Fragment {
                 break;
             case R.id.camera:
                 drawingViewModel.getImageFromCamera(DrawingFragment.this);
+                break;
+            case R.id.drawing_plus:
+                drawingViewModel.plusUser(DrawingFragment.this, topic, password);
                 break;
         }
 

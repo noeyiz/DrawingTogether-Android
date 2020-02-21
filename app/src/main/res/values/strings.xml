@@ -6,4 +6,11 @@
 
     <!-- Kakao App Key -->
     <string name="kakao_app_key">a26222c31c460b54c2181b75b15af5af</string>
+    <string name="kakao_scheme">kakaoa26222c31c460b54c2181b75b15af5af</string>
+    <string name="kakaolink_host">kakaolink</string>
+
+    <string-array name="exit">
+        <item>"나가기"</item>
+        <item>"topic 삭제 후 나가기"</item>
+    </string-array>
 </resources>

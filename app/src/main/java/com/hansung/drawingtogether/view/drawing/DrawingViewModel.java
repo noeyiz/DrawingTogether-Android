@@ -1,7 +1,9 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
@@ -11,12 +13,19 @@ import android.view.View;
 
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.MutableLiveData;
 
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
+import com.kakao.kakaolink.v2.KakaoLinkResponse;
+import com.kakao.kakaolink.v2.KakaoLinkService;
+import com.kakao.message.template.LinkObject;
+import com.kakao.message.template.TextTemplate;
+import com.kakao.network.ErrorResult;
+import com.kakao.network.callback.ResponseCallback;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,10 +35,15 @@ import java.util.List;
 
 public class DrawingViewModel extends BaseViewModel {
     public final SingleLiveEvent<DrawingCommand> drawingCommands = new SingleLiveEvent<>();
+    private MutableLiveData<String> userNum = new MutableLiveData<>();
 
     private final int PICK_FROM_GALLERY = 0;
     private final int PICK_FROM_CAMERA = 1;
     private String photoPath;
+
+    public DrawingViewModel() {
+        setUserNum(0);
+    }
 
     public void clickPen(View view) {
         drawingCommands.postValue(new DrawingCommand.PenMode(view));
@@ -82,20 +96,33 @@ public class DrawingViewModel extends BaseViewModel {
         }
     }
 
+    public void plusUser(Fragment fragment, String topic, String password) {
+        TextTemplate params = TextTemplate.newBuilder("DrawingTogether!",
+                LinkObject.newBuilder()
+                        .setAndroidExecutionParams("topic=" + topic + "&password=" + password)
+                        .build())
+                .setButtonTitle("앱으로 이동").build();
+
+        KakaoLinkService.getInstance().sendDefault(fragment.getContext(), params, new ResponseCallback<KakaoLinkResponse>() {
+            @Override
+            public void onFailure(ErrorResult errorResult) {
+            }
+
+            @Override
+            public void onSuccess(KakaoLinkResponse result) {
+            }
+        });
+    }
+
     public File createImageFile(Fragment fragment) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
-//        File storageDir = fragment.getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File storageDir = new File(Environment.getExternalStorageDirectory() + "/Pictures", "drawingtogether");
         if (!storageDir.exists()) storageDir.mkdirs();
         File  image = File.createTempFile(imageFileName, ".jpg", storageDir);
         photoPath = image.getAbsolutePath();
         Log.e("kkankkan", photoPath);
         return image;
-    }
-
-    public String getPhotoPath() {
-        return photoPath;
     }
 
     private void checkPermission(Context context) {
@@ -115,5 +142,17 @@ public class DrawingViewModel extends BaseViewModel {
                 .setDeniedMessage(context.getResources().getString(R.string.permission_camera))
                 .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
                 .check();
+    }
+
+    public String getPhotoPath() {
+        return photoPath;
+    }
+
+    public MutableLiveData<String> getUserNum() {
+        return userNum;
+    }
+
+    public void setUserNum(int num) {
+        userNum.postValue(num + "명");
     }
 }

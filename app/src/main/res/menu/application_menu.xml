@@ -23,4 +23,9 @@
                 android:title="지우기"/>
         </menu>
     </item>
+    <item
+        android:id="@+id/drawing_plus"
+        android:title="친구 초대"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/plus"/>
 </menu>

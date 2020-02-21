@@ -74,5 +74,13 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation files('libs/libDaumMapAndroid.jar')
 
+    // mqtt
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0'
+    implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
+
+    // firebase
+    implementation 'com.google.firebase:firebase-analytics:17.2.1'
+    implementation 'com.google.firebase:firebase-storage:19.1.0'
+
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 }
