@@ -1,7 +1,5 @@
 package com.hansung.drawingtogether.view.drawing;
 
-import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -9,9 +7,7 @@ import android.graphics.Point;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -26,14 +22,11 @@ import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.gun0912.tedpermission.PermissionListener;
-import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
@@ -41,9 +34,6 @@ import com.hansung.drawingtogether.view.main.MainActivity;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
 
 public class DrawingFragment extends Fragment {
 

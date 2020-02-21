@@ -8,9 +8,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.widget.FrameLayout;
 
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
