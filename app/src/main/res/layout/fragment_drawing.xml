@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="vm"
@@ -9,10 +10,9 @@
             type="android.net.Uri"/>
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        android:layout_height="match_parent">
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/bottom_menu_guideline"
@@ -22,57 +22,64 @@
             app:layout_constraintGuide_percent="0.9"/>
 
         <LinearLayout
+            android:id="@+id/drawingMenuLayout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:orientation="horizontal"
-            app:layout_constraintTop_toTopOf="@id/bottom_menu_guideline"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="@id/bottom_menu_guideline">
 
             <Button
+                android:id="@+id/drawBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="그리기"
                 android:background="@null"
-                android:onClick="@{vm::clickPen}"/>
+                android:onClick="@{vm::clickPen}"
+                android:text="그리기" />
 
             <Button
+                android:id="@+id/eraseBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="지우기"
                 android:background="@null"
-                android:onClick="@{vm::clickEraser}"/>
+                android:onClick="@{vm::clickEraser}"
+                android:text="지우기" />
 
             <Button
+                android:id="@+id/undoBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="undo"
-                android:background="@null" />
-
-            <Button
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="redo"
-                android:background="@null" />
-
-            <Button
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="text"
                 android:background="@null"
-                android:onClick="@{vm::clickText}"/>
+                android:text="undo" />
 
             <Button
+                android:id="@+id/redoBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="shape"
                 android:background="@null"
-                android:onClick="@{vm::clickShape}"/>
+                android:text="redo" />
+
+            <Button
+                android:id="@+id/textBtn"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:onClick="@{vm::clickText}"
+                android:text="text" />
+
+            <Button
+                android:id="@+id/shapeBtn"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:onClick="@{vm::clickShape}"
+                android:text="shape" />
 
         </LinearLayout>
 
@@ -88,6 +95,7 @@
                 android:layout_height="match_parent">
 
                 <FrameLayout
+                    android:id="@+id/drawingViewContainer"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent">
 
@@ -102,7 +110,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 
-                        <View
+                        <com.hansung.drawingtogether.view.drawing.DrawingView
                             android:id="@+id/drawing_view"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"/>

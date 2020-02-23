@@ -63,7 +63,7 @@ public class SearchMapAdapter extends RecyclerView.Adapter<SearchMapAdapter.View
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // data 담아 fragment 이동
+                    // data 담아 drawingFragment 이동
                     Bundle bundle = new Bundle();
                     bundle.putString("placename", locationList.get(getAdapterPosition()).place_name);
                     bundle.putString("longtitude", locationList.get(getAdapterPosition()).x);

@@ -1,6 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -19,6 +20,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -29,7 +32,9 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
+import lombok.Getter;
 
+import com.google.gson.JsonSyntaxException;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
@@ -45,6 +50,7 @@ import com.kakao.network.callback.ResponseCallback;
 import java.io.File;
 import java.io.IOException;
 
+@Getter
 public class DrawingFragment extends Fragment {
 
     private final int PICK_FROM_GALLERY = 0;
@@ -57,16 +63,27 @@ public class DrawingFragment extends Fragment {
     private String password;
     private boolean master;
 
-    private MQTTClient client;
+    private MQTTClient client = MQTTClient.getInstance();
 
-    FragmentDrawingBinding binding;
+    private DrawingEditor de = DrawingEditor.getInstance();
+    private FragmentDrawingBinding binding;
     private DrawingViewModel drawingViewModel;
+    private InputMethodManager inputMethodManager;
+    private LinearLayout drawingMenuLayout;
+    private Button doneBtn;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
+
+        inputMethodManager = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
+
+        //setting done Btn
+        doneBtn = new Button(this.getActivity()); //버튼 동적 생성
+        initDoneButton();
 
         topic = getArguments().getString("topic");
         name = getArguments().getString("name");
@@ -83,7 +100,7 @@ public class DrawingFragment extends Fragment {
         layoutParams.width = size.x*3;
         binding.drawingView.setLayoutParams(layoutParams);
 
-        drawingViewModel.drawingCommands.observe(this, new Observer<DrawingCommand>() {
+        drawingViewModel.drawingCommands.observe(getViewLifecycleOwner(), new Observer<DrawingCommand>() {
             @Override
             public void onChanged(DrawingCommand drawingCommand) {
                 if (drawingCommand instanceof DrawingCommand.PenMode) {
@@ -101,7 +118,7 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        drawingViewModel.navigationCommands.observe(this, new Observer<NavigationCommand>() {
+        drawingViewModel.navigationCommands.observe(getViewLifecycleOwner(), new Observer<NavigationCommand>() {
             @Override
             public void onChanged(NavigationCommand navigationCommand) {
                 if (navigationCommand instanceof NavigationCommand.To) {
@@ -114,7 +131,9 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        client = new MQTTClient(topic, name, master, drawingViewModel);
+        client.setDrawingFragment(this);
+        client.setBinding(binding);
+        client.init(topic, name, master, drawingViewModel);
         client.setCallback();
         client.subscribe(topic + "_join");
         client.subscribe(topic + "_exit");
@@ -258,4 +277,39 @@ public class DrawingFragment extends Fragment {
             return null;
         }
     }
+
+    private void setBasicButtons() {
+        //textLayout.removeAllViews();
+        //textLayout.addView(textBtn);
+    }
+
+    public void setDoneButton() {
+        //textLayout.removeAllViews();
+        //textLayout.addView(doneBtn);
+    }
+
+    private void initDoneButton() {
+        doneBtn.setText("done");
+
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams.gravity = Gravity.CENTER;
+        layoutParams.weight = 1;
+        doneBtn.setLayoutParams(layoutParams);
+
+        doneBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Text text = de.getCurrentText();
+                text.changeEditTextToTextView();
+
+                // todo nayeon currentText 의 필요성 생각해보기
+                de.setCurrentText(null);
+                text.processFocusOut(); // 키보드 내리기
+                setBasicButtons(); // 텍스트 조작이 끝나면 기본 버튼들 세팅
+
+                de.setCurrentMode(Mode.DRAW);
+            }
+        });
+    }
+
 }
