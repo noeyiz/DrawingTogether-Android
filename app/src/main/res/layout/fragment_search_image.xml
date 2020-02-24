@@ -1,20 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
-            name="data"
-            type="String" />
+            name="vm"
+            type="com.hansung.drawingtogether.view.search.SearchViewModel" />
+        <variable
+            name="adapter"
+            type="com.hansung.drawingtogether.view.search.SearchImageAdapter" />
     </data>
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <TextView
+        <GridView
+            android:id="@+id/search_image_grid"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="@{data}"
-            android:gravity="center"/>
+            android:layout_height="0dp"
+            android:layout_weight="10"
+            android:numColumns="2"
+            app:adapter_grid="@{adapter}" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/search_image_back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="30dp"
+                android:text="back"/>
+
+            <Button
+                android:id="@+id/search_image_next"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="next"/>
+
+        </LinearLayout>
+
 
     </LinearLayout>
 </layout>

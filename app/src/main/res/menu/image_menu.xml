@@ -4,6 +4,4 @@
         android:title="갤러리"/>
     <item
         android:title="카메라"/>
-    <item
-        android:title="지우기"/>
 </menu>

@@ -1,47 +1,59 @@
 package com.hansung.drawingtogether.view.drawing;
 
-import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Point;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
+import lombok.Getter;
 
-import com.gun0912.tedpermission.PermissionListener;
-import com.gun0912.tedpermission.TedPermission;
+import com.google.gson.JsonSyntaxException;
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.main.MainActivity;
+import com.kakao.kakaolink.v2.KakaoLinkResponse;
+import com.kakao.kakaolink.v2.KakaoLinkService;
+import com.kakao.message.template.LinkObject;
+import com.kakao.message.template.TextTemplate;
+import com.kakao.network.ErrorResult;
+import com.kakao.network.callback.ResponseCallback;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.Objects;
 
+@Getter
 public class DrawingFragment extends Fragment {
 
     private final int PICK_FROM_GALLERY = 0;
@@ -49,14 +61,43 @@ public class DrawingFragment extends Fragment {
 
     Point size;
 
-    FragmentDrawingBinding binding;
+    private String ip;
+    private String port;
+    private String topic;
+    private String name;
+    private String password;
+    private boolean master;
+
+    private MQTTClient client = MQTTClient.getInstance();
+
+    private DrawingEditor de = DrawingEditor.getInstance();
+    private FragmentDrawingBinding binding;
     private DrawingViewModel drawingViewModel;
+    private InputMethodManager inputMethodManager;
+    private LinearLayout doneBtnLayout;
+    private Button doneBtn;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
+
+        de.setDrawingFragment(this);
+        inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
+        binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
+
+        //setting done Btn
+        doneBtnLayout = binding.doneBtnLayout;
+        doneBtn = new Button(this.getActivity()); //버튼 동적 생성
+        initDoneButton();
+
+        ip = getArguments().getString("ip");
+        port = getArguments().getString("port");
+        topic = getArguments().getString("topic");
+        name = getArguments().getString("name");
+        password = getArguments().getString("password");
+        master = Boolean.parseBoolean(getArguments().getString("master"));
 
         // 디바이스 화면 size 구하기
         Display display = getActivity().getWindowManager().getDefaultDisplay();
@@ -65,10 +106,11 @@ public class DrawingFragment extends Fragment {
 
         // 디바이스 화면 넓이의 3배 = 드로잉뷰 넓이
         ViewGroup.LayoutParams layoutParams = binding.drawingView.getLayoutParams();
-        layoutParams.width = size.x*3;
+        //layoutParams.width = size.x*3;
+        layoutParams.width = size.x;
         binding.drawingView.setLayoutParams(layoutParams);
 
-        drawingViewModel.drawingCommands.observe(this, new Observer<DrawingCommand>() {
+        drawingViewModel.drawingCommands.observe(getViewLifecycleOwner(), new Observer<DrawingCommand>() {
             @Override
             public void onChanged(DrawingCommand drawingCommand) {
                 if (drawingCommand instanceof DrawingCommand.PenMode) {
@@ -86,7 +128,7 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        drawingViewModel.navigationCommands.observe(this, new Observer<NavigationCommand>() {
+        drawingViewModel.navigationCommands.observe(getViewLifecycleOwner(), new Observer<NavigationCommand>() {
             @Override
             public void onChanged(NavigationCommand navigationCommand) {
                 if (navigationCommand instanceof NavigationCommand.To) {
@@ -99,13 +141,26 @@ public class DrawingFragment extends Fragment {
             }
         });
 
+        client.init(topic, name, master, drawingViewModel, ip, port);
+        client.setDrawingFragment(this);
+        client.setCallback();
+        client.subscribe(topic + "_join");
+        client.subscribe(topic + "_exit");
+        client.subscribe(topic + "_delete");
+        client.subscribe(topic + "_data");
+        client.publish(topic + "_join", ("name:" + name).getBytes());
+
         binding.setVm(drawingViewModel);
+        binding.setLifecycleOwner(this);
 
-        // 현재 사용자 수. 지금은 그냥 2로 해놓음
-        binding.setUserNum(Integer.toString(2));
-
-        checkPermission();
         setHasOptionsMenu(true);
+
+        ((MainActivity)getActivity()).setOnBackListener(new MainActivity.OnBackListener() {
+            @Override
+            public void onBack() {
+                exit();
+            }
+        });
 
         return binding.getRoot();
     }
@@ -120,46 +175,71 @@ public class DrawingFragment extends Fragment {
         view.getLocationOnScreen(location);
         popupWindow.showAtLocation(penSettingPopup, Gravity.NO_GRAVITY, location[0], location[1] - penSettingPopup.getMeasuredHeight());
         popupWindow.setElevation(20);
+
+        if(layout == R.layout.popup_shape_mode) {
+            setShapePopupClickListener(penSettingPopup, popupWindow);
+        }
     }
 
-    private void checkPermission() {
-        PermissionListener permissionListener = new PermissionListener() {
+    public void setShapePopupClickListener(View penSettingPopup, final PopupWindow popupWindow) {
+        final Button rectBtn = penSettingPopup.findViewById(R.id.rectBtn);
+        rectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onPermissionGranted() {
-                //
+            public void onClick(View view) {
+                de.setCurrentMode(Mode.DRAW);
+                de.setCurrentType(ComponentType.RECT);
+                Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
+                popupWindow.dismiss();
             }
-            @Override
-            public void onPermissionDenied(List<String> deniedPermissions) {
-                //
-            }
-        };
+        });
 
-        TedPermission.with(getContext())
-                .setPermissionListener(permissionListener)
-                .setDeniedMessage(getResources().getString(R.string.permission_camera))
-                .setPermissions(Manifest.permission.CAMERA)
-                .check();
+        final Button ovalBtn = penSettingPopup.findViewById(R.id.ovalBtn);
+        ovalBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                de.setCurrentMode(Mode.DRAW);
+                de.setCurrentType(ComponentType.OVAL);
+                Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
+                popupWindow.dismiss();
+            }
+        });
+    }
+
+    public void exit() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setItems(R.array.exit, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == 0) {
+                    client.publish(topic + "_exit", name.getBytes());
+                }
+                else if (which == 1){
+                    client.publish(topic + "_delete", name.getBytes());
+                }
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (data == null) {
-            return;
-        }
-
         switch (requestCode) {
             case PICK_FROM_GALLERY:
+                if (data == null) {
+                    return;
+                }
                 Uri uri = data.getData();
                 ImageView imageView = new ImageView(getContext());
                 imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
                 imageView.setImageURI(uri);
-
                 binding.backgroundView.addView(imageView);
                 break;
             case PICK_FROM_CAMERA:
                 try {
                     File file = new File(drawingViewModel.getPhotoPath());
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file));
+                    Bitmap bitmap = rotateBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file)));
+
                     if (bitmap != null) {
                         imageView = new ImageView(getContext());
                         imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -198,8 +278,81 @@ public class DrawingFragment extends Fragment {
             case R.id.camera:
                 drawingViewModel.getImageFromCamera(DrawingFragment.this);
                 break;
+            case R.id.drawing_plus:
+                drawingViewModel.plusUser(DrawingFragment.this, topic, password);
+                break;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    public Bitmap rotateBitmap(Bitmap bitmap) {
+        ExifInterface exif = null;
+        try {
+            exif = new ExifInterface(drawingViewModel.getPhotoPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_UNDEFINED);
+
+        Matrix matrix = new Matrix();
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.setRotate(90);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                matrix.setRotate(180);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                matrix.setRotate(-90);
+                break;
+            default:
+                return bitmap;
+        }
+        try {
+            Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            bitmap.recycle();
+            return bmRotated;
+        }
+        catch (OutOfMemoryError e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void removeDoneButton() {
+        doneBtnLayout.removeView(doneBtn);
+    }
+
+    public void setDoneButton() {
+        doneBtnLayout.removeView(doneBtn);
+        doneBtnLayout.addView(doneBtn);
+    }
+
+    private void initDoneButton() {
+        doneBtn.setText("done");
+        doneBtn.setBackgroundColor(Color.TRANSPARENT);
+
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams.gravity = Gravity.CENTER;
+        layoutParams.weight = 1;
+        doneBtn.setLayoutParams(layoutParams);
+
+        doneBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Text text = de.getCurrentText();
+                text.changeEditTextToTextView();
+
+                // todo nayeon currentText 의 필요성 생각해보기
+                de.setCurrentText(null);
+                text.processFocusOut(); // 키보드 내리기
+                removeDoneButton();     // 텍스트 조작이 끝나면 기본 버튼들 세팅    //fixme minj
+
+                de.setCurrentMode(Mode.DRAW);
+            }
+        });
+    }
+
 }

@@ -4,15 +4,6 @@
         <variable
             name="vm"
             type="com.hansung.drawingtogether.view.main.MainViewModel"/>
-        <variable
-            name="topicError"
-            type="String" />
-        <variable
-            name="passwordError"
-            type="String" />
-        <variable
-            name="nameError"
-            type="String" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -39,14 +30,60 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.15"/>
+            app:layout_constraintGuide_percent="0.1"/>
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/view_bottom_guide"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.85"/>
+            app:layout_constraintGuide_percent="0.9"/>
+
+        <EditText
+            android:id="@+id/ip"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toTopOf="@id/view_top_guide"
+            app:layout_constraintBottom_toTopOf="@id/ip_error"
+            app:layout_constraintVertical_chainStyle="packed"
+            android:hint="ip"
+            android:text="@={vm.ip}"/>
+
+        <TextView
+            android:id="@+id/ip_error"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toBottomOf="@id/ip"
+            app:layout_constraintBottom_toTopOf="@id/port"
+            android:text="@={vm.ipError}"
+            android:textSize="12dp"
+            android:textColor="@color/colorAccent"/>
+
+        <EditText
+            android:id="@+id/port"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toBottomOf="@id/ip_error"
+            app:layout_constraintBottom_toTopOf="@id/port_error"
+            android:text="@={vm.port}"/>
+
+        <TextView
+            android:id="@+id/port_error"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toBottomOf="@id/port"
+            app:layout_constraintBottom_toTopOf="@id/topic"
+            android:text="@={vm.portError}"
+            android:textSize="12dp"
+            android:textColor="@color/colorAccent"/>
 
         <EditText
             android:id="@+id/topic"
@@ -54,10 +91,10 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toTopOf="@id/view_top_guide"
+            app:layout_constraintTop_toBottomOf="@id/port"
             app:layout_constraintBottom_toTopOf="@id/password"
-            app:layout_constraintVertical_chainStyle="packed"
-            android:hint="topic"/>
+            android:hint="topic"
+            android:text="@={vm.topic}"/>
 
         <TextView
             android:id="@+id/topic_error"
@@ -67,7 +104,7 @@
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/topic"
             app:layout_constraintBottom_toTopOf="@id/password"
-            android:text="@{topicError}"
+            android:text="@={vm.topicError}"
             android:textSize="12dp"
             android:textColor="@color/colorAccent"/>
 
@@ -79,7 +116,8 @@
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/topic_error"
             app:layout_constraintBottom_toTopOf="@id/password_error"
-            android:hint="password"/>
+            android:hint="password"
+            android:text="@={vm.password}"/>
 
         <TextView
             android:id="@+id/password_error"
@@ -89,7 +127,7 @@
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/password"
             app:layout_constraintBottom_toTopOf="@id/name"
-            android:text="@{passwordError}"
+            android:text="@={vm.passwordError}"
             android:textSize="12dp"
             android:textColor="@color/colorAccent"/>
 
@@ -101,7 +139,8 @@
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/password_error"
             app:layout_constraintBottom_toTopOf="@id/name_error"
-            android:hint="name"/>
+            android:hint="name"
+            android:text="@={vm.name}"/>
 
         <TextView
             android:id="@+id/name_error"
@@ -111,7 +150,7 @@
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/name"
             app:layout_constraintBottom_toTopOf="@id/mastercheck"
-            android:text="@{nameError}"
+            android:text="@={vm.nameError}"
             android:textSize="12dp"
             android:textColor="@color/colorAccent"/>
 
@@ -124,7 +163,8 @@
             app:layout_constraintTop_toBottomOf="@id/name"
             app:layout_constraintBottom_toTopOf="@id/login"
             android:layout_margin="10dp"
-            android:text="마스터"/>
+            android:text="마스터"
+            android:checked="@={vm.masterCheck}"/>
 
         <Button
             android:id="@+id/login"

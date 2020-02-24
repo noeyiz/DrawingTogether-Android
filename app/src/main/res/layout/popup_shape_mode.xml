@@ -5,10 +5,20 @@
     android:orientation="vertical"
     android:background="#ffffff">
 
-    <TextView
+    <Button
+        android:id="@+id/rectBtn"
         android:layout_width="200dp"
-        android:layout_height="100dp"
+        android:layout_height="50dp"
+        android:background="@null"
         android:gravity="center"
-        android:text="도형 모드"/>
+        android:text="RECT" />
+
+    <Button
+        android:id="@+id/ovalBtn"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:background="@null"
+        android:gravity="center"
+        android:text="OVAL" />
 
 </LinearLayout>

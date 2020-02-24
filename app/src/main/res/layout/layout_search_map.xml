@@ -18,12 +18,15 @@
             android:id="@+id/search_map_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="name"/>
+            android:layout_marginTop="30dp"
+            android:text="@{name}"/>
 
         <TextView
             android:id="@+id/search_map_address"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="address address address"/>
+            android:layout_marginBottom="30dp"
+            android:text="@{address}"/>
+
     </LinearLayout>
 </layout>

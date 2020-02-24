@@ -31,9 +31,25 @@ public class MainFragment extends Fragment {
                     NavHostFragment.findNavController(MainFragment.this)
                             .navigate(((NavigationCommand.To) navigationCommand).getDestinationId());
                 }
+                else if (navigationCommand instanceof NavigationCommand.ToBundle) {
+                    NavigationCommand.ToBundle toBundle = (NavigationCommand.ToBundle) navigationCommand;
+                    NavHostFragment.findNavController(MainFragment.this)
+                            .navigate(toBundle.getDestinationId(), toBundle.getBundle());
+                }
             }
         });
         binding.setVm(mainViewModel);
+        binding.setLifecycleOwner(this);
+
+        if (!((MainActivity)getActivity()).getTopicPassword().equals("")) {
+            String topic = ((MainActivity)getActivity()).getTopicPassword().split("/")[0];
+            String password = ((MainActivity)getActivity()).getTopicPassword().split("/")[1];
+
+            binding.getVm().getTopic().postValue(topic);
+            binding.getVm().getPassword().postValue(password);
+
+            ((MainActivity) getActivity()).setTopicPassword("");
+        }
 
         return binding.getRoot();
     }

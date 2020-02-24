@@ -1,5 +1,7 @@
 package com.hansung.drawingtogether.view;
 
+import android.os.Bundle;
+
 import androidx.lifecycle.ViewModel;
 
 import io.reactivex.disposables.CompositeDisposable;
@@ -21,6 +23,10 @@ public class BaseViewModel extends ViewModel {
 
     public void navigate(int destinationId) {
         navigationCommands.postValue(new NavigationCommand.To(destinationId));
+    }
+
+    public void navigate(int destinationId, Bundle bundle) {
+        navigationCommands.postValue(new NavigationCommand.ToBundle(destinationId, bundle));
     }
 
     public void back() {
