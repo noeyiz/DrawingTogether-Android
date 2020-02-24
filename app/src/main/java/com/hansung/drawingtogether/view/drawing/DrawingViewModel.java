@@ -5,11 +5,15 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
@@ -33,6 +37,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import static java.security.AccessController.getContext;
+
 public class DrawingViewModel extends BaseViewModel {
     public final SingleLiveEvent<DrawingCommand> drawingCommands = new SingleLiveEvent<>();
     private MutableLiveData<String> userNum = new MutableLiveData<>();
@@ -41,20 +47,41 @@ public class DrawingViewModel extends BaseViewModel {
     private final int PICK_FROM_CAMERA = 1;
     private String photoPath;
 
+    private DrawingEditor de = DrawingEditor.getInstance();
+
     public DrawingViewModel() {
         setUserNum(0);
     }
 
     public void clickPen(View view) {
+        de.setCurrentMode(Mode.DRAW);
+        de.setCurrentType(ComponentType.STROKE);
+        Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
         drawingCommands.postValue(new DrawingCommand.PenMode(view));
     }
 
     public void clickEraser(View view) {
+        de.setCurrentMode(Mode.ERASE);
+        Log.i("drawing", "mode = " + de.getCurrentMode().toString());
         drawingCommands.postValue(new DrawingCommand.EraserMode(view));
     }
 
     public void clickText(View view) {
-        drawingCommands.postValue(new DrawingCommand.TextMode(view));
+        de.setCurrentMode(Mode.TEXT);
+        FrameLayout frameLayout = de.getDrawingFragment().getBinding().drawingViewContainer;
+
+        // 텍스트 속성 설정 ( 기본 도구에서 설정할 것인지 텍스트 도구에서 설정할 것인지? )
+        TextAttribute textAttribute = new TextAttribute(de.componentIdCounter(), de.getMyUsername(), //fixme minj textIdCounter()
+                "Input Text", 20, Color.BLACK, Color.TRANSPARENT,
+                View.TEXT_ALIGNMENT_CENTER, Typeface.BOLD,
+                frameLayout.getWidth(), frameLayout.getHeight());
+
+
+        Text text = new Text(de.getDrawingFragment(), textAttribute); // Context 넘겨주기
+        text.createGestureDetecter(); // Set Gesture ( Single Tap Up )
+        text.addEditTextToFrameLayout(); // 처음 텍스트 생성 시 EditText 부착
+        text.activeEditText(); // EditText 커서와 키보드 활성화
+        //drawingCommands.postValue(new DrawingCommand.TextMode(view));
     }
 
     public void clickShape(View view) {
@@ -155,4 +182,5 @@ public class DrawingViewModel extends BaseViewModel {
     public void setUserNum(int num) {
         userNum.postValue(num + "명");
     }
+
 }

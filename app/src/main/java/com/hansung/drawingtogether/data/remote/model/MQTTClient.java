@@ -46,7 +46,8 @@ public enum MQTTClient {
     INSTANCE;
 
     private MqttClient client;
-    private final String BROKER_ADDRESS = "tcp://" + "192.168.0.15" + ":1883";
+    private final String BROKER_IP = "113.198.85.221";
+    private final String BROKER_ADDRESS = "tcp://" + BROKER_IP + ":1883";
 
     private FirebaseStorage storage;
     private StorageReference storageReference;
@@ -72,25 +73,6 @@ public enum MQTTClient {
     private DrawingTask drawingTask;
     private DrawingView drawingView;
 
-    /*public MQTTClient(String topic, String name, boolean master, DrawingViewModel drawingViewModel) {
-        connect();
-
-        storage = FirebaseStorage.getInstance();
-        storageReference = storage.getReference();
-
-        this.master = master;
-        this.topic = topic;
-        this.myName = name;
-        userList.add(myName);
-        topic_join = this.topic + "_join";
-        topic_exit = this.topic + "_exit";
-        topic_delete = this.topic + "_delete";
-        topic_data = this.topic + "_data";
-
-        this.drawingViewModel = drawingViewModel;
-        this.drawingViewModel.setUserNum(userList.size());
-    }*/
-
     public static MQTTClient getInstance() { return INSTANCE; }
 
     public void init(String topic, String name, boolean master, DrawingViewModel drawingViewModel) {
@@ -111,7 +93,6 @@ public enum MQTTClient {
         this.drawingViewModel = drawingViewModel;
         this.drawingViewModel.setUserNum(userList.size());
 
-        this.drawingView = this.binding.drawingView;
         de.setMyUsername(name);
     }
 
@@ -161,7 +142,7 @@ public enum MQTTClient {
             MqttMessage message = new MqttMessage(payload.getBytes());
 
             client.publish(newTopic, payload.getBytes(), this.qos, false);
-            Log.i("mqtt", "PUBLISH topic: " + newTopic + "msg: " + message);
+            Log.i("mqtt", "PUBLISH topic: " + newTopic + ", msg: " + message);
         } catch(MqttException e) {
             e.printStackTrace();
         }
@@ -313,10 +294,10 @@ public enum MQTTClient {
                 }
 
                 //drawing
-                String msg = new String(message.getPayload());
-                MqttMessageFormat messageFormat = (MqttMessageFormat)parser.jsonReader(msg);
-
                 if (newTopic.equals(topic_data)) {
+                    String msg = new String(message.getPayload());
+                    MqttMessageFormat messageFormat = (MqttMessageFormat)parser.jsonReader(msg);
+
                     drawingTask = new DrawingTask();
                     drawingTask.execute(messageFormat);
                     //drawingTask.cancel(true);
@@ -399,7 +380,7 @@ public enum MQTTClient {
 
             switch (textMode) {
                 case CREATE:
-                    new Text(drawingFragment, binding, textAttr).setTextInited(true); // 생성자에서 텍스트 배열에 추가
+                    new Text(drawingFragment, textAttr).setTextInited(true); // 생성자에서 텍스트 배열에 추가
                     publishProgress(message);
                     Log.e("texts size", Integer.toString(de.getTexts().size()));
                     return null;
@@ -421,7 +402,6 @@ public enum MQTTClient {
         }
 
 
-        @SuppressLint("WrongThread")    //fixme minj
         @Override
         protected Void doInBackground(MqttMessageFormat... messages) {
             MqttMessageFormat message = messages[0];
@@ -443,7 +423,7 @@ public enum MQTTClient {
                 case ERASE:
                     Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString() + ", id=" + message.getComponentIds().toString());
                     Vector<Integer> erasedComponentIds = message.getComponentIds();
-                    new EraserTask(erasedComponentIds).execute();
+                    new EraserTask(erasedComponentIds).doNotInBackground();
                     return null;
 
                 case SELECT:
@@ -471,7 +451,7 @@ public enum MQTTClient {
             Text text = de.findTextById(textAttr.getId());
             switch(textMode) {
                 case CREATE:
-                    textAttr.setId(de.textIdCounter());    //fixme minj
+                    textAttr.setId(de.componentIdCounter());    //fixme minj
                     text.addTextViewToFrameLayout();
                     text.createGestureDetecter();
                     break;
@@ -500,9 +480,8 @@ public enum MQTTClient {
 
     public void setDrawingFragment(DrawingFragment drawingFragment) {
         this.drawingFragment = drawingFragment;
+        this.binding = drawingFragment.getBinding();
+        this.drawingView = this.binding.drawingView;
     }
 
-    public void setBinding(FragmentDrawingBinding binding) {
-        this.binding = binding;
-    }
 }

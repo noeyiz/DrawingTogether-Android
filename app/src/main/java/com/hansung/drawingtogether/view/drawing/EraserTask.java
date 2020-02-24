@@ -56,4 +56,10 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
         de.clearUndoArray();
         //de.getDrawingView().invalidate();
     }
+
+    public void doNotInBackground() {
+        onPreExecute();
+        onPostExecute(null);
+        de.eraseDrawingBoardArray(erasedComponentIds);
+    }
 }

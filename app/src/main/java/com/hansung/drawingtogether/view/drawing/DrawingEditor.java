@@ -22,7 +22,7 @@ import lombok.Getter;
 public enum DrawingEditor {
     INSTANCE;
 
-    private Context context;
+    private DrawingFragment drawingFragment;
     private DrawingView drawingView;
 
     private Bitmap backgroundImage;             //
@@ -57,7 +57,7 @@ public enum DrawingEditor {
     private int strokeColor = Color.BLACK;      //fixme
     private int strokeAlpha = 255;              //fixme
     private int fillAlpha = 100;                //fixme
-    private int strokeWidth = 100;              //fixme
+    private int strokeWidth = 50;              //fixme
 
 
 
@@ -344,9 +344,8 @@ public enum DrawingEditor {
                     newPoints = strokeSplitPoints(component);
                     break;
 
-                case RECT:  //직사각형 형태 모두 가능 --> rect, text, imageicon
+                case RECT:  //직사각형 형태 모두 가능 --> rect, text, image
                 case OVAL:  //정교하게 수정 x^2/a^2 + y^2/b^2 <= 1
-                //case TEXT:  //fixme
                     newPoints = rectSplitPoints(component);
                     break;
             }
@@ -512,6 +511,7 @@ public enum DrawingEditor {
         drawingBitmap.eraseColor(Color.TRANSPARENT);
     }
 
+
     /*
 
     //겹쳐진 부분만 찾아서 지우기
@@ -597,7 +597,6 @@ public enum DrawingEditor {
     }
 
      */
-
 
 
     public void eraseDrawingBoardArray(Vector<Integer> erasedComponentIds) {
@@ -728,9 +727,8 @@ public enum DrawingEditor {
 
     //-----setter-----
 
-
-    public void setContext(Context context) {
-        this.context = context;
+    public void setDrawingFragment(DrawingFragment drawingFragment) {
+        this.drawingFragment = drawingFragment;
     }
 
     public void setDrawingView(DrawingView drawingView) {
@@ -803,7 +801,4 @@ public enum DrawingEditor {
         this.strokeWidth = strokeWidth;
     }
 
-    /*public void setComponentBitmap(Bitmap componentBitmap) {
-        this.componentBitmap = componentBitmap;
-    }*/
 }

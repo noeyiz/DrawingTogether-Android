@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.media.ExifInterface;
@@ -18,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -49,6 +51,7 @@ import com.kakao.network.callback.ResponseCallback;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
 @Getter
 public class DrawingFragment extends Fragment {
@@ -69,7 +72,7 @@ public class DrawingFragment extends Fragment {
     private FragmentDrawingBinding binding;
     private DrawingViewModel drawingViewModel;
     private InputMethodManager inputMethodManager;
-    private LinearLayout drawingMenuLayout;
+    private LinearLayout doneBtnLayout;
     private Button doneBtn;
 
     @Nullable
@@ -78,10 +81,12 @@ public class DrawingFragment extends Fragment {
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 
-        inputMethodManager = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        de.setDrawingFragment(this);
+        inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
 
         //setting done Btn
+        doneBtnLayout = binding.doneBtnLayout;
         doneBtn = new Button(this.getActivity()); //버튼 동적 생성
         initDoneButton();
 
@@ -97,7 +102,8 @@ public class DrawingFragment extends Fragment {
 
         // 디바이스 화면 넓이의 3배 = 드로잉뷰 넓이
         ViewGroup.LayoutParams layoutParams = binding.drawingView.getLayoutParams();
-        layoutParams.width = size.x*3;
+        //layoutParams.width = size.x*3;
+        layoutParams.width = size.x;
         binding.drawingView.setLayoutParams(layoutParams);
 
         drawingViewModel.drawingCommands.observe(getViewLifecycleOwner(), new Observer<DrawingCommand>() {
@@ -131,9 +137,8 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        client.setDrawingFragment(this);
-        client.setBinding(binding);
         client.init(topic, name, master, drawingViewModel);
+        client.setDrawingFragment(this);
         client.setCallback();
         client.subscribe(topic + "_join");
         client.subscribe(topic + "_exit");
@@ -159,6 +164,34 @@ public class DrawingFragment extends Fragment {
         view.getLocationOnScreen(location);
         popupWindow.showAtLocation(penSettingPopup, Gravity.NO_GRAVITY, location[0], location[1] - penSettingPopup.getMeasuredHeight());
         popupWindow.setElevation(20);
+
+        if(layout == R.layout.popup_shape_mode) {
+            setShapePopupClickListener(penSettingPopup, popupWindow);
+        }
+    }
+
+    public void setShapePopupClickListener(View penSettingPopup, final PopupWindow popupWindow) {
+        final Button rectBtn = penSettingPopup.findViewById(R.id.rectBtn);
+        rectBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                de.setCurrentMode(Mode.DRAW);
+                de.setCurrentType(ComponentType.RECT);
+                Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
+                popupWindow.dismiss();
+            }
+        });
+
+        final Button ovalBtn = penSettingPopup.findViewById(R.id.ovalBtn);
+        ovalBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                de.setCurrentMode(Mode.DRAW);
+                de.setCurrentType(ComponentType.OVAL);
+                Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
+                popupWindow.dismiss();
+            }
+        });
     }
 
     public void exit() {
@@ -278,18 +311,18 @@ public class DrawingFragment extends Fragment {
         }
     }
 
-    private void setBasicButtons() {
-        //textLayout.removeAllViews();
-        //textLayout.addView(textBtn);
+    private void removeDoneButton() {
+        doneBtnLayout.removeView(doneBtn);
     }
 
     public void setDoneButton() {
-        //textLayout.removeAllViews();
-        //textLayout.addView(doneBtn);
+        doneBtnLayout.removeView(doneBtn);
+        doneBtnLayout.addView(doneBtn);
     }
 
     private void initDoneButton() {
         doneBtn.setText("done");
+        doneBtn.setBackgroundColor(Color.TRANSPARENT);
 
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         layoutParams.gravity = Gravity.CENTER;
@@ -305,7 +338,7 @@ public class DrawingFragment extends Fragment {
                 // todo nayeon currentText 의 필요성 생각해보기
                 de.setCurrentText(null);
                 text.processFocusOut(); // 키보드 내리기
-                setBasicButtons(); // 텍스트 조작이 끝나면 기본 버튼들 세팅
+                removeDoneButton();     // 텍스트 조작이 끝나면 기본 버튼들 세팅    //fixme minj
 
                 de.setCurrentMode(Mode.DRAW);
             }

@@ -57,9 +57,9 @@ public class Text { // EditTextView
 
     private final int MAX_LENGTH = 15;
 
-    public Text(DrawingFragment drawingFragment, FragmentDrawingBinding binding, TextAttribute textAttr) {    //fixme minj
+    public Text(DrawingFragment drawingFragment, TextAttribute textAttr) {    //fixme minj
         this.drawingFragment = drawingFragment;
-        this.binding = binding;
+        this.binding = drawingFragment.getBinding();
 
         this.textView = new TextView(drawingFragment.getActivity());
         this.editText = new EditText(drawingFragment.getActivity());
@@ -120,6 +120,7 @@ public class Text { // EditTextView
         View.OnTouchListener onTouchListener = new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent event) {
+                view.getParent().requestDisallowInterceptTouchEvent(true);  //fixme minj
 
                 // 텍스트에 대한 터치 이벤트가 발생하면,
                 // 현재 모드를 텍스트로 지정
