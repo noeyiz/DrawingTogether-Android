@@ -52,18 +52,19 @@ public class Rect extends DrawingComponent {
         Point from = this.beginPoint;
         Point to = this.endPoint;
 
+        try {
+            paint.setStyle(Paint.Style.FILL);       //채우기
+            paint.setColor(this.fillColor);       //fixme
+            paint.setAlpha(this.fillAlpha);
+            canvas.drawRect(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint); //fixme alpha 적용되면 strokeWidth/2만큼 작은 사각형
 
-        paint.setStyle(Paint.Style.FILL);       //채우기
-        paint.setColor(this.fillColor);       //fixme
-        paint.setAlpha(this.fillAlpha);
-        canvas.drawRect(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint); //fixme alpha 적용되면 strokeWidth/2만큼 작은 사각형
-
-        paint.setStyle(Paint.Style.STROKE);     //윤곽선
-        paint.setColor(this.strokeColor);
-        paint.setAlpha(this.strokeAlpha);
-        canvas.drawRect(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);
-
-
+            paint.setStyle(Paint.Style.STROKE);     //윤곽선
+            paint.setColor(this.strokeColor);
+            paint.setAlpha(this.strokeAlpha);
+            canvas.drawRect(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);
+        }catch(NullPointerException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

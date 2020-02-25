@@ -33,7 +33,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
             de.removeDrawingComponents(id);
         }
 
-        de.drawAllComponents();
+        de.drawAllDrawingComponents();
         //de.getDrawingView().invalidate();
     }
 

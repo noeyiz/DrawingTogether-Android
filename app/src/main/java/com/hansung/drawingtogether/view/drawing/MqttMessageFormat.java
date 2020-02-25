@@ -42,4 +42,9 @@ public class MqttMessageFormat {
         this.textAttr = textAttr;
         this.textMode = textMode;
     }
+
+    public MqttMessageFormat(String username, Mode mode) {
+        this.username = username;
+        this.mode = mode;
+    }
 }

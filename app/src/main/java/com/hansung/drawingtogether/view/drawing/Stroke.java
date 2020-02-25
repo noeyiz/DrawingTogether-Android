@@ -55,7 +55,11 @@ public class Stroke extends DrawingComponent {
             Point from = this.points.get(i);
             Point to = this.points.get(i+1);
 
-            canvas.drawLine(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);
+            try {
+                canvas.drawLine(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);
+            }catch(NullPointerException e) {
+                e.printStackTrace();
+            }
         }
 
     }

@@ -17,6 +17,7 @@ public class Eraser {
 
     public void findComponentsToErase(Point eraserPoint) {
         Vector<Integer> erasedComponentIds = new Vector<>();
+        erasedComponentIds.add(-1);
 
         int x = eraserPoint.x;
         int y = eraserPoint.y;
@@ -28,32 +29,36 @@ public class Eraser {
             return;
         }
 
-        /*if(de.findEnclosingDrawingComponents(eraserPoint).size() != 1 && !de.isContainsRemovedComponentIds(dbArray[y][x])) {
-            erasedComponentIds.addAll(de.findEnclosingDrawingComponents(eraserPoint));
-            //erase(erasedComponentIds);
-        }*/
-
         for(int i=y-squareScope; i<y+squareScope; i++) {
             for(int j=x-squareScope; j<x+squareScope; j++) {
+                if(de.findEnclosingDrawingComponents(eraserPoint).size() != 1 && !de.isContainsRemovedComponentIds(de.findEnclosingDrawingComponents(eraserPoint))) {
+                    erasedComponentIds.addAll(de.findEnclosingDrawingComponents(eraserPoint));
+                    de.addRemovedComponentIds(de.findEnclosingDrawingComponents(eraserPoint));
+                    Log.i("drawing", "erased shape ids = " + erasedComponentIds.toString());
+                    //erase(erasedComponentIds);
+                }
+
                 if(dbArray[i][j].size() != 1 && !de.isContainsRemovedComponentIds(dbArray[i][j])) { //-1만 가지고 있으면 size() == 1
                     //erasedComponentIds = (dbArray[i][j]);
                     erasedComponentIds.addAll(de.getNotRemovedComponentIds(dbArray[i][j]));
+                    de.addRemovedComponentIds(de.getNotRemovedComponentIds(dbArray[i][j]));
+                    Log.i("drawing", "erased stroke ids = " + erasedComponentIds.toString());
 
-                    if(de.findEnclosingDrawingComponents(eraserPoint).size() != 1) {
+                    /*if(de.findEnclosingDrawingComponents(eraserPoint).size() != 1) {
                         erasedComponentIds.addAll(de.findEnclosingDrawingComponents(eraserPoint));
-                    }
-
-                    erasedComponentIds = new Vector<>(new TreeSet<>(erasedComponentIds));
-                    erase(erasedComponentIds);
+                    }*/
                 }
+
             }
         }
 
+        if(erasedComponentIds.size() != 1) {
+            erasedComponentIds = new Vector<>(new TreeSet<>(erasedComponentIds));
+            erase(erasedComponentIds);
+        }
     }
 
     public void erase(Vector<Integer> erasedComponentIds) {
-        de.addRemovedComponentIds(erasedComponentIds, 1);
-
         Log.i("drawing", "erasedIds = " + erasedComponentIds.toString());
 
         //publish
@@ -62,6 +67,7 @@ public class Eraser {
 
         //de.eraseDrawingComponents(erasedComponentIds);
         new EraserTask(erasedComponentIds).execute();
+        erasedComponentIds.clear();
     }
 
 }

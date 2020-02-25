@@ -62,7 +62,9 @@ public class Text { // EditTextView
         this.binding = drawingFragment.getBinding();
 
         this.textView = new TextView(drawingFragment.getActivity());
+        this.textView.setPadding(20, 20, 20, 20);       //fixme minj
         this.editText = new EditText(drawingFragment.getActivity());
+        this.editText.setPadding(20, 20, 20, 20);
 
         editText.setFilters(new InputFilter[] {new InputFilter.LengthFilter(MAX_LENGTH)}); // 텍스트의 최대 글자 수 지정
 

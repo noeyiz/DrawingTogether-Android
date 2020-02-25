@@ -1,7 +1,6 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -28,7 +27,7 @@ public enum DrawingEditor {
     private Bitmap backgroundImage;             //
     private Bitmap drawingBitmap;               //그리기 bitmap
     private Canvas backCanvas;                  //미리 그려두기 위한 Canvas
-    private Bitmap lastDrawingBitmap;           //drawingBitmap 의 마지막 상태 bitmap --> 도형 그리기
+    private Bitmap lastDrawingBitmap = null;    //drawingBitmap 의 마지막 상태 bitmap --> 도형 그리기
 
     private int componentId = -1;
     private Vector<Integer> removedComponentId = new Vector<>();
@@ -59,6 +58,7 @@ public enum DrawingEditor {
     private int fillAlpha = 100;                //fixme
     private int strokeWidth = 50;              //fixme
 
+    private boolean isClear = false;
 
 
     public static DrawingEditor getInstance() { return INSTANCE; }
@@ -68,7 +68,7 @@ public enum DrawingEditor {
         private static final DrawingEditor INSTANCE = new DrawingEditor();
     }*/
 
-    public void drawAllComponents() {   //drawingComponents draw
+    public void drawAllDrawingComponents() {   //drawingComponents draw
         Iterator<DrawingComponent> iterator = drawingComponents.iterator();
         while(iterator.hasNext()) {
             iterator.next().drawComponent(getBackCanvas());
@@ -195,14 +195,26 @@ public enum DrawingEditor {
         return null;
     }
 
+    public void removeAllTextViewToFrameLayout() {  //todo nayeon
+        for(Text t: texts) {
+            t.removeTextViewToFrameLayout();
+        }
+    }
+
+    public void addAllTextViewToFrameLayout() {
+        for(Text t: texts) {
+            t.addTextViewToFrameLayout();
+        }
+    }
+
     public int textIdCounter() {
         return ++textId;
     }
 
-    public void addRemovedComponentIds(Vector<Integer> ids, int startIndex) {
-        for(int i=startIndex; i<ids.size(); i++) {
-            if(!removedComponentId.contains(ids.get(i)))
-                removedComponentId.add(ids.get(i));
+    public void addRemovedComponentIds(Vector<Integer> ids) {
+        for(int i: ids) {
+            if(!removedComponentId.contains(i))
+                removedComponentId.add(i);
         }
     }
 
@@ -215,9 +227,8 @@ public enum DrawingEditor {
 
     public Vector<Integer> getNotRemovedComponentIds(Vector<Integer> ids) {
         Vector<Integer> temp = new Vector<>();
-        temp.add(-1);
-        for(int i=1; i<ids.size(); i++) {
-            if(!removedComponentId.contains(ids.get(i)))
+        for(int i=0; i<ids.size(); i++) {
+            if (!removedComponentId.contains(ids.get(i)))
                 temp.add(ids.get(i));
         }
         return temp;
@@ -252,18 +263,18 @@ public enum DrawingEditor {
         switch(lastItem.getMode()) {
             case DRAW:
             case ERASE:
-                if(drawingComponents.containsAll(lastItem.getComponents())) {
-                    addRemovedComponentIds(ids, 0);
+                if(drawingComponents.containsAll(lastItem.getComponents())) {       //erase
+                    addRemovedComponentIds(ids);
                     removeAllDrawingComponents(lastItem.getComponents());
                     eraseDrawingBoardArray(ids);
                 } else {
-                    for (DrawingComponent component: lastItem.getComponents()) {
+                    for (DrawingComponent component: lastItem.getComponents()) {    //draw
                         splitPoints(component, myCanvasWidth, myCanvasHeight);
-                        component.setIsErased(false);
+                        //component.setIsErased(false);
                     }
                     removeRemovedComponentIds(ids);
                     addAllDrawingComponents(lastItem.getComponents());
-
+                    drawAllDrawingComponents();
                 }
                 Log.i("drawing", "drawingComponents.size() = " + getDrawingComponents().size());
                 Log.i("drawing", "removedComponentIds = " + getRemovedComponentId());
@@ -445,19 +456,23 @@ public enum DrawingEditor {
     public Vector<Integer> findEnclosingDrawingComponents(Point point) {
         Vector<Integer> erasedComponentIds = new Vector<>();
         erasedComponentIds.add(-1);
-        for(DrawingComponent component: drawingComponents) {
-            switch(component.getType()) {
-                case STROKE:
-                    break;
+        try {
+            for (DrawingComponent component : drawingComponents) {
+                switch (component.getType()) {
+                    case STROKE:
+                        break;
 
-                case RECT:
-                case OVAL:
-                    Point datumPoint = component.getDatumPoint();
-                    int width = component.getWidth();
-                    int height = component.getHeight();
-                    if((datumPoint.x <= point.x && point.x <= datumPoint.x + width) && (datumPoint.y <= point.y && point.y <= datumPoint.y + height))
-                        erasedComponentIds.add(component.getId());
+                    case RECT:
+                    case OVAL:
+                        Point datumPoint = component.getDatumPoint();
+                        int width = component.getWidth();
+                        int height = component.getHeight();
+                        if ((datumPoint.x <= point.x && point.x <= datumPoint.x + width) && (datumPoint.y <= point.y && point.y <= datumPoint.y + height))
+                            erasedComponentIds.add(component.getId());
+                }
             }
+        } catch(NullPointerException e) {
+            e.printStackTrace();
         }
         return erasedComponentIds;
     }
@@ -593,7 +608,7 @@ public enum DrawingEditor {
 
         addHistory(new DrawingItem(this.getCurrentMode(), erasedComponentIds, (drawingBitmap)));    //fixme
         //drawingBitmap.eraseColor(Color.TRANSPARENT);
-        //drawAllComponents();
+        //drawAllDrawingComponents();
     }
 
      */
@@ -603,7 +618,7 @@ public enum DrawingEditor {
         /*for(int i=1;i<erasedComponentIds.size(); i++) {
             int id = erasedComponentIds.get(i);
             removeDrawingComponents(id);
-            drawAllComponents();
+            drawAllDrawingComponents();
         }*/
 
         for(int i=1; i<erasedComponentIds.size(); i++) {    //i=0 --> -1
@@ -627,15 +642,15 @@ public enum DrawingEditor {
             drawingBoardMap.remove(id);
         }
 
-        //drawAllComponents();
+        //drawAllDrawingComponents();
         //addHistory(new DrawingItem(this.getCurrentMode(), erasedComponentIds, (drawingBitmap)));    //fixme
     }
 
     public void redraw() {
         //getDrawingBitmap().eraseColor(Color.TRANSPARENT);
-        //drawAllComponents();
+        //drawAllDrawingComponents();
 
-        if(history.size() == 0) {
+        if(lastDrawingBitmap == null) {
             drawingBitmap.eraseColor(Color.TRANSPARENT);
             return;
         }
@@ -650,7 +665,7 @@ public enum DrawingEditor {
     }
 
     //fixme undo, redo
-    /*public void undo() {
+    public void undo() {
         if(history.size() == 0)
             return;
 
@@ -661,9 +676,11 @@ public enum DrawingEditor {
             return;
         }
 
-        Bitmap bitmap = history.get(history.size() - 1).getBitmap();
+        //invalidateDrawingView();
+        Log.i("drawing", "history.size()=" + getHistory().size());
+        /*Bitmap bitmap = history.get(history.size() - 1).getBitmap();
         drawingBitmap = bitmap.copy(bitmap.getConfig(), true);
-        backCanvas.setBitmap(drawingBitmap);
+        backCanvas.setBitmap(drawingBitmap);*/
     }
 
     public void redo() {
@@ -672,43 +689,30 @@ public enum DrawingEditor {
 
         history.add(popUndoArray());
 
-        Bitmap bitmap = history.get(history.size() - 1).getBitmap();
+        //invalidateDrawingView();
+        Log.i("drawing", "history.size()=" + getHistory().size());
+        /*Bitmap bitmap = history.get(history.size() - 1).getBitmap();
         drawingBitmap = bitmap.copy(bitmap.getConfig(), true);
-        backCanvas.setBitmap(drawingBitmap);
-    }*/
+        backCanvas.setBitmap(drawingBitmap);*/
+    }
 
-    public void clear() {
-        /*AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("모두 지우기").setMessage("모든 그리기 내용이 삭제됩니다.\n 그래도 지우시겠습니까?");
+    public void clearDrawingComponents() {
+        drawingBitmap.eraseColor(Color.TRANSPARENT);
+        undoArray.clear();
+        history.clear();
+        drawingComponents.clear();
+        initDrawingBoardArray((int)myCanvasWidth, (int)myCanvasHeight);
+        drawingBoardMap.clear();
+    }
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                drawingBitmap.eraseColor(Color.TRANSPARENT);
+    public void clearTexts() {
+        removeAllTextViewToFrameLayout();
+        getTexts().clear();
+    }
 
-                undoArray.clear();
-                history.clear();
-                drawingComponents.clear();
-                initDrawingBoardArray((int)myCanvasWidth, (int)myCanvasHeight);
-                drawingBoardMap.clear();
-
-                setDrawingView(((MainActivity) getContext()).getDrawingView());
-                drawingView.invalidate();
-                Log.i("drawing", "history.size()=" + getHistory().size());
-
-                Log.i("drawing", "clear");
-            }
-        });
-
-        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Log.i("drawing", "canceled");
-            }
-        });
-
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();*/
+    public void invalidateDrawingView() {
+        setDrawingView(getDrawingFragment().getBinding().drawingView);
+        drawingView.invalidate();
     }
 
     public byte[] bitmapToByteArray(Bitmap bitmap){
@@ -801,4 +805,7 @@ public enum DrawingEditor {
         this.strokeWidth = strokeWidth;
     }
 
+    public void setClear(boolean clear) {
+        isClear = clear;
+    }
 }

@@ -2,12 +2,11 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Point;
-import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -15,7 +14,6 @@ import android.view.View;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 
-import java.text.MessageFormat;
 import java.util.Random;
 
 import androidx.annotation.Nullable;
@@ -57,22 +55,17 @@ public class DrawingView extends View {
         canvasWidth = w;
         canvasHeight = h;
         //de.setMyUsername("mm"); //fixme myUsername
-
         de.setDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
         de.setBackCanvas(new Canvas(de.getDrawingBitmap()));
-
         de.initDrawingBoardArray(w, h);
     }
-
-
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
         canvas.drawBitmap(de.getDrawingBitmap(), 0, 0, null);
-
-        Log.i("drawing", "onDraw");
+        //Log.i("drawing", "onDraw");
         //this.invalidate();
     }
 
@@ -139,13 +132,11 @@ public class DrawingView extends View {
         dComponent.setDrawnCanvasWidth(de.getDrawnCanvasWidth());
         dComponent.setDrawnCanvasHeight(de.getDrawnCanvasHeight());
         dComponent.calculateRatio(de.getMyCanvasWidth(), de.getMyCanvasHeight());   //화면 비율 계산
-
     }
 
     public void addPointAndDraw(DrawingComponent dComponent, Point point) {
         dComponent.setPreSize(dComponent.getPoints().size());
         dComponent.addPoint(point);
-
         dComponent.setBeginPoint(dComponent.getPoints().get(0));
         dComponent.setEndPoint(point);
 
@@ -166,12 +157,17 @@ public class DrawingView extends View {
         }
     }
 
-    public void sendMqttMessage(int action) {
+    public void sendModeMqttMessage() {
+        MqttMessageFormat messageFormat = new MqttMessageFormat(de.getUsername(), de.getCurrentMode());
+        client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
+    }
+
+    public void sendDrawMqttMessage(int action) {
         MqttMessageFormat messageFormat = new MqttMessageFormat(de.getUsername(), de.getCurrentMode(), de.getCurrentType(), dComponent, action);
         client.publish(client.getTopic_data(),  parser.jsonWrite(messageFormat));
     }
 
-    public void doInActionUp(DrawingComponent dComponent) {
+    public void doInDrawActionUp(DrawingComponent dComponent) {
         initDrawingComponent();
 
         de.splitPoints(dComponent, de.getMyCanvasWidth(), de.getMyCanvasHeight());
@@ -202,9 +198,9 @@ public class DrawingView extends View {
             addPointAndDraw(dComponent, point);
 
             //publish
-            sendMqttMessage(MotionEvent.ACTION_UP);
+            sendDrawMqttMessage(MotionEvent.ACTION_UP);
 
-            doInActionUp(dComponent);
+            doInDrawActionUp(dComponent);
 
             isExit = true;
             Log.i("mqtt", "isExit2 = " + isExit);
@@ -224,7 +220,7 @@ public class DrawingView extends View {
                 addPointAndDraw(dComponent, point);
 
                 //publish
-                sendMqttMessage(event.getAction());
+                sendDrawMqttMessage(event.getAction());
                 return true;
 
             case MotionEvent.ACTION_MOVE:
@@ -232,7 +228,7 @@ public class DrawingView extends View {
                 addPointAndDraw(dComponent, point);
 
                 //publish
-                sendMqttMessage(event.getAction());
+                sendDrawMqttMessage(event.getAction());
                 return true;
 
             case MotionEvent.ACTION_UP:
@@ -241,9 +237,9 @@ public class DrawingView extends View {
                 Log.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
 
                 //publish
-                sendMqttMessage(event.getAction());
+                sendDrawMqttMessage(event.getAction());
 
-                doInActionUp(dComponent);
+                doInDrawActionUp(dComponent);
                 return true;
             default:
                 Log.i("drawing", "action = " + MotionEvent.actionToString(event.getAction()));
@@ -296,19 +292,44 @@ public class DrawingView extends View {
     }
 
     public void clear() {
-        de.clear();
+        AlertDialog.Builder builder = new AlertDialog.Builder(de.getDrawingFragment().getActivity());
+        builder.setTitle("화면 초기화").setMessage("모든 그리기 내용이 삭제됩니다.\n그래도 지우시겠습니까?");
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                de.setCurrentMode(Mode.CLEAR);
+                sendModeMqttMessage();
+                de.clearDrawingComponents();
+                de.clearTexts();
+                invalidate();
+
+                Log.i("drawing", "history.size()=" + de.getHistory().size());
+                Log.i("drawing", "clear");
+            }
+        });
+
+        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i("drawing", "canceled");
+            }
+        });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     public void undo() {
-        /*de.undo();
+        de.undo();
         invalidate();
-        Log.i("drawing", "history.size()=" + de.getHistory().size());*/
+
     }
 
     public void redo() {
-        /*de.redo();
+        de.redo();
         invalidate();
-        Log.i("drawing", "history.size()=" + de.getHistory().size());*/
+
     }
 
 }

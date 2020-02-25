@@ -32,18 +32,22 @@ public class Oval  extends DrawingComponent {
         Point from = this.beginPoint;
         Point to = this.endPoint;
 
-        RectF oval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);
-        RectF fillOval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);   //fixme alpha 적용되면 strokeWidth/2만큼 작은 사각형
+        try {
+            RectF oval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);
+            RectF fillOval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);   //fixme alpha 적용되면 strokeWidth/2만큼 작은 사각형
 
-        paint.setStyle(Paint.Style.FILL);       //채우기
-        paint.setColor(this.fillColor);
-        paint.setAlpha(this.fillAlpha);
-        canvas.drawOval(oval, paint);
+            paint.setStyle(Paint.Style.FILL);       //채우기
+            paint.setColor(this.fillColor);
+            paint.setAlpha(this.fillAlpha);
+            canvas.drawOval(oval, paint);
 
-        paint.setStyle(Paint.Style.STROKE);     //윤곽선
-        paint.setColor(this.strokeColor);
-        paint.setAlpha(this.strokeAlpha);
-        canvas.drawOval(fillOval, paint);
+            paint.setStyle(Paint.Style.STROKE);     //윤곽선
+            paint.setColor(this.strokeColor);
+            paint.setAlpha(this.strokeAlpha);
+            canvas.drawOval(fillOval, paint);
+        }catch(NullPointerException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

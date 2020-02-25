@@ -46,7 +46,7 @@ public enum MQTTClient {
     INSTANCE;
 
     private MqttClient client;
-    private final String BROKER_IP = "113.198.85.221";
+    private final String BROKER_IP = "54.180.154.63";
     private final String BROKER_ADDRESS = "tcp://" + BROKER_IP + ":1883";
 
     private FirebaseStorage storage;
@@ -315,6 +315,7 @@ public enum MQTTClient {
 
     class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
         private int action;
+        private Mode mode;
         private DrawingComponent dComponent;
 
         private Void draw() {
@@ -407,7 +408,7 @@ public enum MQTTClient {
             MqttMessageFormat message = messages[0];
 
             String username = message.getUsername();
-            Mode mode = message.getMode();
+            this.mode = message.getMode();
             this.action = message.getAction();
             this.dComponent = message.getComponent();
 
@@ -419,22 +420,20 @@ public enum MQTTClient {
                     Log.i("mqtt", "MESSAGE ARRIVED message: username=" + dComponent.getUsername() + ", mode=" + mode.toString() + ", id=" + dComponent.getId());
                     draw();
                     return null;
-
                 case ERASE:
                     Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString() + ", id=" + message.getComponentIds().toString());
                     Vector<Integer> erasedComponentIds = message.getComponentIds();
                     new EraserTask(erasedComponentIds).doNotInBackground();
                     return null;
-
                 case SELECT:
-                    return null;
-
                 case GROUP:
                     return null;
-
                 case TEXT:
                     changeText(message);
                     return null;
+                case CLEAR:
+                    Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString());
+                    de.clearDrawingComponents();
             }
 
             return null;
@@ -451,7 +450,7 @@ public enum MQTTClient {
             Text text = de.findTextById(textAttr.getId());
             switch(textMode) {
                 case CREATE:
-                    textAttr.setId(de.componentIdCounter());    //fixme minj
+                    textAttr.setId(de.textIdCounter());    //fixme minj componentIdCounter()
                     text.addTextViewToFrameLayout();
                     text.createGestureDetecter();
                     break;
@@ -474,6 +473,10 @@ public enum MQTTClient {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+            if(mode == Mode.CLEAR) {
+                de.clearTexts();
+            }
+
             drawingView.invalidate();
         }
     }

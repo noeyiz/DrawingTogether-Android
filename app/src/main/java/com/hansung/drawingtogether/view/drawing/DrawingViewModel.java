@@ -57,13 +57,14 @@ public class DrawingViewModel extends BaseViewModel {
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.STROKE);
         Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
-        drawingCommands.postValue(new DrawingCommand.PenMode(view));
+        //drawingCommands.postValue(new DrawingCommand.PenMode(view));      //fixme minj color picker
     }
 
     public void clickEraser(View view) {
+        if(de.getCurrentMode() == Mode.ERASE)
+            drawingCommands.postValue(new DrawingCommand.EraserMode(view));     //fixme minj add pixel eraser
         de.setCurrentMode(Mode.ERASE);
         Log.i("drawing", "mode = " + de.getCurrentMode().toString());
-        drawingCommands.postValue(new DrawingCommand.EraserMode(view));
     }
 
     public void clickText(View view) {
@@ -71,7 +72,7 @@ public class DrawingViewModel extends BaseViewModel {
         FrameLayout frameLayout = de.getDrawingFragment().getBinding().drawingViewContainer;
 
         // 텍스트 속성 설정 ( 기본 도구에서 설정할 것인지 텍스트 도구에서 설정할 것인지? )
-        TextAttribute textAttribute = new TextAttribute(de.componentIdCounter(), de.getMyUsername(), //fixme minj textIdCounter()
+        TextAttribute textAttribute = new TextAttribute(de.textIdCounter(), de.getMyUsername(), //fixme minj componentIdCounter()
                 "Input Text", 20, Color.BLACK, Color.TRANSPARENT,
                 View.TEXT_ALIGNMENT_CENTER, Typeface.BOLD,
                 frameLayout.getWidth(), frameLayout.getHeight());

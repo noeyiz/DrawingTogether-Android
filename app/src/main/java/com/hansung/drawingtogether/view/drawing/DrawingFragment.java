@@ -165,12 +165,36 @@ public class DrawingFragment extends Fragment {
         popupWindow.showAtLocation(penSettingPopup, Gravity.NO_GRAVITY, location[0], location[1] - penSettingPopup.getMeasuredHeight());
         popupWindow.setElevation(20);
 
-        if(layout == R.layout.popup_shape_mode) {
+        if(layout == R.layout.popup_eraser_mode) {
+            setEraserPopupClickListener(penSettingPopup, popupWindow);
+        }
+        else if(layout == R.layout.popup_shape_mode) {
             setShapePopupClickListener(penSettingPopup, popupWindow);
         }
     }
 
-    public void setShapePopupClickListener(View penSettingPopup, final PopupWindow popupWindow) {
+    private void setEraserPopupClickListener(View penSettingPopup, final PopupWindow popupWindow) {
+        final Button targetEraserBtn = penSettingPopup.findViewById(R.id.targetEraserBtn);
+        targetEraserBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                de.setCurrentMode(Mode.ERASE);
+                Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
+                popupWindow.dismiss();
+            }
+        });
+
+        final Button clearBtn = penSettingPopup.findViewById(R.id.clearBtn);
+        clearBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                binding.drawingView.clear();
+                popupWindow.dismiss();
+            }
+        });
+    }
+
+    private void setShapePopupClickListener(View penSettingPopup, final PopupWindow popupWindow) {
         final Button rectBtn = penSettingPopup.findViewById(R.id.rectBtn);
         rectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
