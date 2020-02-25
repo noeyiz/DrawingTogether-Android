@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -58,8 +59,6 @@ public enum DrawingEditor {
     private int fillAlpha = 100;                //fixme
     private int strokeWidth = 50;              //fixme
 
-    private boolean isClear = false;
-
 
     public static DrawingEditor getInstance() { return INSTANCE; }
     /*public DrawingEditor() {  }
@@ -67,6 +66,7 @@ public enum DrawingEditor {
     private static class LazyHolder {
         private static final DrawingEditor INSTANCE = new DrawingEditor();
     }*/
+
 
     public void drawAllDrawingComponents() {   //drawingComponents draw
         Iterator<DrawingComponent> iterator = drawingComponents.iterator();
@@ -147,6 +147,7 @@ public enum DrawingEditor {
         }
     }
 
+
     public boolean isContainsDrawingComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우
         //Vector<DrawingComponent> components = new Vector<>();
         String str = "dc = ";
@@ -174,7 +175,6 @@ public enum DrawingEditor {
     }*/
 
     public void updateDrawingComponents(Vector<DrawingComponent> components) {
-
         //속성 변경 update
     }
 
@@ -195,7 +195,7 @@ public enum DrawingEditor {
         return null;
     }
 
-    public void removeAllTextViewToFrameLayout() {  //todo nayeon
+    public void removeAllTextViewToFrameLayout() {
         for(Text t: texts) {
             t.removeTextViewToFrameLayout();
         }
@@ -327,15 +327,30 @@ public enum DrawingEditor {
 
     public void initDrawingBoardArray(int width, int height) {
         try{
-        drawingBoardArray = new Vector[height][width];
+            drawingBoardArray = new Vector[height][width];
 
-        for(int i=0; i<height; i++) {
-            for(int j=0; j<width; j++) {
-                drawingBoardArray[i][j] = new Vector<>();
-                drawingBoardArray[i][j].add(-1);
+            for(int i=0; i<height; i++) {
+                for(int j=0; j<width; j++) {
+                    drawingBoardArray[i][j] = new Vector<>();
+                    drawingBoardArray[i][j].add(-1);
+                }
             }
-        }} catch(OutOfMemoryError e) {
-            Log.i("mqtt", "initDrawingBoardArray");
+        } catch(OutOfMemoryError e) {
+            Log.i("mqtt", "Out of Memory Error at initDrawingBoardArray()");
+            e.printStackTrace();
+        }
+    }
+
+    public void clearDrawingBoardArray() {
+        try {
+            for (int i = 0; i < drawingBoardArray.length; i++) {
+                for (int j = 0; j < drawingBoardArray[i].length; j++) {
+                    drawingBoardArray[i][j].clear();
+                    drawingBoardArray[i][j].add(-1);
+                }
+            }
+        } catch (OutOfMemoryError e) {
+            Log.i("mqtt", "Out of Memory Error at clearDrawingBoardArray()");
             e.printStackTrace();
         }
     }
@@ -701,7 +716,7 @@ public enum DrawingEditor {
         undoArray.clear();
         history.clear();
         drawingComponents.clear();
-        initDrawingBoardArray((int)myCanvasWidth, (int)myCanvasHeight);
+        clearDrawingBoardArray();
         drawingBoardMap.clear();
     }
 
@@ -803,9 +818,5 @@ public enum DrawingEditor {
 
     public void setStrokeWidth(int strokeWidth) {
         this.strokeWidth = strokeWidth;
-    }
-
-    public void setClear(boolean clear) {
-        isClear = clear;
     }
 }

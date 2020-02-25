@@ -93,10 +93,6 @@ public class DrawingViewModel extends BaseViewModel {
         navigate(R.id.action_drawingFragment_to_searchFragment);
     }
 
-    public void clickExit(View view) {
-        back();
-    }
-
     public void getImageFromGallery(Fragment fragment) {
         checkPermission(fragment.getContext());
 

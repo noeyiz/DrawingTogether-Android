@@ -26,9 +26,14 @@ public class MainViewModel extends BaseViewModel {
     private MutableLiveData<String> name = new MutableLiveData<>();
     private MutableLiveData<Boolean> masterCheck = new MutableLiveData<>();
 
+    private MutableLiveData<String> ipError = new MutableLiveData<>();
+    private MutableLiveData<String> portError = new MutableLiveData<>();
     private MutableLiveData<String> topicError = new MutableLiveData<>();
     private MutableLiveData<String> passwordError = new MutableLiveData<>();
     private MutableLiveData<String> nameError = new MutableLiveData<>();
+
+    public final MutableLiveData<String> ip = new MutableLiveData<>();
+    public final MutableLiveData<String> port = new MutableLiveData<>();
 
     private FirebaseStorage storage;
     private StorageReference storageReference;
@@ -39,11 +44,14 @@ public class MainViewModel extends BaseViewModel {
 
         Log.e("kkankkan", "메인뷰모델 생성자");
 
+        ip.setValue("54.180.154.63");
+        port.postValue("1883");
         setTopic("");
         setPassword("");
         setName("");
         setMasterCheck();
 
+        setIpError("");
         setTopicError("");
         setPasswordError("");
         setNameError("");
@@ -60,6 +68,15 @@ public class MainViewModel extends BaseViewModel {
     }
 
     public void hasSpecialCharacterAndBlank() {
+        if (ip.getValue().equals("")) {
+            setIpError("아이피 주소를 입력해주세요");
+            hasSpecialCharacterAndBlank = true;
+        }
+
+        if (port.getValue().equals("")) {
+            setIpError("포트 번호를 입력해주세요");
+            hasSpecialCharacterAndBlank = true;
+        }
 
         if (getTopic().getValue().equals("")) {
             setTopicError("빈칸을 채워주세요");
@@ -111,11 +128,9 @@ public class MainViewModel extends BaseViewModel {
                 hasSpecialCharacterAndBlank = true;
             }
         }
-
     }
 
     public void startDrawing(View view) {
-
         setTopicError("");
         setPasswordError("");
         setNameError("");
@@ -168,6 +183,8 @@ public class MainViewModel extends BaseViewModel {
                                         bundle.putString("name", getName().getValue());
                                         bundle.putString("password", getPassword().getValue());
                                         bundle.putString("master", getMasterCheck().getValue().toString());
+                                        bundle.putString("ip", ip.getValue());
+                                        bundle.putString("port", port.getValue());
 
                                         Log.e("kkankkan", getMasterCheck().getValue().toString());
                                         Log.e("kkankkan", "기존 토픽에 새로운 사용자 upload success !!");
@@ -175,6 +192,8 @@ public class MainViewModel extends BaseViewModel {
 
                                         //navigate(R.id.action_topicFragment_to_drawingFragment);
 
+                                        setIpError("");
+                                        setPortError("");
                                         setTopic("");
                                         setPassword("");
                                         setName("");
@@ -194,10 +213,13 @@ public class MainViewModel extends BaseViewModel {
                                 bundle.putString("name", getName().getValue());
                                 bundle.putString("password", getPassword().getValue());
                                 bundle.putString("master", getMasterCheck().getValue().toString());
-
+                                bundle.putString("ip", ip.getValue());
+                                bundle.putString("port", port.getValue());
 
                                 //navigate(R.id.action_topicFragment_to_drawingFragment);
 
+                                setIpError("");
+                                setPortError("");
                                 setTopic("");
                                 setPassword("");
                                 setName("");
@@ -241,10 +263,13 @@ public class MainViewModel extends BaseViewModel {
                                 bundle.putString("name", getName().getValue());
                                 bundle.putString("password", getPassword().getValue());
                                 bundle.putString("master", getMasterCheck().getValue().toString());
+                                bundle.putString("ip", ip.getValue());
+                                bundle.putString("port", port.getValue());
 
                                 Log.e("kkankkan", "새로운 토픽 upload success !!");
 
-
+                                setIpError("");
+                                setPortError("");
                                 setTopic("");
                                 setPassword("");
                                 setName("");
@@ -289,6 +314,14 @@ public class MainViewModel extends BaseViewModel {
         return masterCheck;
     }
 
+    public MutableLiveData<String> getIpError() {
+        return ipError;
+    }
+
+    public MutableLiveData<String> getPortError() {
+        return portError;
+    }
+
     public MutableLiveData<String> getTopicError() {
         return topicError;
     }
@@ -316,6 +349,14 @@ public class MainViewModel extends BaseViewModel {
 
     public void setMasterCheck() {
         this.masterCheck.postValue(false);
+    }
+
+    public void setIpError(String ip) {
+        this.ipError.postValue(ip);
+    }
+
+    public void setPortError(String port) {
+        this.portError.postValue(port);
     }
 
     public void setTopicError(String text) {

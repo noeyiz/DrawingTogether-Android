@@ -69,5 +69,4 @@ public class Eraser {
         new EraserTask(erasedComponentIds).execute();
         erasedComponentIds.clear();
     }
-
 }

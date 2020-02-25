@@ -61,6 +61,8 @@ public class DrawingFragment extends Fragment {
 
     Point size;
 
+    private String ip;
+    private String port;
     private String topic;
     private String name;
     private String password;
@@ -90,6 +92,8 @@ public class DrawingFragment extends Fragment {
         doneBtn = new Button(this.getActivity()); //버튼 동적 생성
         initDoneButton();
 
+        ip = getArguments().getString("ip");
+        port = getArguments().getString("port");
         topic = getArguments().getString("topic");
         name = getArguments().getString("name");
         password = getArguments().getString("password");
@@ -137,7 +141,7 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        client.init(topic, name, master, drawingViewModel);
+        client.init(topic, name, master, drawingViewModel, ip, port);
         client.setDrawingFragment(this);
         client.setCallback();
         client.subscribe(topic + "_join");
@@ -150,6 +154,13 @@ public class DrawingFragment extends Fragment {
         binding.setLifecycleOwner(this);
 
         setHasOptionsMenu(true);
+
+        ((MainActivity)getActivity()).setOnBackListener(new MainActivity.OnBackListener() {
+            @Override
+            public void onBack() {
+                exit();
+            }
+        });
 
         return binding.getRoot();
     }
@@ -237,7 +248,6 @@ public class DrawingFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         switch (requestCode) {
             case PICK_FROM_GALLERY:
                 if (data == null) {

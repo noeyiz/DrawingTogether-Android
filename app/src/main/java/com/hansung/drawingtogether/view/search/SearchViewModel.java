@@ -56,6 +56,10 @@ public class SearchViewModel extends BaseViewModel {
         transaction.commit();
     }
 
+    public void exit() {
+        back();
+    }
+
     public ObservableField<String> getKeyword() {
         return keyword;
     }

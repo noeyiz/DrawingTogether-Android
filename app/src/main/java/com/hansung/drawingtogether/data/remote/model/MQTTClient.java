@@ -46,8 +46,7 @@ public enum MQTTClient {
     INSTANCE;
 
     private MqttClient client;
-    private final String BROKER_IP = "54.180.154.63";
-    private final String BROKER_ADDRESS = "tcp://" + BROKER_IP + ":1883";
+    private String BROKER_ADDRESS;
 
     private FirebaseStorage storage;
     private StorageReference storageReference;
@@ -75,8 +74,8 @@ public enum MQTTClient {
 
     public static MQTTClient getInstance() { return INSTANCE; }
 
-    public void init(String topic, String name, boolean master, DrawingViewModel drawingViewModel) {
-        connect();
+    public void init(String topic, String name, boolean master, DrawingViewModel drawingViewModel, String ip, String port) {
+        connect(ip, port);
 
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
@@ -96,8 +95,9 @@ public enum MQTTClient {
         de.setMyUsername(name);
     }
 
-    public void connect() {
+    public void connect(String ip, String port) {
         try {
+            BROKER_ADDRESS = "tcp://" + ip + ":" + port;
             client = new MqttClient(BROKER_ADDRESS, MqttClient.generateClientId(), new MemoryPersistence());
 
             MqttConnectOptions connOpts = new MqttConnectOptions();
@@ -435,7 +435,6 @@ public enum MQTTClient {
                     Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString());
                     de.clearDrawingComponents();
             }
-
             return null;
         }
 
@@ -473,6 +472,7 @@ public enum MQTTClient {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+
             if(mode == Mode.CLEAR) {
                 de.clearTexts();
             }

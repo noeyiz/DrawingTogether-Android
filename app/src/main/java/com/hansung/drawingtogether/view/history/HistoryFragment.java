@@ -28,12 +28,15 @@ public class HistoryFragment extends Fragment {
         FragmentHistoryBinding binding = FragmentHistoryBinding.inflate(inflater, container, false);
 
         historyViewModel = ViewModelProviders.of(this).get(HistoryViewModel.class);
-        historyViewModel.navigationCommands.observe(this, new Observer<NavigationCommand>() {
+        historyViewModel.navigationCommands.observe(getViewLifecycleOwner(), new Observer<NavigationCommand>() {
             @Override
             public void onChanged(NavigationCommand navigationCommand) {
                 if (navigationCommand instanceof NavigationCommand.To) {
                     NavHostFragment.findNavController(HistoryFragment.this)
                             .navigate(((NavigationCommand.To) navigationCommand).getDestinationId());
+                }
+                if (navigationCommand instanceof  NavigationCommand.Back) {
+                    NavHostFragment.findNavController(HistoryFragment.this).popBackStack();
                 }
             }
         });
@@ -41,10 +44,17 @@ public class HistoryFragment extends Fragment {
         final HistoryAdapter historyAdapter = new HistoryAdapter(getContext(), historyViewModel);
         binding.setAdapter(historyAdapter);
 
-        historyViewModel.getHistoryData().observe(this, new Observer<ArrayList<HistoryData>>() {
+        historyViewModel.getHistoryData().observe(getViewLifecycleOwner(), new Observer<ArrayList<HistoryData>>() {
             @Override
             public void onChanged(ArrayList<HistoryData> historyData) {
                 historyAdapter.setData(historyData);
+            }
+        });
+
+        ((MainActivity)getActivity()).setOnBackListener(new MainActivity.OnBackListener() {
+            @Override
+            public void onBack() {
+                historyViewModel.exit();
             }
         });
 

@@ -1,5 +1,6 @@
 package com.hansung.drawingtogether.view.history;
 
+import android.util.Log;
 import android.view.View;
 
 import androidx.lifecycle.LiveData;
@@ -30,6 +31,11 @@ public class HistoryViewModel extends BaseViewModel {
     }
 
     public void clickDrawing(View view) {
-        navigate(R.id.action_historyFragment_to_drawingFragment);
+//        navigate(R.id.action_historyFragment_to_drawingFragment);
+    }
+
+    public void exit() {
+        Log.e("kkankkan", "clicked");
+        back();
     }
 }

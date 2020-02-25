@@ -323,13 +323,10 @@ public class DrawingView extends View {
     public void undo() {
         de.undo();
         invalidate();
-
     }
 
     public void redo() {
         de.redo();
         invalidate();
-
     }
-
 }

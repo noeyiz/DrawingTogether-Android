@@ -30,14 +30,60 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.15"/>
+            app:layout_constraintGuide_percent="0.1"/>
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/view_bottom_guide"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.85"/>
+            app:layout_constraintGuide_percent="0.9"/>
+
+        <EditText
+            android:id="@+id/ip"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toTopOf="@id/view_top_guide"
+            app:layout_constraintBottom_toTopOf="@id/ip_error"
+            app:layout_constraintVertical_chainStyle="packed"
+            android:hint="ip"
+            android:text="@={vm.ip}"/>
+
+        <TextView
+            android:id="@+id/ip_error"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toBottomOf="@id/ip"
+            app:layout_constraintBottom_toTopOf="@id/port"
+            android:text="@={vm.ipError}"
+            android:textSize="12dp"
+            android:textColor="@color/colorAccent"/>
+
+        <EditText
+            android:id="@+id/port"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toBottomOf="@id/ip_error"
+            app:layout_constraintBottom_toTopOf="@id/port_error"
+            android:text="@={vm.port}"/>
+
+        <TextView
+            android:id="@+id/port_error"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toBottomOf="@id/port"
+            app:layout_constraintBottom_toTopOf="@id/topic"
+            android:text="@={vm.portError}"
+            android:textSize="12dp"
+            android:textColor="@color/colorAccent"/>
 
         <EditText
             android:id="@+id/topic"
@@ -45,9 +91,8 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toTopOf="@id/view_top_guide"
+            app:layout_constraintTop_toBottomOf="@id/port"
             app:layout_constraintBottom_toTopOf="@id/password"
-            app:layout_constraintVertical_chainStyle="packed"
             android:hint="topic"
             android:text="@={vm.topic}"/>
 
