@@ -209,19 +209,6 @@ public class MainViewModel extends BaseViewModel {
                     return Transaction.success(mutableData);
                 }
 
-<<<<<<< HEAD
-                                UploadTask uploadTask = storageReference.child(getTopic().getValue()).putBytes(object.toString().getBytes());
-                                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                    @Override
-                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                        Bundle bundle = new Bundle();
-                                        bundle.putString("topic", getTopic().getValue());
-                                        bundle.putString("name", getName().getValue());
-                                        bundle.putString("password", getPassword().getValue());
-                                        bundle.putString("master", getMasterCheck().getValue().toString());
-                                        bundle.putString("ip", ip.getValue());
-                                        bundle.putString("port", port.getValue());
-=======
                 @Override
                 public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
                     Log.e("kkankkan", "transaction complete");
@@ -286,8 +273,6 @@ public class MainViewModel extends BaseViewModel {
 
                             navigate(R.id.action_mainFragment_to_drawingFragment, bundle);
                         }
->>>>>>> origin/login
-
                     }
 
                     newName = false;
@@ -296,18 +281,7 @@ public class MainViewModel extends BaseViewModel {
             });
 
         }
-
-<<<<<<< HEAD
-                                        setIpError("");
-                                        setPortError("");
-                                        setTopic("");
-                                        setPassword("");
-                                        setName("");
-                                        setMasterCheck();
-                                        Log.e("kkankkan", "메인뷰모델 초기화");
-=======
     }
->>>>>>> origin/login
 
 
     /*public void storageUpload() {
@@ -585,13 +559,6 @@ public class MainViewModel extends BaseViewModel {
         this.portError.postValue(port);
     }
 
-    public void setIpError(String ip) {
-        this.ipError.postValue(ip);
-    }
-
-    public void setPortError(String port) {
-        this.portError.postValue(port);
-    }
 
     public void setTopicError(String text) {
         this.topicError.postValue(text);
