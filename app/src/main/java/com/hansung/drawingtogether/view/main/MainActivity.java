@@ -65,6 +65,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() { }
+
     // title 설정
     public void setToolbarTitle(String title) {
         this.title.setText(title);

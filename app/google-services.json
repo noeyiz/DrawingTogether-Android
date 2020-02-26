@@ -8,20 +8,12 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:432881317992:android:2995dd2afc02b892b6a3dd",
+        "mobilesdk_app_id": "1:432881317992:android:0ae392ae1d485922b6a3dd",
         "android_client_info": {
           "package_name": "com.hansung.drawingtogether"
         }
       },
       "oauth_client": [
-        {
-          "client_id": "432881317992-vrioc2nf3jgh0ohulmebfmldi5tbnqse.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.hansung.drawingtogether",
-            "certificate_hash": "7cf68309ac033ab7343e5da71d28c7de8af4d308"
-          }
-        },
         {
           "client_id": "432881317992-4gvijfno8vtdisjugt80b075njp1elvn.apps.googleusercontent.com",
           "client_type": 1,

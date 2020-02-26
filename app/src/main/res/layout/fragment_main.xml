@@ -164,7 +164,8 @@
             app:layout_constraintBottom_toTopOf="@id/login"
             android:layout_margin="10dp"
             android:text="마스터"
-            android:checked="@={vm.masterCheck}"/>
+            android:checked="@={vm.masterCheck}"
+            android:visibility="invisible"/>
 
         <Button
             android:id="@+id/login"

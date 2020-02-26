@@ -100,6 +100,8 @@ public class DrawingFragment extends Fragment {
         password = getArguments().getString("password");
         master = Boolean.parseBoolean(getArguments().getString("master"));
 
+        Log.e("kkankkan", "MainViewModel로부터 전달 받은 Data : "  + topic + " / " + password + " / " + name + " / " + master);
+
         // 디바이스 화면 size 구하기
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         size = new Point();

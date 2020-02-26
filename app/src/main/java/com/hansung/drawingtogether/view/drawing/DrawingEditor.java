@@ -1,7 +1,5 @@
 package com.hansung.drawingtogether.view.drawing;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

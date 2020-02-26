@@ -3,6 +3,7 @@ package com.hansung.drawingtogether.view.drawing;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 
 import java.util.ArrayList;
+
 import java.util.Vector;
 
 import lombok.Getter;
@@ -55,7 +56,6 @@ public class MqttMessageFormat {
         this.username = username;
         this.mode = mode;
     }
-
 /*
 
     public MqttMessageFormat(String username, Mode mode,  byte[] bitmapByteArray) { // 이미지 전송 시 사용할 생성자
@@ -65,7 +65,6 @@ public class MqttMessageFormat {
     }
 
 */
-
     // fixme nayeon 중간자 처리 시 필요한 생성자 3개 추가
     public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts) {
         this.joinMessage = joinMessage;

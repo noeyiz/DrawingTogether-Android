@@ -68,8 +68,6 @@ public class Text { // EditTextView
 
         editText.setFilters(new InputFilter[] {new InputFilter.LengthFilter(MAX_LENGTH)}); // 텍스트의 최대 글자 수 지정
 
-
-        // fixme nayeon
         this.frameLayout = this.binding.drawingViewContainer;
         this.inputMethodManager = this.drawingFragment.getInputMethodManager();
 
@@ -145,6 +143,7 @@ public class Text { // EditTextView
                     Toast.makeText(drawingFragment.getActivity(),"Other text cannot be edited during text editing ...", Toast.LENGTH_SHORT).show();
                     return true;
                 }
+
                 else { textAttribute.setUsername(de.getMyUsername()); }
 
                 setTextAttribute(); // 터치가 시작될 때마다 텍스트가 생성된 레이아웃의 크기 지정(비율 계산을 위해)
@@ -265,6 +264,7 @@ public class Text { // EditTextView
         // 텍스트가 생성되고 처음 텍스트가 초기화 완료되는 시점에
         // 텍스트 사용 가능 설정을 하고 ( 초기 텍스트 입력이 완료되면 다른 사용자도 텍스트 조작 가능 )
         // MQTT 메시지 전송
+
         if(!textAttribute.isTextInited()) { // 메시지 수신자가 객체를 생성하기 위해
             // 사용자가 텍스트를 입력하지 않고 텍스트 완료 버튼(DONE BUTTON)을 눌렀을 경우
             // 텍스트 생성하지 않기
@@ -273,6 +273,7 @@ public class Text { // EditTextView
             textAttribute.setTextInited(true);
             textAttribute.setText(editText.getText().toString()); // EditText 에서 변경된 내용(문자열)을 TextAttribute 에 저장
             textAttribute.setCoordinates((int)editText.getX(), (int)editText.getY()); // 텍스트가 처음 초기화 된 이후에는 좌표값 지정 // fixme nayeon
+
             sendMqttMessage(TextMode.CREATE); // 변경된 내용을 가진 TextAttribute 를 MQTT 메시지 전송
         }
 
@@ -304,6 +305,7 @@ public class Text { // EditTextView
         processFocusIn(); // fixme nayeon - Edit Text 를 붙인 후 자동 포커싱
         de.setCurrentText(this);
         de.setTextBeingEdited(true);
+
     }
 
     // TextAttribute 에 저장된 x, y 좌푯값을 바탕으로
