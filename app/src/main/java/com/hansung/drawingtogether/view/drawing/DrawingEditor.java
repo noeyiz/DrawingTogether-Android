@@ -60,6 +60,56 @@ public enum DrawingEditor {
     private int strokeWidth = 50;              //fixme
 
 
+    // fixme nayeon - 드로잉 하는동안 저장되는 모든 데이터들 지우기 [나가기 버튼 눌렀을 때 처리 필요 - MQTTClient.java if(topic_exit, topic_delete) 부분에서 호출]
+    // fixme request minj - 초기화되어야하는 드로잉 데이터 확인부탁드려요오
+    public void removeAllDrawingData() {
+        backgroundImage = null;
+        drawingBitmap = null;
+        lastDrawingBitmap = null;
+
+        componentId = -1;
+        removedComponentId.clear();
+        clearDrawingBoardArray();
+        drawingBoardMap.clear();
+
+        drawingComponents.clear();
+        currentComponents.clear();
+
+        texts.clear();
+        currentText = null;
+        isTextBeingEdited = false;
+        textId = -1;
+
+        history.clear();
+        undoArray.clear();
+
+        currentMode = Mode.DRAW;
+        currentType = ComponentType.STROKE;
+
+        removeAllTextViewToFrameLayout();
+    }
+
+    public void printDrawingData() {
+        Log.i("backgroundImage", backgroundImage.toString());
+        Log.i("drawingBitmap", drawingBitmap.toString());
+        Log.i("lastDrawingBitmap", lastDrawingBitmap.toString());
+
+        Log.i("componentId", Integer.toString(componentId));
+        Log.i("removedComponentId", Integer.toString(removedComponentId.size()));
+        Log.i("drawingBoardArray", Integer.toString(drawingBoardArray.length));
+        Log.i("drawingBoardMap", Integer.toString(drawingBoardArray.length));
+
+        Log.i("drawingComponents", Integer.toString(drawingComponents.size()));
+        Log.i("currentComponents", Integer.toString(currentComponents.size()));
+
+        Log.i("texts", Integer.toString(texts.size()));
+        Log.i("currentText", currentText.toString());
+        Log.i("isTextBeingEdited", Boolean.toString(isTextBeingEdited));
+
+        Log.i("history", Integer.toString(history.size()));
+        Log.i("undoArray", Integer.toString(undoArray.size()));
+    }
+
     public static DrawingEditor getInstance() { return INSTANCE; }
     /*public DrawingEditor() {  }
     public static DrawingEditor getInstance() { return LazyHolder.INSTANCE; }

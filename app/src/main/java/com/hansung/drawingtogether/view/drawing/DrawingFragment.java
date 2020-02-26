@@ -81,6 +81,8 @@ public class DrawingFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.e("DrawingFragment", "onCreateView");
+
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 

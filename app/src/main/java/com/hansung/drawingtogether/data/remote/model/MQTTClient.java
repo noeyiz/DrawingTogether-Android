@@ -45,6 +45,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -254,7 +255,8 @@ public enum MQTTClient {
 
                             /* 중간자만 처리하는 부분 */
 
-                            userList = users; // 메시지로 전송받은 리스트 배열 세팅
+                            userList.removeAll(userList); // 중간자는 마스터에게 사용자 리스트를 받기 전에 userList.add() 했음 따라서 자신의 리스트를 지우고 마스터가 보내준 배열 저장
+                            userList = users; // 메시지로 전송받은 리스트 배열 세팅 //
                             //topic_data = loadingData;
 
                             Log.e("who I am", to);
@@ -279,12 +281,18 @@ public enum MQTTClient {
                         }
                     }
                     else {  // other or self // 메시지 형식이 "name":"이름"  일 경우
-                        if (!myName.equals(name)) {  // other
-                            userList.add(name);
+                        if (!myName.equals(name)) {  // other // 한 사람이 "name":"이름" 메시지 보냈을 경우 다른 사람들이 받아서 처리하는 부분
+                            userList.add(name); // 들어온 사람의 이름을 추가
 
                             if (isMaster()) { //  todo nayeon - 마스터인 경우 자신의 드로잉 구조체들 전송하는 부분
                                 //JoinMessage joinMsg = new JoinMessage(userList.get(0), userList.get(userList.size() - 1), userList);
                                 JoinMessage joinMsg = new JoinMessage(userList.get(0), userList.get(userList.size() - 1), userList);
+
+
+                                Log.e("M my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
+                                Log.e("M my name, texts size", myName + ", " + de.getTexts().size());
+                                Log.e("M componentId variable value, last componentId", de.getComponentId() + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
+                                Log.e("M textId variable value, last textId", de.getTextId() + ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
 
                                 MqttMessageFormat messageFormat;
                                 if(de.getBackgroundImage() == null) { messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts()); }
@@ -298,11 +306,13 @@ public enum MQTTClient {
                             Log.e("kkankkan", name + " join 후 : " + userList.toString());
                             //drawingViewModel.setUserNumTv(userList.size());
                         }
-                        else {  // self
+                        else {  // self // 자기 자신의 이름 배열에 추가
                             userList.add(name);
                         }
                     }
                     drawingViewModel.setUserNum(userList.size());
+
+                    Log.e("after topic_join procesas", Arrays.toString(userList.toArray()));
                 }
 
 
@@ -324,6 +334,11 @@ public enum MQTTClient {
                         } catch (MqttException e) {
                             e.printStackTrace();
                         }
+
+                        // fixme nayeon
+                        de.removeAllDrawingData();
+                        //de.printDrawingData();
+
                         userList.removeAll(userList);
                         // 나가기
                         drawingViewModel.back();
@@ -353,6 +368,11 @@ public enum MQTTClient {
                         } catch (MqttException e) {
                             e.printStackTrace();
                         }
+
+                        // fixme nayeon
+                        de.removeAllDrawingData();
+                        //de.printDrawingData();
+
                         userList.removeAll(userList);
                         // 나가기
                         drawingViewModel.back();
@@ -377,6 +397,10 @@ public enum MQTTClient {
                                 } catch (MqttException e) {
                                     e.printStackTrace();
                                 }
+
+                                // fixme nayeon
+                                de.removeAllDrawingData();
+
                                 userList.removeAll(userList);
                                 // 나가기
                                 drawingViewModel.back();
