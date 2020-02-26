@@ -41,6 +41,7 @@ import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
+import com.hansung.drawingtogether.view.main.JoinMessage;
 import com.hansung.drawingtogether.view.main.MainActivity;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
@@ -141,6 +142,8 @@ public class DrawingFragment extends Fragment {
             }
         });
 
+        JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
+
         client.init(topic, name, master, drawingViewModel, ip, port);
         client.setDrawingFragment(this);
         client.setCallback();
@@ -148,7 +151,13 @@ public class DrawingFragment extends Fragment {
         client.subscribe(topic + "_exit");
         client.subscribe(topic + "_delete");
         client.subscribe(topic + "_data");
-        client.publish(topic + "_join", ("name:" + name).getBytes());
+        // client.publish(topic_data ~~);
+
+        // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)
+        JoinMessage joinMessage = new JoinMessage(name);
+        MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
+        client.publish(topic + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
+        //
 
         binding.setVm(drawingViewModel);
         binding.setLifecycleOwner(this);

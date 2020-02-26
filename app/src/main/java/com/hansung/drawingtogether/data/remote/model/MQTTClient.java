@@ -5,6 +5,9 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
@@ -28,6 +31,7 @@ import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
 import com.hansung.drawingtogether.view.drawing.Text;
 import com.hansung.drawingtogether.view.drawing.TextAttribute;
 import com.hansung.drawingtogether.view.drawing.TextMode;
+import com.hansung.drawingtogether.view.main.JoinMessage;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -165,24 +169,28 @@ public enum MQTTClient {
                 1. "name":"이름"
                 2. "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..."
                  */
-                if (newTopic.equals(topic_join)) {
+              /*  if (newTopic.equals(topic_join)) {
                     String data[] = message.toString().split(":");
 
                     if (data[0].equals("master")) {
                         String token[] = message.toString().split("/");
-                        String users = token[1].split(":")[1];
-                        String loadingData = token[2].split(":")[1];
+                        String name = token[1].split(":")[1];
+                        String users = token[2].split(":")[1];
+                        String loadingData = token[3].split(":")[1];
 
-                        Log.e("kkankkan", "master가 보낸 userList : " + users);
+                        if (name.equals(myName)) {
+                            Log.e("kkankkan", "master가 보낸 userList : " + users);
 
-                        userList.removeAll(userList);
-                        for (int i=0; i<users.split(",").length; i++) {
-                            userList.add(users.split(",")[i]);
+                            userList.removeAll(userList);
+                            for (int i=0; i<users.split(",").length; i++) {
+                                userList.add(users.split(",")[i]);
+                            }
+
+                            Log.e("kkankkan", userList.toString());
+
+                            topic_data = loadingData;
                         }
 
-                        Log.e("kkankkan", userList.toString());
-
-                        topic_data = loadingData;
                     }
                     else {  // other or self
                         String name = data[1];
@@ -199,7 +207,8 @@ public enum MQTTClient {
                                     users += ",";
                                 }
 
-                                MqttMessage msg = new MqttMessage(("master:" + userList.get(0) + "/userList:" + users + "/loadingData:" + topic_data).getBytes());
+                                //MqttMessage msg = new MqttMessage(("master:" + userList.get(0) + "/userList:" + users + "/loadingData:" + topic_data).getBytes());
+                                MqttMessage msg = new MqttMessage(("master:" + userList.get(0) + "/to:" + userList.get(userList.size()-1) + "/userList:" + users + "/loadingData:" + topic_data).getBytes());
                                 client.publish(topic_join, msg);
 
                                 Log.e("kkankkan", "master data -> " + msg);
@@ -211,6 +220,74 @@ public enum MQTTClient {
                     }
                     drawingViewModel.setUserNum(userList.size());
                 }
+                */
+
+                // fixme nayeon [ 중간자 ]
+                if (newTopic.equals(topic_join)) {
+                    String msg = new String(message.getPayload());
+                    MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
+                    JoinMessage joinMessage = mqttMessageFormat.getJoinMessage();
+
+                    String master = joinMessage.getMaster(); // null or not-null ( "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..." )
+                    String name = joinMessage.getName(); // null or not-null ( "name":"이름" )
+                    List<String> users = joinMessage.getUserList(); // null or not-null
+                    // String loadingData = joinMessage.getLoadingData(); // null or not-null
+
+                    if (master != null) { // 메시지 형식이 "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..."  일 경우
+                        String to = joinMessage.getTo();
+
+                        if (to.equals(myName)) { // 마스터가 중간자(to:" ") 에게 보낸 메시지 처리
+
+                            /* 중간자만 처리하는 부분 */
+
+                            userList = users; // 메시지로 전송받은 리스트 배열 세팅
+                            //topic_data = loadingData;
+
+                            Log.e("who I am", to);
+                            Log.e("received message", "mid data -> " + msg);
+
+                            // fixme nayeon - 드로잉에 필요한 구조체들 저장하는 부분
+                            // 필요한 배열 리스트들과 배경 이미지 세팅
+                            de.setDrawingComponents(mqttMessageFormat.getDrawingComponents());
+                            de.setTexts(mqttMessageFormat.getTexts());
+                            if(mqttMessageFormat.getBitmapByteArray() != null) { de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()); }
+
+                            // 아이디 세팅 fixme nayeon - 동시성 문제
+                            de.setComponentId(de.getDrawingComponents().size() - 1);
+                            de.setTextId(de.getTexts().size() - 1);
+
+                            Log.e("my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
+                            Log.e("my name, texts size", myName + ", " + de.getTexts().size());
+                            Log.e("componentId variable value, last componentId", de.getComponentId() + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
+                            Log.e("textId variable value, last textId", de.getTextId() + ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
+
+                            client.publish(topic_data, new MqttMessage(JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)).getBytes()));
+                        }
+                    }
+                    else {  // other or self // 메시지 형식이 "name":"이름"  일 경우
+                        if (!myName.equals(name)) {  // other
+                            userList.add(name);
+
+                            if (isMaster()) { //  todo nayeon - 마스터인 경우 자신의 드로잉 구조체들 전송하는 부분
+                                //JoinMessage joinMsg = new JoinMessage(userList.get(0), userList.get(userList.size() - 1), userList);
+                                JoinMessage joinMsg = new JoinMessage(userList.get(0), userList.get(userList.size() - 1), userList);
+
+                                MqttMessageFormat messageFormat;
+                                if(de.getBackgroundImage() == null) { messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts()); }
+                                else {  messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.bitmapToByteArray(de.getBackgroundImage())); }
+                                MqttMessage mqttMessage = new MqttMessage(parser.jsonWrite(messageFormat).getBytes());
+                                client.publish(topic_join, mqttMessage);
+
+                                Log.e("kkankkan", "master data -> " + mqttMessage);
+                            }
+
+                            Log.e("kkankkan", name + " join 후 : " + userList.toString());
+                            //drawingViewModel.setUserNumTv(userList.size());
+                        }
+                    }
+                    drawingViewModel.setUserNum(userList.size());
+                }
+
 
                 if (newTopic.equals(topic_exit)) {
                     if (myName.equals(message.toString())) {  // 내가 exit 하는 경우
@@ -376,12 +453,13 @@ public enum MQTTClient {
             // 텍스트 배열로부터 텍스트 객체를 찾아서 작업 가능
             if(!textMode.equals(TextMode.CREATE)) {
                 text = de.findTextById(textAttr.getId());
+                if(text == null) return null; // fixme nayeon - 중간자가 자신에게 MID 로 보낸 메시지보다, 마스터가 TEXT 로 보낸 메시지가 먼저 올 경우 (중간자가 자신의 처리를 다 했다는 플래그 필요?)
                 text.setTextAttribute(textAttr); // MQTT 로 전송받은 텍스트 속성 지정해주기
             }
 
             switch (textMode) {
                 case CREATE:
-                    new Text(drawingFragment, textAttr).setTextInited(true); // 생성자에서 텍스트 배열에 추가
+                    new Text(drawingFragment, textAttr).getTextAttribute().setTextInited(true); // fixme nayeon
                     publishProgress(message);
                     Log.e("texts size", Integer.toString(de.getTexts().size()));
                     return null;
@@ -402,47 +480,7 @@ public enum MQTTClient {
             return null;
         }
 
-
-        @Override
-        protected Void doInBackground(MqttMessageFormat... messages) {
-            MqttMessageFormat message = messages[0];
-
-            String username = message.getUsername();
-            this.mode = message.getMode();
-            this.action = message.getAction();
-            this.dComponent = message.getComponent();
-
-            if(de.getMyUsername().equals(username)) return null;
-
-            switch(mode) {
-                case DRAW:
-                    //fixme not myUsername --> curentComponents draw
-                    Log.i("mqtt", "MESSAGE ARRIVED message: username=" + dComponent.getUsername() + ", mode=" + mode.toString() + ", id=" + dComponent.getId());
-                    draw();
-                    return null;
-                case ERASE:
-                    Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString() + ", id=" + message.getComponentIds().toString());
-                    Vector<Integer> erasedComponentIds = message.getComponentIds();
-                    new EraserTask(erasedComponentIds).doNotInBackground();
-                    return null;
-                case SELECT:
-                case GROUP:
-                    return null;
-                case TEXT:
-                    changeText(message);
-                    return null;
-                case CLEAR:
-                    Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString());
-                    de.clearDrawingComponents();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(MqttMessageFormat... messages) {
-
-            MqttMessageFormat message = messages[0];
-
+        private void changeTextOnMainThread(MqttMessageFormat message) {
             TextMode textMode = message.getTextMode();
             TextAttribute textAttr = message.getTextAttr();
 
@@ -470,11 +508,93 @@ public enum MQTTClient {
         }
 
         @Override
+        protected Void doInBackground(MqttMessageFormat... messages) {
+            MqttMessageFormat message = messages[0];
+
+            String username = message.getUsername();
+            this.mode = message.getMode();
+            this.action = message.getAction();
+            this.dComponent = message.getComponent();
+
+            Log.e("my name, message name, mode", de.getMyUsername() + ", " + username + ", " + mode.toString());
+
+            // fixme nayeon
+            // 메시지를 보낸 사람의 이름이 나의 이름이고, 메시지에 MID 모드가 지정되어 있다면
+            // 중간자 자기 자신에게 보낸 메시지
+            if(de.getMyUsername().equals(username) && this.mode.equals(Mode.MID)) {
+                // drawingComponents 그리기
+                // 백그라운드 이미지 지정
+                // texts 붙이기 등등
+
+                de.drawAllDrawingComponents(); // drawingComponents 그리기 ( onPostExecute 에서 invalidate 호출 ) - fixme nayeon (단순 그려진 모습 보기위한 코드)
+
+                publishProgress(message); // 텍스트 붙이기와 배경 이미지 붙이기는 메인 스레드에서 처리 필요
+                return null;
+            }
+
+            // 중간자가 MID 모드의 메시지 보다 다른 모드(TEXT) 메시지 먼저 받는 경우 있음
+            if(de.getMyUsername().equals(username)) return null;
+
+            switch(mode) {
+                case DRAW:
+                    //fixme not myUsername --> curentComponents draw
+                    Log.i("mqtt", "MESSAGE ARRIVED message: username=" + dComponent.getUsername() + ", mode=" + mode.toString() + ", id=" + dComponent.getId());
+                    draw();
+                    return null;
+                case ERASE:
+                    Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString() + ", id=" + message.getComponentIds().toString());
+                    Vector<Integer> erasedComponentIds = message.getComponentIds();
+                    new EraserTask(erasedComponentIds).doNotInBackground();
+                    return null;
+                case SELECT:
+                case GROUP:
+                    return null;
+                case TEXT:
+                    changeText(message);
+                    return null;
+               /* case BACKGROUND_IMAGE:
+                    //de.setBackgroundImage(de.stringToBitmap(message.getBitmapString()));
+                    de.setBackgroundImage(de.byteArrayToBitmap(message.getBitmapByteArray()));
+                    publishProgress(message);
+                    return null;*/
+
+                case CLEAR:
+                    Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString());
+                    de.clearDrawingComponents();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(MqttMessageFormat... messages) { // fixme nayeon
+            MqttMessageFormat message = messages[0];
+
+            Mode mode = message.getMode();
+
+            switch(mode) {
+               /* case BACKGROUND_IMAGE:
+                    ImageView imageView = new ImageView(drawingFragment.getContext());
+                    imageView.setLayoutParams(new LinearLayout.LayoutParams(drawingFragment.getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
+                    imageView.setImageBitmap(de.getBackgroundImage());
+
+                    binding.backgroundView.addView(imageView);
+                    break;*/
+                case TEXT:
+                    changeTextOnMainThread(message);
+                    break;
+
+                case MID:
+                    de.addAllTextViewToFrameLayout();
+                    break;
+            }
+        }
+
+        @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
             if(mode == Mode.CLEAR) {
-                de.clearTexts();
+                de.clearTexts(); // 텍스트는 드로잉 컴포넌트들과 달리 Background 에서 처리 불가, 따라서 onPostExecute 에서 처리필요
             }
 
             drawingView.invalidate();

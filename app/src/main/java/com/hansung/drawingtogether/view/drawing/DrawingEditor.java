@@ -38,8 +38,10 @@ public enum DrawingEditor {
     private ArrayList<DrawingComponent> drawingComponents = new ArrayList<>();  //현재 그려져있는 모든 drawing component 배열
     private ArrayList<DrawingComponent> currentComponents = new ArrayList<>();  //현재 그리기중인 drawing component 배열
 
+    // fixme nayeon
     private ArrayList<Text> texts = new ArrayList<>(); // 현재 부착된 모든 text 배열
     private Text currentText = null;
+    private boolean isTextBeingEdited = false;
     private int textId = -1;
 
     private ArrayList<DrawingItem> history = new ArrayList<>();     //
@@ -204,6 +206,7 @@ public enum DrawingEditor {
     public void addAllTextViewToFrameLayout() {
         for(Text t: texts) {
             t.addTextViewToFrameLayout();
+            t.createGestureDetecter(); // 텍스트 모두 붙이기를 중간자 처리, 재접속 시에만 한다고 가정했을 때. // fixme nayeon
         }
     }
 
@@ -776,6 +779,8 @@ public enum DrawingEditor {
 
     public void setCurrentText(Text text) { this.currentText = text; }
 
+    public void setTextBeingEdited(Boolean bool) { this.isTextBeingEdited = bool; } // fixme nayeon
+
     public void setCurrentMode(Mode currentMode) {
         this.currentMode = currentMode;
     }
@@ -819,4 +824,14 @@ public enum DrawingEditor {
     public void setStrokeWidth(int strokeWidth) {
         this.strokeWidth = strokeWidth;
     }
+
+    // fixme nayeon - 중간자가 마스터로부터 메시지를 받아서 자신의 구조체에 컴포넌트들 저장
+    public void setDrawingComponents(ArrayList<DrawingComponent> drawingComponents) { this.drawingComponents = drawingComponents; }
+
+    public void setTexts(ArrayList<Text> texts) { this.texts = texts; }
+    // public void setBackgroundImage(Bitmap backgroundImage) { this.backgroundImage = backgroundImage; } // 위에 선언되어있음
+
+    public void setComponentId(int componentId) { this.componentId = componentId; }
+
+    public void setTextId(int textId) { this.textId = textId; }
 }

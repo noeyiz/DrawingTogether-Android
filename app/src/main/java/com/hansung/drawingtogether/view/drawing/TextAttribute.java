@@ -26,6 +26,8 @@ public class TextAttribute {
     private int x;
     private int y;
 
+    private boolean isTextInited = false; // fixme nayeon (Text class -> TextAttribute Class)
+
     public TextAttribute(int id, String username, String text, int textSize, int textColor, int textBackgroundColor,
                          int textGravity, int style, int generatedLayoutWidth, int generatedLayoutHeight) {
         this.id = id;

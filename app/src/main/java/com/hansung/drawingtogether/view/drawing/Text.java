@@ -52,7 +52,7 @@ public class Text { // EditTextView
 
     private GestureDetector gestureDetector;
 
-    private boolean isTextInited = false;
+    //private boolean isTextInited = false; // fixme nayeon -> TextAttribute 클래스 멤버로
     private boolean isDragging = false;
 
     private final int MAX_LENGTH = 15;
@@ -68,16 +68,21 @@ public class Text { // EditTextView
 
         editText.setFilters(new InputFilter[] {new InputFilter.LengthFilter(MAX_LENGTH)}); // 텍스트의 최대 글자 수 지정
 
-        // fixme nayeon Edit Text 가 초기에 놓일 자리
-        frameLayoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-        frameLayoutParams.gravity = Gravity.CENTER  | Gravity.TOP;
-        editText.setLayoutParams(frameLayoutParams);
-        textView.setLayoutParams(frameLayoutParams);
 
+        // fixme nayeon
         this.frameLayout = this.binding.drawingViewContainer;
         this.inputMethodManager = this.drawingFragment.getInputMethodManager();
 
         this.textAttribute = textAttr;
+
+        // fixme nayeon Text View 가 초기에 놓일 자리
+        frameLayoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT); // frameLayoutParams 은 상단 중앙에 대한 위치 저장
+        frameLayoutParams.gravity = Gravity.CENTER | Gravity.TOP;
+
+        editText.setLayoutParams(frameLayoutParams);
+        textView.setLayoutParams(frameLayoutParams);
+
+        if(this.textAttribute.isTextInited()) { setTextViewLocation(); } // 텍스트가 초기화 되어있을 경우 (이미 누군가에 의해 생성된 텍스트)
 
         setTextViewAttribute();
         setEditTextAttribute();
@@ -134,6 +139,12 @@ public class Text { // EditTextView
                     Toast.makeText(drawingFragment.getActivity(),"This text is being edited by another user !!!", Toast.LENGTH_SHORT).show();
                     return true;
                 }
+                // fixme nayeon
+                // 현재 사용중인(조작중인) 텍스트가 있다면 다른 텍스트에 터치 못하도록
+                else if(de.isTextBeingEdited()) {
+                    Toast.makeText(drawingFragment.getActivity(),"Other text cannot be edited during text editing ...", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
                 else { textAttribute.setUsername(de.getMyUsername()); }
 
                 setTextAttribute(); // 터치가 시작될 때마다 텍스트가 생성된 레이아웃의 크기 지정(비율 계산을 위해)
@@ -163,7 +174,7 @@ public class Text { // EditTextView
                 // fixme nayeon ** TextAttribute 세팅 필요성 - 사용자 이름변경은 changeTextViewToEditText 에서
 
                 // 처음 텍스트 생성을 위해 사용자가 텍스트를 수정 중일 경우 메시지 전송 X
-                if(!isTextInited) return;
+                if(!textAttribute.isTextInited()) return;
 
                 textAttribute.setText(editable.toString());
                 sendMqttMessage(TextMode.MODIFY);
@@ -254,13 +265,14 @@ public class Text { // EditTextView
         // 텍스트가 생성되고 처음 텍스트가 초기화 완료되는 시점에
         // 텍스트 사용 가능 설정을 하고 ( 초기 텍스트 입력이 완료되면 다른 사용자도 텍스트 조작 가능 )
         // MQTT 메시지 전송
-        if(!isTextInited) { // 메시지 수신자가 객체를 생성하기 위해
+        if(!textAttribute.isTextInited()) { // 메시지 수신자가 객체를 생성하기 위해
             // 사용자가 텍스트를 입력하지 않고 텍스트 완료 버튼(DONE BUTTON)을 눌렀을 경우
             // 텍스트 생성하지 않기
             if(editText.getText().toString().matches("")) return;
 
-            isTextInited = true;
+            textAttribute.setTextInited(true);
             textAttribute.setText(editText.getText().toString()); // EditText 에서 변경된 내용(문자열)을 TextAttribute 에 저장
+            textAttribute.setCoordinates((int)editText.getX(), (int)editText.getY()); // 텍스트가 처음 초기화 된 이후에는 좌표값 지정 // fixme nayeon
             sendMqttMessage(TextMode.CREATE); // 변경된 내용을 가진 TextAttribute 를 MQTT 메시지 전송
         }
 
@@ -276,6 +288,8 @@ public class Text { // EditTextView
         textAttribute.setText(editText.getText().toString()); // 변경된 텍스트를 텍스트 속성 클래스에 저장
         setTextViewAttribute(); // TextView 가 변경된 텍스트 속성( 텍스트 문자열 )을 가지도록 지정
         de.setCurrentText(null); // 현재 조작중인 텍스트 null 처리
+        de.setTextBeingEdited(false); // 텍스트 편집 모드 false 처리
+
 
         removeEditTextToFrameLayout(); // EditText 를 레이아웃에서 제거하고
         addTextViewToFrameLayout();
@@ -289,6 +303,7 @@ public class Text { // EditTextView
         drawingFragment.setDoneButton(); // 사용자로부터 텍스트 입력 완료를 얻기 위한 DONE 버튼 부착
         processFocusIn(); // fixme nayeon - Edit Text 를 붙인 후 자동 포커싱
         de.setCurrentText(this);
+        de.setTextBeingEdited(true);
     }
 
     // TextAttribute 에 저장된 x, y 좌푯값을 바탕으로
