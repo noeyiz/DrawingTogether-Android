@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.BaseAdapter;
 import android.widget.PopupMenu;
 
@@ -57,7 +56,7 @@ public class HistoryAdapter extends BaseAdapter {
             view.setTag(holder);
         }
         else {
-            holder = (HistoryViewHolder) view.getTag();
+            holder = (HistoryViewHolder)view.getTag();
         }
 
         holder.bind(historyData.get(position));
@@ -74,7 +73,6 @@ public class HistoryAdapter extends BaseAdapter {
 
         public void bind(HistoryData data) {
             binding.setData(data);
-            binding.setVm(historyViewModel);
             binding.historyMore.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(final View v) {

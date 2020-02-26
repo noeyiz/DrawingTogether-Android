@@ -25,11 +25,11 @@ public class BaseViewModel extends ViewModel {
         navigationCommands.postValue(new NavigationCommand.To(destinationId));
     }
 
-    public void back() {
-        navigationCommands.postValue(new NavigationCommand.Back());
-    }
-
     public void navigate(int destinationId, Bundle bundle) {
         navigationCommands.postValue(new NavigationCommand.ToBundle(destinationId, bundle));
+    }
+
+    public void back() {
+        navigationCommands.postValue(new NavigationCommand.Back());
     }
 }

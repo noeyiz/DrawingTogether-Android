@@ -1,6 +1,5 @@
 package com.hansung.drawingtogether.view.main;
 
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -10,27 +9,42 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.view.MenuItem;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.navigation.NavDeepLinkBuilder;
+import androidx.appcompat.widget.Toolbar;
 
 import com.hansung.drawingtogether.R;
+import com.kakao.util.helper.Utility;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import static com.kakao.util.helper.Utility.getPackageInfo;
-
+import static com.kakao.util.maps.helper.Utility.getPackageInfo;
 
 public class MainActivity extends AppCompatActivity {
 
     private String topicPassword="";
+    private Toolbar toolbar;
+    private TextView title;
+
+    public interface OnBackListener {
+        public void onBack();
+    }
+
+    private OnBackListener onBackListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //Log.e("kkankkan", getKeyHash(this));
+
+        toolbar = (Toolbar)findViewById(R.id.toolbar);
+        title = (TextView)findViewById(R.id.toolbar_title);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false); // 기본 title 안 보이게
 
         Intent kakaoIntent = getIntent();
         if (kakaoIntent == null)
@@ -43,18 +57,20 @@ public class MainActivity extends AppCompatActivity {
         String topic = uri.getQueryParameter("topic");
         String password = uri.getQueryParameter("password");
 
+        Log.e("kkankkan", topic + "/" + password);
+
         if (!(topic == null) && !(password == null)) {
             topicPassword = topic;
             topicPassword += "/" + password;
         }
+    }
 
-        /*if (kakaoIntent.getData() == null)
-            return;
+    @Override
+    public void onBackPressed() { }
 
-        String topic = kakaoIntent.getData().getQueryParameter("topic");
-        String password = kakaoIntent.getData().getQueryParameter("password");*/
-
-        Log.e("kkankkan", "카카오 링크로 접속 -> " + "topic : " + topic + " / password : " + password);
+    // title 설정
+    public void setToolbarTitle(String title) {
+        this.title.setText(title);
     }
 
     public String getTopicPassword() {
@@ -65,21 +81,15 @@ public class MainActivity extends AppCompatActivity {
         this.topicPassword = topicPassword;
     }
 
-  /*  public String getKeyHash(final Context context) {
-        PackageInfo packageInfo = getPackageInfo(context, PackageManager.GET_SIGNATURES);
-        if (packageInfo == null)
-            return null;
+    public void setOnBackListener(OnBackListener onBackListener) {
+        this.onBackListener = onBackListener;
+    }
 
-        for (Signature signature : packageInfo.signatures) {
-            try {
-                MessageDigest md = MessageDigest.getInstance("SHA");
-                md.update(signature.toByteArray());
-                return Base64.encodeToString(md.digest(), Base64.NO_WRAP);
-            } catch (NoSuchAlgorithmException e) {
-                Log.e("kkankkan", "Unable to get MessageDigest. signature=" + signature, e);
-            }
-        }
-        return null;
-    }*/
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home)
+            onBackListener.onBack();
 
+        return super.onOptionsItemSelected(item);
+    }
 }

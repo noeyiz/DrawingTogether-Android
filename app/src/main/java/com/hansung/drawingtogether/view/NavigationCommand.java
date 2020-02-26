@@ -17,10 +17,6 @@ public abstract class NavigationCommand {
         }
     }
 
-    public final static class Back extends NavigationCommand {
-
-    }
-
     public final static class ToBundle extends NavigationCommand {
         private final int destinationId;
         private final Bundle bundle;
@@ -37,5 +33,9 @@ public abstract class NavigationCommand {
         public Bundle getBundle() {
             return bundle;
         }
+    }
+
+    public final static class Back extends NavigationCommand {
+
     }
 }

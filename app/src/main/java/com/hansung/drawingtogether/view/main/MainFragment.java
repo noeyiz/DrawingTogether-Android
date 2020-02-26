@@ -1,6 +1,5 @@
 package com.hansung.drawingtogether.view.main;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,7 +18,6 @@ import com.hansung.drawingtogether.view.NavigationCommand;
 public class MainFragment extends Fragment {
 
     private MainViewModel mainViewModel;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -33,10 +31,33 @@ public class MainFragment extends Fragment {
                     NavHostFragment.findNavController(MainFragment.this)
                             .navigate(((NavigationCommand.To) navigationCommand).getDestinationId());
                 }
+                else if (navigationCommand instanceof NavigationCommand.ToBundle) {
+                    NavigationCommand.ToBundle toBundle = (NavigationCommand.ToBundle) navigationCommand;
+                    NavHostFragment.findNavController(MainFragment.this)
+                            .navigate(toBundle.getDestinationId(), toBundle.getBundle());
+                }
             }
         });
         binding.setVm(mainViewModel);
+        binding.setLifecycleOwner(this);
+
+        if (!((MainActivity)getActivity()).getTopicPassword().equals("")) {
+            String topic = ((MainActivity)getActivity()).getTopicPassword().split("/")[0];
+            String password = ((MainActivity)getActivity()).getTopicPassword().split("/")[1];
+
+            binding.getVm().getTopic().postValue(topic);
+            binding.getVm().getPassword().postValue(password);
+
+            ((MainActivity) getActivity()).setTopicPassword("");
+        }
 
         return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        ((MainActivity)getActivity()).setToolbarTitle("Drawing Together");
+        ((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     }
 }
