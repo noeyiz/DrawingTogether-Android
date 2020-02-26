@@ -133,7 +133,7 @@ public enum MQTTClient {
     public void subscribe(String newTopic) {
         try {
             client.subscribe(newTopic, this.qos);
-
+            //client.subscribe(newTopic);
             Log.e("kkankkan", newTopic + " subscribe");
             Log.i("mqtt", "SUBSCRIBE topic: " + newTopic);
         } catch (MqttException e) {
@@ -297,6 +297,9 @@ public enum MQTTClient {
 
                             Log.e("kkankkan", name + " join 후 : " + userList.toString());
                             //drawingViewModel.setUserNumTv(userList.size());
+                        }
+                        else {  // self
+                            userList.add(name);
                         }
                     }
                     drawingViewModel.setUserNum(userList.size());
@@ -628,6 +631,7 @@ public enum MQTTClient {
                     break;
 
                 case MID:
+                    Log.e("onProgressUpdate", de.getMyUsername());
                     de.addAllTextViewToFrameLayout();
                     break;
             }
