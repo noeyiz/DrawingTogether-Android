@@ -1,5 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
+import java.util.ArrayList;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +15,8 @@ public class TextAttribute {
     private int id;
     private String username;
 
+    private String preText;
+    private String postText;
     private String text;
     private int textSize;
     private int textColor;
@@ -23,6 +27,8 @@ public class TextAttribute {
     private int generatedLayoutWidth;
     private int generatedLayoutHeight;
 
+    private int preX;
+    private int preY;
     private int x;
     private int y;
 
@@ -46,5 +52,10 @@ public class TextAttribute {
     public void setCoordinates(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    public void setPreCoordinates(int preX, int preY) {
+        this.preX = preX;
+        this.preY = preY;
     }
 }

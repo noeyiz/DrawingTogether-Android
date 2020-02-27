@@ -57,6 +57,7 @@ public class DrawingView extends View {
         canvasHeight = h;
         //de.setMyUsername("mm"); //fixme myUsername
         de.setDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
+        de.setLastDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
         de.setBackCanvas(new Canvas(de.getDrawingBitmap()));
         de.initDrawingBoardArray(w, h);
     }
@@ -143,6 +144,11 @@ public class DrawingView extends View {
         dComponent.setEndPoint(point);
 
         dComponent.draw(de.getBackCanvas());
+
+        if(dComponent.getType() == ComponentType.STROKE) {
+            Canvas canvas = new Canvas(de.getLastDrawingBitmap());
+            dComponent.draw(canvas);
+        }
     }
 
     public void initDrawingComponent() {
@@ -179,7 +185,8 @@ public class DrawingView extends View {
 
         de.addHistory(new DrawingItem(de.getCurrentMode(), dComponent/*, de.getDrawingBitmap()*/));
         Log.i("drawing", "history.size()=" + de.getHistory().size());
-        de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+        if(dComponent.getType() != ComponentType.STROKE)
+            de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
         de.clearUndoArray();
     }
 
@@ -328,12 +335,20 @@ public class DrawingView extends View {
     }
 
     public void undo() {
+        Mode preMode = de.getCurrentMode();
+        de.setCurrentMode(Mode.UNDO);
+        sendModeMqttMessage();
         de.undo();
         invalidate();
+        de.setCurrentMode(preMode);
     }
 
     public void redo() {
+        Mode preMode = de.getCurrentMode();
+        de.setCurrentMode(Mode.REDO);
+        sendModeMqttMessage();
         de.redo();
         invalidate();
+        de.setCurrentMode(preMode);
     }
 }

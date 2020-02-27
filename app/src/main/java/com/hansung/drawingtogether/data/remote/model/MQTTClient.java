@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.data.remote.model;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -21,6 +22,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
+import com.hansung.drawingtogether.view.drawing.ComponentType;
 import com.hansung.drawingtogether.view.drawing.DrawingComponent;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 import com.hansung.drawingtogether.view.drawing.DrawingFragment;
@@ -255,7 +257,7 @@ public enum MQTTClient {
 
                             /* 중간자만 처리하는 부분 */
 
-                            userList.removeAll(userList); // 중간자는 마스터에게 사용자 리스트를 받기 전에 userList.add() 했음 따라서 자신의 리스트를 지우고 마스터가 보내준 배열 저장
+                            userList.clear(); // 중간자는 마스터에게 사용자 리스트를 받기 전에 userList.add() 했음 따라서 자신의 리스트를 지우고 마스터가 보내준 배열 저장
                             userList = users; // 메시지로 전송받은 리스트 배열 세팅 //
                             //topic_data = loadingData;
 
@@ -265,6 +267,7 @@ public enum MQTTClient {
                             // fixme nayeon - 드로잉에 필요한 구조체들 저장하는 부분
                             // 필요한 배열 리스트들과 배경 이미지 세팅
                             de.setDrawingComponents(mqttMessageFormat.getDrawingComponents());
+                            de.setHistory(mqttMessageFormat.getHistory());
 
                             de.setTexts(mqttMessageFormat.getTexts());
                             if(mqttMessageFormat.getBitmapByteArray() != null) { de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()); }
@@ -283,12 +286,11 @@ public enum MQTTClient {
                     }
                     else {  // other or self // 메시지 형식이 "name":"이름"  일 경우
                         if (!myName.equals(name)) {  // other // 한 사람이 "name":"이름" 메시지 보냈을 경우 다른 사람들이 받아서 처리하는 부분
+                            userList.add(name); // 들어온 사람의 이름을 추가
 
                             if (isMaster()) { //  todo nayeon - 마스터인 경우 자신의 드로잉 구조체들 전송하는 부분
-                                userList.add(name); // 들어온 사람의 이름을 추가
                                 //JoinMessage joinMsg = new JoinMessage(userList.get(0), userList.get(userList.size() - 1), userList);
                                 JoinMessage joinMsg = new JoinMessage(userList.get(0), userList.get(userList.size() - 1), userList);
-
 
                                 Log.e("M my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
                                 Log.e("M my name, texts size", myName + ", " + de.getTexts().size());
@@ -296,8 +298,8 @@ public enum MQTTClient {
                                 Log.e("M textId variable value, last textId", de.getTextId() + "");// + ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
 
                                 MqttMessageFormat messageFormat;
-                                if(de.getBackgroundImage() == null) { messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts()); }
-                                else {  messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.bitmapToByteArray(de.getBackgroundImage())); }
+                                if(de.getBackgroundImage() == null) { messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory()); }
+                                else {  messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.bitmapToByteArray(de.getBackgroundImage())); }
                                 MqttMessage mqttMessage = new MqttMessage(parser.jsonWrite(messageFormat).getBytes());
                                 client.publish(topic_join, mqttMessage);
 
@@ -308,7 +310,8 @@ public enum MQTTClient {
                             //drawingViewModel.setUserNumTv(userList.size());
                         }
                         else {  // self // 자기 자신의 이름 배열에 추가
-                            userList.add(name);
+                            if(!userList.contains(name))
+                                userList.add(name);
                         }
                     }
                     drawingViewModel.setUserNum(userList.size());
@@ -498,6 +501,11 @@ public enum MQTTClient {
                 case MotionEvent.ACTION_DOWN:
                 case MotionEvent.ACTION_MOVE:
                     dComponent.draw(de.getBackCanvas());
+                    if(dComponent.getType() == ComponentType.STROKE) {
+                        Canvas canvas = new Canvas(de.getLastDrawingBitmap());
+                        dComponent.draw(canvas);
+                    }
+
                     return null;
 
                 case MotionEvent.ACTION_UP:
@@ -513,7 +521,13 @@ public enum MQTTClient {
                     de.addDrawingComponents(dComponent);
                     de.addHistory(new DrawingItem(de.getCurrentMode(), dComponent/*, de.getDrawingBitmap()*/));
                     Log.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
-                    de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+
+                    if(dComponent.getType() == ComponentType.STROKE) {
+                        Canvas canvas = new Canvas(de.getLastDrawingBitmap());
+                        dComponent.draw(canvas);
+                    } else {
+                        de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+                    }
                     return null;
             }
             return null;
@@ -540,18 +554,27 @@ public enum MQTTClient {
                 case CREATE:
                     new Text(drawingFragment, textAttr).getTextAttribute().setTextInited(true); // fixme nayeon
                     publishProgress(message);
+                    //de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));  //fixme minj for undo, redo
                     Log.e("texts size", Integer.toString(de.getTexts().size()));
                     return null;
                 case DRAG_STARTED:
                 case DRAG_LOCATION:
-                case DROP:
                 case DRAG_EXITED:
                     text.setTextViewLocation();
                     return null;
+                case DROP:
+                    //de.addHistory(new DrawingItem(TextMode.DROP, textAttr));    //fixme minj for undo, redo
+                    text.setTextViewLocation();
+                    return null;
                 case DONE:
+                    //f(text.isModified())                                       //fixme minj for undo, redo
+                        //de.addHistory(new DrawingItem(TextMode.MODIFY, textAttr));
                 case DRAG_ENDED:
                     return null;
                 case ERASE:
+                    //de.addHistory(new DrawingItem(TextMode.ERASE, textAttr));   //fixme minj for undo, redo
+                    publishProgress(message);
+                    return null;
                 case MODIFY:
                     publishProgress(message);
                     return null;
@@ -594,6 +617,9 @@ public enum MQTTClient {
             this.action = message.getAction();
             this.dComponent = message.getComponent();
 
+            de.setMyCanvasWidth(myCanvasWidth);
+            de.setMyCanvasHeight(myCanvasHeight);
+
             Log.e("my name, message name, mode", de.getMyUsername() + ", " + username + ", " + mode.toString());
 
             // fixme nayeon
@@ -603,9 +629,6 @@ public enum MQTTClient {
                 // drawingComponents 그리기
                 // 백그라운드 이미지 지정
                 // texts 붙이기 등등
-
-                de.drawAllDrawingComponentsForMid(myCanvasWidth, myCanvasHeight); // drawingComponents 그리기 ( onPostExecute 에서 invalidate 호출 ) - fixme nayeon (단순 그려진 모습 보기위한 코드)
-                //de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
 
                 publishProgress(message); // 텍스트 붙이기와 배경 이미지 붙이기는 메인 스레드에서 처리 필요
                 return null;
@@ -618,9 +641,12 @@ public enum MQTTClient {
 
             switch(mode) {
                 case DRAW:
-                    //fixme not myUsername --> curentComponents draw
-                    Log.i("mqtt", "MESSAGE ARRIVED message: username=" + dComponent.getUsername() + ", mode=" + mode.toString() + ", id=" + dComponent.getId());
-                    draw();
+                    try{
+                        Log.i("mqtt", "MESSAGE ARRIVED message: username=" + dComponent.getUsername() + ", mode=" + mode.toString() + ", id=" + dComponent.getId());
+                        draw();
+                    } catch(NullPointerException e) {
+                        e.printStackTrace();
+                    }
                     return null;
                 case ERASE:
                     Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString() + ", id=" + message.getComponentIds().toString());
@@ -641,6 +667,15 @@ public enum MQTTClient {
                 case CLEAR:
                     Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString());
                     de.clearDrawingComponents();
+                    return null;
+                case UNDO:
+                    Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString());
+                    de.undo();
+                    return null;
+                case REDO:
+                    Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString());
+                    de.redo();
+                    return null;
             }
             return null;
         }
@@ -665,7 +700,11 @@ public enum MQTTClient {
 
                 case MID:
                     Log.e("onProgressUpdate", de.getMyUsername());
-                    de.addAllTextViewToFrameLayout();
+                    this.myCanvasWidth = drawingView.getCanvasWidth();
+                    this.myCanvasHeight = drawingView.getCanvasHeight();
+                    de.drawAllDrawingComponentsForMid(myCanvasWidth, myCanvasHeight);
+                    de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+                    de.addAllTextViewToFrameLayoutForMid();
                     break;
             }
         }

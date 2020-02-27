@@ -69,6 +69,14 @@ public class DrawingViewModel extends BaseViewModel {
         Log.i("drawing", "mode = " + de.getCurrentMode().toString());
     }
 
+    public void clickUndo(View view) {
+        de.getDrawingFragment().getBinding().drawingView.undo();
+    }
+
+    public void clickRedo(View view) {
+        de.getDrawingFragment().getBinding().drawingView.redo();
+    }
+
     public void clickText(View view) {
         de.setCurrentMode(Mode.TEXT);
         FrameLayout frameLayout = de.getDrawingFragment().getBinding().drawingViewContainer;

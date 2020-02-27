@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -56,6 +57,8 @@ public class Text { // EditTextView
     private boolean isDragging = false;
 
     private final int MAX_LENGTH = 15;
+
+    private boolean isModified = false;
 
     public Text(DrawingFragment drawingFragment, TextAttribute textAttr) {    //fixme minj
         this.drawingFragment = drawingFragment;
@@ -275,6 +278,11 @@ public class Text { // EditTextView
             textAttribute.setCoordinates((int)editText.getX(), (int)editText.getY()); // 텍스트가 처음 초기화 된 이후에는 좌표값 지정 // fixme nayeon
 
             sendMqttMessage(TextMode.CREATE); // 변경된 내용을 가진 TextAttribute 를 MQTT 메시지 전송
+
+            Log.i("drawing", "text create");
+            //de.addHistory(new DrawingItem(TextMode.CREATE, textAttribute)); //fixme minj - addHistory
+            Log.i("drawing", "history.size()=" + de.getHistory().size());
+            de.clearUndoArray();
         }
 
         // 내용이 빈 경우 텍스트 지우기
@@ -297,7 +305,17 @@ public class Text { // EditTextView
 
         sendMqttMessage(TextMode.DONE); // 사용 종료를 알리기 위해 보내야함 ( 사용자이름 : null )
 
+        String preText = textAttribute.getPreText();
+        if(preText != null && !preText.equals(textAttribute.getText())) {   //modify 이전과 text 가 달라졌을 때만 history 에 저장
+            isModified = true;
+            Log.i("drawing", "text modify");
+            //de.addHistory(new DrawingItem(TextMode.MODIFY, textAttribute));   //fixme minj - addHistory
+            Log.i("drawing", "history.size()=" + de.getHistory().size());
+            de.clearUndoArray();
+        }
+
         de.setCurrentMode(Mode.DRAW); // 텍스트 편집이 완료 되면 현재 모드는 기본 드로잉 모드로
+        drawingFragment.getBinding().drawBtn.performClick();
     }
 
     public void activeEditText() {
@@ -305,7 +323,6 @@ public class Text { // EditTextView
         processFocusIn(); // fixme nayeon - Edit Text 를 붙인 후 자동 포커싱
         de.setCurrentText(this);
         de.setTextBeingEdited(true);
-
     }
 
     // TextAttribute 에 저장된 x, y 좌푯값을 바탕으로
@@ -316,6 +333,14 @@ public class Text { // EditTextView
 
         textView.setX(textAttribute.getX() * xRatio);
         textView.setY(textAttribute.getY() * yRatio);
+    }
+
+    public void setPreTextViewLocation() {
+        // 텍스트 위치 비율 계산
+        calculateRatio(frameLayout.getWidth(), frameLayout.getHeight());
+
+        textView.setX(textAttribute.getPreX() * xRatio);
+        textView.setY(textAttribute.getPreY() * yRatio);
     }
 
     private Text getText() { return this; }
@@ -329,10 +354,15 @@ public class Text { // EditTextView
             if(de.getCurrentMode().equals(Mode.ERASE)) {
                 eraseText();
                 sendMqttMessage(TextMode.ERASE);
+                Log.i("drawing", "text erase");
+                //de.addHistory(new DrawingItem(TextMode.ERASE, textAttribute));    //fixme minj - addHistory
+                Log.i("drawing", "history.size()=" + de.getHistory().size());
+                de.clearUndoArray();
             } else {
                 de.setCurrentMode(Mode.TEXT);
                 textView.setBackgroundColor(Color.LTGRAY); // todo nayeon
             }
+
             return true;
         }
 
@@ -345,6 +375,7 @@ public class Text { // EditTextView
         public boolean onSingleTapUp(MotionEvent motionEvent) {
             //System.out.println("onSingleTapUp() called");
 
+            textAttribute.setPreText(textAttribute.getText());
             changeTextViewToEditText();
             activeEditText();
 
