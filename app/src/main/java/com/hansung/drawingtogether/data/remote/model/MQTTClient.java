@@ -488,6 +488,7 @@ public enum MQTTClient {
                     Log.i("drawing", "first id (other) = " + dComponent.getId());
                 }
                 de.addCurrentComponents(dComponent);
+                Log.i("drawing", "currentComponents.size() = " + de.getCurrentComponents().size());
             }
 
             if(de.getMyUsername().equals(username)) return null;
@@ -495,18 +496,6 @@ public enum MQTTClient {
             dComponent.calculateRatio(myCanvasWidth, myCanvasHeight);
             switch(action) {
                 case MotionEvent.ACTION_DOWN:
-                    /*if(de.isContainsCurrentComponents(dComponent.getId())) {
-                        dComponent.setId(de.componentIdCounter());
-                        Log.i("drawing", "second id = " + dComponent.getId());
-                    } else {
-                        Log.i("drawing", "first id = " + dComponent.getId());
-                        de.componentIdCounter();
-                    }*/
-                    //de.addCurrentComponents(dComponent);
-                    Log.i("drawing", "currentComponents.size() = " + de.getCurrentComponents().size());
-                    dComponent.draw(de.getBackCanvas());
-                    return null;
-
                 case MotionEvent.ACTION_MOVE:
                     dComponent.draw(de.getBackCanvas());
                     return null;
@@ -514,28 +503,11 @@ public enum MQTTClient {
                 case MotionEvent.ACTION_UP:
                     dComponent.draw(de.getBackCanvas());
 
-                    //de.removeCurrentComponents(dComponent);
-
-                /*if(de.isContainsDrawingComponents(dComponent.getId())) {
-                    de.setCurrentMode(Mode.DRAWSYNC);
-
-                    MqttMessageFormat messageFormat = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), dComponent.getId() + 1, dComponent);
-                    publish(topic_data, parser.jsonWrite(messageFormat));
-
-                    de.setCurrentMode(Mode.DRAW);
-                    dComponent.setId(dComponent.getId() + 1);
-                }*/
-                /*String str = "dc up = ";
-                for(DrawingComponent component: de.getDrawingComponents()) {
-                    str += component.getId() + " ";
-                }
-                Log.i("drawing", str);*/
-
                     Log.i("drawing", "dComponent: id=" + dComponent.getId() + ", endPoint=" + dComponent.getEndPoint().toString());
-
                     DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
                     Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
                     dComponent.setId(upComponent.getId());
+
                     de.removeCurrentComponents(dComponent.getId());
                     de.splitPoints(dComponent, myCanvasWidth, myCanvasHeight);
                     de.addDrawingComponents(dComponent);

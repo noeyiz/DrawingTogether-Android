@@ -143,10 +143,6 @@ public enum DrawingEditor {
         this.currentComponents.add(component);
     }
 
-    public void removeCurrentComponents(DrawingComponent component) {
-        currentComponents.remove(component);
-    }
-
     public void removeCurrentComponents(int id) {
         for(DrawingComponent component: currentComponents) {
             if(component.getId() == id) {
@@ -171,14 +167,14 @@ public enum DrawingEditor {
         return false;
     }
 
-    public Vector<DrawingComponent> findCurrentComponents(String username) {    //username이 다른 drawing component vector return
+    /*public Vector<DrawingComponent> findCurrentComponents(String username) {    //username이 다른 drawing component vector return
         Vector<DrawingComponent> components = new Vector<>();
         for(DrawingComponent component: currentComponents) {
             if(!component.getUsername().equals(username))
                 components.add(component);
         }
         return components;
-    }
+    }*/
 
     public DrawingComponent findCurrentComponent(String usersComponentId) {
         for(DrawingComponent component: currentComponents) {
@@ -196,10 +192,6 @@ public enum DrawingEditor {
         this.drawingComponents.addAll(components);
     }
 
-    public void removeDrawingComponents(DrawingComponent component) {
-        drawingComponents.remove(component);
-    }
-
     public void removeAllDrawingComponents(Vector<DrawingComponent> components) {
         drawingComponents.removeAll(components);
     }
@@ -211,22 +203,6 @@ public enum DrawingEditor {
                 break;
             }
         }
-    }
-
-
-    public boolean isContainsDrawingComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우
-        //Vector<DrawingComponent> components = new Vector<>();
-        String str = "dc = ";
-        for(DrawingComponent component: drawingComponents) {
-            str += component.getId() + " ";
-        }
-        Log.i("drawing", str);
-
-        for(DrawingComponent component: drawingComponents) {
-            if(component.getId() == id)
-                return true;
-        }
-        return false;
     }
 
     /*public void updateDrawingComponentsId(int changedId, DrawingComponent component) {
