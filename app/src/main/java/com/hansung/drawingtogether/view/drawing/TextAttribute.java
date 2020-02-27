@@ -10,7 +10,8 @@ public class TextAttribute {
 
     // 사용자가 선택한 텍스트 속성 저장
 
-    private int id;
+    //private Integer id; // 텍스트 동시 제어를 위해 ID 값을 NULL 처리 할 필요
+    private String id; // "이름 + textIdCounter"
     private String username;
 
     private String text;
@@ -28,6 +29,8 @@ public class TextAttribute {
 
     private boolean isTextInited = false; // fixme nayeon (Text class -> TextAttribute Class)
 
+/*
+
     public TextAttribute(int id, String username, String text, int textSize, int textColor, int textBackgroundColor,
                          int textGravity, int style, int generatedLayoutWidth, int generatedLayoutHeight) {
         this.id = id;
@@ -42,6 +45,24 @@ public class TextAttribute {
         this.generatedLayoutWidth = generatedLayoutWidth;
         this.generatedLayoutHeight = generatedLayoutHeight;
     }
+*/
+
+
+    public TextAttribute(String id, String username, String text, int textSize, int textColor, int textBackgroundColor,
+                         int textGravity, int style, int generatedLayoutWidth, int generatedLayoutHeight) {
+        this.id = id;
+        this.username = username;
+
+        this.text = text;
+        this.textSize = textSize;
+        this.textColor = textColor;
+        this.textBackgroundColor = textBackgroundColor;
+        this.textGravity = textGravity;
+        this.style = style;
+        this.generatedLayoutWidth = generatedLayoutWidth;
+        this.generatedLayoutHeight = generatedLayoutHeight;
+    }
+
 
     public void setCoordinates(int x, int y) {
         this.x = x;

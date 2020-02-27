@@ -23,6 +23,8 @@ public class MqttMessageFormat {
     private TextAttribute textAttr; // text
     private TextMode textMode;
 
+    private int myTextArrayIndex;
+
     private JoinMessage joinMessage;
 
     // fixme nayeon 중간자 처리 시 필요한 변수 추가
@@ -44,12 +46,14 @@ public class MqttMessageFormat {
         this.componentIds = componentIds;
     }
 
-    public MqttMessageFormat(String username, Mode mode, ComponentType type, TextAttribute textAttr, TextMode textMode) {
+    // fixme nayeon - 텍스트 동시성 처리
+    public MqttMessageFormat(String username, Mode mode, ComponentType type, TextAttribute textAttr, TextMode textMode, int myTextArrayIndex) {
         this.username = username;
         this.mode = mode;
         this.type = type;
         this.textAttr = textAttr;
         this.textMode = textMode;
+        this.myTextArrayIndex = myTextArrayIndex;
     }
 
     public MqttMessageFormat(String username, Mode mode) {
