@@ -54,6 +54,7 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickPen(View view) {
+        changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.STROKE);
         Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
@@ -61,6 +62,7 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickEraser(View view) {
+        changeClickedButtonBackground(view);
         if(de.getCurrentMode() == Mode.ERASE)
             drawingCommands.postValue(new DrawingCommand.EraserMode(view));     //fixme minj add pixel eraser
         de.setCurrentMode(Mode.ERASE);
@@ -86,11 +88,20 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickShape(View view) {
+        changeClickedButtonBackground(view);
         drawingCommands.postValue(new DrawingCommand.ShapeMode(view));
     }
 
     public void clickSearch(View view) {
         navigate(R.id.action_drawingFragment_to_searchFragment);
+    }
+
+    public void changeClickedButtonBackground(View view) {
+        LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
+        for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
+            drawingMenuLayout.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
+        }
+        view.setBackgroundColor(Color.rgb(233, 233, 233));
     }
 
     public void getImageFromGallery(Fragment fragment) {

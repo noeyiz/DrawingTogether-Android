@@ -51,7 +51,6 @@ public class DrawingView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-
         Log.e("DrawingView", "call onSizeChanged");
 
         canvasWidth = w;
@@ -125,6 +124,7 @@ public class DrawingView extends View {
     public void setComponentAttribute(DrawingComponent dComponent) {
         dComponent.setId(de.componentIdCounter());  //id 자동 증가
         dComponent.setUsername(de.getUsername());
+        dComponent.setUsersComponentId(dComponent.username + "-" + dComponent.id);
         dComponent.setType(de.getCurrentType());
         dComponent.setFillColor(de.getFillColor());
         dComponent.setStrokeColor(de.getStrokeColor());
@@ -213,9 +213,10 @@ public class DrawingView extends View {
             case MotionEvent.ACTION_DOWN:
                 isExit = false;
                 Log.i("mqtt", "isExit3 = " + isExit);
-                de.addCurrentComponents(dComponent);
-                Log.i("drawing", "currentComponents.size() = " + de.getCurrentComponents().size());
 
+                /*de.addCurrentComponents(dComponent);
+                Log.i("drawing", "currentComponents.size() = " + de.getCurrentComponents().size());
+*/
                 setComponentAttribute(dComponent);
 
                 point = new Point((int)event.getX(), (int)event.getY());
@@ -241,6 +242,10 @@ public class DrawingView extends View {
                 //publish
                 sendDrawMqttMessage(event.getAction());
 
+                Log.i("drawing", "dComponent: id=" + dComponent.getId() + ", endPoint=" + dComponent.getEndPoint().toString());
+                DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
+                Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
+                dComponent.setId(upComponent.getId());
                 doInDrawActionUp(dComponent);
                 return true;
             default:

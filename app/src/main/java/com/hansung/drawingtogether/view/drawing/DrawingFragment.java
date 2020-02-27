@@ -87,6 +87,7 @@ public class DrawingFragment extends Fragment {
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 
         de.setDrawingFragment(this);
+        binding.drawBtn.setBackgroundColor(Color.rgb(233, 233, 233));
         inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
 
@@ -209,13 +210,18 @@ public class DrawingFragment extends Fragment {
         });
 
         final Button clearBtn = penSettingPopup.findViewById(R.id.clearBtn);
-        clearBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                binding.drawingView.clear();
-                popupWindow.dismiss();
-            }
-        });
+        if(client.isMaster()) {
+            clearBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    binding.drawingView.clear();
+                    popupWindow.dismiss();
+                }
+            });
+        }
+        else {
+            clearBtn.setEnabled(false);
+        }
     }
 
     private void setShapePopupClickListener(View penSettingPopup, final PopupWindow popupWindow) {

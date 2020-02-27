@@ -265,6 +265,7 @@ public enum MQTTClient {
                             // fixme nayeon - 드로잉에 필요한 구조체들 저장하는 부분
                             // 필요한 배열 리스트들과 배경 이미지 세팅
                             de.setDrawingComponents(mqttMessageFormat.getDrawingComponents());
+
                             de.setTexts(mqttMessageFormat.getTexts());
                             if(mqttMessageFormat.getBitmapByteArray() != null) { de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()); }
 
@@ -274,25 +275,25 @@ public enum MQTTClient {
 
                             Log.e("my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
                             Log.e("my name, texts size", myName + ", " + de.getTexts().size());
-                            Log.e("componentId variable value, last componentId", de.getComponentId() + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
-                            Log.e("textId variable value, last textId", de.getTextId() + ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
+                            Log.e("componentId variable value, last componentId", de.getComponentId() + "");//fixme minj size = 0일 때 ArrayIndexOutOfBoundsException // + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
+                            Log.e("textId variable value, last textId", de.getTextId() + ""); //+ ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
 
                             client.publish(topic_data, new MqttMessage(JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)).getBytes()));
                         }
                     }
                     else {  // other or self // 메시지 형식이 "name":"이름"  일 경우
                         if (!myName.equals(name)) {  // other // 한 사람이 "name":"이름" 메시지 보냈을 경우 다른 사람들이 받아서 처리하는 부분
-                            userList.add(name); // 들어온 사람의 이름을 추가
 
                             if (isMaster()) { //  todo nayeon - 마스터인 경우 자신의 드로잉 구조체들 전송하는 부분
+                                userList.add(name); // 들어온 사람의 이름을 추가
                                 //JoinMessage joinMsg = new JoinMessage(userList.get(0), userList.get(userList.size() - 1), userList);
                                 JoinMessage joinMsg = new JoinMessage(userList.get(0), userList.get(userList.size() - 1), userList);
 
 
                                 Log.e("M my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
                                 Log.e("M my name, texts size", myName + ", " + de.getTexts().size());
-                                Log.e("M componentId variable value, last componentId", de.getComponentId() + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
-                                Log.e("M textId variable value, last textId", de.getTextId() + ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
+                                Log.e("M componentId variable value, last componentId", de.getComponentId() + "");// + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
+                                Log.e("M textId variable value, last textId", de.getTextId() + "");// + ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
 
                                 MqttMessageFormat messageFormat;
                                 if(de.getBackgroundImage() == null) { messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts()); }
@@ -312,7 +313,7 @@ public enum MQTTClient {
                     }
                     drawingViewModel.setUserNum(userList.size());
 
-                    Log.e("after topic_join procesas", Arrays.toString(userList.toArray()));
+                    Log.e("after topic_join process", Arrays.toString(userList.toArray()));
                 }
 
 
@@ -461,20 +462,47 @@ public enum MQTTClient {
 
     }
 
+    ArrayList<DrawingComponent> nowDrawing = new ArrayList<>();
     class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
+        private String username;
         private int action;
         private Mode mode;
         private DrawingComponent dComponent;
+        private float myCanvasWidth = drawingView.getCanvasWidth();
+        private float myCanvasHeight = drawingView.getCanvasHeight();
 
         private Void draw() {
-            float myCanvasWidth = drawingView.getCanvasWidth();
-            float myCanvasHeight = drawingView.getCanvasHeight();
-            dComponent.calculateRatio(myCanvasWidth, myCanvasHeight);
+            if(action == MotionEvent.ACTION_DOWN) {
+                if (de.isContainsCurrentComponents(dComponent.getId())) {
+                    if(de.getUsername().equals(username)) {
+                        dComponent.setId(de.getComponentId());
+                        Log.i("drawing", "second id (self) = " + dComponent.getId());
+                    } else {
+                        dComponent.setId(de.componentIdCounter());
+                        Log.i("drawing", "second id (other) = " + dComponent.getId());
+                    }
+                } else if(de.getMyUsername().equals(username)){
+                    Log.i("drawing", "first id (self) = " + dComponent.getId());
+                } else {
+                    de.componentIdCounter();
+                    Log.i("drawing", "first id (other) = " + dComponent.getId());
+                }
+                de.addCurrentComponents(dComponent);
+            }
 
+            if(de.getMyUsername().equals(username)) return null;
+
+            dComponent.calculateRatio(myCanvasWidth, myCanvasHeight);
             switch(action) {
                 case MotionEvent.ACTION_DOWN:
-                    dComponent.setId(de.componentIdCounter());
-                    de.addCurrentComponents(dComponent);
+                    /*if(de.isContainsCurrentComponents(dComponent.getId())) {
+                        dComponent.setId(de.componentIdCounter());
+                        Log.i("drawing", "second id = " + dComponent.getId());
+                    } else {
+                        Log.i("drawing", "first id = " + dComponent.getId());
+                        de.componentIdCounter();
+                    }*/
+                    //de.addCurrentComponents(dComponent);
                     Log.i("drawing", "currentComponents.size() = " + de.getCurrentComponents().size());
                     dComponent.draw(de.getBackCanvas());
                     return null;
@@ -485,7 +513,7 @@ public enum MQTTClient {
 
                 case MotionEvent.ACTION_UP:
                     dComponent.draw(de.getBackCanvas());
-                    de.removeCurrentComponents(dComponent.getId());
+
                     //de.removeCurrentComponents(dComponent);
 
                 /*if(de.isContainsDrawingComponents(dComponent.getId())) {
@@ -503,6 +531,12 @@ public enum MQTTClient {
                 }
                 Log.i("drawing", str);*/
 
+                    Log.i("drawing", "dComponent: id=" + dComponent.getId() + ", endPoint=" + dComponent.getEndPoint().toString());
+
+                    DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
+                    Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
+                    dComponent.setId(upComponent.getId());
+                    de.removeCurrentComponents(dComponent.getId());
                     de.splitPoints(dComponent, myCanvasWidth, myCanvasHeight);
                     de.addDrawingComponents(dComponent);
                     de.addHistory(new DrawingItem(de.getCurrentMode(), dComponent/*, de.getDrawingBitmap()*/));
@@ -583,7 +617,7 @@ public enum MQTTClient {
         protected Void doInBackground(MqttMessageFormat... messages) {
             MqttMessageFormat message = messages[0];
 
-            String username = message.getUsername();
+            this.username = message.getUsername();
             this.mode = message.getMode();
             this.action = message.getAction();
             this.dComponent = message.getComponent();
@@ -598,14 +632,17 @@ public enum MQTTClient {
                 // 백그라운드 이미지 지정
                 // texts 붙이기 등등
 
-                de.drawAllDrawingComponents(); // drawingComponents 그리기 ( onPostExecute 에서 invalidate 호출 ) - fixme nayeon (단순 그려진 모습 보기위한 코드)
+                de.drawAllDrawingComponentsForMid(myCanvasWidth, myCanvasHeight); // drawingComponents 그리기 ( onPostExecute 에서 invalidate 호출 ) - fixme nayeon (단순 그려진 모습 보기위한 코드)
+                //de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
 
                 publishProgress(message); // 텍스트 붙이기와 배경 이미지 붙이기는 메인 스레드에서 처리 필요
                 return null;
             }
 
             // 중간자가 MID 모드의 메시지 보다 다른 모드(TEXT) 메시지 먼저 받는 경우 있음
-            if(de.getMyUsername().equals(username)) return null;
+            if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW)) {
+                return null;
+            }
 
             switch(mode) {
                 case DRAW:

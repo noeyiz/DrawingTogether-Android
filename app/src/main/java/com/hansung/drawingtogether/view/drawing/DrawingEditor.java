@@ -36,7 +36,6 @@ public enum DrawingEditor {
     private ArrayList<DrawingComponent> drawingComponents = new ArrayList<>();  //현재 그려져있는 모든 drawing component 배열
     private ArrayList<DrawingComponent> currentComponents = new ArrayList<>();  //현재 그리기중인 drawing component 배열
 
-    // fixme nayeon
     private ArrayList<Text> texts = new ArrayList<>(); // 현재 부착된 모든 text 배열
     private Text currentText = null;
     private boolean isTextBeingEdited = false;
@@ -60,8 +59,7 @@ public enum DrawingEditor {
     private int strokeWidth = 50;              //fixme
 
 
-    // fixme nayeon - 드로잉 하는동안 저장되는 모든 데이터들 지우기 [나가기 버튼 눌렀을 때 처리 필요 - MQTTClient.java if(topic_exit, topic_delete) 부분에서 호출]
-    // fixme request minj - 초기화되어야하는 드로잉 데이터 확인부탁드려요오
+    // 드로잉 하는동안 저장되는 모든 데이터들 지우기 [나가기 버튼 눌렀을 때 처리 필요 - MQTTClient.java if(topic_exit, topic_delete) 부분에서 호출]
     public void removeAllDrawingData() {
         backgroundImage = null;
         drawingBitmap = null;
@@ -125,6 +123,16 @@ public enum DrawingEditor {
         }
     }
 
+    public void drawAllDrawingComponentsForMid(float myCanvasWidth, float myCanvasHeight) {   //drawingComponents draw
+        Iterator<DrawingComponent> iterator = drawingComponents.iterator();
+        while(iterator.hasNext()) {
+            DrawingComponent component = iterator.next();
+            component.calculateRatio(myCanvasWidth, myCanvasHeight);
+            component.drawComponent(getBackCanvas());
+            //splitPoints(component, myCanvasWidth, myCanvasHeight);
+        }
+    }
+
     /*public void drawCurrentComponents() {   //currentComponents draw
         for(DrawingComponent component: currentComponents) {
             component.draw(getBackCanvas());
@@ -151,7 +159,7 @@ public enum DrawingEditor {
     public boolean isContainsCurrentComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우
         //Vector<DrawingComponent> components = new Vector<>();
         String str = "cc = ";
-        for(DrawingComponent component: currentComponents) {
+        for(DrawingComponent component: getCurrentComponents()) {
             str += component.getId() + " ";
         }
         Log.i("drawing", str);
@@ -170,6 +178,14 @@ public enum DrawingEditor {
                 components.add(component);
         }
         return components;
+    }
+
+    public DrawingComponent findCurrentComponent(String usersComponentId) {
+        for(DrawingComponent component: currentComponents) {
+            if(component.getUsersComponentId().equals(usersComponentId))
+                return component;
+        }
+        return null;
     }
 
     public void addDrawingComponents(DrawingComponent component) {
@@ -377,6 +393,7 @@ public enum DrawingEditor {
     }
 
     public void initDrawingBoardArray(int width, int height) {
+        Log.i("drawing", "initDrawingBoardArray()");
         try{
             drawingBoardArray = new Vector[height][width];
 
@@ -412,6 +429,8 @@ public enum DrawingEditor {
 
     //drawingComponent 점 펼치기 --> drawingBoardArray
     public void splitPoints(DrawingComponent component, float canvasWidth, float canvasHeight) {
+        if(component == null) return;
+
         component.calculateRatio(canvasWidth, canvasHeight);
         ArrayList<Point> newPoints = new ArrayList<>();
 
@@ -426,7 +445,7 @@ public enum DrawingEditor {
                     newPoints = rectSplitPoints(component);
                     break;
             }
-        } catch(NullPointerException e) {
+        } catch(NullPointerException e) {   //exit 제대로 안됐을 때, mid 그리기 시
             e.printStackTrace();
         }
 
@@ -542,36 +561,6 @@ public enum DrawingEditor {
         }
         return erasedComponentIds;
     }
-
-    /*public ArrayList<Point> rectSplitPoints(DrawingComponent component) { //사각형안에 포함된 점 모두 --> OOM exception
-
-        Point calcBeginPoint = new Point((int)(component.getBeginPoint().x * component.getXRatio()), (int)(component.getBeginPoint().y * component.getYRatio()));
-        Point calcEndPoint = new Point((int)(component.getEndPoint().x * component.getXRatio()), (int)(component.getEndPoint().y * component.getYRatio()));
-        Log.i("drawing", "calcBegin = " + calcBeginPoint.toString() + ", calcEnd = " + calcEndPoint.toString());
-
-        int width = Math.abs(calcEndPoint.x - calcBeginPoint.x);
-        int height = Math.abs(calcEndPoint.y - calcBeginPoint.y);
-
-        Point datumPoint = (calcBeginPoint.x < calcEndPoint.x) ? calcBeginPoint : calcEndPoint; //기준점 (사각형의 왼쪽위 꼭짓점)
-
-        ArrayList<Point> newPoints = new ArrayList<>();     //사이 점 채워진 Point 배열
-        float slope = (calcEndPoint.x - calcBeginPoint.x) == 0 ? 0 : (calcEndPoint.y - calcBeginPoint.y) / (float)(calcEndPoint.x - calcBeginPoint.x);
-
-        if(slope == 0) {
-            newPoints.add(calcBeginPoint);
-        } else if(slope < 0) {
-            datumPoint.y -= height;
-        }
-
-        for(int i=datumPoint.y; i<=datumPoint.y + height; i++) {
-            for(int j=datumPoint.x; j<=datumPoint.x + width; j++) {
-                newPoints.add(new Point(j, i));
-            }
-        }
-
-        return newPoints;
-
-    }*/
 
     public void redrawErasedDrawingComponent(Vector<Integer> erasedComponentIds) {
         Log.i("drawing", "redraw erased component. ids=" + erasedComponentIds);
@@ -764,9 +753,11 @@ public enum DrawingEditor {
 
     public void clearDrawingComponents() {
         drawingBitmap.eraseColor(Color.TRANSPARENT);
+        lastDrawingBitmap.eraseColor(Color.TRANSPARENT);
         undoArray.clear();
         history.clear();
         drawingComponents.clear();
+        componentId = -1;
         clearDrawingBoardArray();
         drawingBoardMap.clear();
     }
@@ -774,6 +765,7 @@ public enum DrawingEditor {
     public void clearTexts() {
         removeAllTextViewToFrameLayout();
         getTexts().clear();
+        textId = -1;
     }
 
     public void invalidateDrawingView() {
@@ -873,8 +865,9 @@ public enum DrawingEditor {
         this.strokeWidth = strokeWidth;
     }
 
-    // fixme nayeon - 중간자가 마스터로부터 메시지를 받아서 자신의 구조체에 컴포넌트들 저장
-    public void setDrawingComponents(ArrayList<DrawingComponent> drawingComponents) { this.drawingComponents = drawingComponents; }
+    public void setDrawingComponents(ArrayList<DrawingComponent> drawingComponents) {
+        this.drawingComponents = drawingComponents;
+    }
 
     public void setTexts(ArrayList<Text> texts) { this.texts = texts; }
     // public void setBackgroundImage(Bitmap backgroundImage) { this.backgroundImage = backgroundImage; } // 위에 선언되어있음
