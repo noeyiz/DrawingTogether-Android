@@ -14,6 +14,7 @@ public abstract class DrawingComponent {
     protected ArrayList<Point> points = new ArrayList<>();
     protected int id;
     protected String username;
+    protected String usersComponentId;
     protected ComponentType type;
     protected int strokeColor;
     protected int fillColor;            //도형에서 사용

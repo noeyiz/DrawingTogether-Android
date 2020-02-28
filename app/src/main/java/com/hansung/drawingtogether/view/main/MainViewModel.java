@@ -86,6 +86,7 @@ public class MainViewModel extends BaseViewModel {
     }
 
     public void hasSpecialCharacterAndBlank() {
+
         if (ip.getValue().equals("")) {
             setIpError("아이피 주소를 입력해주세요");
             hasSpecialCharacterAndBlank = true;
