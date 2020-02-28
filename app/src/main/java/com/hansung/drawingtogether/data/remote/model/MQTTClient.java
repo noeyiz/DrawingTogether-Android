@@ -167,7 +167,7 @@ public enum MQTTClient {
     public String userPrint() {
         String user = "";
 
-       // if (master) user += "*^^*";
+        // if (master) user += "*^^*";
 
         for (int i=0; i<userList.size(); i++) {
             if (i != userList.size()-1) {
@@ -609,7 +609,7 @@ public enum MQTTClient {
                     return null;
                 case DONE:
                     //f(text.isModified())                                       //fixme minj for undo, redo
-                        //de.addHistory(new DrawingItem(TextMode.MODIFY, textAttr));
+                    //de.addHistory(new DrawingItem(TextMode.MODIFY, textAttr));
                 case DRAG_ENDED:
                     return null;
                 case ERASE:
