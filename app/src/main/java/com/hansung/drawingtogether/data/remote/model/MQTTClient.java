@@ -276,13 +276,13 @@ public enum MQTTClient {
                             // 아이디 세팅 fixme nayeon - 동시성 문제
                             de.setComponentId(de.getDrawingComponents().size() - 1);
                             de.setTextId(de.getTexts().size() - 1);
-
+/*
                             Log.e("my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
                             Log.e("my name, texts size", myName + ", " + de.getTexts().size());
                             Log.e("componentId variable value, last componentId", de.getComponentId() + "");//fixme minj size = 0일 때 ArrayIndexOutOfBoundsException // + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
                             Log.e("textId variable value, last textId", de.getTextId() + ""); //+ ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
                             Log.e("removedComponentId[] = ", de.getRemovedComponentId().toString());
-
+*/
                             client.publish(topic_data, new MqttMessage(JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)).getBytes()));
                         }
                     }
@@ -291,15 +291,14 @@ public enum MQTTClient {
                             userList.add(name); // 들어온 사람의 이름을 추가
 
                             if (isMaster()) { //  todo nayeon - 마스터인 경우 자신의 드로잉 구조체들 전송하는 부분
-                                //JoinMessage joinMsg = new JoinMessage(userList.get(0), userList.get(userList.size() - 1), userList);
                                 JoinMessage joinMsg = new JoinMessage(userList.get(0), userList.get(userList.size() - 1), userList);
 
-                                Log.e("M my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
+/*                               Log.e("M my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
                                 Log.e("M my name, texts size", myName + ", " + de.getTexts().size());
                                 Log.e("M componentId variable value, last componentId", de.getComponentId() + "");// + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
                                 Log.e("M textId variable value, last textId", de.getTextId() + "");// + ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
                                 Log.e("M removedComponentId[] = ", de.getRemovedComponentId().toString());
-
+*/
                                 MqttMessageFormat messageFormat;
                                 if(de.getBackgroundImage() == null) { messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getRemovedComponentId()); }
                                 else {  messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getRemovedComponentId(), de.bitmapToByteArray(de.getBackgroundImage())); }
@@ -313,7 +312,7 @@ public enum MQTTClient {
                             //drawingViewModel.setUserNumTv(userList.size());
                         }
                         else {  // self // 자기 자신의 이름 배열에 추가
-                            if(!userList.contains(name))
+                            if(!userList.contains(name)) // 중간자가 마스터로부터 배열을 받는 처리가 먼저 일어난 경우 자신의 이름이 들어가 있을 수 있음
                                 userList.add(name);
                         }
                     }
@@ -477,6 +476,8 @@ public enum MQTTClient {
         private float myCanvasWidth = drawingView.getCanvasWidth();
         private float myCanvasHeight = drawingView.getCanvasHeight();
 
+        private TextMode textMode;
+
         private Void draw() {
             if(action == MotionEvent.ACTION_DOWN) {
                 if (de.isContainsCurrentComponents(dComponent.getId())) {
@@ -547,6 +548,9 @@ public enum MQTTClient {
             // 그 이후에 일어나는 텍스트에 대한 모든 행위들은
             // 텍스트 배열로부터 텍스트 객체를 찾아서 작업 가능
             if(!textMode.equals(TextMode.CREATE)) {
+                // todo nayeon 텍스트 아이디가 null 일 경우 ?
+                // if(textAttr.getId().equals(null)) { }
+
                 text = de.findTextById(textAttr.getId());
 
                 if(text == null) return null; // fixme nayeon - 중간자가 자신에게 MID 로 보낸 메시지보다, 마스터가 TEXT 로 보낸 메시지가 먼저 올 경우 (중간자가 자신의 처리를 다 했다는 플래그 필요?)
@@ -556,8 +560,12 @@ public enum MQTTClient {
 
             switch (textMode) {
                 case CREATE:
-                    new Text(drawingFragment, textAttr).getTextAttribute().setTextInited(true); // fixme nayeon
+                    Text newText = new Text(drawingFragment, textAttr); // fixme nayeon
+                    newText.getTextAttribute().setTextInited(true); // 만들어진 직후 상단 중앙에 놓이도록
+                    de.addTexts(newText);
+
                     publishProgress(message);
+
                     //de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));  //fixme minj for undo, redo
                     Log.e("texts size", Integer.toString(de.getTexts().size()));
                     return null;
@@ -589,10 +597,11 @@ public enum MQTTClient {
             TextMode textMode = message.getTextMode();
             TextAttribute textAttr = message.getTextAttr();
 
+
             Text text = de.findTextById(textAttr.getId());
             switch(textMode) {
                 case CREATE:
-                    textAttr.setId(de.textIdCounter());    //fixme minj componentIdCounter()
+                    //textAttr.setId(de.textIdCounter());    //fixme minj componentIdCounter()
                     text.addTextViewToFrameLayout();
                     text.createGestureDetecter();
                     break;
@@ -604,7 +613,7 @@ public enum MQTTClient {
                     text.removeTextViewToFrameLayout();
                     de.removeTexts(text);
 
-                    Log.e("texts size", Integer.toString(de.getTexts().size()));
+                    //Log.e("texts size", Integer.toString(de.getTexts().size()));
                     break;
                 case MODIFY:
                     text.modifyTextViewContent(textAttr.getText());
@@ -621,10 +630,9 @@ public enum MQTTClient {
             this.action = message.getAction();
             this.dComponent = message.getComponent();
 
+
             de.setMyCanvasWidth(myCanvasWidth);
             de.setMyCanvasHeight(myCanvasHeight);
-
-            Log.e("my name, message name, mode", de.getMyUsername() + ", " + username + ", " + mode.toString());
 
             // fixme nayeon
             // 메시지를 보낸 사람의 이름이 나의 이름이고, 메시지에 MID 모드가 지정되어 있다면
@@ -637,11 +645,22 @@ public enum MQTTClient {
                 publishProgress(message); // 텍스트 붙이기와 배경 이미지 붙이기는 메인 스레드에서 처리 필요
                 return null;
             }
+/*
+
+            // 텍스트 모드고 텍스트가 처음 생성되었을 경우 [ 송신자 포함 모든 사용자가 처리하는 부분 ]
+            if(mode.equals(Mode.TEXT) && textMode.equals(TextMode.CREATE)) {
+                de.textIdCounter(); // DrawingEditor 에서 관리하는 텍스트 아이디를 증가시키고 [ int textId (DrawingEditor.java) 변수 값 증가 ]
+                message.getTextAttr().setId(de.getTextId()); // TextAttribute 에 증가된 아이디를 저장 - 이 후 수신자들은 이 textAttribute 를 바탕으로 텍스트 생성하기 때문에
+
+                if(de.getMyUsername().equals(username)) { // 송신자만 처리하는 부분
+                    de.setTextIdInCallback(message.getMyTextArrayIndex());
+                    return null;
+                }
+            }
+*/
 
             // 중간자가 MID 모드의 메시지 보다 다른 모드(TEXT) 메시지 먼저 받는 경우 있음
-            if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW)) {
-                return null;
-            }
+            if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW)) { return null; }
 
             switch(mode) {
                 case DRAW:

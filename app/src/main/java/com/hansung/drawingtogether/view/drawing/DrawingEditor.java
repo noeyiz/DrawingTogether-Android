@@ -251,14 +251,17 @@ public enum DrawingEditor {
 
     public void removeTexts(Text text) { this.texts.remove(text); }
 
-    public Text findTextById(int id) {
+    public Text findTextById(String id) {
         for(Text text: texts) {
-            if(text.getTextAttribute().getId() == id) {
+            if(text.getTextAttribute().getId().equals(id)) {
                 return text;
             }
         }
         return null;
     }
+
+    //fixme nayeon - 텍스트 동시
+    public String setTextStringId() { return myUsername + "-" + textIdCounter(); }
 
     public void removeAllTextViewToFrameLayout() {
         for(Text t: texts) {
@@ -948,6 +951,8 @@ public enum DrawingEditor {
     public void setStrokeWidth(int strokeWidth) {
         this.strokeWidth = strokeWidth;
     }
+
+    //public void setTextIdInCallback(int myTextArrayIndex) { this.texts.get(myTextArrayIndex).getTextAttribute().setId(this.textId); }
 
     public void setDrawingComponents(ArrayList<DrawingComponent> drawingComponents) {
         this.drawingComponents = drawingComponents;

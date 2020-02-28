@@ -179,6 +179,7 @@ public class DrawingFragment extends Fragment {
         return binding.getRoot();
     }
 
+
     public void showPopup(View view, int layout) {
         View penSettingPopup = getLayoutInflater().inflate(layout, null);
         penSettingPopup.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
