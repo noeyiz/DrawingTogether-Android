@@ -3,6 +3,7 @@ package com.hansung.drawingtogether.data.remote.model;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -268,6 +269,7 @@ public enum MQTTClient {
                             // 필요한 배열 리스트들과 배경 이미지 세팅
                             de.setDrawingComponents(mqttMessageFormat.getDrawingComponents());
                             de.setHistory(mqttMessageFormat.getHistory());
+                            de.setUndoArray(mqttMessageFormat.getUndoArray());
                             de.setRemovedComponentId(mqttMessageFormat.getRemovedComponentId());
 
                             de.setTexts(mqttMessageFormat.getTexts());
@@ -279,8 +281,8 @@ public enum MQTTClient {
 /*
                             Log.e("my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
                             Log.e("my name, texts size", myName + ", " + de.getTexts().size());
-                            Log.e("componentId variable value, last componentId", de.getComponentId() + "");//fixme minj size = 0일 때 ArrayIndexOutOfBoundsException // + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
-                            Log.e("textId variable value, last textId", de.getTextId() + ""); //+ ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
+                            Log.e("componentId variable value, last componentId", de.getComponentId() + "");        // + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
+                            Log.e("textId variable value, last textId", de.getTextId() + "");                       //+ ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
                             Log.e("removedComponentId[] = ", de.getRemovedComponentId().toString());
 */
                             client.publish(topic_data, new MqttMessage(JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)).getBytes()));
@@ -293,15 +295,15 @@ public enum MQTTClient {
                             if (isMaster()) { //  todo nayeon - 마스터인 경우 자신의 드로잉 구조체들 전송하는 부분
                                 JoinMessage joinMsg = new JoinMessage(userList.get(0), userList.get(userList.size() - 1), userList);
 
-/*                               Log.e("M my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
+/*                              Log.e("M my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
                                 Log.e("M my name, texts size", myName + ", " + de.getTexts().size());
-                                Log.e("M componentId variable value, last componentId", de.getComponentId() + "");// + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
-                                Log.e("M textId variable value, last textId", de.getTextId() + "");// + ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
+                                Log.e("M componentId variable value, last componentId", de.getComponentId() + "");      // + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
+                                Log.e("M textId variable value, last textId", de.getTextId() + "");                     // + ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
                                 Log.e("M removedComponentId[] = ", de.getRemovedComponentId().toString());
 */
                                 MqttMessageFormat messageFormat;
-                                if(de.getBackgroundImage() == null) { messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getRemovedComponentId()); }
-                                else {  messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getRemovedComponentId(), de.bitmapToByteArray(de.getBackgroundImage())); }
+                                if(de.getBackgroundImage() == null) { messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId()); }
+                                else {  messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId(), de.bitmapToByteArray(de.getBackgroundImage())); }
                                 MqttMessage mqttMessage = new MqttMessage(parser.jsonWrite(messageFormat).getBytes());
                                 client.publish(topic_join, mqttMessage);
 
@@ -463,8 +465,6 @@ public enum MQTTClient {
 
             }
         });
-
-
     }
 
     ArrayList<DrawingComponent> nowDrawing = new ArrayList<>();
@@ -473,10 +473,9 @@ public enum MQTTClient {
         private int action;
         private Mode mode;
         private DrawingComponent dComponent;
+        private DrawingItem drawingItem;
         private float myCanvasWidth = drawingView.getCanvasWidth();
         private float myCanvasHeight = drawingView.getCanvasHeight();
-
-        private TextMode textMode;
 
         private Void draw() {
             if(action == MotionEvent.ACTION_DOWN) {
@@ -566,7 +565,7 @@ public enum MQTTClient {
 
                     publishProgress(message);
 
-                    //de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));  //fixme minj for undo, redo
+                    de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));  //fixme minj for undo, redo
                     Log.e("texts size", Integer.toString(de.getTexts().size()));
                     return null;
                 case DRAG_STARTED:
@@ -575,16 +574,16 @@ public enum MQTTClient {
                     text.setTextViewLocation();
                     return null;
                 case DROP:
-                    //de.addHistory(new DrawingItem(TextMode.DROP, textAttr));    //fixme minj for undo, redo
+                    de.addHistory(new DrawingItem(TextMode.DROP, textAttr));    //fixme minj for undo, redo
                     text.setTextViewLocation();
                     return null;
                 case DONE:
-                    //f(text.isModified())                                       //fixme minj for undo, redo
-                        //de.addHistory(new DrawingItem(TextMode.MODIFY, textAttr));
+                    if(text.isModified())                                       //fixme minj for undo, redo
+                        de.addHistory(new DrawingItem(TextMode.MODIFY, textAttr));
                 case DRAG_ENDED:
                     return null;
                 case ERASE:
-                    //de.addHistory(new DrawingItem(TextMode.ERASE, textAttr));   //fixme minj for undo, redo
+                    de.addHistory(new DrawingItem(TextMode.ERASE, textAttr));   //fixme minj for undo, redo
                     publishProgress(message);
                     return null;
                 case MODIFY:
@@ -601,7 +600,7 @@ public enum MQTTClient {
             Text text = de.findTextById(textAttr.getId());
             switch(textMode) {
                 case CREATE:
-                    //textAttr.setId(de.textIdCounter());    //fixme minj componentIdCounter()
+                    //textAttr.setId(de.textIdCounter());
                     text.addTextViewToFrameLayout();
                     text.createGestureDetecter();
                     break;
@@ -645,8 +644,7 @@ public enum MQTTClient {
                 publishProgress(message); // 텍스트 붙이기와 배경 이미지 붙이기는 메인 스레드에서 처리 필요
                 return null;
             }
-/*
-
+            /*
             // 텍스트 모드고 텍스트가 처음 생성되었을 경우 [ 송신자 포함 모든 사용자가 처리하는 부분 ]
             if(mode.equals(Mode.TEXT) && textMode.equals(TextMode.CREATE)) {
                 de.textIdCounter(); // DrawingEditor 에서 관리하는 텍스트 아이디를 증가시키고 [ int textId (DrawingEditor.java) 변수 값 증가 ]
@@ -657,7 +655,7 @@ public enum MQTTClient {
                     return null;
                 }
             }
-*/
+            */
 
             // 중간자가 MID 모드의 메시지 보다 다른 모드(TEXT) 메시지 먼저 받는 경우 있음
             if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW)) { return null; }
@@ -692,12 +690,9 @@ public enum MQTTClient {
                     de.clearDrawingComponents();
                     return null;
                 case UNDO:
-                    Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString());
-                    de.undo();
-                    return null;
                 case REDO:
                     Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString());
-                    de.redo();
+                    publishProgress(message);
                     return null;
             }
             return null;
@@ -723,11 +718,47 @@ public enum MQTTClient {
 
                 case MID:
                     Log.e("onProgressUpdate", de.getMyUsername());
+
+                    if(de.getHistory().size() > 0)
+                        drawingFragment.getBinding().undoBtn.setEnabled(true);
+                    else if(de.getUndoArray().size() > 0)
+                        drawingFragment.getBinding().redoBtn.setEnabled(true);
+
                     this.myCanvasWidth = drawingView.getCanvasWidth();
                     this.myCanvasHeight = drawingView.getCanvasHeight();
                     de.drawAllDrawingComponentsForMid(myCanvasWidth, myCanvasHeight);
                     de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
                     de.addAllTextViewToFrameLayoutForMid();
+                    break;
+
+                case UNDO:
+                    if(de.getHistory().size() == 0)
+                        return;
+
+                    de.addUndoArray(de.popHistory());
+                    if(de.getUndoArray().size() == 1)
+                        drawingFragment.getBinding().redoBtn.setEnabled(true);
+
+                    if(de.getHistory().size() == 0) {
+                        drawingFragment.getBinding().undoBtn.setEnabled(false);
+                        de.clearDrawingBitmap();
+                        return;
+                    }
+                    Log.i("drawing", "history.size()=" + de.getHistory().size());
+                    break;
+
+                case REDO:
+                    if(de.getUndoArray().size() == 0)
+                        return;
+
+                    de.addHistory(de.popUndoArray());
+                    if(de.getHistory().size() == 1)
+                        drawingFragment.getBinding().undoBtn.setEnabled(true);
+
+                    if(de.getUndoArray().size() == 0)
+                        drawingFragment.getBinding().redoBtn.setEnabled(false);
+
+                    Log.i("drawing", "history.size()=" + de.getHistory().size());
                     break;
             }
         }

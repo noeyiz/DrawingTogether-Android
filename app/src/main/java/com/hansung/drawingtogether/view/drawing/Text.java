@@ -270,7 +270,7 @@ public class Text { // EditTextView
             textAttribute.setTextInited(true);
 
             Log.i("drawing", "text create");
-            //de.addHistory(new DrawingItem(TextMode.CREATE, textAttribute)); //fixme minj - addHistory
+            de.addHistory(new DrawingItem(TextMode.CREATE, getTextAttribute())); //fixme minj - addHistory
             Log.i("drawing", "history.size()=" + de.getHistory().size());
             de.clearUndoArray();
         }
@@ -299,7 +299,7 @@ public class Text { // EditTextView
         if(preText != null && !preText.equals(textAttribute.getText())) {   //modify 이전과 text 가 달라졌을 때만 history 에 저장
             isModified = true;
             Log.i("drawing", "text modify");
-            //de.addHistory(new DrawingItem(TextMode.MODIFY, textAttribute));   //fixme minj - addHistory
+            de.addHistory(new DrawingItem(TextMode.MODIFY, getTextAttribute()));   //fixme minj - addHistory
             Log.i("drawing", "history.size()=" + de.getHistory().size());
             de.clearUndoArray();
         }
@@ -339,12 +339,12 @@ public class Text { // EditTextView
         textView.setY(y);
     }
 
-    public void setPreTextViewLocation() {
+    public void setTextViewLocation(int x, int y) {
         // 텍스트 위치 비율 계산
-        calculateRatio(frameLayout.getWidth(), frameLayout.getHeight());
+        calculateRatio(frameLayout.getWidth(), frameLayout.getHeight()); // xRatio, yRatio 설정
 
-        textView.setX(textAttribute.getPreX() * xRatio);
-        textView.setY(textAttribute.getPreY() * yRatio);
+        textView.setX(x * xRatio - (textView.getWidth()/2));
+        textView.setY(y * yRatio - (textView.getHeight()/2));
     }
 
     private Text getText() { return this; }
@@ -378,7 +378,7 @@ public class Text { // EditTextView
                 eraseText();
                 sendMqttMessage(TextMode.ERASE);
                 Log.i("drawing", "text erase");
-                //de.addHistory(new DrawingItem(TextMode.ERASE, textAttribute));    //fixme minj - addHistory
+                de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme minj - addHistory
                 Log.i("drawing", "history.size()=" + de.getHistory().size());
                 de.clearUndoArray();
             } else {

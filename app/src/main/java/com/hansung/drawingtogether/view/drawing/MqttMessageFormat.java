@@ -31,6 +31,7 @@ public class MqttMessageFormat {
     private ArrayList<DrawingComponent> drawingComponents;
     private ArrayList<Text> texts;
     private ArrayList<DrawingItem> history;
+    private ArrayList<DrawingItem> undoArray;
     private Vector<Integer> removedComponentId;
     private byte[] bitmapByteArray;
 
@@ -71,21 +72,23 @@ public class MqttMessageFormat {
     }
 
 */
-    // fixme nayeon 중간자 처리 시 필요한 생성자 3개 추가
+    //fixme nayeon 중간자 처리 시 필요한 생성자 3개 추가
     //fixme minj - add history for undo, redo
-    public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, Vector<Integer> removedComponentId) {
+    public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId) {
         this.joinMessage = joinMessage;
         this.drawingComponents = drawingComponents;
         this.history = history;
+        this.undoArray = undoArray;
         this.removedComponentId = removedComponentId;
         this.texts = texts;
     }
 
-    public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, Vector<Integer> removedComponentId, byte[] bitmapByteArray) {
+    public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray,  Vector<Integer> removedComponentId, byte[] bitmapByteArray) {
         this.joinMessage = joinMessage;
         this.drawingComponents = drawingComponents;
         this.texts = texts;
         this.history = history;
+        this.undoArray = undoArray;
         this.removedComponentId = removedComponentId;
         this.bitmapByteArray = bitmapByteArray;
     }

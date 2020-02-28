@@ -88,6 +88,8 @@ public class DrawingFragment extends Fragment {
 
         de.setDrawingFragment(this);
         binding.drawBtn.setBackgroundColor(Color.rgb(233, 233, 233));
+        binding.undoBtn.setEnabled(false);
+        binding.redoBtn.setEnabled(false);
         inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
 

@@ -36,7 +36,7 @@ public class DrawingItem {
 
     public DrawingItem(TextMode textMode, TextAttribute textAttribute) {
         this.textMode = textMode;
-        this.textAttribute = textAttribute;
+        this.textAttribute = new TextAttribute(textAttribute);
         Log.i("drawing", "preText=" + textAttribute.getPreText() + ", text=" + textAttribute.getText());
     }
 

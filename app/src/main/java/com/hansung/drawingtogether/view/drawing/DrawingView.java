@@ -184,6 +184,9 @@ public class DrawingView extends View {
         Log.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
 
         de.addHistory(new DrawingItem(de.getCurrentMode(), dComponent/*, de.getDrawingBitmap()*/));
+        if(de.getHistory().size() == 1)
+            de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
+
         Log.i("drawing", "history.size()=" + de.getHistory().size());
         if(dComponent.getType() != ComponentType.STROKE)
             de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
@@ -339,6 +342,13 @@ public class DrawingView extends View {
         de.setCurrentMode(Mode.UNDO);
         sendModeMqttMessage();
         de.undo();
+
+        if(de.getUndoArray().size() == 1)
+            de.getDrawingFragment().getBinding().redoBtn.setEnabled(true);
+
+        if(de.getHistory().size() == 0)
+            de.getDrawingFragment().getBinding().undoBtn.setEnabled(false);
+
         invalidate();
         de.setCurrentMode(preMode);
     }
@@ -348,6 +358,12 @@ public class DrawingView extends View {
         de.setCurrentMode(Mode.REDO);
         sendModeMqttMessage();
         de.redo();
+        if(de.getHistory().size() == 1)
+            de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
+
+        if(de.getUndoArray().size() == 0)
+            de.getDrawingFragment().getBinding().redoBtn.setEnabled(false);
+
         invalidate();
         de.setCurrentMode(preMode);
     }
