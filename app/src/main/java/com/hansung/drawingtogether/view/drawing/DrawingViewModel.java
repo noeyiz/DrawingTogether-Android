@@ -22,8 +22,11 @@ import androidx.lifecycle.MutableLiveData;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
+import com.hansung.drawingtogether.view.main.JoinMessage;
+import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
 import com.kakao.message.template.LinkObject;
@@ -42,6 +45,7 @@ import static java.security.AccessController.getContext;
 public class DrawingViewModel extends BaseViewModel {
     public final SingleLiveEvent<DrawingCommand> drawingCommands = new SingleLiveEvent<>();
     private MutableLiveData<String> userNum = new MutableLiveData<>();
+    private MutableLiveData<String> userPrint = new MutableLiveData<>();  // fixme hyeyeon
 
     private final int PICK_FROM_GALLERY = 0;
     private final int PICK_FROM_CAMERA = 1;
@@ -49,11 +53,48 @@ public class DrawingViewModel extends BaseViewModel {
 
     private DrawingEditor de = DrawingEditor.getInstance();
 
+    // fixme hyeyeon
+    private String ip;
+    private String port;
+    private String topic;
+    private String name;
+    private String password;
+    private boolean master;
+
+    private MQTTClient client = MQTTClient.getInstance();
+    private MQTTSettingData data = MQTTSettingData.getInstance();
+    //
+
     public DrawingViewModel() {
         setUserNum(0);
+        setUserPrint("");  // fixme hyeyeon
+
+        // fixme hyeyeon
+        ip = data.getIp();
+        port = data.getPort();
+        topic = data.getTopic();
+        name = data.getName();
+        password = data.getPassword();
+        master = data.isMaster();
+
+        Log.e("kkankkan", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master);
+
+        client.init(topic, name, master, this, ip, port);
+        client.setCallback();
+        client.subscribe(topic + "_join");
+        client.subscribe(topic + "_exit");
+        client.subscribe(topic + "_delete");
+        client.subscribe(topic + "_data");
+
+        // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)
+        JoinMessage joinMessage = new JoinMessage(name);
+        MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
+        client.publish(topic + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
+        //
     }
 
     public void clickPen(View view) {
+        changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.STROKE);
         Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
@@ -61,10 +102,19 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickEraser(View view) {
+        changeClickedButtonBackground(view);
         if(de.getCurrentMode() == Mode.ERASE)
             drawingCommands.postValue(new DrawingCommand.EraserMode(view));     //fixme minj add pixel eraser
         de.setCurrentMode(Mode.ERASE);
         Log.i("drawing", "mode = " + de.getCurrentMode().toString());
+    }
+
+    public void clickUndo(View view) {
+        de.getDrawingFragment().getBinding().drawingView.undo();
+    }
+
+    public void clickRedo(View view) {
+        de.getDrawingFragment().getBinding().drawingView.redo();
     }
 
     public void clickText(View view) {
@@ -72,7 +122,7 @@ public class DrawingViewModel extends BaseViewModel {
         FrameLayout frameLayout = de.getDrawingFragment().getBinding().drawingViewContainer;
 
         // 텍스트 속성 설정 ( 기본 도구에서 설정할 것인지 텍스트 도구에서 설정할 것인지? )
-        TextAttribute textAttribute = new TextAttribute(de.textIdCounter(), de.getMyUsername(), //fixme minj componentIdCounter()
+        TextAttribute textAttribute = new TextAttribute(de.setTextStringId(), de.getMyUsername(), //fixme nayeon - Text ID 초기값 NULL
                 "Input Text", 20, Color.BLACK, Color.TRANSPARENT,
                 View.TEXT_ALIGNMENT_CENTER, Typeface.BOLD,
                 frameLayout.getWidth(), frameLayout.getHeight());
@@ -86,11 +136,20 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickShape(View view) {
+        changeClickedButtonBackground(view);
         drawingCommands.postValue(new DrawingCommand.ShapeMode(view));
     }
 
     public void clickSearch(View view) {
         navigate(R.id.action_drawingFragment_to_searchFragment);
+    }
+
+    public void changeClickedButtonBackground(View view) {
+        LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
+        for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
+            drawingMenuLayout.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
+        }
+        view.setBackgroundColor(Color.rgb(233, 233, 233));
     }
 
     public void getImageFromGallery(Fragment fragment) {
@@ -176,8 +235,12 @@ public class DrawingViewModel extends BaseViewModel {
         return userNum;
     }
 
+    public MutableLiveData<String> getUserPrint() { return userPrint; }  // fixme hyeyeon
+
     public void setUserNum(int num) {
         userNum.postValue(num + "명");
     }
+
+    public void setUserPrint(String user) { userPrint.postValue(user); }  // fixme hyeyoen
 
 }

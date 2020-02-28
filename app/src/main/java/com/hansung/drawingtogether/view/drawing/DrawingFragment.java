@@ -41,6 +41,8 @@ import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
+import com.hansung.drawingtogether.view.main.JoinMessage;
+import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
@@ -60,15 +62,16 @@ public class DrawingFragment extends Fragment {
     private final int PICK_FROM_CAMERA = 1;
 
     Point size;
-
-    private String ip;
+    // fixme hyeyeon
+/*    private String ip;
     private String port;
     private String topic;
     private String name;
     private String password;
-    private boolean master;
+    private boolean master;*/
 
     private MQTTClient client = MQTTClient.getInstance();
+    private MQTTSettingData data = MQTTSettingData.getInstance();  // fixme hyeyeon
 
     private DrawingEditor de = DrawingEditor.getInstance();
     private FragmentDrawingBinding binding;
@@ -77,13 +80,21 @@ public class DrawingFragment extends Fragment {
     private LinearLayout doneBtnLayout;
     private Button doneBtn;
 
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.e("DrawingFragment", "onCreateView");
+
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
+
+        // fixme hyeyeon [1] - initjosnparser의 매개변수가 fragment라서 drawingviewmodel로 못옮겻오..ㅜㅜ
+        JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
+        //
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 
         de.setDrawingFragment(this);
+        binding.drawBtn.setBackgroundColor(Color.rgb(233, 233, 233));
         inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
 
@@ -92,7 +103,7 @@ public class DrawingFragment extends Fragment {
         doneBtn = new Button(this.getActivity()); //버튼 동적 생성
         initDoneButton();
 
-        ip = getArguments().getString("ip");
+        /*ip = getArguments().getString("ip");
         port = getArguments().getString("port");
         topic = getArguments().getString("topic");
         name = getArguments().getString("name");
@@ -100,6 +111,7 @@ public class DrawingFragment extends Fragment {
         master = Boolean.parseBoolean(getArguments().getString("master"));
 
         Log.e("kkankkan", "MainViewModel로부터 전달 받은 Data : "  + topic + " / " + password + " / " + name + " / " + master);
+*/
 
         // 디바이스 화면 size 구하기
         Display display = getActivity().getWindowManager().getDefaultDisplay();
@@ -143,6 +155,14 @@ public class DrawingFragment extends Fragment {
             }
         });
 
+        // fixme hyeyeon [2] - 마찬가지로 setDrawingFragment의 매개변수가 fragment라서 drawingviewmodel로 못옮겻오..ㅜㅜ
+        client.setDrawingFragment(this);
+        //
+
+/*  // fixme hyeyeon
+
+        JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
+
         client.init(topic, name, master, drawingViewModel, ip, port);
         client.setDrawingFragment(this);
         client.setCallback();
@@ -150,8 +170,24 @@ public class DrawingFragment extends Fragment {
         client.subscribe(topic + "_exit");
         client.subscribe(topic + "_delete");
         client.subscribe(topic + "_data");
-        client.publish(topic + "_join", ("name:" + name).getBytes());
+        // client.publish(topic_data ~~);
 
+        // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)
+        JoinMessage joinMessage = new JoinMessage(name);
+        MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
+        client.publish(topic + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
+        //
+*/
+
+        binding.userInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (binding.userPrint.getVisibility() == View.VISIBLE)
+                    binding.userPrint.setVisibility(View.INVISIBLE);
+                else
+                    binding.userPrint.setVisibility(View.VISIBLE);
+            }
+        });
         binding.setVm(drawingViewModel);
         binding.setLifecycleOwner(this);
 
@@ -166,6 +202,7 @@ public class DrawingFragment extends Fragment {
 
         return binding.getRoot();
     }
+
 
     public void showPopup(View view, int layout) {
         View penSettingPopup = getLayoutInflater().inflate(layout, null);
@@ -198,13 +235,18 @@ public class DrawingFragment extends Fragment {
         });
 
         final Button clearBtn = penSettingPopup.findViewById(R.id.clearBtn);
-        clearBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                binding.drawingView.clear();
-                popupWindow.dismiss();
-            }
-        });
+        if(client.isMaster()) {
+            clearBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    binding.drawingView.clear();
+                    popupWindow.dismiss();
+                }
+            });
+        }
+        else {
+            clearBtn.setEnabled(false);
+        }
     }
 
     private void setShapePopupClickListener(View penSettingPopup, final PopupWindow popupWindow) {
@@ -237,10 +279,10 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (which == 0) {
-                    client.publish(topic + "_exit", name.getBytes());
+                    client.publish(data.getTopic() + "_exit", data.getName().getBytes()); // fixme hyeyeon
                 }
                 else if (which == 1){
-                    client.publish(topic + "_delete", name.getBytes());
+                    client.publish(data.getTopic() + "_delete", data.getName().getBytes()); // fixme hyeyeon
                 }
             }
         });
@@ -250,27 +292,43 @@ public class DrawingFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        MqttMessageFormat messageFormat;
         switch (requestCode) {
             case PICK_FROM_GALLERY:
                 if (data == null) {
                     return;
                 }
                 Uri uri = data.getData();
-                ImageView imageView = new ImageView(getContext());
-                imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
-                imageView.setImageURI(uri);
-                binding.backgroundView.addView(imageView);
+                Bitmap galleryBitmap = null;
+                try {
+                    galleryBitmap = rotateBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri), PICK_FROM_GALLERY);
+                    galleryBitmap = resizeBitmap(galleryBitmap);
+                    ImageView imageView = new ImageView(getContext());
+                    imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
+                    imageView.setImageBitmap(galleryBitmap);
+                    de.setBackgroundImage(galleryBitmap);
+                    binding.backgroundView.addView(imageView);
+
+                    messageFormat = new MqttMessageFormat(de.getUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(galleryBitmap));
+                    client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
+
+                } catch(IOException e) { e.printStackTrace(); }
+
                 break;
             case PICK_FROM_CAMERA:
                 try {
                     File file = new File(drawingViewModel.getPhotoPath());
-                    Bitmap bitmap = rotateBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file)));
-
-                    if (bitmap != null) {
-                        imageView = new ImageView(getContext());
+                    Bitmap cameraBitmap = rotateBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file)), PICK_FROM_CAMERA);
+                    cameraBitmap = resizeBitmap(cameraBitmap);
+                    if (cameraBitmap != null) {
+                        ImageView imageView = new ImageView(getContext());
                         imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
-                        imageView.setImageBitmap(bitmap);
+                        imageView.setImageBitmap(cameraBitmap);
+                        de.setBackgroundImage(cameraBitmap);
                         binding.backgroundView.addView(imageView);
+
+                        messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(cameraBitmap));
+                        client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -305,22 +363,28 @@ public class DrawingFragment extends Fragment {
                 drawingViewModel.getImageFromCamera(DrawingFragment.this);
                 break;
             case R.id.drawing_plus:
-                drawingViewModel.plusUser(DrawingFragment.this, topic, password);
+                drawingViewModel.plusUser(DrawingFragment.this, data.getTopic(), data.getPassword());  // fixme hyeyeon
                 break;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    public Bitmap rotateBitmap(Bitmap bitmap) {
+    private Bitmap rotateBitmap(Bitmap bitmap, int mode) {
         ExifInterface exif = null;
-        try {
-            exif = new ExifInterface(drawingViewModel.getPhotoPath());
-        } catch (IOException e) {
-            e.printStackTrace();
+        int orientation = 0;
+
+        if (mode == PICK_FROM_GALLERY)
+            orientation = ExifInterface.ORIENTATION_ROTATE_90;
+        else if (mode == PICK_FROM_CAMERA) {
+            try {
+                exif = new ExifInterface(drawingViewModel.getPhotoPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_UNDEFINED);
         }
-        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                ExifInterface.ORIENTATION_UNDEFINED);
 
         Matrix matrix = new Matrix();
         switch (orientation) {
@@ -345,6 +409,18 @@ public class DrawingFragment extends Fragment {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private Bitmap resizeBitmap(Bitmap bitmap) {
+        int resizeWidth = size.x/2;
+
+        double aspectRatio = (double) bitmap.getHeight() / (double) bitmap.getWidth();
+        int resizeHeight = (int) (resizeWidth * aspectRatio);
+        Bitmap resizeBitmap = Bitmap.createScaledBitmap(bitmap, resizeWidth, resizeHeight, true);
+        if (resizeBitmap != bitmap)
+            bitmap.recycle();
+
+        return resizeBitmap;
     }
 
     private void removeDoneButton() {

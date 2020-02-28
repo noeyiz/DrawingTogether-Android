@@ -51,11 +51,13 @@ public class DrawingView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
+        // Log.e("DrawingView", "call onSizeChanged");
 
         canvasWidth = w;
         canvasHeight = h;
         //de.setMyUsername("mm"); //fixme myUsername
         de.setDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
+        de.setLastDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
         de.setBackCanvas(new Canvas(de.getDrawingBitmap()));
         de.initDrawingBoardArray(w, h);
     }
@@ -123,6 +125,7 @@ public class DrawingView extends View {
     public void setComponentAttribute(DrawingComponent dComponent) {
         dComponent.setId(de.componentIdCounter());  //id 자동 증가
         dComponent.setUsername(de.getUsername());
+        dComponent.setUsersComponentId(dComponent.username + "-" + dComponent.id);
         dComponent.setType(de.getCurrentType());
         dComponent.setFillColor(de.getFillColor());
         dComponent.setStrokeColor(de.getStrokeColor());
@@ -141,6 +144,11 @@ public class DrawingView extends View {
         dComponent.setEndPoint(point);
 
         dComponent.draw(de.getBackCanvas());
+
+        if(dComponent.getType() == ComponentType.STROKE) {
+            Canvas canvas = new Canvas(de.getLastDrawingBitmap());
+            dComponent.draw(canvas);
+        }
     }
 
     public void initDrawingComponent() {
@@ -158,12 +166,12 @@ public class DrawingView extends View {
     }
 
     public void sendModeMqttMessage() {
-        MqttMessageFormat messageFormat = new MqttMessageFormat(de.getUsername(), de.getCurrentMode());
+        MqttMessageFormat messageFormat = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode());
         client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
     }
 
     public void sendDrawMqttMessage(int action) {
-        MqttMessageFormat messageFormat = new MqttMessageFormat(de.getUsername(), de.getCurrentMode(), de.getCurrentType(), dComponent, action);
+        MqttMessageFormat messageFormat = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), de.getCurrentType(), dComponent, action);
         client.publish(client.getTopic_data(),  parser.jsonWrite(messageFormat));
     }
 
@@ -177,7 +185,8 @@ public class DrawingView extends View {
 
         de.addHistory(new DrawingItem(de.getCurrentMode(), dComponent/*, de.getDrawingBitmap()*/));
         Log.i("drawing", "history.size()=" + de.getHistory().size());
-        de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+        if(dComponent.getType() != ComponentType.STROKE)
+            de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
         de.clearUndoArray();
     }
 
@@ -211,9 +220,10 @@ public class DrawingView extends View {
             case MotionEvent.ACTION_DOWN:
                 isExit = false;
                 Log.i("mqtt", "isExit3 = " + isExit);
-                de.addCurrentComponents(dComponent);
-                Log.i("drawing", "currentComponents.size() = " + de.getCurrentComponents().size());
 
+                /*de.addCurrentComponents(dComponent);
+                Log.i("drawing", "currentComponents.size() = " + de.getCurrentComponents().size());
+*/
                 setComponentAttribute(dComponent);
 
                 point = new Point((int)event.getX(), (int)event.getY());
@@ -239,6 +249,10 @@ public class DrawingView extends View {
                 //publish
                 sendDrawMqttMessage(event.getAction());
 
+                Log.i("drawing", "dComponent: id=" + dComponent.getId() + ", endPoint=" + dComponent.getEndPoint().toString());
+                DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
+                Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
+                dComponent.setId(upComponent.getId());
                 doInDrawActionUp(dComponent);
                 return true;
             default:
@@ -321,12 +335,20 @@ public class DrawingView extends View {
     }
 
     public void undo() {
+        Mode preMode = de.getCurrentMode();
+        de.setCurrentMode(Mode.UNDO);
+        sendModeMqttMessage();
         de.undo();
         invalidate();
+        de.setCurrentMode(preMode);
     }
 
     public void redo() {
+        Mode preMode = de.getCurrentMode();
+        de.setCurrentMode(Mode.REDO);
+        sendModeMqttMessage();
         de.redo();
         invalidate();
+        de.setCurrentMode(preMode);
     }
 }

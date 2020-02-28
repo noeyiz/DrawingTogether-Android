@@ -54,6 +54,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@null"
+                android:onClick="@{vm::clickUndo}"
                 android:text="undo" />
 
             <Button
@@ -62,6 +63,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@null"
+                android:onClick="@{vm::clickRedo}"
                 android:text="redo" />
 
             <Button
@@ -126,21 +128,37 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#e9e9e9"
-                android:orientation="horizontal"
                 android:layout_margin="5dp"
-                android:padding="5dp">
+                android:orientation="vertical">
 
-                <TextView
+                <LinearLayout
+                    android:id="@+id/user_info"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="현재 인원 : "/>
+                    android:background="#e9e9e9"
+                    android:orientation="horizontal"
+                    android:padding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="현재 인원 : "/>
+
+                    <TextView
+                        android:id="@+id/user_num"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@={vm.userNum}"/>
+
+                </LinearLayout>
 
                 <TextView
-                    android:id="@+id/user_num"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@={vm.userNum}"/>
+                    android:id="@+id/user_print"
+                    android:layout_width="100dp"
+                    android:layout_height="200dp"
+                    android:visibility="invisible"
+                    android:background="#FFFFFF"
+                    android:text="@={vm.userPrint}"/>
 
             </LinearLayout>
 

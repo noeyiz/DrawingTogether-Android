@@ -1,6 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Color;
+import android.util.Log;
 import android.view.DragEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,12 +27,19 @@ class FrameLayoutDragListener implements View.OnDragListener {
         Text text = de.getCurrentText();
         TextAttribute textAttribute = text.getTextAttribute();
 
+        /*
         int x = (int)event.getX() - (textView.getWidth()/2);
         int y = (int)event.getY() - (textView.getHeight()/2);
+        */
+
+        int x = (int)event.getX();
+        int y = (int)event.getY();
 
         switch (event.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:
+                textAttribute.setTextMoved(true);
 
+                textAttribute.setPreCoordinates(x, y);
                 textAttribute.setCoordinates(x, y);
                 text.sendMqttMessage(TextMode.DRAG_STARTED);
                 break;
@@ -49,6 +57,11 @@ class FrameLayoutDragListener implements View.OnDragListener {
                 viewGroup.addView(textView);
 
                 text.sendMqttMessage(TextMode.DROP);
+                Log.i("drawing", "text drop");
+                //de.addHistory(new DrawingItem(TextMode.DROP, textAttribute)); //fixme minj - addHistory
+                Log.i("drawing", "history.size()=" + de.getHistory().size());
+                de.clearUndoArray();
+
                 break;
             case DragEvent.ACTION_DRAG_ENDED:
                 textView.setVisibility(View.VISIBLE);

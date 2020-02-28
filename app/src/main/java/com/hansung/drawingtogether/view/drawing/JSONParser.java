@@ -10,9 +10,13 @@ public enum JSONParser {
 
     public static JSONParser getInstance() { return INSTANCE; }
 
-    private JSONParser() {
+
+    private JSONParser() { }
+
+    public void initJsonParser(DrawingFragment drawingFragment) {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(DrawingComponent.class, new DrawingComponentAdapter());
+        gsonBuilder.registerTypeAdapter(Text.class, new TextAdapter(drawingFragment));
         gson = gsonBuilder.create();
     }
 

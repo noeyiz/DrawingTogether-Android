@@ -1,5 +1,6 @@
 package com.hansung.drawingtogether.view.main;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -51,7 +52,11 @@ public class MainViewModel extends BaseViewModel {
     private boolean newName;
     private boolean newMaster;
 
+    private MQTTSettingData data = MQTTSettingData.getInstance();
+
     private boolean hasSpecialCharacterAndBlank;
+
+    private ProgressDialog progressDialog;
 
     public MainViewModel() {
 
@@ -86,6 +91,7 @@ public class MainViewModel extends BaseViewModel {
     }
 
     public void hasSpecialCharacterAndBlank() {
+
         if (ip.getValue().equals("")) {
             setIpError("아이피 주소를 입력해주세요");
             hasSpecialCharacterAndBlank = true;
@@ -96,52 +102,53 @@ public class MainViewModel extends BaseViewModel {
             hasSpecialCharacterAndBlank = true;
         }
 
-        if (getTopic().getValue().equals("")) {
+        // fixme hyeyeon - getter로 값 가져오기 -> 직접 값 가져오기 (복잡해보여서)
+        if (topic.getValue().equals("")) {
             setTopicError("빈칸을 채워주세요");
             hasSpecialCharacterAndBlank = true;
         }
 
-        if (getPassword().getValue().equals("")) {
+        if (password.getValue().equals("")) {
             setPasswordError("빈칸을 채워주세요");
             hasSpecialCharacterAndBlank = true;
         }
 
-        if (getName().getValue().equals("")) {
+        if (name.getValue().equals("")) {
             setNameError("빈칸을 채워주세요");
             hasSpecialCharacterAndBlank = true;
         }
 
-        if (!getTopic().getValue().matches("[0-9|a-z|A-Z|ㄱ-ㅎ|ㅏ-ㅣ|가-힝]*")) {
+        if (!topic.getValue().matches("[0-9|a-z|A-Z|ㄱ-ㅎ|ㅏ-ㅣ|가-힝]*")) {
             setTopicError("특수문자를 포함하면 안됩니다");
             hasSpecialCharacterAndBlank = true;
         }
 
-        if (!getPassword().getValue().matches("[0-9|a-z|A-Z|ㄱ-ㅎ|ㅏ-ㅣ|가-힝]*")) {
+        if (!password.getValue().matches("[0-9|a-z|A-Z|ㄱ-ㅎ|ㅏ-ㅣ|가-힝]*")) {
             setPasswordError("특수문자를 포함하면 안됩니다");
             hasSpecialCharacterAndBlank = true;
         }
 
-        if (!getName().getValue().matches("[0-9|a-z|A-Z|ㄱ-ㅎ|ㅏ-ㅣ|가-힝]*")) {
+        if (!name.getValue().matches("[0-9|a-z|A-Z|ㄱ-ㅎ|ㅏ-ㅣ|가-힝]*")) {
             setNameError("특수문자를 포함하면 안됩니다");
             hasSpecialCharacterAndBlank = true;
         }
 
-        for (int i=0; i<getTopic().getValue().length(); i++) {
-            if (getTopic().getValue().charAt(i) == ' ') {
+        for (int i=0; i<topic.getValue().length(); i++) {
+            if (topic.getValue().charAt(i) == ' ') {
                 setTopicError("공백을 포함하면 안됩니다");
                 hasSpecialCharacterAndBlank = true;
             }
         }
 
-        for (int i=0; i<getPassword().getValue().length(); i++) {
-            if (getPassword().getValue().charAt(i) == ' ') {
+        for (int i=0; i<password.getValue().length(); i++) {
+            if (password.getValue().charAt(i) == ' ') {
                 setPasswordError("공백을 포함하면 안됩니다");
                 hasSpecialCharacterAndBlank = true;
             }
         }
 
-        for (int i=0; i<getName().getValue().length(); i++) {
-            if (getName().getValue().charAt(i) == ' ') {
+        for (int i=0; i<name.getValue().length(); i++) {
+            if (name.getValue().charAt(i) == ' ') {
                 setNameError("공백을 포함하면 안됩니다");
                 hasSpecialCharacterAndBlank = true;
             }
@@ -149,6 +156,8 @@ public class MainViewModel extends BaseViewModel {
     }
 
     public void startDrawing(View view) {
+        setIpError("");
+        setPortError("");
         setTopicError("");
         setPasswordError("");
         setNameError("");
@@ -158,9 +167,13 @@ public class MainViewModel extends BaseViewModel {
 
         Log.e("kkankkan", hasSpecialCharacterAndBlank + "");
 
-        Log.e("kkankkan", getTopic().getValue() + " / " + getPassword().getValue() + " / " + getName().getValue() + " / " + getMasterCheck().getValue().toString());
+        Log.e("kkankkan", topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
 
         if (!hasSpecialCharacterAndBlank) {
+            progressDialog = new ProgressDialog(view.getContext());
+            progressDialog.setMessage("Loding...");
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.show();
 
             databaseReference.child(getTopic().getValue()).runTransaction(new Transaction.Handler() {
                 @NonNull
@@ -168,18 +181,17 @@ public class MainViewModel extends BaseViewModel {
                 public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
                     existTopic = false;
 
-
                     if (mutableData.child("master").getValue() == null) {  // 새 토픽
                         mutableData.child("master").setValue(true);
-                        mutableData.child("password").setValue(getPassword().getValue());
-                        mutableData.child("username").child(getName().getValue()).setValue(getName().getValue());
+                        mutableData.child("password").setValue(password.getValue());
+                        mutableData.child("username").child(name.getValue()).setValue(name.getValue());
 
                         Log.e("kkankkan", "새 토픽 올림!, 마스터는 나야");  // 왜 계속 불려???? 진짜 이상한데 잘됨 ..0
                     }
                     else {  // 기존 토픽
                         existTopic = true;
-                        if (mutableData.child("password").getValue().equals(getPassword().getValue())) {
-                            if (mutableData.child("username").hasChild(getName().getValue())) {
+                        if (mutableData.child("password").getValue().equals(password.getValue())) {
+                            if (mutableData.child("username").hasChild(name.getValue())) {
                                 setNameError("이미 사용중인 이름입니다");
                                 Log.e("kkankkan", "이미 사용중인 이름");
 
@@ -187,13 +199,13 @@ public class MainViewModel extends BaseViewModel {
                             else {
                                 newName = true;
                                 if (mutableData.child("master").getValue().equals(true)) {
-                                    mutableData.child("username").child(getName().getValue()).setValue(getName().getValue());
+                                    mutableData.child("username").child(name.getValue()).setValue(name.getValue());
                                     Log.e("kkankkan", "마스터 이미 있음");
                                 }
                                 else {
                                     newMaster = true;
                                     mutableData.child("master").setValue(true);
-                                    mutableData.child("username").child(getName().getValue()).setValue(getName().getValue());
+                                    mutableData.child("username").child(name.getValue()).setValue(name.getValue());
                                     Log.e("kkankkan", "마스터는 나야");
 
                                 }
@@ -214,75 +226,92 @@ public class MainViewModel extends BaseViewModel {
                     Log.e("kkankkan", "transaction complete");
                     if (!existTopic) {
                         //setMasterCheck(true);
-                        Bundle bundle = new Bundle();
+
+                        // fixme hyeyeon
+                        data.setIp(ip.getValue());
+                        data.setPort(port.getValue());
+                        data.setTopic(topic.getValue());
+                        data.setPassword(password.getValue());
+                        data.setName(name.getValue());
+                        data.setMaster(true);
+
+                        /*Bundle bundle = new Bundle();
                         bundle.putString("topic", getTopic().getValue());
                         bundle.putString("name", getName().getValue());
                         bundle.putString("password", getPassword().getValue());
                         bundle.putString("master", Boolean.toString(true));
                         bundle.putString("ip", ip.getValue());
-                        bundle.putString("port", port.getValue());
+                        bundle.putString("port", port.getValue());*/
 
-                        setIpError("");
-                        setPortError("");
                         setTopic("");
                         setPassword("");
                         setName("");
                         //setMasterCheck(false);
                         Log.e("kkankkan", "메인뷰모델 초기화");
 
-                        navigate(R.id.action_mainFragment_to_drawingFragment, bundle);
+                        navigate(R.id.action_mainFragment_to_drawingFragment);
+                        //navigate(R.id.action_mainFragment_to_drawingFragment, bundle);
                     }
                     else if (newName) {
                         if (newMaster) {
                             //setMasterCheck(true);
+                            data.setIp(ip.getValue());
+                            data.setPort(port.getValue());
+                            data.setTopic(topic.getValue());
+                            data.setPassword(password.getValue());
+                            data.setName(name.getValue());
+                            data.setMaster(true);
 
-                            Bundle bundle = new Bundle();
+                            /*Bundle bundle = new Bundle();
                             bundle.putString("topic", getTopic().getValue());
                             bundle.putString("name", getName().getValue());
                             bundle.putString("password", getPassword().getValue());
                             bundle.putString("master", Boolean.toString(true));
                             bundle.putString("ip", ip.getValue());
-                            bundle.putString("port", port.getValue());
+                            bundle.putString("port", port.getValue());*/
 
-                            setIpError("");
-                            setPortError("");
                             setTopic("");
                             setPassword("");
                             setName("");
                             //setMasterCheck(false);
                             Log.e("kkankkan", "메인뷰모델 초기화");
 
-                            navigate(R.id.action_mainFragment_to_drawingFragment, bundle);
+                            navigate(R.id.action_mainFragment_to_drawingFragment);
+                            // navigate(R.id.action_mainFragment_to_drawingFragment, bundle);
                         }
                         else {
-                            Bundle bundle = new Bundle();
+                            data.setIp(ip.getValue());
+                            data.setPort(port.getValue());
+                            data.setTopic(topic.getValue());
+                            data.setPassword(password.getValue());
+                            data.setName(name.getValue());
+                            data.setMaster(false);
+
+                            /*Bundle bundle = new Bundle();
                             bundle.putString("topic", getTopic().getValue());
                             bundle.putString("name", getName().getValue());
                             bundle.putString("password", getPassword().getValue());
                             bundle.putString("master", Boolean.toString(false));
                             bundle.putString("ip", ip.getValue());
-                            bundle.putString("port", port.getValue());
+                            bundle.putString("port", port.getValue());*/
 
-                            setIpError("");
-                            setPortError("");
                             setTopic("");
                             setPassword("");
                             setName("");
                             //setMasterCheck(false);
                             Log.e("kkankkan", "메인뷰모델 초기화");
 
-                            navigate(R.id.action_mainFragment_to_drawingFragment, bundle);
+                            navigate(R.id.action_mainFragment_to_drawingFragment);
+                            //navigate(R.id.action_mainFragment_to_drawingFragment, bundle);
                         }
-
                     }
-
                     newName = false;
                     newMaster = false;
+
+                    progressDialog.dismiss();
                 }
             });
-
         }
-
     }
 
 
@@ -308,15 +337,34 @@ public class MainViewModel extends BaseViewModel {
                             }
                         }
 
+<<<<<<< HEAD
+                                Bundle bundle = new Bundle();
+                                bundle.putString("topic", getTopic().getValue());
+                                bundle.putString("name", getName().getValue());
+                                bundle.putString("password", getPassword().getValue());
+                                bundle.putString("master", getMasterCheck().getValue().toString());
+                                bundle.putString("ip", ip.getValue());
+                                bundle.putString("port", port.getValue());
+=======
                         if (!isExistName) {
                             JSONObject obj = new JSONObject();
                             obj.put("name", getName().getValue());
                             array.put(obj);
 
                             object.put("names", array);
+>>>>>>> origin/login
 
                             Log.e("kkankkan", "기존 토픽에 새로운 사용자 추가 : " + object.toString());
 
+<<<<<<< HEAD
+                                setIpError("");
+                                setPortError("");
+                                setTopic("");
+                                setPassword("");
+                                setName("");
+                                setMasterCheck();
+                                Log.e("kkankkan", "메인뷰모델 초기화");
+=======
                             UploadTask uploadTask = storageReference.child(getTopic().getValue()).putBytes(object.toString().getBytes());
                             uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override
@@ -328,6 +376,7 @@ public class MainViewModel extends BaseViewModel {
                                     bundle.putString("master", getMasterCheck().getValue().toString());
                                     bundle.putString("ip", ip.getValue());
                                     bundle.putString("port", port.getValue());
+>>>>>>> origin/login
 
                                     Log.e("kkankkan", getMasterCheck().getValue().toString());
                                     Log.e("kkankkan", "기존 토픽에 새로운 사용자 upload success !!");
@@ -373,9 +422,53 @@ public class MainViewModel extends BaseViewModel {
                         }
 
                     }
+<<<<<<< HEAD
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {  // 새로운 topic
+                    try {
+                        JSONObject object = new JSONObject();
+                        object.put("topic", getTopic().getValue());
+                        object.put("password", getPassword().getValue());
+
+                        JSONArray array = new JSONArray();
+                        JSONObject name = new JSONObject();
+                        name.put("name", getName().getValue());
+                        array.put(name);
+                        object.put("names", array);
+
+                        Log.e("kkankkan", "새로운 토픽 : "  + object.toString());
+
+                        UploadTask uploadTask = storageReference.child(getTopic().getValue()).putBytes(object.toString().getBytes());
+                        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                Bundle bundle = new Bundle();
+                                bundle.putString("topic", getTopic().getValue());
+                                bundle.putString("name", getName().getValue());
+                                bundle.putString("password", getPassword().getValue());
+                                bundle.putString("master", getMasterCheck().getValue().toString());
+                                bundle.putString("ip", ip.getValue());
+                                bundle.putString("port", port.getValue());
+
+                                Log.e("kkankkan", "새로운 토픽 upload success !!");
+
+                                setIpError("");
+                                setPortError("");
+                                setTopic("");
+                                setPassword("");
+                                setName("");
+                                setMasterCheck();
+                                Log.e("kkankkan", "메인뷰모델 초기화");
+                                // navigate(R.id.action_topicFragment_to_drawingFragment);
+
+                                navigate(R.id.action_mainFragment_to_drawingFragment, bundle);
+=======
                     else {
                         Log.e("kkankkan", "password가 일치하지 않습니다");
                     }
+>>>>>>> origin/login
 
                 }catch (JSONException ex) {
 
@@ -468,8 +561,7 @@ public class MainViewModel extends BaseViewModel {
         return passwordError;
     }
 
-    public MutableLiveData<String> getNameError
-            () {
+    public MutableLiveData<String> getNameError() {
         return nameError;
     }
 
@@ -496,6 +588,7 @@ public class MainViewModel extends BaseViewModel {
     public void setPortError(String port) {
         this.portError.postValue(port);
     }
+
 
     public void setTopicError(String text) {
         this.topicError.postValue(text);

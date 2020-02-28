@@ -1,5 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
+import android.util.Log;
+
 import java.util.Vector;
 
 import lombok.Getter;
@@ -10,6 +12,8 @@ import lombok.Setter;
 public class DrawingItem {
     private Mode mode;
     private Vector<DrawingComponent> components;
+    private TextMode textMode;
+    private TextAttribute textAttribute;
     //private ArrayList<Point> drawingBoardItem;
     //private Bitmap bitmap;
 
@@ -28,6 +32,12 @@ public class DrawingItem {
         this.components = new Vector<>();
         this.components.addAll(components);
         //this.bitmap = bitmap.copy(bitmap.getConfig(), true);//Bitmap.createBitmap(bitmap);
+    }
+
+    public DrawingItem(TextMode textMode, TextAttribute textAttribute) {
+        this.textMode = textMode;
+        this.textAttribute = textAttribute;
+        Log.i("drawing", "preText=" + textAttribute.getPreText() + ", text=" + textAttribute.getText());
     }
 
 }
