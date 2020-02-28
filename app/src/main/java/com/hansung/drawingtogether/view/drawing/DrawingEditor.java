@@ -196,8 +196,13 @@ public enum DrawingEditor {
         this.drawingComponents.addAll(components);
     }
 
-    public void removeAllDrawingComponents(Vector<DrawingComponent> components) {
+    /*public void removeAllDrawingComponents(Vector<DrawingComponent> components) {
         drawingComponents.removeAll(components);
+    }*/
+
+    public void removeAllDrawingComponents(Vector<Integer> ids) {
+        for(int i: ids)
+            removeDrawingComponents(i);
     }
 
     public void removeDrawingComponents(int id) {
@@ -207,6 +212,22 @@ public enum DrawingEditor {
                 break;
             }
         }
+    }
+
+    public boolean isContainsAllDrawingComponents(Vector<Integer> ids) {
+        for(int i: ids) {
+            if(!isContainsDrawingComponents(i))
+                return false;
+        }
+        return true;
+    }
+
+    public boolean isContainsDrawingComponents(int id) {
+        for(DrawingComponent component: drawingComponents) {
+            if(component.getId() == id)
+                return true;
+        }
+        return false;
     }
 
     /*public void updateDrawingComponentsId(int changedId, DrawingComponent component) {
@@ -286,12 +307,13 @@ public enum DrawingEditor {
     }
 
     public boolean isContainsRemovedComponentIds(Vector<Integer> ids) {
+        boolean flag = true;
         for(int i=1; i<ids.size(); i++) {
             if(!removedComponentId.contains(ids.get(i))) {
-                return false;
+                flag = false;
             }
         }
-        return true;
+        return flag;
     }
 
     public void addHistory(DrawingItem item) {
@@ -308,17 +330,28 @@ public enum DrawingEditor {
         for (DrawingComponent component: lastItem.getComponents()) {
             ids.add(component.getId());
         }
+        Log.i("drawing", "last item ids = " + ids.toString());
+
+        String str = "dc = ";
+        for(DrawingComponent component: getDrawingComponents()) {
+            str += component.getId() + " ";
+        }
+        Log.i("drawing", str);
 
         switch(lastItem.getMode()) {
             case DRAW:
             case ERASE:
-                if(drawingComponents.containsAll(lastItem.getComponents())) {       //erase
+                //if(drawingComponents.containsAll(lastItem.getComponents())) {       //erase
+                if(isContainsAllDrawingComponents(ids)) {       //erase
+                    Log.i("drawing", "update erase");
                     clearDrawingBitmap();
                     addRemovedComponentIds(ids);
-                    removeAllDrawingComponents(lastItem.getComponents());
+                    //removeAllDrawingComponents(lastItem.getComponents());
+                    removeAllDrawingComponents(ids);
                     drawAllDrawingComponents();
                     eraseDrawingBoardArray(ids);
                 } else {
+                    Log.i("drawing", "update draw");
                     for (DrawingComponent component: lastItem.getComponents()) {    //draw
                         component.calculateRatio(myCanvasWidth, myCanvasHeight);
                         component.drawComponent(getBackCanvas());
@@ -330,7 +363,6 @@ public enum DrawingEditor {
                     //drawAllDrawingComponents();
                 }
                 setLastDrawingBitmap(getDrawingBitmap().copy(getDrawingBitmap().getConfig(), true));
-                Log.i("drawing", "drawingComponents.size() = " + getDrawingComponents().size());
                 Log.i("drawing", "removedComponentIds = " + getRemovedComponentId());
 
                 break;
@@ -777,7 +809,6 @@ public enum DrawingEditor {
             return;
         }
 
-        //invalidateDrawingView();
         Log.i("drawing", "history.size()=" + getHistory().size());
         /*Bitmap bitmap = history.get(history.size() - 1).getBitmap();
         drawingBitmap = bitmap.copy(bitmap.getConfig(), true);
@@ -790,7 +821,6 @@ public enum DrawingEditor {
 
         history.add(popUndoArray());
 
-        //invalidateDrawingView();
         Log.i("drawing", "history.size()=" + getHistory().size());
         /*Bitmap bitmap = history.get(history.size() - 1).getBitmap();
         drawingBitmap = bitmap.copy(bitmap.getConfig(), true);
@@ -869,6 +899,10 @@ public enum DrawingEditor {
 
     public void setHistory(ArrayList<DrawingItem> history) {
         this.history = history;
+    }
+
+    public void setRemovedComponentId(Vector<Integer> removedComponentId) {
+        this.removedComponentId = removedComponentId;
     }
 
     public void setCurrentMode(Mode currentMode) {

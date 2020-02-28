@@ -268,6 +268,7 @@ public enum MQTTClient {
                             // 필요한 배열 리스트들과 배경 이미지 세팅
                             de.setDrawingComponents(mqttMessageFormat.getDrawingComponents());
                             de.setHistory(mqttMessageFormat.getHistory());
+                            de.setRemovedComponentId(mqttMessageFormat.getRemovedComponentId());
 
                             de.setTexts(mqttMessageFormat.getTexts());
                             if(mqttMessageFormat.getBitmapByteArray() != null) { de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()); }
@@ -280,6 +281,7 @@ public enum MQTTClient {
                             Log.e("my name, texts size", myName + ", " + de.getTexts().size());
                             Log.e("componentId variable value, last componentId", de.getComponentId() + "");//fixme minj size = 0일 때 ArrayIndexOutOfBoundsException // + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
                             Log.e("textId variable value, last textId", de.getTextId() + ""); //+ ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
+                            Log.e("removedComponentId[] = ", de.getRemovedComponentId().toString());
 
                             client.publish(topic_data, new MqttMessage(JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)).getBytes()));
                         }
@@ -296,10 +298,11 @@ public enum MQTTClient {
                                 Log.e("M my name, texts size", myName + ", " + de.getTexts().size());
                                 Log.e("M componentId variable value, last componentId", de.getComponentId() + "");// + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
                                 Log.e("M textId variable value, last textId", de.getTextId() + "");// + ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
+                                Log.e("M removedComponentId[] = ", de.getRemovedComponentId().toString());
 
                                 MqttMessageFormat messageFormat;
-                                if(de.getBackgroundImage() == null) { messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory()); }
-                                else {  messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.bitmapToByteArray(de.getBackgroundImage())); }
+                                if(de.getBackgroundImage() == null) { messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getRemovedComponentId()); }
+                                else {  messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getRemovedComponentId(), de.bitmapToByteArray(de.getBackgroundImage())); }
                                 MqttMessage mqttMessage = new MqttMessage(parser.jsonWrite(messageFormat).getBytes());
                                 client.publish(topic_join, mqttMessage);
 
@@ -528,6 +531,7 @@ public enum MQTTClient {
                     } else {
                         de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
                     }
+                    de.clearUndoArray();
                     return null;
             }
             return null;
@@ -720,6 +724,8 @@ public enum MQTTClient {
             drawingView.invalidate();
         }
     }
+
+    //-----setter-----
 
     public void setDrawingFragment(DrawingFragment drawingFragment) {
         this.drawingFragment = drawingFragment;

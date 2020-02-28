@@ -166,12 +166,12 @@ public class DrawingView extends View {
     }
 
     public void sendModeMqttMessage() {
-        MqttMessageFormat messageFormat = new MqttMessageFormat(de.getUsername(), de.getCurrentMode());
+        MqttMessageFormat messageFormat = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode());
         client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
     }
 
     public void sendDrawMqttMessage(int action) {
-        MqttMessageFormat messageFormat = new MqttMessageFormat(de.getUsername(), de.getCurrentMode(), de.getCurrentType(), dComponent, action);
+        MqttMessageFormat messageFormat = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), de.getCurrentType(), dComponent, action);
         client.publish(client.getTopic_data(),  parser.jsonWrite(messageFormat));
     }
 
