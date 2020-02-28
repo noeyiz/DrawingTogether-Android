@@ -34,6 +34,7 @@ public class TextAttribute {
     private int y;
 
     private boolean isTextInited = false; // fixme nayeon (Text class -> TextAttribute Class)
+    private boolean isTextMoved = false;
 
 /*
 

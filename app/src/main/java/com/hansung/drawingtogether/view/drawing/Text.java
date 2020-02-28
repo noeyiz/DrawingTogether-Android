@@ -84,10 +84,8 @@ public class Text { // EditTextView
         editText.setLayoutParams(frameLayoutParams);
         textView.setLayoutParams(frameLayoutParams);
 
-        if(this.textAttribute.isTextInited()) { setTextViewLocationInConstructor(); } // 텍스트가 초기화 되어있을 경우 (이미 누군가에 의해 생성된 텍스트) - for middleman
-        else {
-            frameLayoutParams.gravity = Gravity.CENTER | Gravity.TOP;
-        }
+        if(this.textAttribute.isTextInited() && this.textAttribute.isTextMoved()) { setTextViewLocationInConstructor(); } // 텍스트가 초기화 되어있을 경우 (이미 누군가에 의해 생성된 텍스트) - for middleman
+        else { frameLayoutParams.gravity = Gravity.CENTER | Gravity.TOP; }
 
         setListenerOnTextView();
 
@@ -334,9 +332,11 @@ public class Text { // EditTextView
 
         textView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
 
+        float x = textAttribute.getX() * xRatio - (textView.getMeasuredWidth()/2);
+        float y = textAttribute.getY() * yRatio - (textView.getMeasuredHeight()/2);
 
-        textView.setX(textAttribute.getX() * xRatio - (textView.getMeasuredWidth()/2));
-        textView.setY(textAttribute.getY() * yRatio - (textView.getMeasuredHeight()/2));
+        textView.setX(x);
+        textView.setY(y);
     }
 
     public void setPreTextViewLocation() {
