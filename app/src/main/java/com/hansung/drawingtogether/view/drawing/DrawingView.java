@@ -253,9 +253,13 @@ public class DrawingView extends View {
                 sendDrawMqttMessage(event.getAction());
 
                 Log.i("drawing", "dComponent: id=" + dComponent.getId() + ", endPoint=" + dComponent.getEndPoint().toString());
-                DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
-                Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
-                dComponent.setId(upComponent.getId());
+                try {
+                    DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
+                    Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
+                    dComponent.setId(upComponent.getId());
+                } catch(NullPointerException e) {
+                    e.printStackTrace();
+                }
                 doInDrawActionUp(dComponent);
                 return true;
             default:

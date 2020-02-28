@@ -158,6 +158,7 @@ public class DrawingFragment extends Fragment {
         client.subscribe(topic + "_exit");
         client.subscribe(topic + "_delete");
         client.subscribe(topic + "_data");
+        client.subscribe(topic + "_mid");
         // client.publish(topic_data ~~);
 
         // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)

@@ -271,6 +271,8 @@ public class Text { // EditTextView
 
             Log.i("drawing", "text create");
             de.addHistory(new DrawingItem(TextMode.CREATE, getTextAttribute())); //fixme minj - addHistory
+            if(de.getHistory().size() == 1)
+                de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
             Log.i("drawing", "history.size()=" + de.getHistory().size());
             de.clearUndoArray();
         }
@@ -293,19 +295,21 @@ public class Text { // EditTextView
         removeEditTextToFrameLayout(); // EditText 를 레이아웃에서 제거하고
         addTextViewToFrameLayout();
 
-        sendMqttMessage(TextMode.DONE); // 사용 종료를 알리기 위해 보내야함 ( 사용자이름 : null )
-
         String preText = textAttribute.getPreText();
         if(preText != null && !preText.equals(textAttribute.getText())) {   //modify 이전과 text 가 달라졌을 때만 history 에 저장
-            isModified = true;
+            textAttribute.setModified(true);
             Log.i("drawing", "text modify");
             de.addHistory(new DrawingItem(TextMode.MODIFY, getTextAttribute()));   //fixme minj - addHistory
             Log.i("drawing", "history.size()=" + de.getHistory().size());
             de.clearUndoArray();
         }
 
+        sendMqttMessage(TextMode.DONE); // 사용 종료를 알리기 위해 보내야함 ( 사용자이름 : null )
+        Log.i("drawing", "isModified = " + isModified);
+
         de.setCurrentMode(Mode.DRAW); // 텍스트 편집이 완료 되면 현재 모드는 기본 드로잉 모드로
         drawingFragment.getBinding().drawBtn.performClick();
+        textAttribute.setModified(false);
     }
 
     public void activeEditText() {

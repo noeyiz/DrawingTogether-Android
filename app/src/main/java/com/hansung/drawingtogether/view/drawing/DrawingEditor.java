@@ -363,8 +363,11 @@ public enum DrawingEditor {
         DrawingItem lastItem = history.get(index);
         history.remove(index);
 
-        updateLastItem(lastItem, true);
-
+        try {
+            updateLastItem(lastItem, true);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
         return lastItem;
     }
 
@@ -372,7 +375,11 @@ public enum DrawingEditor {
         int index = undoArray.size() - 1;
         DrawingItem lastItem = undoArray.get(index);
 
-        updateLastItem(lastItem, false);
+        try {
+            updateLastItem(lastItem, false);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
         undoArray.remove(index);
 
         return lastItem;

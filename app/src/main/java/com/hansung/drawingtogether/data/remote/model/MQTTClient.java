@@ -74,6 +74,7 @@ public enum MQTTClient {
     private String topic_exit;
     private String topic_delete;
     private String topic_data;
+    private String topic_mid;
     // private String topic_load;
 
     private DrawingViewModel drawingViewModel;
@@ -105,6 +106,7 @@ public enum MQTTClient {
         topic_exit = this.topic + "_exit";
         topic_delete = this.topic + "_delete";
         topic_data = this.topic + "_data";
+        topic_mid = this.topic + "_mid";
 
         this.drawingViewModel = drawingViewModel;
         this.drawingViewModel.setUserNum(userList.size());
@@ -285,7 +287,8 @@ public enum MQTTClient {
                             Log.e("textId variable value, last textId", de.getTextId() + "");                       //+ ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
                             Log.e("removedComponentId[] = ", de.getRemovedComponentId().toString());
 */
-                            client.publish(topic_data, new MqttMessage(JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)).getBytes()));
+                            //client.publish(topic_data, new MqttMessage(JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)).getBytes()));
+                            client.publish(topic_mid, new MqttMessage(JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)).getBytes()));
                         }
                     }
                     else {  // other or self // 메시지 형식이 "name":"이름"  일 경우
@@ -458,6 +461,14 @@ public enum MQTTClient {
                     drawingTask.execute(messageFormat);
                     //drawingTask.cancel(true);
                 }
+
+                //mid data 처리
+                if(newTopic.equals(topic_mid)) {
+                    String msg = new String(message.getPayload());
+                    MqttMessageFormat messageFormat = (MqttMessageFormat)parser.jsonReader(msg);
+
+                    new MidTask().execute(messageFormat);
+                }
             }
 
             @Override
@@ -477,7 +488,7 @@ public enum MQTTClient {
         private float myCanvasWidth = drawingView.getCanvasWidth();
         private float myCanvasHeight = drawingView.getCanvasHeight();
 
-        private Void draw() {
+        private Void draw(MqttMessageFormat message) {
             if(action == MotionEvent.ACTION_DOWN) {
                 if (de.isContainsCurrentComponents(dComponent.getId())) {
                     if(de.getUsername().equals(username)) {
@@ -515,10 +526,15 @@ public enum MQTTClient {
                     dComponent.draw(de.getBackCanvas());
 
                     Log.i("drawing", "dComponent: id=" + dComponent.getId() + ", endPoint=" + dComponent.getEndPoint().toString());
-                    DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
-                    Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
-                    dComponent.setId(upComponent.getId());
-
+                    try {
+                        DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
+                        Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
+                        dComponent.setId(upComponent.getId());
+                    } catch (NullPointerException e) {
+                        dComponent.setId(dComponent.getId());
+                        dComponent.drawComponent(de.getBackCanvas());
+                        e.printStackTrace();
+                    }
                     de.removeCurrentComponents(dComponent.getId());
                     de.splitPoints(dComponent, myCanvasWidth, myCanvasHeight);
                     de.addDrawingComponents(dComponent);
@@ -531,7 +547,7 @@ public enum MQTTClient {
                     } else {
                         de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
                     }
-                    de.clearUndoArray();
+                    publishProgress(message);
                     return null;
             }
             return null;
@@ -578,8 +594,10 @@ public enum MQTTClient {
                     text.setTextViewLocation();
                     return null;
                 case DONE:
-                    if(text.isModified())                                       //fixme minj for undo, redo
+                    if(textAttr.isModified()) {                                  //fixme minj for undo, redo
                         de.addHistory(new DrawingItem(TextMode.MODIFY, textAttr));
+                        Log.i("drawing", "isModified mqtt= " + textAttr.isModified());
+                    }
                 case DRAG_ENDED:
                     return null;
                 case ERASE:
@@ -636,14 +654,14 @@ public enum MQTTClient {
             // fixme nayeon
             // 메시지를 보낸 사람의 이름이 나의 이름이고, 메시지에 MID 모드가 지정되어 있다면
             // 중간자 자기 자신에게 보낸 메시지
-            if(de.getMyUsername().equals(username) && this.mode.equals(Mode.MID)) {
+            /*if(de.getMyUsername().equals(username) && this.mode.equals(Mode.MID)) {
                 // drawingComponents 그리기
                 // 백그라운드 이미지 지정
                 // texts 붙이기 등등
 
                 publishProgress(message); // 텍스트 붙이기와 배경 이미지 붙이기는 메인 스레드에서 처리 필요
                 return null;
-            }
+            }*/
             /*
             // 텍스트 모드고 텍스트가 처음 생성되었을 경우 [ 송신자 포함 모든 사용자가 처리하는 부분 ]
             if(mode.equals(Mode.TEXT) && textMode.equals(TextMode.CREATE)) {
@@ -664,7 +682,7 @@ public enum MQTTClient {
                 case DRAW:
                     try{
                         Log.i("mqtt", "MESSAGE ARRIVED message: username=" + dComponent.getUsername() + ", mode=" + mode.toString() + ", id=" + dComponent.getId());
-                        draw();
+                        draw(message);
                     } catch(NullPointerException e) {
                         e.printStackTrace();
                     }
@@ -673,6 +691,7 @@ public enum MQTTClient {
                     Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString() + ", id=" + message.getComponentIds().toString());
                     Vector<Integer> erasedComponentIds = message.getComponentIds();
                     new EraserTask(erasedComponentIds).doNotInBackground();
+                    publishProgress(message);
                     return null;
                 case SELECT:
                 case GROUP:
@@ -714,9 +733,11 @@ public enum MQTTClient {
                     break;*/
                 case TEXT:
                     changeTextOnMainThread(message);
+                    if(de.getHistory().size() == 1)
+                        drawingFragment.getBinding().undoBtn.setEnabled(true);
                     break;
 
-                case MID:
+                /*case MID:
                     Log.e("onProgressUpdate", de.getMyUsername());
 
                     if(de.getHistory().size() > 0)
@@ -729,6 +750,18 @@ public enum MQTTClient {
                     de.drawAllDrawingComponentsForMid(myCanvasWidth, myCanvasHeight);
                     de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
                     de.addAllTextViewToFrameLayoutForMid();
+                    break;*/
+
+                case DRAW:
+                    if(action == MotionEvent.ACTION_UP) {
+                        de.clearUndoArray();
+                        if(de.getHistory().size() == 1)
+                            drawingFragment.getBinding().undoBtn.setEnabled(true);
+                    }
+                    break;
+
+                case ERASE:
+                     de.clearUndoArray();
                     break;
 
                 case UNDO:
@@ -772,6 +805,45 @@ public enum MQTTClient {
             }
 
             drawingView.invalidate();
+        }
+    }
+
+    class MidTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
+
+        @Override
+        protected Void doInBackground(MqttMessageFormat... mqttMessageFormats) {
+            MqttMessageFormat message = mqttMessageFormats[0];
+            String username = message.getUsername();
+
+            if(de.getMyUsername().equals(username)) {
+                publishProgress(message); // 텍스트 붙이기와 배경 이미지 붙이기는 메인 스레드에서 처리 필요
+                return null;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(MqttMessageFormat... values) {
+            super.onProgressUpdate(values);
+            Log.e("onProgressUpdate", de.getMyUsername());
+
+            if(de.getHistory().size() > 0)
+                drawingFragment.getBinding().undoBtn.setEnabled(true);
+            else if(de.getUndoArray().size() > 0)
+                drawingFragment.getBinding().redoBtn.setEnabled(true);
+
+            float myCanvasWidth = drawingView.getCanvasWidth();
+            float myCanvasHeight = drawingView.getCanvasHeight();
+            de.drawAllDrawingComponentsForMid(myCanvasWidth, myCanvasHeight);
+            de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+            de.addAllTextViewToFrameLayoutForMid();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            drawingView.invalidate();
+
         }
     }
 
