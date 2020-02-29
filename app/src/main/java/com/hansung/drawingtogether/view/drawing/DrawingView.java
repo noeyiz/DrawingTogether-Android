@@ -55,11 +55,13 @@ public class DrawingView extends View {
 
         canvasWidth = w;
         canvasHeight = h;
-        //de.setMyUsername("mm"); //fixme myUsername
-        de.setDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
-        de.setLastDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
-        de.setBackCanvas(new Canvas(de.getDrawingBitmap()));
-        de.initDrawingBoardArray(w, h);
+
+        if(de.getDrawingComponents().size() == 0) {
+            de.setDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
+            de.setLastDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
+            de.setBackCanvas(new Canvas(de.getDrawingBitmap()));
+            de.initDrawingBoardArray(w, h);
+        }
     }
 
     @Override
@@ -253,6 +255,7 @@ public class DrawingView extends View {
                 sendDrawMqttMessage(event.getAction());
 
                 Log.i("drawing", "dComponent: id=" + dComponent.getId() + ", endPoint=" + dComponent.getEndPoint().toString());
+
                 try {
                     DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
                     Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
@@ -260,6 +263,7 @@ public class DrawingView extends View {
                 } catch(NullPointerException e) {
                     e.printStackTrace();
                 }
+
                 doInDrawActionUp(dComponent);
                 return true;
             default:

@@ -29,7 +29,6 @@ public enum DrawingEditor {
     INSTANCE;
 
     private DrawingFragment drawingFragment;
-    private DrawingView drawingView;
 
     private Bitmap backgroundImage;             //
     private Bitmap drawingBitmap;               //그리기 bitmap
@@ -130,14 +129,14 @@ public enum DrawingEditor {
         }
     }
 
-    public void drawAllDrawingComponentsForMid(float myCanvasWidth, float myCanvasHeight) {   //drawingComponents draw
+    public void drawAllDrawingComponentsForMid(/*float myCanvasWidth, float myCanvasHeight*/) {   //drawingComponents draw
         Iterator<DrawingComponent> iterator = drawingComponents.iterator();
         while(iterator.hasNext()) {
             DrawingComponent component = iterator.next();
             component.calculateRatio(myCanvasWidth, myCanvasHeight);
             component.drawComponent(getBackCanvas());
 
-            splitPoints(component, myCanvasWidth, myCanvasHeight);
+            splitPoints(component, drawingBoardArray[0].length, drawingBoardArray.length);
         }
         Log.i("drawing", "myCanvas w=" + myCanvasWidth + ", h=" + myCanvasHeight);
         Log.i("drawing", "drawingBoardArray[][] w=" + drawingBoardArray[0].length + ", h=" + drawingBoardArray.length);
@@ -647,6 +646,7 @@ public enum DrawingEditor {
             drawingBitmap.eraseColor(Color.TRANSPARENT);
             return;
         }
+
         Log.i("drawing", "history.size()=" + getHistory().size());
     }
 
@@ -655,6 +655,7 @@ public enum DrawingEditor {
             return;
 
         history.add(popUndoArray());
+
         Log.i("drawing", "history.size()=" + getHistory().size());
     }
 
@@ -693,10 +694,6 @@ public enum DrawingEditor {
 
     public void setDrawingFragment(DrawingFragment drawingFragment) {
         this.drawingFragment = drawingFragment;
-    }
-
-    public void setDrawingView(DrawingView drawingView) {
-        this.drawingView = drawingView;
     }
 
     public void setBackgroundImage(Bitmap backgroundImage) {

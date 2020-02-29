@@ -22,8 +22,11 @@ import androidx.lifecycle.MutableLiveData;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
+import com.hansung.drawingtogether.view.main.JoinMessage;
+import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
 import com.kakao.message.template.LinkObject;
@@ -42,6 +45,7 @@ import static java.security.AccessController.getContext;
 public class DrawingViewModel extends BaseViewModel {
     public final SingleLiveEvent<DrawingCommand> drawingCommands = new SingleLiveEvent<>();
     private MutableLiveData<String> userNum = new MutableLiveData<>();
+    private MutableLiveData<String> userPrint = new MutableLiveData<>();  // fixme hyeyeon
 
     private final int PICK_FROM_GALLERY = 0;
     private final int PICK_FROM_CAMERA = 1;
@@ -49,8 +53,47 @@ public class DrawingViewModel extends BaseViewModel {
 
     private DrawingEditor de = DrawingEditor.getInstance();
 
+    // fixme hyeyeon
+    private String ip;
+    private String port;
+    private String topic;
+    private String name;
+    private String password;
+    private boolean master;
+
+    private MQTTClient client = MQTTClient.getInstance();
+    private MQTTSettingData data = MQTTSettingData.getInstance();
+    //
+
     public DrawingViewModel() {
         setUserNum(0);
+        setUserPrint("");  // fixme hyeyeon
+
+        // fixme hyeyeon
+        ip = data.getIp();
+        port = data.getPort();
+        topic = data.getTopic();
+        name = data.getName();
+        password = data.getPassword();
+        master = data.isMaster();
+
+        Log.e("kkankkan", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master);
+
+        JSONParser.getInstance().initJsonParser(de.getDrawingFragment());
+
+        client.init(topic, name, master, this, ip, port);
+        client.setCallback();
+        client.subscribe(topic + "_join");
+        client.subscribe(topic + "_exit");
+        client.subscribe(topic + "_delete");
+        client.subscribe(topic + "_data");
+        client.subscribe(topic + "_mid");
+
+        // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)
+        JoinMessage joinMessage = new JoinMessage(name);
+        MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
+        client.publish(topic + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
+        //
     }
 
     public void clickPen(View view) {
@@ -195,8 +238,12 @@ public class DrawingViewModel extends BaseViewModel {
         return userNum;
     }
 
+    public MutableLiveData<String> getUserPrint() { return userPrint; }  // fixme hyeyeon
+
     public void setUserNum(int num) {
         userNum.postValue(num + "명");
     }
+
+    public void setUserPrint(String user) { userPrint.postValue(user); }  // fixme hyeyoen
 
 }

@@ -63,7 +63,6 @@ public class MqttMessageFormat {
         this.username = username;
         this.mode = mode;
     }
-/*
 
     public MqttMessageFormat(String username, Mode mode,  byte[] bitmapByteArray) { // 이미지 전송 시 사용할 생성자
         this.username = username;
@@ -71,7 +70,6 @@ public class MqttMessageFormat {
         this.bitmapByteArray = bitmapByteArray;
     }
 
-*/
     //fixme nayeon 중간자 처리 시 필요한 생성자 3개 추가
     //fixme minj - add history for undo, redo
     public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId) {

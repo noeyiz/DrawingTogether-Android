@@ -58,8 +58,6 @@ public class Text { // EditTextView
 
     private final int MAX_LENGTH = 15;
 
-    private boolean isModified = false;
-
     public Text(DrawingFragment drawingFragment, TextAttribute textAttr) {    //fixme minj
         this.drawingFragment = drawingFragment;
         this.binding = drawingFragment.getBinding();
@@ -291,7 +289,6 @@ public class Text { // EditTextView
         de.setCurrentText(null); // 현재 조작중인 텍스트 null 처리
         de.setTextBeingEdited(false); // 텍스트 편집 모드 false 처리
 
-
         removeEditTextToFrameLayout(); // EditText 를 레이아웃에서 제거하고
         addTextViewToFrameLayout();
 
@@ -305,11 +302,11 @@ public class Text { // EditTextView
         }
 
         sendMqttMessage(TextMode.DONE); // 사용 종료를 알리기 위해 보내야함 ( 사용자이름 : null )
-        Log.i("drawing", "isModified = " + isModified);
 
         de.setCurrentMode(Mode.DRAW); // 텍스트 편집이 완료 되면 현재 모드는 기본 드로잉 모드로
         drawingFragment.getBinding().drawBtn.performClick();
         textAttribute.setModified(false);
+
     }
 
     public void activeEditText() {

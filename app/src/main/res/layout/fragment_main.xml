@@ -176,7 +176,7 @@
             app:layout_constraintTop_toBottomOf="@id/mastercheck"
             app:layout_constraintBottom_toTopOf="@id/local"
             android:layout_margin="10dp"
-            android:text="start"
+            android:text="Drawing Start"
             android:onClick="@{vm::startDrawing}"/>
 
         <Button
@@ -188,7 +188,7 @@
             app:layout_constraintTop_toBottomOf="@id/login"
             app:layout_constraintBottom_toBottomOf="@id/view_bottom_guide"
             android:layout_margin="10dp"
-            android:text="local"
+            android:text="Local Start"
             android:onClick="@{vm::showLocalHistory}"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
