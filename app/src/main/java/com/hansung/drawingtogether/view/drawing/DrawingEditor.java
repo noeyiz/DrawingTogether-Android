@@ -352,6 +352,8 @@ public enum DrawingEditor {
 
                 break;
 
+            case TEXT:  //text mode인 동안 다른 사람이 드로잉 했을 시
+
             case SELECT:
             case GROUP:
                 break;
@@ -430,8 +432,10 @@ public enum DrawingEditor {
         try {
             for (int i = 0; i < drawingBoardArray.length; i++) {
                 for (int j = 0; j < drawingBoardArray[i].length; j++) {
-                    drawingBoardArray[i][j].clear();
-                    drawingBoardArray[i][j].add(-1);
+                    if(drawingBoardArray[i][j].size() != 1) {
+                        drawingBoardArray[i][j].removeAllElements();
+                        drawingBoardArray[i][j].add(-1);
+                    }
                 }
             }
         } catch (OutOfMemoryError e) {
@@ -660,8 +664,10 @@ public enum DrawingEditor {
         undoArray.clear();
         history.clear();
         drawingComponents.clear();
+        currentComponents.clear();  //
         componentId = -1;
         clearDrawingBoardArray();
+        removedComponentId.clear();
         drawingBoardMap.clear();
     }
 

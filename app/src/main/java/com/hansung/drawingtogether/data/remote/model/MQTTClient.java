@@ -538,7 +538,7 @@ public enum MQTTClient {
                     de.removeCurrentComponents(dComponent.getId());
                     de.splitPoints(dComponent, myCanvasWidth, myCanvasHeight);
                     de.addDrawingComponents(dComponent);
-                    de.addHistory(new DrawingItem(de.getCurrentMode(), dComponent/*, de.getDrawingBitmap()*/));
+                    de.addHistory(new DrawingItem(Mode.DRAW, dComponent/*, de.getDrawingBitmap()*/));
                     Log.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
 
                     if(dComponent.getType() == ComponentType.STROKE) {
