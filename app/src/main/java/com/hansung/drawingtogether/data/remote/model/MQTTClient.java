@@ -1,21 +1,16 @@
 package com.hansung.drawingtogether.data.remote.model;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import lombok.Getter;
@@ -90,6 +85,7 @@ public enum MQTTClient {
     private FragmentDrawingBinding binding;
     private DrawingTask drawingTask;
     private DrawingView drawingView;
+    private boolean isMid = true;
 
     public static MQTTClient getInstance() { return INSTANCE; }
 
@@ -303,6 +299,10 @@ public enum MQTTClient {
                             // 아이디 세팅 fixme nayeon - 동시성 문제
                             de.setComponentId(de.getDrawingComponents().size() - 1);
                             de.setTextId(de.getTexts().size() - 1);
+
+                            if(mqttMessageFormat.getBitmapByteArray() != null) {
+                                de.setBackgroundImage(de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()));
+                            }
 /*
                             Log.e("my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
                             Log.e("my name, texts size", myName + ", " + de.getTexts().size());
@@ -371,7 +371,7 @@ public enum MQTTClient {
                             e.printStackTrace();
                         }
 
-                        // fixme nayeon
+                        isMid = true;
                         de.removeAllDrawingData();
                         //de.printDrawingData();
 
@@ -407,7 +407,7 @@ public enum MQTTClient {
                             e.printStackTrace();
                         }
 
-                        // fixme nayeon
+                        isMid = true;
                         de.removeAllDrawingData();
                         //de.printDrawingData();
 
@@ -435,7 +435,7 @@ public enum MQTTClient {
                                     e.printStackTrace();
                                 }
 
-                                // fixme nayeon
+                                isMid = true;
                                 de.removeAllDrawingData();
 
                                 userList.removeAll(userList);
@@ -486,6 +486,7 @@ public enum MQTTClient {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat messageFormat = (MqttMessageFormat)parser.jsonReader(msg);
 
+                    Log.i("drawing", "topic_data");
                     drawingTask = new DrawingTask();
                     drawingTask.execute(messageFormat);
                     //drawingTask.cancel(true);
@@ -496,7 +497,12 @@ public enum MQTTClient {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat messageFormat = (MqttMessageFormat)parser.jsonReader(msg);
 
-                    new MidTask().execute(messageFormat);
+                    Log.i("mqtt", "isMid=" + isMid());
+                    if(isMid && messageFormat.getUsername().equals(de.getMyUsername())) {
+                        isMid = false;
+                        Log.i("mqtt", "mid username=" + messageFormat.getUsername());
+                        new MidTask().execute(messageFormat);
+                    }
                 }
             }
 
@@ -615,10 +621,8 @@ public enum MQTTClient {
                     Text newText = new Text(drawingFragment, textAttr); // fixme nayeon
                     newText.getTextAttribute().setTextInited(true); // 만들어진 직후 상단 중앙에 놓이도록
                     de.addTexts(newText);
-
-                    publishProgress(message);
-
                     de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));  //fixme minj for undo, redo
+                    publishProgress(message);
                     Log.e("texts size", Integer.toString(de.getTexts().size()));
                     return null;
                 case DRAG_STARTED:
@@ -629,12 +633,15 @@ public enum MQTTClient {
                 case DROP:
                     de.addHistory(new DrawingItem(TextMode.DROP, textAttr));    //fixme minj for undo, redo
                     text.setTextViewLocation();
+                    publishProgress(message);
                     return null;
                 case DONE:
                     if(textAttr.isModified()) {                                  //fixme minj for undo, redo
                         de.addHistory(new DrawingItem(TextMode.MODIFY, textAttr));
                         Log.i("drawing", "isModified mqtt= " + textAttr.isModified());
                     }
+                    publishProgress(message);
+                    return null;
                 case DRAG_ENDED:
                     return null;
                 case ERASE:
@@ -644,6 +651,7 @@ public enum MQTTClient {
                 case MODIFY:
                     publishProgress(message);
                     return null;
+
             }
             return null;
         }
@@ -658,14 +666,24 @@ public enum MQTTClient {
                     //textAttr.setId(de.textIdCounter());
                     text.addTextViewToFrameLayout();
                     text.createGestureDetecter();
+                    de.clearUndoArray();
                     break;
                 case DRAG_STARTED:
                 case DRAG_LOCATION:
                 case DRAG_ENDED:
                     break;
+                case DROP:
+                    de.clearUndoArray();
+                    break;
+                case DONE:
+                    if(textAttr.isModified()) {
+                        de.clearUndoArray();
+                    }
+                    break;
                 case ERASE:
                     text.removeTextViewToFrameLayout();
                     de.removeTexts(text);
+                    de.clearUndoArray();
                     //Log.e("texts size", Integer.toString(de.getTexts().size()));
                     break;
                 case MODIFY:
@@ -743,6 +761,7 @@ public enum MQTTClient {
                 case CLEAR:
                     Log.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString());
                     de.clearDrawingComponents();
+                    publishProgress(message);
                     return null;
                 case UNDO:
                 case REDO:
@@ -763,16 +782,16 @@ public enum MQTTClient {
                 case TEXT:
                     changeTextOnMainThread(message);
                     if(de.getHistory().size() == 1)
-                        drawingFragment.getBinding().undoBtn.setEnabled(true);
+                        binding.undoBtn.setEnabled(true);
                     break;
 
                 /*case MID:
                     Log.e("onProgressUpdate", de.getMyUsername());
 
                     if(de.getHistory().size() > 0)
-                        drawingFragment.getBinding().undoBtn.setEnabled(true);
+                        binding.undoBtn.setEnabled(true);
                     else if(de.getUndoArray().size() > 0)
-                        drawingFragment.getBinding().redoBtn.setEnabled(true);
+                        binding.redoBtn.setEnabled(true);
 
                     this.myCanvasWidth = drawingView.getCanvasWidth();
                     this.myCanvasHeight = drawingView.getCanvasHeight();
@@ -792,12 +811,16 @@ public enum MQTTClient {
                     if(action == MotionEvent.ACTION_UP) {
                         de.clearUndoArray();
                         if(de.getHistory().size() == 1)
-                            drawingFragment.getBinding().undoBtn.setEnabled(true);
+                            binding.undoBtn.setEnabled(true);
                     }
                     break;
 
                 case ERASE:
                      de.clearUndoArray();
+                    break;
+
+                case CLEAR:
+                    de.clearTexts(); //텍스트는 드로잉 컴포넌트들과 달리 Background 에서 처리 불가
                     break;
 
                 case UNDO:
@@ -806,10 +829,10 @@ public enum MQTTClient {
 
                     de.addUndoArray(de.popHistory());
                     if(de.getUndoArray().size() == 1)
-                        drawingFragment.getBinding().redoBtn.setEnabled(true);
+                        binding.redoBtn.setEnabled(true);
 
                     if(de.getHistory().size() == 0) {
-                        drawingFragment.getBinding().undoBtn.setEnabled(false);
+                        binding.undoBtn.setEnabled(false);
                         de.clearDrawingBitmap();
                         return;
                     }
@@ -822,10 +845,10 @@ public enum MQTTClient {
 
                     de.addHistory(de.popUndoArray());
                     if(de.getHistory().size() == 1)
-                        drawingFragment.getBinding().undoBtn.setEnabled(true);
+                        binding.undoBtn.setEnabled(true);
 
                     if(de.getUndoArray().size() == 0)
-                        drawingFragment.getBinding().redoBtn.setEnabled(false);
+                        binding.redoBtn.setEnabled(false);
 
                     Log.i("drawing", "history.size()=" + de.getHistory().size());
                     break;
@@ -835,51 +858,52 @@ public enum MQTTClient {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-
-            if(mode == Mode.CLEAR) {
-                de.clearTexts(); // 텍스트는 드로잉 컴포넌트들과 달리 Background 에서 처리 불가, 따라서 onPostExecute 에서 처리필요
-            }
-
             drawingView.invalidate();
         }
     }
 
-    class MidTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
-
+    class MidTask extends AsyncTask<MqttMessageFormat, Void, Void> {
         @Override
         protected Void doInBackground(MqttMessageFormat... mqttMessageFormats) {
             MqttMessageFormat message = mqttMessageFormats[0];
-            String username = message.getUsername();
+            /*String username = message.getUsername();
 
             if(de.getMyUsername().equals(username)) {
+                Log.i("mqtt", "mid username=" + username);
                 publishProgress(message); // 텍스트 붙이기와 배경 이미지 붙이기는 메인 스레드에서 처리 필요
                 return null;
+            }*/
+            if(de.getBackgroundImage() != null) {
+                publishProgress();
             }
+
             return null;
         }
 
         @Override
-        protected void onProgressUpdate(MqttMessageFormat... values) {
+        protected void onProgressUpdate(Void... values) {
             super.onProgressUpdate(values);
-            Log.e("onProgressUpdate", de.getMyUsername());
+            Log.i("mqtt", "mid onProgressUpdate()");
+            ImageView imageView = new ImageView(drawingFragment.getContext());
+            imageView.setLayoutParams(new LinearLayout.LayoutParams(drawingFragment.getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
+            imageView.setImageBitmap(de.getBackgroundImage());
+            binding.backgroundView.addView(imageView);
 
-            if(de.getHistory().size() > 0)
-                drawingFragment.getBinding().undoBtn.setEnabled(true);
-            else if(de.getUndoArray().size() > 0)
-                drawingFragment.getBinding().redoBtn.setEnabled(true);
-
-            float myCanvasWidth = drawingView.getCanvasWidth();
-            float myCanvasHeight = drawingView.getCanvasHeight();
-            de.drawAllDrawingComponentsForMid(/*myCanvasWidth, myCanvasHeight*/);
-            de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
-            de.addAllTextViewToFrameLayoutForMid();
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            drawingView.invalidate();
+            Log.i("mqtt", "mid onPostExecute()");
+            if(de.getHistory().size() > 0)
+                binding.undoBtn.setEnabled(true);
+            if(de.getUndoArray().size() > 0)
+                binding.redoBtn.setEnabled(true);
 
+            de.drawAllDrawingComponentsForMid();
+            de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+            de.addAllTextViewToFrameLayoutForMid();
+            drawingView.invalidate();
         }
     }
 

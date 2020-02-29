@@ -51,15 +51,17 @@ public class DrawingView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        // Log.e("DrawingView", "call onSizeChanged");
+        Log.e("DrawingView", "call onSizeChanged");
 
         canvasWidth = w;
         canvasHeight = h;
 
-        if(de.getDrawingComponents().size() == 0) {
+        if(de.getDrawingBitmap() == null) {
             de.setDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
             de.setLastDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
             de.setBackCanvas(new Canvas(de.getDrawingBitmap()));
+        }
+        if(de.getDrawingBoardArray() == null) {
             de.initDrawingBoardArray(w, h);
         }
     }

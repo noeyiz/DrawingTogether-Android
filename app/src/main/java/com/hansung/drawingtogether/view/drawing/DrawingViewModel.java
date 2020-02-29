@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
+import lombok.Getter;
 
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
@@ -42,6 +43,7 @@ import java.util.List;
 
 import static java.security.AccessController.getContext;
 
+@Getter
 public class DrawingViewModel extends BaseViewModel {
     public final SingleLiveEvent<DrawingCommand> drawingCommands = new SingleLiveEvent<>();
     private MutableLiveData<String> userNum = new MutableLiveData<>();
@@ -79,8 +81,6 @@ public class DrawingViewModel extends BaseViewModel {
 
         Log.e("kkankkan", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master);
 
-        JSONParser.getInstance().initJsonParser(de.getDrawingFragment());
-
         client.init(topic, name, master, this, ip, port);
         client.setCallback();
         client.subscribe(topic + "_join");
@@ -90,9 +90,9 @@ public class DrawingViewModel extends BaseViewModel {
         client.subscribe(topic + "_mid");
 
         // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)
-        JoinMessage joinMessage = new JoinMessage(name);
+        /*JoinMessage joinMessage = new JoinMessage(name);
         MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
-        client.publish(topic + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
+        client.publish(topic + "_join", JSONParser.getInstance().jsonWrite(messageFormat));*/
         //
     }
 
@@ -131,7 +131,7 @@ public class DrawingViewModel extends BaseViewModel {
                 frameLayout.getWidth(), frameLayout.getHeight());
 
 
-        Text text = new Text(de.getDrawingFragment(), textAttribute); // Context 넘겨주기
+        Text text = new Text(de.getDrawingFragment(), textAttribute);
         text.createGestureDetecter(); // Set Gesture ( Single Tap Up )
         text.addEditTextToFrameLayout(); // 처음 텍스트 생성 시 EditText 부착
         text.activeEditText(); // EditText 커서와 키보드 활성화

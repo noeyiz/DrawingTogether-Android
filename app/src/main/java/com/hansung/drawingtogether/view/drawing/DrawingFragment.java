@@ -54,6 +54,7 @@ import com.kakao.network.callback.ResponseCallback;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Objects;
 
 @Getter
@@ -89,26 +90,49 @@ public class DrawingFragment extends Fragment {
 
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
-        //JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
+        JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
 
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 
-        client.setDrawingFragment(this);
         de.setDrawingFragment(this);
+        client.setDrawingFragment(this);
+
         binding.drawBtn.setBackgroundColor(Color.rgb(233, 233, 233));
-
-        if(de.getHistory().size() == 0)
-            binding.undoBtn.setEnabled(false);
-        if(de.getUndoArray().size() == 0)
-            binding.redoBtn.setEnabled(false);
-
-        inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
+        inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
 
         //setting done Btn
         doneBtnLayout = binding.doneBtnLayout;
         doneBtn = new Button(this.getActivity()); //버튼 동적 생성
         initDoneButton();
+
+        //undo, redo 버튼 초기화
+        if(de.getHistory().size() == 0)
+            binding.undoBtn.setEnabled(false);
+        if(de.getUndoArray().size() == 0)
+            binding.redoBtn.setEnabled(false);
+
+        if(de.getTexts().size() != 0) { //text 다시 붙이기
+            for(Text t: de.getTexts()) {
+                t.removeTextViewToFrameLayout();
+                t.setDrawingFragment(this);
+                t.addTextViewToFrameLayout();
+            }
+        }
+
+        if(de.getBackgroundImage() != null) {   //backgroundImage 다시 붙이기
+            binding.backgroundView.removeAllViews();
+            ImageView imageView = new ImageView(this.getContext());
+            imageView.setLayoutParams(new LinearLayout.LayoutParams(this.getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
+            imageView.setImageBitmap(de.getBackgroundImage());
+            binding.backgroundView.addView(imageView);
+        }
+
+        if(de.getDrawingBitmap() == null) { //fixme minj
+            JoinMessage joinMessage = new JoinMessage(drawingViewModel.getName());
+            MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
+            client.publish(drawingViewModel.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
+        }
 
         /*ip = getArguments().getString("ip");
         port = getArguments().getString("port");
@@ -161,6 +185,7 @@ public class DrawingFragment extends Fragment {
                 }
             }
         });
+
 
 /*  // fixme hyeyeon
         JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)

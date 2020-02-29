@@ -37,7 +37,7 @@ public enum DrawingEditor {
 
     private int componentId = -1;
     private Vector<Integer> removedComponentId = new Vector<>();
-    private Vector<Integer>[][] drawingBoardArray;
+    private Vector<Integer>[][] drawingBoardArray = null;
     private SparseArray<ArrayList<Point>> drawingBoardMap = new SparseArray<>();
 
     private ArrayList<DrawingComponent> drawingComponents = new ArrayList<>();  //현재 그려져있는 모든 drawing component 배열
@@ -80,6 +80,7 @@ public enum DrawingEditor {
         drawingComponents.clear();
         currentComponents.clear();
 
+        //removeAllTextViewToFrameLayout();
         texts.clear();
         currentText = null;
         isTextBeingEdited = false;
@@ -90,8 +91,6 @@ public enum DrawingEditor {
 
         currentMode = Mode.DRAW;
         currentType = ComponentType.STROKE;
-
-        removeAllTextViewToFrameLayout();
     }
 
     public void printDrawingData() {
@@ -133,12 +132,12 @@ public enum DrawingEditor {
         Iterator<DrawingComponent> iterator = drawingComponents.iterator();
         while(iterator.hasNext()) {
             DrawingComponent component = iterator.next();
-            component.calculateRatio(myCanvasWidth, myCanvasHeight);
+            component.calculateRatio(drawingBoardArray[0].length, drawingBoardArray.length);
             component.drawComponent(getBackCanvas());
 
             splitPoints(component, drawingBoardArray[0].length, drawingBoardArray.length);
         }
-        Log.i("drawing", "myCanvas w=" + myCanvasWidth + ", h=" + myCanvasHeight);
+        //Log.i("drawing", "myCanvas w=" + myCanvasWidth + ", h=" + myCanvasHeight);
         Log.i("drawing", "drawingBoardArray[][] w=" + drawingBoardArray[0].length + ", h=" + drawingBoardArray.length);
         Log.i("drawing", "dba[0][0] = " + drawingBoardArray[0][0].get(0));
     }
@@ -236,6 +235,8 @@ public enum DrawingEditor {
     }
 
     public void removeTexts(Text text) { this.texts.remove(text); }
+
+    public void removeAllTexts() { this.texts.clear(); }
 
     public Text findTextById(String id) {
         for(Text text: texts) {
@@ -787,4 +788,5 @@ public enum DrawingEditor {
     public void setComponentId(int componentId) { this.componentId = componentId; }
 
     public void setTextId(int textId) { this.textId = textId; }
+
 }

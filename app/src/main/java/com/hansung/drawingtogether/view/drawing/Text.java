@@ -436,5 +436,13 @@ public class Text { // EditTextView
             return true;
         }
     }
+
+    public void setDrawingFragment(DrawingFragment drawingFragment) {
+        this.drawingFragment = drawingFragment;
+        this.binding = drawingFragment.getBinding();
+
+        this.frameLayout = this.binding.drawingViewContainer;
+        this.inputMethodManager = this.drawingFragment.getInputMethodManager();
+    }
 }
 
