@@ -63,7 +63,7 @@ public enum DrawingEditor {
     private int strokeColor = Color.BLACK;      //fixme
     private int strokeAlpha = 255;              //fixme
     private int fillAlpha = 100;                //fixme
-    private int strokeWidth = 50;              //fixme
+    private int strokeWidth = 10;              //fixme
 
 
     // 드로잉 하는동안 저장되는 모든 데이터들 지우기 [나가기 버튼 눌렀을 때 처리 필요 - MQTTClient.java if(topic_exit, topic_delete) 부분에서 호출]

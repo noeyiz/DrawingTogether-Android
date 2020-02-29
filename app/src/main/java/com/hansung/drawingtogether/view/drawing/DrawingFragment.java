@@ -322,6 +322,10 @@ public class DrawingFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         MqttMessageFormat messageFormat;
+        if(de.getBackgroundImage() != null) { //fixme minj - 우선 배경 이미지는 하나만
+            binding.backgroundView.removeAllViews();
+        }
+
         switch (requestCode) {
             case PICK_FROM_GALLERY:
                 if (data == null) {

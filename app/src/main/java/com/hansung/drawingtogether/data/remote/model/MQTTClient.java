@@ -1,14 +1,18 @@
 package com.hansung.drawingtogether.data.remote.model;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 
 import android.os.AsyncTask;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -50,7 +54,9 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 @Getter
 public enum MQTTClient {
@@ -194,6 +200,8 @@ public enum MQTTClient {
         client.setCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
+                showTimerAlertDialog("브로커 연결 유실", "메인 화면으로 이동합니다.", 10000);
+
                 Log.e("kkankkan", cause.toString());
                 Log.i("mqtt", cause.getCause().toString());
                 Log.i("mqtt", "CONNECTION LOST");
@@ -525,6 +533,50 @@ public enum MQTTClient {
         });
     }
 
+    public void showTimerAlertDialog(String title, String message, final int millis) {
+        AlertDialog dialog = new AlertDialog.Builder(de.getDrawingFragment().getActivity())
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        isMid = true;
+                        de.removeAllDrawingData();
+                        drawingViewModel.back();
+                    }
+                })
+                .create();
+
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            //private static final int AUTO_DISMISS_MILLIS = 10000;
+            @Override
+            public void onShow(final DialogInterface dialog) {
+                final Button defaultButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+                final CharSequence negativeButtonText = defaultButton.getText();
+                new CountDownTimer(millis, 100) {
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                        defaultButton.setText(String.format(
+                                Locale.getDefault(), "%s (%d)",
+                                negativeButtonText,
+                                TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) + 1 //add one so it never displays zero
+                        ));
+                    }
+                    @Override
+                    public void onFinish() {
+                        if (((AlertDialog) dialog).isShowing()) {
+                            isMid = true;
+                            de.removeAllDrawingData();
+                            drawingViewModel.back();
+                            dialog.dismiss();
+                        }
+                    }
+                }.start();
+            }
+        });
+        dialog.show();
+    }
+
     class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
         private String username;
         private int action;
@@ -804,6 +856,9 @@ public enum MQTTClient {
                     break;*/
 
                 case BACKGROUND_IMAGE:
+                    if(de.getBackgroundImage() != null) {
+                        binding.backgroundView.removeAllViews();    //fixme minj - 우선 배경 이미지는 하나만
+                    }
                     ImageView imageView = new ImageView(drawingFragment.getContext());
                     imageView.setLayoutParams(new LinearLayout.LayoutParams(drawingFragment.getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
                     imageView.setImageBitmap(de.getBackgroundImage());

@@ -3,12 +3,19 @@ package com.hansung.drawingtogether.view.main;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.databinding.BindingAdapter;
+import androidx.databinding.InverseBindingAdapter;
+import androidx.databinding.InverseBindingMethod;
+import androidx.databinding.InverseBindingMethods;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -26,6 +33,7 @@ import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
+import com.hansung.drawingtogether.view.drawing.TextMode;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.json.JSONArray;
@@ -65,7 +73,6 @@ public class MainViewModel extends BaseViewModel {
 
     private MQTTClient client = MQTTClient.getInstance();
     private ProgressDialog progressDialog;
-    private InputMethodManager inputMethodManager;
 
     public MainViewModel() {
 
@@ -181,7 +188,7 @@ public class MainViewModel extends BaseViewModel {
         if (!hasSpecialCharacterAndBlank) {
             progressDialog = new ProgressDialog(view.getContext());
             progressDialog.setMessage("Loding...");
-            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.setCanceledOnTouchOutside(true);    //fixme minj - master 없는 topic 의 경우 빠져나오지를 못해서 잠시 cancel 가능하게 수정
             client.setProgressDialog(progressDialog);
             progressDialog.show();
 
@@ -204,7 +211,7 @@ public class MainViewModel extends BaseViewModel {
                             if (mutableData.child("username").hasChild(name.getValue())) {
                                 setNameError("이미 사용중인 이름입니다");
                                 Log.e("kkankkan", "이미 사용중인 이름");
-
+                                progressDialog.dismiss();
                             }
                             else {
                                 newName = true;
@@ -224,7 +231,7 @@ public class MainViewModel extends BaseViewModel {
                         else {
                             setPasswordError("비밀번호가 일치하지 않습니다");
                             Log.e("kkankkan", "비밀번호 틀림");
-
+                            progressDialog.dismiss();
                         }
 
                     }
@@ -611,4 +618,5 @@ public class MainViewModel extends BaseViewModel {
     public void setNameError(String text) {
         this.nameError.postValue(text);
     }
+
 }

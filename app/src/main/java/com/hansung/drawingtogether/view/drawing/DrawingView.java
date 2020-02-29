@@ -7,14 +7,18 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.os.CountDownTimer;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 
+import java.util.Locale;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.Nullable;
 import lombok.Getter;
