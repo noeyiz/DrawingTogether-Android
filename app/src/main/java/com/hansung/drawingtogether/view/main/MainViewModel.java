@@ -1,9 +1,11 @@
 package com.hansung.drawingtogether.view.main;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,11 +23,16 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.BaseViewModel;
+import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
 
+import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Objects;
 
 public class MainViewModel extends BaseViewModel {
 
@@ -56,7 +63,9 @@ public class MainViewModel extends BaseViewModel {
 
     private boolean hasSpecialCharacterAndBlank;
 
+    private MQTTClient client = MQTTClient.getInstance();
     private ProgressDialog progressDialog;
+    private InputMethodManager inputMethodManager;
 
     public MainViewModel() {
 
@@ -173,6 +182,7 @@ public class MainViewModel extends BaseViewModel {
             progressDialog = new ProgressDialog(view.getContext());
             progressDialog.setMessage("Loding...");
             progressDialog.setCanceledOnTouchOutside(false);
+            client.setProgressDialog(progressDialog);
             progressDialog.show();
 
             databaseReference.child(getTopic().getValue()).runTransaction(new Transaction.Handler() {
@@ -308,7 +318,7 @@ public class MainViewModel extends BaseViewModel {
                     newName = false;
                     newMaster = false;
 
-                    progressDialog.dismiss();
+                    //progressDialog.dismiss();
                 }
             });
         }

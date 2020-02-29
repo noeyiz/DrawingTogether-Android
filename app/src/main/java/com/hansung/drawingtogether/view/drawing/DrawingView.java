@@ -64,6 +64,10 @@ public class DrawingView extends View {
         if(de.getDrawingBoardArray() == null) {
             de.initDrawingBoardArray(w, h);
         }
+        if(client.isMaster()) {
+            Log.i("mqtt", "progressDialog dismiss");
+            client.getProgressDialog().dismiss();
+        }
     }
 
     @Override

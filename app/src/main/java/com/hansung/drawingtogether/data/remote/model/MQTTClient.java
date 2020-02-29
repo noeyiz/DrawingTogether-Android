@@ -1,5 +1,6 @@
 package com.hansung.drawingtogether.data.remote.model;
 
+import android.app.ProgressDialog;
 import android.graphics.Canvas;
 
 import android.os.AsyncTask;
@@ -86,6 +87,8 @@ public enum MQTTClient {
     private DrawingTask drawingTask;
     private DrawingView drawingView;
     private boolean isMid = true;
+
+    private ProgressDialog progressDialog;
 
     public static MQTTClient getInstance() { return INSTANCE; }
 
@@ -864,6 +867,11 @@ public enum MQTTClient {
 
     class MidTask extends AsyncTask<MqttMessageFormat, Void, Void> {
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
         protected Void doInBackground(MqttMessageFormat... mqttMessageFormats) {
             MqttMessageFormat message = mqttMessageFormats[0];
             /*String username = message.getUsername();
@@ -904,6 +912,9 @@ public enum MQTTClient {
             de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
             de.addAllTextViewToFrameLayoutForMid();
             drawingView.invalidate();
+
+            Log.i("mqtt", "mid progressDialog dismiss");
+            progressDialog.dismiss();
         }
     }
 
@@ -915,4 +926,7 @@ public enum MQTTClient {
         this.drawingView = this.binding.drawingView;
     }
 
+    public void setProgressDialog(ProgressDialog progressDialog) {
+        this.progressDialog = progressDialog;
+    }
 }
