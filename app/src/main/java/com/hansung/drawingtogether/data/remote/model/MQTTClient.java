@@ -104,6 +104,7 @@ public enum MQTTClient {
 
     public void init(String topic, String name, boolean master, DrawingViewModel drawingViewModel, String ip, String port) {
         connect(ip, port);
+        userList.clear();
 
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
@@ -307,6 +308,7 @@ public enum MQTTClient {
                     if (master != null) { // 메시지 형식이 "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..."  일 경우
                         String to = joinMessage.getTo();
 
+                        Log.i("mqtt", "to = " + to + ", myname = " + myName);
                         if (to.equals(myName)) { // 마스터가 중간자(to:" ") 에게 보낸 메시지 처리
 
                             /* 중간자만 처리하는 부분 */
@@ -348,6 +350,7 @@ public enum MQTTClient {
                         }
                     }
                     else {  // other or self // 메시지 형식이 "name":"이름"  일 경우
+
                         if (!myName.equals(name)) {  // other // 한 사람이 "name":"이름" 메시지 보냈을 경우 다른 사람들이 받아서 처리하는 부분
                             userList.add(name); // 들어온 사람의 이름을 추가
 
@@ -365,21 +368,23 @@ public enum MQTTClient {
                                 Log.e("M removedComponentId[] = ", de.getRemovedComponentId().toString());
 */
                                 MqttMessageFormat messageFormat;
-                                if(de.getBackgroundImage() == null) { messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId(), de.getMaxComponentId(), de.getMaxTextId()); }
-                                else {  messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId(), de.getMaxComponentId(), de.getMaxTextId(), de.bitmapToByteArray(de.getBackgroundImage())); }
+                                if (de.getBackgroundImage() == null) {
+                                    messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId(), de.getMaxComponentId(), de.getMaxTextId());
+                                } else {
+                                    messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId(), de.getMaxComponentId(), de.getMaxTextId(), de.bitmapToByteArray(de.getBackgroundImage()));
+                                }
                                 publish(topic_join, parser.jsonWrite(messageFormat));
 
                                 setToastMsg("[ " + userList.get(userList.size() - 1) + " ] 님에게 데이터 전송을 완료했습니다");
                                 Log.e("kkankkan", "master data -> " + parser.jsonWrite(messageFormat));
+                                Log.i("drawing", "byte size = " + parser.jsonWrite(messageFormat).getBytes().length);
                             }
 
+                            binding.drawingView.setIntercept(false);
                             Log.e("kkankkan", name + " join 후 : " + userList.toString());
                             //drawingViewModel.setUserNumTv(userList.size());
-                        }
-                        /* fixme hyeyeon - 생성자에서 자신의 이름 추가하도록 수정
-                        else {  // self // 자기 자신의 이름 배열에 추가
-                            if(!userList.contains(name)) // 중간자가 마스터로부터 배열을 받는 처리가 먼저 일어난 경우 자신의 이름이 들어가 있을 수 있음
-                                userList.add(name);
+
+                        } /*else {  // fixme hyeyeon - 생성자에서 자신의 이름 추가하도록 수정
                         }*/
                     }
                     drawingViewModel.setUserNum(userList.size());
@@ -912,8 +917,8 @@ public enum MQTTClient {
             de.addAllTextViewToFrameLayoutForMid();
             drawingView.invalidate();
 
-            Log.i("mqtt", "mid progressDialog dismiss");
-            progressDialog.dismiss();
+            //Log.i("mqtt", "mid progressDialog dismiss");
+            //progressDialog.dismiss();
         }
     }
 

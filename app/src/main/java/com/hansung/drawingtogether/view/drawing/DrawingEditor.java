@@ -1,29 +1,20 @@
 package com.hansung.drawingtogether.view.drawing;
 
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.os.AsyncTask;
 import android.util.Log;
 import android.util.SparseArray;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.Dictionary;
 import java.util.Iterator;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import lombok.Getter;
-
-import static com.hansung.drawingtogether.view.drawing.TextMode.CREATE;
-import static com.hansung.drawingtogether.view.drawing.TextMode.DROP;
-import static com.hansung.drawingtogether.view.drawing.TextMode.ERASE;
-import static com.hansung.drawingtogether.view.drawing.TextMode.MODIFY;
 
 @Getter
 public enum DrawingEditor {

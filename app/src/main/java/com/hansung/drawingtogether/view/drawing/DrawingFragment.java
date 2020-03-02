@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -131,6 +132,8 @@ public class DrawingFragment extends Fragment {
             client.publish(drawingViewModel.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
         }
 
+
+
         /*ip = getArguments().getString("ip");
         port = getArguments().getString("port");
         topic = getArguments().getString("topic");
@@ -228,7 +231,6 @@ public class DrawingFragment extends Fragment {
 
         return binding.getRoot();
     }
-
 
     public void showPopup(View view, int layout) {
         View penSettingPopup = getLayoutInflater().inflate(layout, null);
