@@ -46,8 +46,6 @@ public class Text { // EditTextView
 
     private ClipData clip;
 
-    private Drawable drawable; // 텍스트 포커싱 테두리
-
     private int xDelta;
     private int yDelta;
 
@@ -359,15 +357,14 @@ public class Text { // EditTextView
     // todo nayeon ☆ ☆ ☆
     // 레이아웃에 텍스트 뷰 추가 시 오류 캐치
     public void addTextViewToFrameLayout() {
+        try { frameLayout.addView(textView); }
+        catch(IllegalStateException ie) {
+            ie.printStackTrace();
 
-        try {
-            frameLayout.addView(textView);
-        } catch(Exception e) {
-            e.printStackTrace();
             Log.e("drawing editor text size", Integer.toString(de.getTexts().size()));
-            for(Text text: de.getTexts()) {
-                Log.e("text id", text.getTextAttribute().getId());
-            }
+            Log.e("frame layout children count", Integer.toString(frameLayout.getChildCount()));
+
+            for(Text text: de.getTexts()) { Log.e("text id", text.getTextAttribute().getId()); } // 모든 텍스트 아이디 출력
         }
     }
 
@@ -396,7 +393,7 @@ public class Text { // EditTextView
                 de.clearUndoArray();
             } else {
                 de.setCurrentMode(Mode.TEXT);
-                textView.setBackground(drawable); // todo nayeon - 텍스트 편집 시 텍스트에 대한 강조처리
+                textView.setBackground(de.getTextBorderDrawable()); // todo nayeon - 텍스트 편집 시 텍스트에 대한 강조처리
             }
 
             return true;

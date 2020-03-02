@@ -44,6 +44,7 @@ class FrameLayoutDragListener implements View.OnDragListener {
                 text.sendMqttMessage(TextMode.DRAG_STARTED);
                 break;
             case DragEvent.ACTION_DRAG_ENTERED:
+                break; // DRAG_ENTERED 이벤트 발생 시 (x, y) = (0, 0)
             case DragEvent.ACTION_DRAG_LOCATION:
                 textAttribute.setCoordinates(x, y);
                 text.sendMqttMessage(TextMode.DRAG_LOCATION);

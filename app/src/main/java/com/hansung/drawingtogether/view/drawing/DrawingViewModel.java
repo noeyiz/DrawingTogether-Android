@@ -126,7 +126,6 @@ public class DrawingViewModel extends BaseViewModel {
                 frameLayout.getWidth(), frameLayout.getHeight());
 
         Text text = new Text(de.getDrawingFragment(), textAttribute);
-        text.setDrawable(de.getDrawingFragment().getResources().getDrawable(R.drawable.text_border)); // fixme nayeon 텍스트 테두리 설정
         text.createGestureDetecter(); // Set Gesture ( Single Tap Up )
         text.addEditTextToFrameLayout(); // 처음 텍스트 생성 시 EditText 부착
         text.activeEditText(); // EditText 커서와 키보드 활성화

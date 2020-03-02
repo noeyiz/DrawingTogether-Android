@@ -90,11 +90,11 @@ public class DrawingFragment extends Fragment {
 
         JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
 
-
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 
-        de.setDrawingFragment(this);
         client.setDrawingFragment(this);
+        de.setDrawingFragment(this);
+        de.setTextBorderDrawable(getResources().getDrawable(R.drawable.text_border)); // fixme nayeon 텍스트 테두리 설정
 
         binding.drawBtn.setBackgroundColor(Color.rgb(233, 233, 233));
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());

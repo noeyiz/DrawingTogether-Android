@@ -22,8 +22,8 @@ public abstract class DrawingComponent {
     protected int fillAlpha;
     protected int strokeWidth;
     protected int preSize;              //addPoint() 전에 points 의 이전 크기를 저장
-    protected float drawnCanvasWidth;   //draw 되는 canvas width
-    protected float drawnCanvasHeight;  //draw 되는 canvas height
+    protected float drawnCanvasWidth;   //draw 되는 canvas width (비율 계산)
+    protected float drawnCanvasHeight;  //draw 되는 canvas height (비율 계산)
     protected float xRatio = 1;
     protected float yRatio = 1;
     protected Point beginPoint = null;
