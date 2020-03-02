@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Iterator;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import lombok.Getter;
@@ -36,6 +37,7 @@ public enum DrawingEditor {
     private Bitmap lastDrawingBitmap = null;    //drawingBitmap 의 마지막 상태 bitmap --> 도형 그리기
 
     private int componentId = -1;
+    private int maxComponentId = -1;
     private Vector<Integer> removedComponentId = new Vector<>();
     private Vector<Integer>[][] drawingBoardArray = null;
     private SparseArray<ArrayList<Point>> drawingBoardMap = new SparseArray<>();
@@ -47,6 +49,7 @@ public enum DrawingEditor {
     private Text currentText = null;
     private boolean isTextBeingEdited = false;
     private int textId = -1;
+    private int maxTextId = -1;
 
     private ArrayList<DrawingItem> history = new ArrayList<>();     //
     private ArrayList<DrawingItem> undoArray = new ArrayList<>();   //undo 배열
@@ -236,8 +239,6 @@ public enum DrawingEditor {
 
     public void removeTexts(Text text) { this.texts.remove(text); }
 
-    public void removeAllTexts() { this.texts.clear(); }
-
     public Text findTextById(String id) {
         for(Text text: texts) {
             if(text.getTextAttribute().getId().equals(id)) {
@@ -264,7 +265,8 @@ public enum DrawingEditor {
     }
 
     public int textIdCounter() {
-        return ++textId;
+        maxTextId = ++textId;
+        return maxTextId;
     }
 
     public void addRemovedComponentIds(Vector<Integer> ids) {
@@ -320,11 +322,11 @@ public enum DrawingEditor {
         }
         Log.i("drawing", "last item ids = " + ids.toString());
 
-        String str = "dc = ";
+        StringBuilder str = new StringBuilder("dc = ");
         for(DrawingComponent component: getDrawingComponents()) {
-            str += component.getId() + " ";
+            str.append(component.getId()).append(" ");
         }
-        Log.i("drawing", str);
+        Log.i("drawing", str.toString());
 
         switch(lastItem.getMode()) {
             case DRAW:
@@ -409,7 +411,10 @@ public enum DrawingEditor {
         return null;
     }
 
-    public int componentIdCounter() { return ++componentId; }
+    public int componentIdCounter() {
+        maxComponentId = ++componentId;
+        return maxComponentId;
+    }
 
     public void initDrawingBoardArray(int width, int height) {
         Log.i("drawing", "initDrawingBoardArray()");
@@ -666,7 +671,7 @@ public enum DrawingEditor {
         undoArray.clear();
         history.clear();
         drawingComponents.clear();
-        currentComponents.clear();  //
+        currentComponents.clear();
         componentId = -1;
         clearDrawingBoardArray();
         removedComponentId.clear();
@@ -677,6 +682,10 @@ public enum DrawingEditor {
         removeAllTextViewToFrameLayout();
         getTexts().clear();
         textId = -1;
+    }
+
+    public void clearBackgroundImage() {
+        drawingFragment.getBinding().backgroundView.removeAllViews();
     }
 
     public byte[] bitmapToByteArray(Bitmap bitmap){
@@ -711,10 +720,6 @@ public enum DrawingEditor {
 
     public void setLastDrawingBitmap(Bitmap lastDrawingBitmap) {
         this.lastDrawingBitmap = lastDrawingBitmap;
-    }
-
-    public void setDrawingBoardArray(Vector<Integer>[][] drawingBoardArray) {
-        this.drawingBoardArray = drawingBoardArray;
     }
 
     public void setCurrentText(Text text) { this.currentText = text; }

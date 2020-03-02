@@ -1,25 +1,13 @@
 package com.hansung.drawingtogether.view.main;
 
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.databinding.BindingAdapter;
-import androidx.databinding.InverseBindingAdapter;
-import androidx.databinding.InverseBindingMethod;
-import androidx.databinding.InverseBindingMethods;
 import androidx.lifecycle.MutableLiveData;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -28,19 +16,9 @@ import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.BaseViewModel;
-import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
-import com.hansung.drawingtogether.view.drawing.TextMode;
-
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.Objects;
 
 public class MainViewModel extends BaseViewModel {
 
@@ -192,7 +170,7 @@ public class MainViewModel extends BaseViewModel {
             client.setProgressDialog(progressDialog);
             progressDialog.show();
 
-            databaseReference.child(getTopic().getValue()).runTransaction(new Transaction.Handler() {
+            databaseReference.child(topic.getValue()).runTransaction(new Transaction.Handler() {
                 @NonNull
                 @Override
                 public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
