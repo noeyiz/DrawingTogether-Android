@@ -31,6 +31,7 @@ public class DrawingView extends View {
 
     private float canvasWidth;
     private float canvasHeight;
+    private int currentDrawAction;
     private DrawingComponent dComponent;
     private Stroke stroke = new Stroke();
     private Rect rect = new Rect();
@@ -183,6 +184,16 @@ public class DrawingView extends View {
         client.publish(client.getTopic_data(),  parser.jsonWrite(messageFormat));
     }
 
+    public void updateDrawingComponentId(DrawingComponent dComponent) {
+        try {
+            DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
+            Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
+            dComponent.setId(upComponent.getId());
+        } catch(NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void doInDrawActionUp(DrawingComponent dComponent) {
         initDrawingComponent();
 
@@ -201,9 +212,21 @@ public class DrawingView extends View {
         de.clearUndoArray();
     }
 
+    public void InterceptTouchEventAndDoActionUp() {
+        if(currentDrawAction == MotionEvent.ACTION_UP) {
+            return;
+        }
+        Log.i("drawing", "intercept touch event and do action up");
+        this.getParent().requestDisallowInterceptTouchEvent(false);
+        sendDrawMqttMessage(MotionEvent.ACTION_UP);
+        updateDrawingComponentId(dComponent);
+        doInDrawActionUp(dComponent);
+    }
+
     boolean isExit = false;
     public boolean onTouchDrawMode(MotionEvent event/*, DrawingComponent dComponent*/) {
         Point point;
+        currentDrawAction = event.getAction();
 
         if(isExit && event.getAction() != MotionEvent.ACTION_DOWN) {
             Log.i("mqtt", "isExit1 = " + isExit);
@@ -211,6 +234,7 @@ public class DrawingView extends View {
         }
 
         if(event.getX()-5 < 0 || event.getY()-5 < 0 || de.getDrawnCanvasWidth()-5 < event.getX() || de.getDrawnCanvasHeight()-5 < event.getY()) {   //fixme 반응이 느려서 임시로 -5
+            currentDrawAction = MotionEvent.ACTION_UP;
             Log.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
             Log.i("drawing", "exit");
 
@@ -219,7 +243,7 @@ public class DrawingView extends View {
 
             //publish
             sendDrawMqttMessage(MotionEvent.ACTION_UP);
-
+            updateDrawingComponentId(dComponent);
             doInDrawActionUp(dComponent);
 
             isExit = true;
@@ -259,17 +283,7 @@ public class DrawingView extends View {
 
                 //publish
                 sendDrawMqttMessage(event.getAction());
-
-                Log.i("drawing", "dComponent: id=" + dComponent.getId() + ", endPoint=" + dComponent.getEndPoint().toString());
-
-                try {
-                    DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
-                    Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
-                    dComponent.setId(upComponent.getId());
-                } catch(NullPointerException e) {
-                    e.printStackTrace();
-                }
-
+                updateDrawingComponentId(dComponent);
                 doInDrawActionUp(dComponent);
                 return true;
             default:
@@ -333,10 +347,39 @@ public class DrawingView extends View {
                 sendModeMqttMessage();
                 de.clearDrawingComponents();
                 de.clearTexts();
+                de.getDrawingFragment().getBinding().redoBtn.setEnabled(false);
+                de.getDrawingFragment().getBinding().undoBtn.setEnabled(false);
                 invalidate();
 
                 Log.i("drawing", "history.size()=" + de.getHistory().size());
                 Log.i("drawing", "clear");
+            }
+        });
+
+        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i("drawing", "canceled");
+            }
+        });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    public void clearBackgroundImage() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(de.getDrawingFragment().getActivity());
+        builder.setTitle("배경 초기화").setMessage("배경 이미지가 삭제됩니다.\n그래도 지우시겠습니까?");
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                de.setCurrentMode(Mode.CLEAR_BACKGROUND_IMAGE);
+                sendModeMqttMessage();
+                de.setBackgroundImage(null);
+                de.clearBackgroundImage();
+
+                Log.i("drawing", "clear background image");
             }
         });
 

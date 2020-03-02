@@ -20,7 +20,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -37,7 +36,6 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 import lombok.Getter;
 
-import com.google.gson.JsonSyntaxException;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
@@ -55,7 +53,6 @@ import com.kakao.network.callback.ResponseCallback;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Objects;
 
 @Getter
@@ -233,15 +230,19 @@ public class DrawingFragment extends Fragment {
     }
 
     private void setEraserPopupClickListener(View penSettingPopup, final PopupWindow popupWindow) {
-        final Button targetEraserBtn = penSettingPopup.findViewById(R.id.targetEraserBtn);
-        targetEraserBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                de.setCurrentMode(Mode.ERASE);
-                Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
-                popupWindow.dismiss();
-            }
-        });
+        final Button backgroundEraserBtn = penSettingPopup.findViewById(R.id.backgroundEraserBtn);
+        if(client.isMaster()) {
+            backgroundEraserBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    binding.drawingView.clearBackgroundImage();
+                    popupWindow.dismiss();
+                }
+            });
+        }
+        else {
+            backgroundEraserBtn.setEnabled(false);
+        }
 
         final Button clearBtn = penSettingPopup.findViewById(R.id.clearBtn);
         if(client.isMaster()) {
@@ -302,6 +303,10 @@ public class DrawingFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         MqttMessageFormat messageFormat;
+        if(de.getBackgroundImage() != null) { //fixme minj - 우선 배경 이미지는 하나만
+            binding.backgroundView.removeAllViews();
+        }
+
         switch (requestCode) {
             case PICK_FROM_GALLERY:
                 if (data == null) {
@@ -383,9 +388,10 @@ public class DrawingFragment extends Fragment {
         ExifInterface exif = null;
         int orientation = 0;
 
-        if (mode == PICK_FROM_GALLERY)
-            orientation = ExifInterface.ORIENTATION_ROTATE_90;
-        else if (mode == PICK_FROM_CAMERA) {
+        if (mode == PICK_FROM_GALLERY) {
+            //orientation = ExifInterface.ORIENTATION_ROTATE_90;
+            orientation = ExifInterface.ORIENTATION_NORMAL; //fixme minj
+        } else if (mode == PICK_FROM_CAMERA) {
             try {
                 exif = new ExifInterface(drawingViewModel.getPhotoPath());
             } catch (IOException e) {
@@ -459,11 +465,9 @@ public class DrawingFragment extends Fragment {
                 // todo nayeon currentText 의 필요성 생각해보기
                 de.setCurrentText(null);
                 text.processFocusOut(); // 키보드 내리기
-                removeDoneButton();     // 텍스트 조작이 끝나면 기본 버튼들 세팅    //fixme minj
-
+                removeDoneButton();     // 텍스트 조작이 끝나면 기본 버튼들 세팅   \
                 de.setCurrentMode(Mode.DRAW);
             }
         });
     }
-
 }

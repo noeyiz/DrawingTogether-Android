@@ -32,6 +32,8 @@ public class MqttMessageFormat {
     private ArrayList<DrawingItem> history;
     private ArrayList<DrawingItem> undoArray;
     private Vector<Integer> removedComponentId;
+    private Integer maxComponentId;
+    private Integer maxTextId;
     private byte[] bitmapByteArray;
 
     public MqttMessageFormat(String username, Mode mode, ComponentType type, DrawingComponent component, int action) {
@@ -69,23 +71,29 @@ public class MqttMessageFormat {
         this.bitmapByteArray = bitmapByteArray;
     }
 
-    //fixme minj - add history for undo, redo [ for middle man ? ]
-    public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId) {
+
+    //fixme nayeon 중간자 처리 시 필요한 생성자 3개 추가
+    //fixme minj - add history for undo, redo
+    public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId, Integer maxComponentId, Integer maxTextId) {
         this.joinMessage = joinMessage;
         this.drawingComponents = drawingComponents;
+        this.texts = texts;
         this.history = history;
         this.undoArray = undoArray;
         this.removedComponentId = removedComponentId;
-        this.texts = texts;
+        this.maxComponentId = maxComponentId;
+        this.maxTextId = maxTextId;
     }
 
-    public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray,  Vector<Integer> removedComponentId, byte[] bitmapByteArray) {
+    public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray,  Vector<Integer> removedComponentId, Integer maxComponentId, Integer maxTextId, byte[] bitmapByteArray) {
         this.joinMessage = joinMessage;
         this.drawingComponents = drawingComponents;
         this.texts = texts;
         this.history = history;
         this.undoArray = undoArray;
         this.removedComponentId = removedComponentId;
+        this.maxComponentId = maxComponentId;
+        this.maxTextId = maxTextId;
         this.bitmapByteArray = bitmapByteArray;
     }
 

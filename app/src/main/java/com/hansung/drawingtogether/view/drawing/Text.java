@@ -58,7 +58,7 @@ public class Text { // EditTextView
 
     private boolean isDragging = false;
 
-    private final int MAX_LENGTH = 15;
+    private final int MAX_LENGTH = 30;
 
     public Text(DrawingFragment drawingFragment, TextAttribute textAttr) {    //fixme minj
         this.drawingFragment = drawingFragment;
