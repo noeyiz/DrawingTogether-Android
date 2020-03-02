@@ -27,7 +27,6 @@ public class MqttMessageFormat {
 
     private JoinMessage joinMessage;
 
-    // fixme nayeon 중간자 처리 시 필요한 변수 추가
     private ArrayList<DrawingComponent> drawingComponents;
     private ArrayList<Text> texts;
     private ArrayList<DrawingItem> history;
@@ -70,8 +69,7 @@ public class MqttMessageFormat {
         this.bitmapByteArray = bitmapByteArray;
     }
 
-    //fixme nayeon 중간자 처리 시 필요한 생성자 3개 추가
-    //fixme minj - add history for undo, redo
+    //fixme minj - add history for undo, redo [ for middle man ? ]
     public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId) {
         this.joinMessage = joinMessage;
         this.drawingComponents = drawingComponents;

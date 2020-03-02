@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-// todo nayeon - 프레임레이아웃에 붙어있는 텍스트뷰를 드래깅 하기 위한 이벤트 리스너 클래스
+// 프레임레이아웃에 붙어있는 텍스트뷰를 드래깅 하기 위한 이벤트 리스너 클래스
 class FrameLayoutDragListener implements View.OnDragListener {
 
     private DrawingEditor de = DrawingEditor.getInstance();
@@ -73,7 +73,7 @@ class FrameLayoutDragListener implements View.OnDragListener {
                 text.sendMqttMessage(TextMode.DRAG_ENDED);
 
                 de.setCurrentMode(Mode.DRAW);
-                textView.setBackgroundColor(Color.TRANSPARENT); // todo nayeon
+                textView.setBackground(null); // todo nayeon
 
                 break;
             case DragEvent.ACTION_DRAG_EXITED:

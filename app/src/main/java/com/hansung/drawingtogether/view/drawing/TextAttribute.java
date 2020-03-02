@@ -37,7 +37,7 @@ public class TextAttribute {
 
     private boolean isModified = false;
 
-    private boolean isTextInited = false; // fixme nayeon (Text class -> TextAttribute Class)
+    private boolean isTextInited = false;
     private boolean isTextMoved = false;
 
 /*

@@ -3,6 +3,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.content.ClipData;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
@@ -45,6 +46,8 @@ public class Text { // EditTextView
 
     private ClipData clip;
 
+    private Drawable drawable; // 텍스트 포커싱 테두리
+
     private int xDelta;
     private int yDelta;
 
@@ -53,7 +56,6 @@ public class Text { // EditTextView
 
     private GestureDetector gestureDetector;
 
-    //private boolean isTextInited = false; // fixme nayeon -> TextAttribute 클래스 멤버로
     private boolean isDragging = false;
 
     private final int MAX_LENGTH = 15;
@@ -77,7 +79,7 @@ public class Text { // EditTextView
         setTextViewAttribute();
         setEditTextAttribute();
 
-        // fixme nayeon Edit Text View 가 초기에 놓일 자리
+        // Edit Text View 가 초기에 놓일 자리
         frameLayoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT); // frameLayoutParams 은 상단 중앙에 대한 위치 저장
         editText.setLayoutParams(frameLayoutParams);
         textView.setLayoutParams(frameLayoutParams);
@@ -126,7 +128,6 @@ public class Text { // EditTextView
         textAttribute.setGeneratedLayoutHeight(frameLayout.getHeight());
     }
 
-    // fixme nayeon Listener
     private void setListenerOnTextView() {
         View.OnTouchListener onTouchListener = new View.OnTouchListener() {
             @Override
@@ -143,7 +144,6 @@ public class Text { // EditTextView
                     Toast.makeText(drawingFragment.getActivity(),"This text is being edited by another user !!!", Toast.LENGTH_SHORT).show();
                     return true;
                 }
-                // fixme nayeon
                 // 현재 사용중인(조작중인) 텍스트가 있다면 다른 텍스트에 터치 못하도록
                 else if(de.isTextBeingEdited()) {
                     Toast.makeText(drawingFragment.getActivity(),"Other text cannot be edited during text editing ...", Toast.LENGTH_SHORT).show();
@@ -176,7 +176,7 @@ public class Text { // EditTextView
             @Override
             public void afterTextChanged(Editable editable) {
                 //Log.i("After Text Changed", editable.toString());
-                // fixme nayeon ** TextAttribute 세팅 필요성 - 사용자 이름변경은 changeTextViewToEditText 에서
+                // todo nayeon ** TextAttribute 세팅 필요성 - 사용자 이름변경은 changeTextViewToEditText 에서
 
                 // 처음 텍스트 생성을 위해 사용자가 텍스트를 수정 중일 경우 메시지 전송 X
                 if(!textAttribute.isTextInited()) return;
@@ -241,7 +241,6 @@ public class Text { // EditTextView
 
     // Done Button 클릭 시 실행되는 함수
     public void changeEditTextToTextView() {
-        // fixme nayeon
         // TextAttribute 에 지정할 속성 : 글자 크기, 색깔, 글씨체 등
         // 현재 EditText 에서 이러한 속성 정보들을 알아내
         // TextAttribute 에 저장하고, TextView 로 바꾸기 전에 TextView의 속성 지정해주기
@@ -311,7 +310,7 @@ public class Text { // EditTextView
 
     public void activeEditText() {
         drawingFragment.setDoneButton(); // 사용자로부터 텍스트 입력 완료를 얻기 위한 DONE 버튼 부착
-        processFocusIn(); // fixme nayeon - Edit Text 를 붙인 후 자동 포커싱
+        processFocusIn(); // Edit Text 를 붙인 후 자동 포커싱
         de.setCurrentText(this);
         de.setTextBeingEdited(true);
     }
@@ -357,7 +356,20 @@ public class Text { // EditTextView
      *
      */
 
-    public void addTextViewToFrameLayout() { frameLayout.addView(textView); }
+    // todo nayeon ☆ ☆ ☆
+    // 레이아웃에 텍스트 뷰 추가 시 오류 캐치
+    public void addTextViewToFrameLayout() {
+
+        try {
+            frameLayout.addView(textView);
+        } catch(Exception e) {
+            e.printStackTrace();
+            Log.e("drawing editor text size", Integer.toString(de.getTexts().size()));
+            for(Text text: de.getTexts()) {
+                Log.e("text id", text.getTextAttribute().getId());
+            }
+        }
+    }
 
     public void addEditTextToFrameLayout() { frameLayout.addView(editText); }
 
@@ -384,7 +396,7 @@ public class Text { // EditTextView
                 de.clearUndoArray();
             } else {
                 de.setCurrentMode(Mode.TEXT);
-                textView.setBackgroundColor(Color.LTGRAY); // todo nayeon
+                textView.setBackground(drawable); // todo nayeon - 텍스트 편집 시 텍스트에 대한 강조처리
             }
 
             return true;

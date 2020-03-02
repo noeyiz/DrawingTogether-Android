@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -91,6 +92,7 @@ public class DrawingFragment extends Fragment {
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
         JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
+
 
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 
@@ -185,28 +187,6 @@ public class DrawingFragment extends Fragment {
                 }
             }
         });
-
-
-/*  // fixme hyeyeon
-        JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
-
-        client.init(topic, name, master, drawingViewModel, ip, port);
-        client.setDrawingFragment(this);
-        client.setCallback();
-        client.subscribe(topic + "_join");
-        client.subscribe(topic + "_exit");
-        client.subscribe(topic + "_delete");
-        client.subscribe(topic + "_data");
-        client.subscribe(topic + "_mid");
-
-        // client.publish(topic_data ~~);
-
-        // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)
-        JoinMessage joinMessage = new JoinMessage(name);
-        MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
-        client.publish(topic + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
-        //
-*/
 
         binding.userInfo.setOnClickListener(new View.OnClickListener() {
             @Override

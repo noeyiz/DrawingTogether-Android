@@ -259,7 +259,7 @@ public enum DrawingEditor {
     public void addAllTextViewToFrameLayoutForMid() {
         for(Text t: texts) {
             t.addTextViewToFrameLayout();
-            t.createGestureDetecter(); // 텍스트 모두 붙이기를 중간자 처리, 재접속 시에만 한다고 가정했을 때. // fixme nayeon
+            t.createGestureDetecter(); // 텍스트 모두 붙이기를 중간자 처리, 재접속 시에만 한다고 가정했을 때.
         }
     }
 
@@ -719,7 +719,7 @@ public enum DrawingEditor {
 
     public void setCurrentText(Text text) { this.currentText = text; }
 
-    public void setTextBeingEdited(Boolean bool) { this.isTextBeingEdited = bool; } // fixme nayeon
+    public void setTextBeingEdited(Boolean bool) { this.isTextBeingEdited = bool; } // 하나의 텍스트 편집 시 다른 텍스트 포커싱 막기 위해
 
     public void setHistory(ArrayList<DrawingItem> history) {
         this.history = history;

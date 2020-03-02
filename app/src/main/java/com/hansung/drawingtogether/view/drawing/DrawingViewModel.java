@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -88,12 +89,6 @@ public class DrawingViewModel extends BaseViewModel {
         client.subscribe(topic + "_delete");
         client.subscribe(topic + "_data");
         client.subscribe(topic + "_mid");
-
-        // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)
-        /*JoinMessage joinMessage = new JoinMessage(name);
-        MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
-        client.publish(topic + "_join", JSONParser.getInstance().jsonWrite(messageFormat));*/
-        //
     }
 
     public void clickPen(View view) {
@@ -125,13 +120,13 @@ public class DrawingViewModel extends BaseViewModel {
         FrameLayout frameLayout = de.getDrawingFragment().getBinding().drawingViewContainer;
 
         // 텍스트 속성 설정 ( 기본 도구에서 설정할 것인지 텍스트 도구에서 설정할 것인지? )
-        TextAttribute textAttribute = new TextAttribute(de.setTextStringId(), de.getMyUsername(), //fixme nayeon - Text ID 초기값 NULL
+        TextAttribute textAttribute = new TextAttribute(de.setTextStringId(), de.getMyUsername(),
                 "Input Text", 20, Color.BLACK, Color.TRANSPARENT,
                 View.TEXT_ALIGNMENT_CENTER, Typeface.BOLD,
                 frameLayout.getWidth(), frameLayout.getHeight());
 
-
         Text text = new Text(de.getDrawingFragment(), textAttribute);
+        text.setDrawable(de.getDrawingFragment().getResources().getDrawable(R.drawable.text_border)); // fixme nayeon 텍스트 테두리 설정
         text.createGestureDetecter(); // Set Gesture ( Single Tap Up )
         text.addEditTextToFrameLayout(); // 처음 텍스트 생성 시 EditText 부착
         text.activeEditText(); // EditText 커서와 키보드 활성화

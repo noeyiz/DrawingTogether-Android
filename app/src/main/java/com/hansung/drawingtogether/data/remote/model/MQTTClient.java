@@ -264,7 +264,6 @@ public enum MQTTClient {
                 }
                 */
 
-                // fixme nayeon [ 중간자 ]
                 if (newTopic.equals(topic_join)) {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
@@ -289,7 +288,7 @@ public enum MQTTClient {
                             Log.e("who I am", to);
                             Log.e("received message", "mid data -> " + msg);
 
-                            // fixme nayeon - 드로잉에 필요한 구조체들 저장하는 부분
+                            // 드로잉에 필요한 구조체들 저장하는 부분
                             // 필요한 배열 리스트들과 배경 이미지 세팅
                             de.setDrawingComponents(mqttMessageFormat.getDrawingComponents());
                             de.setHistory(mqttMessageFormat.getHistory());
@@ -299,9 +298,9 @@ public enum MQTTClient {
                             de.setTexts(mqttMessageFormat.getTexts());
                             if(mqttMessageFormat.getBitmapByteArray() != null) { de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()); }
 
-                            // 아이디 세팅 fixme nayeon - 동시성 문제
+                            // 아이디 세팅 [ 동시성 문제 ]
                             de.setComponentId(de.getDrawingComponents().size() - 1);
-                            de.setTextId(de.getTexts().size() - 1);
+                            // de.setTextId(de.getTexts().size() - 1); // 텍스트 아이디 = "사용자이름-textCount"
 
                             if(mqttMessageFormat.getBitmapByteArray() != null) {
                                 de.setBackgroundImage(de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()));
@@ -321,7 +320,7 @@ public enum MQTTClient {
                         if (!myName.equals(name)) {  // other // 한 사람이 "name":"이름" 메시지 보냈을 경우 다른 사람들이 받아서 처리하는 부분
                             userList.add(name); // 들어온 사람의 이름을 추가
 
-                            if (isMaster()) { //  todo nayeon - 마스터인 경우 자신의 드로잉 구조체들 전송하는 부분
+                            if (isMaster()) { // 마스터인 경우 자신의 드로잉 구조체들 전송하는 부분
                                 JoinMessage joinMsg = new JoinMessage(userList.get(0), userList.get(userList.size() - 1), userList);
 
 /*                              Log.e("M my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
@@ -609,12 +608,9 @@ public enum MQTTClient {
             // 그 이후에 일어나는 텍스트에 대한 모든 행위들은
             // 텍스트 배열로부터 텍스트 객체를 찾아서 작업 가능
             if(!textMode.equals(TextMode.CREATE)) {
-                // todo nayeon 텍스트 아이디가 null 일 경우 ?
-                // if(textAttr.getId().equals(null)) { }
-
                 text = de.findTextById(textAttr.getId());
 
-                if(text == null) return null; // fixme nayeon - 중간자가 자신에게 MID 로 보낸 메시지보다, 마스터가 TEXT 로 보낸 메시지가 먼저 올 경우 (중간자가 자신의 처리를 다 했다는 플래그 필요?)
+                if(text == null) return null; // todo nayeon - 중간자가 자신에게 MID 로 보낸 메시지보다, 마스터가 TEXT 로 보낸 메시지가 먼저 올 경우 (중간자가 자신의 처리를 다 했다는 플래그 필요?)
 
                 text.setTextAttribute(textAttr); // MQTT 로 전송받은 텍스트 속성 지정해주기
             }
@@ -622,7 +618,7 @@ public enum MQTTClient {
             switch (textMode) {
                 case CREATE:
                     Text newText = new Text(drawingFragment, textAttr); // fixme nayeon
-                    newText.getTextAttribute().setTextInited(true); // 만들어진 직후 상단 중앙에 놓이도록
+                    newText.getTextAttribute().setTextInited(true); // 만들어진 직후 상단 중앙에 놓이도록 텍스트 초기화 설정을 객체 생성 후 나중에 해주기
                     de.addTexts(newText);
                     de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));  //fixme minj for undo, redo
                     publishProgress(message);
@@ -707,7 +703,7 @@ public enum MQTTClient {
             de.setMyCanvasWidth(myCanvasWidth);
             de.setMyCanvasHeight(myCanvasHeight);
 
-            // fixme nayeon
+            // fixme nayeon ( fix minj -> Mid 처리를 하는 Task 분리 )
             // 메시지를 보낸 사람의 이름이 나의 이름이고, 메시지에 MID 모드가 지정되어 있다면
             // 중간자 자기 자신에게 보낸 메시지
 
@@ -776,7 +772,7 @@ public enum MQTTClient {
         }
 
         @Override
-        protected void onProgressUpdate(MqttMessageFormat... messages) { // fixme nayeon
+        protected void onProgressUpdate(MqttMessageFormat... messages) {
             MqttMessageFormat message = messages[0];
 
             Mode mode = message.getMode();
