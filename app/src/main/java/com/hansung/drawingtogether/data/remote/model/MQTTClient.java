@@ -354,7 +354,7 @@ public enum MQTTClient {
                         if (!myName.equals(name)) {  // other // 한 사람이 "name":"이름" 메시지 보냈을 경우 다른 사람들이 받아서 처리하는 부분
                             userList.add(name); // 들어온 사람의 이름을 추가
 
-                            if(de.getCurrentMode() == Mode.DRAW) {
+                            if(de.getCurrentMode() == Mode.DRAW) {  //todo 모두 up한 뒤 master가 publish하도록
                                 binding.drawingView.InterceptTouchEventAndDoActionUp();
                             }
                             setToastMsg("[ " + userList.get(userList.size() - 1) + " ] 님이 접속하셨습니다");
@@ -933,7 +933,7 @@ public enum MQTTClient {
                         isMid = true;
                         de.removeAllDrawingData();
                         drawingViewModel.back();
-                        dialog.cancel();
+                        //dialog.cancel();
                         dialog.dismiss();
                     }
                 })
