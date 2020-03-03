@@ -157,15 +157,15 @@ public class DrawingView extends View {
     }
 
     public void addPointAndDraw(DrawingComponent dComponent, Point point) {
-        dComponent.setPreSize(dComponent.getPoints().size());
-        dComponent.addPoint(point);
-        dComponent.setBeginPoint(dComponent.getPoints().get(0));
-        dComponent.setEndPoint(point);
+        dComponent.setPreSize(dComponent.getPoints().size()); // 컴포넌트를 구성하는 포인트 배열의 사이즈 저장
+        dComponent.addPoint(point); // 포인트 추가
+        dComponent.setBeginPoint(dComponent.getPoints().get(0)); // 시작 포인트 설정
+        dComponent.setEndPoint(point); // 끝 포인트 설정
 
         dComponent.draw(de.getBackCanvas());
 
         if(dComponent.getType() == ComponentType.STROKE) {
-            Canvas canvas = new Canvas(de.getLastDrawingBitmap());
+            Canvas canvas = new Canvas(de.getLastDrawingBitmap()); // 새로운 캔버스를 생성해 그려주기
             dComponent.draw(canvas);
         }
     }
@@ -194,7 +194,7 @@ public class DrawingView extends View {
         client.publish(client.getTopic_data(),  parser.jsonWrite(messageFormat));
     }
 
-    public void updateDrawingComponentId(DrawingComponent dComponent) {
+    public void updateDrawingComponentId(DrawingComponent dComponent) { // ACTION_UP 이벤트 발생 시 호출
         try {
             DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
             Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
@@ -205,19 +205,19 @@ public class DrawingView extends View {
     }
 
     public void doInDrawActionUp(DrawingComponent dComponent) {
-        initDrawingComponent();
+        initDrawingComponent(); // 드로잉 컴포넌트 객체 생성
 
         de.splitPoints(dComponent, de.getMyCanvasWidth(), de.getMyCanvasHeight());
         de.removeCurrentComponents(dComponent.getId());
         de.addDrawingComponents(dComponent);
         Log.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
 
-        de.addHistory(new DrawingItem(de.getCurrentMode(), dComponent/*, de.getDrawingBitmap()*/));
+        de.addHistory(new DrawingItem(de.getCurrentMode(), dComponent/*, de.getDrawingBitmap()*/)); // 드로잉 컴포넌트가 생성되면 History 에 저장
         if(de.getHistory().size() == 1)
             de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
 
         Log.i("drawing", "history.size()=" + de.getHistory().size());
-        if(dComponent.getType() != ComponentType.STROKE)
+        if(dComponent.getType() != ComponentType.STROKE) // 도형이 그려졌다면 lastDrawingBitmap 에 drawingBitmap 내용 복사
             de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
         de.clearUndoArray();
     }
@@ -246,6 +246,7 @@ public class DrawingView extends View {
             return true;
         }
 
+        // 터치가 DrawingView 밖으로 나갔을 때
         if(event.getX()-5 < 0 || event.getY()-5 < 0 || de.getDrawnCanvasWidth()-5 < event.getX() || de.getDrawnCanvasHeight()-5 < event.getY()) {   //fixme 반응이 느려서 임시로 -5
             currentDrawAction = MotionEvent.ACTION_UP;
             Log.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());

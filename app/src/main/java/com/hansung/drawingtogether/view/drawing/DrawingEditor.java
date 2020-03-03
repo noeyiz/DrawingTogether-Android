@@ -6,12 +6,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.SparseArray;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Vector;
 
 import lombok.Getter;
@@ -22,11 +22,13 @@ public enum DrawingEditor {
 
     private DrawingFragment drawingFragment;
 
+    /* 배경 이미지와 그리기 위한 자원 */
     private Bitmap backgroundImage;             //
     private Bitmap drawingBitmap;               //그리기 bitmap
     private Canvas backCanvas;                  //미리 그려두기 위한 Canvas
     private Bitmap lastDrawingBitmap = null;    //drawingBitmap 의 마지막 상태 bitmap --> 도형 그리기
 
+    /* 드로잉 컴포넌트에 필요한 객체 */
     private int componentId = -1;
     private int maxComponentId = -1;
     private Vector<Integer> removedComponentId = new Vector<>();
@@ -36,15 +38,19 @@ public enum DrawingEditor {
     private ArrayList<DrawingComponent> drawingComponents = new ArrayList<>();  //현재 그려져있는 모든 drawing component 배열
     private ArrayList<DrawingComponent> currentComponents = new ArrayList<>();  //현재 그리기중인 drawing component 배열
 
+    /* 텍스트에 필요한 객체 */
+    private Drawable textBorderDrawable; // 텍스트 포커싱 테두리
     private ArrayList<Text> texts = new ArrayList<>(); // 현재 부착된 모든 text 배열
     private Text currentText = null;
     private boolean isTextBeingEdited = false;
     private int textId = -1;
     private int maxTextId = -1;
 
+    /* UNDO, REDO 를 위한 객체 */
     private ArrayList<DrawingItem> history = new ArrayList<>();     //
     private ArrayList<DrawingItem> undoArray = new ArrayList<>();   //undo 배열
 
+    /* 드로잉 컴포넌트 속성 */
     private Mode currentMode = Mode.DRAW;
     private ComponentType currentType = ComponentType.STROKE;
     private String myUsername;
@@ -116,22 +122,18 @@ public enum DrawingEditor {
     }*/
 
     public void drawAllDrawingComponents() {   //drawingComponents draw
-        Iterator<DrawingComponent> iterator = drawingComponents.iterator();
-        while(iterator.hasNext()) {
-            iterator.next().drawComponent(getBackCanvas());
+        for (DrawingComponent drawingComponent : drawingComponents) {
+            drawingComponent.drawComponent(getBackCanvas());
         }
     }
 
-    public void drawAllDrawingComponentsForMid(/*float myCanvasWidth, float myCanvasHeight*/) {   //drawingComponents draw
-        Iterator<DrawingComponent> iterator = drawingComponents.iterator();
-        while(iterator.hasNext()) {
-            DrawingComponent component = iterator.next();
+    public void drawAllDrawingComponentsForMid() {   //drawingComponents draw
+        for (DrawingComponent component : drawingComponents) {
             component.calculateRatio(drawingBoardArray[0].length, drawingBoardArray.length);
             component.drawComponent(getBackCanvas());
 
             splitPoints(component, drawingBoardArray[0].length, drawingBoardArray.length);
         }
-        //Log.i("drawing", "myCanvas w=" + myCanvasWidth + ", h=" + myCanvasHeight);
         Log.i("drawing", "drawingBoardArray[][] w=" + drawingBoardArray[0].length + ", h=" + drawingBoardArray.length);
         Log.i("drawing", "dba[0][0] = " + drawingBoardArray[0][0].get(0));
     }
@@ -149,7 +151,7 @@ public enum DrawingEditor {
         }
     }
 
-    public boolean isContainsCurrentComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우
+    public boolean isContainsCurrentComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우 // fixme nayeon [동시성 처리] //? 이건 드로잉에서 쓰는데?
         String str = "cc = ";
         for(DrawingComponent component: getCurrentComponents()) {
             str += component.getId() + " ";
@@ -251,7 +253,7 @@ public enum DrawingEditor {
     public void addAllTextViewToFrameLayoutForMid() {
         for(Text t: texts) {
             t.addTextViewToFrameLayout();
-            t.createGestureDetecter(); // 텍스트 모두 붙이기를 중간자 처리, 재접속 시에만 한다고 가정했을 때. // fixme nayeon
+            t.createGestureDetecter(); // 텍스트 모두 붙이기를 중간자 처리, 재접속 시에만 한다고 가정했을 때.
         }
     }
 
@@ -697,6 +699,8 @@ public enum DrawingEditor {
         this.drawingFragment = drawingFragment;
     }
 
+    public void setTextBorderDrawable(Drawable textBorderDrawable) { this.textBorderDrawable = textBorderDrawable; } // 텍스트 테두리 그리기 위한 Drawable 설정
+
     public void setBackgroundImage(Bitmap backgroundImage) {
         this.backgroundImage = backgroundImage;
     }
@@ -715,7 +719,7 @@ public enum DrawingEditor {
 
     public void setCurrentText(Text text) { this.currentText = text; }
 
-    public void setTextBeingEdited(Boolean bool) { this.isTextBeingEdited = bool; } // fixme nayeon
+    public void setTextBeingEdited(Boolean bool) { this.isTextBeingEdited = bool; } // 하나의 텍스트 편집 시 다른 텍스트 포커싱 막기 위해
 
     public void setHistory(ArrayList<DrawingItem> history) {
         this.history = history;
@@ -775,9 +779,7 @@ public enum DrawingEditor {
 
     //public void setTextIdInCallback(int myTextArrayIndex) { this.texts.get(myTextArrayIndex).getTextAttribute().setId(this.textId); }
 
-    public void setDrawingComponents(ArrayList<DrawingComponent> drawingComponents) {
-        this.drawingComponents = drawingComponents;
-    }
+    public void setDrawingComponents(ArrayList<DrawingComponent> drawingComponents) { this.drawingComponents = drawingComponents; }
 
     public void setTexts(ArrayList<Text> texts) { this.texts = texts; }
 

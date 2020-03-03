@@ -294,7 +294,6 @@ public enum MQTTClient {
                 }
                 */
 
-                // [ 중간자 ]
                 if (newTopic.equals(topic_join)) {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
@@ -330,9 +329,10 @@ public enum MQTTClient {
                             de.setTexts(mqttMessageFormat.getTexts());
                             if(mqttMessageFormat.getBitmapByteArray() != null) { de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()); }
 
+
                             // 아이디 세팅
                             de.setComponentId(mqttMessageFormat.getMaxComponentId());
-                            de.setTextId(mqttMessageFormat.getMaxTextId());
+                            // de.setTextId(mqttMessageFormat.getMaxTextId()); // fixme nayeon - 텍스트 아이디는 "사용자이름-textIdCount" 이므로 textIdCount 가 같아도 고유
                             Log.i("drawing", "component id = " + mqttMessageFormat.getMaxComponentId() + ", text id = " + mqttMessageFormat.getMaxTextId());
 
                             if(mqttMessageFormat.getBitmapByteArray() != null) {
@@ -354,19 +354,16 @@ public enum MQTTClient {
                         if (!myName.equals(name)) {  // other // 한 사람이 "name":"이름" 메시지 보냈을 경우 다른 사람들이 받아서 처리하는 부분
                             userList.add(name); // 들어온 사람의 이름을 추가
 
+                            // 중간자가 들어왔을 경우 자신의 모드가 DRAW 모드일 때
                             if(de.getCurrentMode() == Mode.DRAW) {  //todo 모두 up한 뒤 master가 publish하도록
                                 binding.drawingView.InterceptTouchEventAndDoActionUp();
                             }
                             setToastMsg("[ " + userList.get(userList.size() - 1) + " ] 님이 접속하셨습니다");
 
+
                             if (isMaster()) { // 마스터인 경우 자신의 드로잉 구조체들 전송하는 부분
                                 JoinMessage joinMsg = new JoinMessage(userList.get(0), userList.get(userList.size() - 1), userList);
-/*                              Log.e("M my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
-                                Log.e("M my name, texts size", myName + ", " + de.getTexts().size());
-                                Log.e("M componentId variable value, last componentId", de.getComponentId() + "");      // + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
-                                Log.e("M textId variable value, last textId", de.getTextId() + "");                     // + ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
-                                Log.e("M removedComponentId[] = ", de.getRemovedComponentId().toString());
-*/
+
                                 MqttMessageFormat messageFormat;
                                 if (de.getBackgroundImage() == null) {
                                     messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId(), de.getMaxComponentId(), de.getMaxTextId());
@@ -377,7 +374,7 @@ public enum MQTTClient {
 
                                 setToastMsg("[ " + userList.get(userList.size() - 1) + " ] 님에게 데이터 전송을 완료했습니다");
                                 Log.e("kkankkan", "master data -> " + parser.jsonWrite(messageFormat));
-                                Log.i("drawing", "byte size = " + parser.jsonWrite(messageFormat).getBytes().length);
+                                Log.i("drawing", "payload size (bytes) = " + parser.jsonWrite(messageFormat).getBytes().length);
                             }
 
                             binding.drawingView.setIntercept(false);
@@ -628,7 +625,7 @@ public enum MQTTClient {
             de.setMyCanvasWidth(myCanvasWidth);
             de.setMyCanvasHeight(myCanvasHeight);
 
-            if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW)) { return null; }
+            if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW)) { return null; } // DRAW(컴포넌트 그리기) 모드일 때 MQTT 콜백 수행 [ ID 동시성 ]
 
             switch(mode) {
                 case DRAW:
@@ -676,21 +673,6 @@ public enum MQTTClient {
             Mode mode = message.getMode();
 
             switch(mode) {
-                /*case MID:
-                    if(de.getBackgroundImage() == null) {
-                        Log.i("drawing", "no background image");
-                        break;
-                    }
-                    if(binding.backgroundView.getChildAt(0) != null) {
-                        Log.i("drawing", "already add background image");
-                        break;
-                    }
-                    Log.i("drawing", "mid onProgressUpdate " + de.getMyUsername());
-                    ImageView midImageView = new ImageView(drawingFragment.getContext());
-                    midImageView.setLayoutParams(new LinearLayout.LayoutParams(drawingFragment.getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
-                    midImageView.setImageBitmap(de.getBackgroundImage());
-                    binding.backgroundView.addView(midImageView);
-                    break;*/
                 case BACKGROUND_IMAGE:
                     if(de.getBackgroundImage() != null) {
                         binding.backgroundView.removeAllViews();    //fixme minj - 우선 배경 이미지는 하나만
@@ -787,24 +769,20 @@ public enum MQTTClient {
             // 그 이후에 일어나는 텍스트에 대한 모든 행위들은
             // 텍스트 배열로부터 텍스트 객체를 찾아서 작업 가능
             if(!textMode.equals(TextMode.CREATE)) {
-                // todo nayeon 텍스트 아이디가 null 일 경우 ?
-                // if(textAttr.getId().equals(null)) { }
-
                 text = de.findTextById(textAttr.getId());
-                if(text == null) return null; // fixme nayeon - 중간자가 자신에게 MID 로 보낸 메시지보다, 마스터가 TEXT 로 보낸 메시지가 먼저 올 경우 (중간자가 자신의 처리를 다 했다는 플래그 필요?)
+                if(text == null) return null; // todo nayeon - 중간자가 자신에게 MID 로 보낸 메시지보다, 마스터가 TEXT 로 보낸 메시지가 먼저 올 경우 (중간자가 자신의 처리를 다 했다는 플래그 필요?)
                 text.setTextAttribute(textAttr); // MQTT 로 전송받은 텍스트 속성 지정해주기
             }
 
             switch (textMode) {
                 case CREATE:
-                    Text newText = new Text(drawingFragment, textAttr); // fixme nayeon
+                    Text newText = new Text(drawingFragment, textAttr);
                     newText.getTextAttribute().setTextInited(true); // 만들어진 직후 상단 중앙에 놓이도록
                     de.addTexts(newText);
                     de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));
                     publishProgress(message);
                     Log.e("texts size", Integer.toString(de.getTexts().size()));
                     return null;
-                case DRAG_STARTED:
                 case DRAG_LOCATION:
                 case DRAG_EXITED:
                     text.setTextViewLocation();
