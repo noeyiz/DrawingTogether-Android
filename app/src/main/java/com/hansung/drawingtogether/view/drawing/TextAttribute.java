@@ -30,8 +30,12 @@ public class TextAttribute {
 
     private int preX;
     private int preY;
+    private int postX;
+    private int postY;
     private int x;
     private int y;
+
+    private boolean isModified = false;
 
     private boolean isTextInited = false; // fixme nayeon (Text class -> TextAttribute Class)
     private boolean isTextMoved = false;
@@ -54,6 +58,28 @@ public class TextAttribute {
     }
 */
 
+    public TextAttribute(TextAttribute textAttr) {
+        this.id = textAttr.id;
+        this.username = textAttr.username;
+
+        this.preText = textAttr.preText;
+        this.postText = textAttr.postText;
+        this.text = textAttr.text;
+        this.textSize = textAttr.textSize;
+        this.textColor = textAttr.textColor;
+        this.textBackgroundColor = textAttr.textBackgroundColor;
+        this.textGravity = textAttr.textGravity;
+        this.style = textAttr.style;
+        this.generatedLayoutWidth = textAttr.generatedLayoutWidth;
+        this.generatedLayoutHeight = textAttr.generatedLayoutHeight;
+
+        this.preX = textAttr.preX;
+        this.preY = textAttr.preY;
+        this.postX = textAttr.postX;
+        this.postY = textAttr.postY;
+        this.x = textAttr.x;
+        this.y = textAttr.y;
+    }
 
     public TextAttribute(String id, String username, String text, int textSize, int textColor, int textBackgroundColor,
                          int textGravity, int style, int generatedLayoutWidth, int generatedLayoutHeight) {

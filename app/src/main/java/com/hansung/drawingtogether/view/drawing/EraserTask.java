@@ -53,7 +53,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
         Log.i("drawing", "history.size()=" + de.getHistory().size());
         de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
 
-        de.clearUndoArray();
+        //de.clearUndoArray();
         //de.getDrawingView().invalidate();
     }
 

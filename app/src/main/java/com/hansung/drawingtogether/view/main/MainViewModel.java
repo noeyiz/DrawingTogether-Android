@@ -1,7 +1,6 @@
 package com.hansung.drawingtogether.view.main;
 
 import android.app.ProgressDialog;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
@@ -9,8 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.MutableLiveData;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -19,13 +16,9 @@ import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.BaseViewModel;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class MainViewModel extends BaseViewModel {
 
@@ -56,6 +49,7 @@ public class MainViewModel extends BaseViewModel {
 
     private boolean hasSpecialCharacterAndBlank;
 
+    private MQTTClient client = MQTTClient.getInstance();
     private ProgressDialog progressDialog;
 
     public MainViewModel() {
@@ -86,6 +80,7 @@ public class MainViewModel extends BaseViewModel {
         //Log.e("kkankkan", storage.toString());
         //Log.e("kkankkan", storageReference.toString());
 
+        existTopic = false;
         newName = false;
         newMaster = false;
     }
@@ -172,14 +167,17 @@ public class MainViewModel extends BaseViewModel {
         if (!hasSpecialCharacterAndBlank) {
             progressDialog = new ProgressDialog(view.getContext());
             progressDialog.setMessage("Loding...");
-            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.setCanceledOnTouchOutside(true);    //fixme minj - master 없는 topic 의 경우 빠져나오지를 못해서 잠시 cancel 가능하게 수정
+            client.setProgressDialog(progressDialog);
             progressDialog.show();
 
-            databaseReference.child(getTopic().getValue()).runTransaction(new Transaction.Handler() {
+            databaseReference.child(topic.getValue()).runTransaction(new Transaction.Handler() {
                 @NonNull
                 @Override
                 public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
                     existTopic = false;
+                    newName = false;
+                    newMaster = false;
 
                     if (mutableData.child("master").getValue() == null) {  // 새 토픽
                         mutableData.child("master").setValue(true);
@@ -194,7 +192,7 @@ public class MainViewModel extends BaseViewModel {
                             if (mutableData.child("username").hasChild(name.getValue())) {
                                 setNameError("이미 사용중인 이름입니다");
                                 Log.e("kkankkan", "이미 사용중인 이름");
-
+                                progressDialog.dismiss();
                             }
                             else {
                                 newName = true;
@@ -214,7 +212,7 @@ public class MainViewModel extends BaseViewModel {
                         else {
                             setPasswordError("비밀번호가 일치하지 않습니다");
                             Log.e("kkankkan", "비밀번호 틀림");
-
+                            progressDialog.dismiss();
                         }
 
                     }
@@ -305,10 +303,10 @@ public class MainViewModel extends BaseViewModel {
                             //navigate(R.id.action_mainFragment_to_drawingFragment, bundle);
                         }
                     }
-                    newName = false;
-                    newMaster = false;
+                   /* newName = false;
+                    newMaster = false;*/  // fixme hyeyeon
 
-                    progressDialog.dismiss();
+                    //progressDialog.dismiss();
                 }
             });
         }
@@ -337,15 +335,34 @@ public class MainViewModel extends BaseViewModel {
                             }
                         }
 
+<<<<<<< HEAD
+                                Bundle bundle = new Bundle();
+                                bundle.putString("topic", getTopic().getValue());
+                                bundle.putString("name", getName().getValue());
+                                bundle.putString("password", getPassword().getValue());
+                                bundle.putString("master", getMasterCheck().getValue().toString());
+                                bundle.putString("ip", ip.getValue());
+                                bundle.putString("port", port.getValue());
+=======
                         if (!isExistName) {
                             JSONObject obj = new JSONObject();
                             obj.put("name", getName().getValue());
                             array.put(obj);
 
                             object.put("names", array);
+>>>>>>> origin/login
 
                             Log.e("kkankkan", "기존 토픽에 새로운 사용자 추가 : " + object.toString());
 
+<<<<<<< HEAD
+                                setIpError("");
+                                setPortError("");
+                                setTopic("");
+                                setPassword("");
+                                setName("");
+                                setMasterCheck();
+                                Log.e("kkankkan", "메인뷰모델 초기화");
+=======
                             UploadTask uploadTask = storageReference.child(getTopic().getValue()).putBytes(object.toString().getBytes());
                             uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override
@@ -357,6 +374,7 @@ public class MainViewModel extends BaseViewModel {
                                     bundle.putString("master", getMasterCheck().getValue().toString());
                                     bundle.putString("ip", ip.getValue());
                                     bundle.putString("port", port.getValue());
+>>>>>>> origin/login
 
                                     Log.e("kkankkan", getMasterCheck().getValue().toString());
                                     Log.e("kkankkan", "기존 토픽에 새로운 사용자 upload success !!");
@@ -402,9 +420,53 @@ public class MainViewModel extends BaseViewModel {
                         }
 
                     }
+<<<<<<< HEAD
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {  // 새로운 topic
+                    try {
+                        JSONObject object = new JSONObject();
+                        object.put("topic", getTopic().getValue());
+                        object.put("password", getPassword().getValue());
+
+                        JSONArray array = new JSONArray();
+                        JSONObject name = new JSONObject();
+                        name.put("name", getName().getValue());
+                        array.put(name);
+                        object.put("names", array);
+
+                        Log.e("kkankkan", "새로운 토픽 : "  + object.toString());
+
+                        UploadTask uploadTask = storageReference.child(getTopic().getValue()).putBytes(object.toString().getBytes());
+                        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                Bundle bundle = new Bundle();
+                                bundle.putString("topic", getTopic().getValue());
+                                bundle.putString("name", getName().getValue());
+                                bundle.putString("password", getPassword().getValue());
+                                bundle.putString("master", getMasterCheck().getValue().toString());
+                                bundle.putString("ip", ip.getValue());
+                                bundle.putString("port", port.getValue());
+
+                                Log.e("kkankkan", "새로운 토픽 upload success !!");
+
+                                setIpError("");
+                                setPortError("");
+                                setTopic("");
+                                setPassword("");
+                                setName("");
+                                setMasterCheck();
+                                Log.e("kkankkan", "메인뷰모델 초기화");
+                                // navigate(R.id.action_topicFragment_to_drawingFragment);
+
+                                navigate(R.id.action_mainFragment_to_drawingFragment, bundle);
+=======
                     else {
                         Log.e("kkankkan", "password가 일치하지 않습니다");
                     }
+>>>>>>> origin/login
 
                 }catch (JSONException ex) {
 
@@ -537,4 +599,5 @@ public class MainViewModel extends BaseViewModel {
     public void setNameError(String text) {
         this.nameError.postValue(text);
     }
+
 }

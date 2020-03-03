@@ -36,12 +36,13 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 import lombok.Getter;
 
-import com.google.gson.JsonSyntaxException;
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.main.JoinMessage;
+
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
@@ -56,14 +57,14 @@ import java.io.IOException;
 import java.util.Objects;
 
 @Getter
-public class DrawingFragment extends Fragment {
+public class DrawingFragment extends Fragment implements MainActivity.onKeyBackPressedListener{  // fixme hyeyeon[5]
 
     private final int PICK_FROM_GALLERY = 0;
     private final int PICK_FROM_CAMERA = 1;
 
     Point size;
     // fixme hyeyeon
-/*    private String ip;
+/*  private String ip;
     private String port;
     private String topic;
     private String name;
@@ -80,7 +81,6 @@ public class DrawingFragment extends Fragment {
     private LinearLayout doneBtnLayout;
     private Button doneBtn;
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -88,20 +88,58 @@ public class DrawingFragment extends Fragment {
 
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
-        // fixme hyeyeon [1] - initjosnparser의 매개변수가 fragment라서 drawingviewmodel로 못옮겻오..ㅜㅜ
         JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
-        //
+
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 
         de.setDrawingFragment(this);
+        client.setDrawingFragment(this);
+
         binding.drawBtn.setBackgroundColor(Color.rgb(233, 233, 233));
-        inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
+        inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
 
         //setting done Btn
         doneBtnLayout = binding.doneBtnLayout;
         doneBtn = new Button(this.getActivity()); //버튼 동적 생성
         initDoneButton();
+
+        //undo, redo 버튼 초기화
+        if(de.getHistory().size() == 0)
+            binding.undoBtn.setEnabled(false);
+        if(de.getUndoArray().size() == 0)
+            binding.redoBtn.setEnabled(false);
+
+        if(de.getTexts().size() != 0) { //text 다시 붙이기
+            for(Text t: de.getTexts()) {
+                t.removeTextViewToFrameLayout();
+                t.setDrawingFragment(this);
+                t.addTextViewToFrameLayout();
+            }
+        }
+
+        if(de.getBackgroundImage() != null) {   //backgroundImage 다시 붙이기
+            binding.backgroundView.removeAllViews();
+            ImageView imageView = new ImageView(this.getContext());
+            imageView.setLayoutParams(new LinearLayout.LayoutParams(this.getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
+            imageView.setImageBitmap(de.getBackgroundImage());
+            binding.backgroundView.addView(imageView);
+        }
+
+        if(de.getDrawingBitmap() == null) { //fixme minj
+            JoinMessage joinMessage = new JoinMessage(drawingViewModel.getName());
+            MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
+            client.publish(drawingViewModel.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
+
+            // fixme hyeyeon[6]
+            AliveThread aTh = AliveThread.getInstance();
+            aTh.setSecond(2000);
+            aTh.setCount(-2);
+            Thread th = new Thread(aTh);
+            th.start();
+            client.setThread(th);
+        }
+
 
         /*ip = getArguments().getString("ip");
         port = getArguments().getString("port");
@@ -155,12 +193,8 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        // fixme hyeyeon [2] - 마찬가지로 setDrawingFragment의 매개변수가 fragment라서 drawingviewmodel로 못옮겻오..ㅜㅜ
-        client.setDrawingFragment(this);
-        //
 
 /*  // fixme hyeyeon
-
         JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
 
         client.init(topic, name, master, drawingViewModel, ip, port);
@@ -170,6 +204,8 @@ public class DrawingFragment extends Fragment {
         client.subscribe(topic + "_exit");
         client.subscribe(topic + "_delete");
         client.subscribe(topic + "_data");
+        client.subscribe(topic + "_mid");
+
         // client.publish(topic_data ~~);
 
         // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)
@@ -203,7 +239,6 @@ public class DrawingFragment extends Fragment {
         return binding.getRoot();
     }
 
-
     public void showPopup(View view, int layout) {
         View penSettingPopup = getLayoutInflater().inflate(layout, null);
         penSettingPopup.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
@@ -224,15 +259,19 @@ public class DrawingFragment extends Fragment {
     }
 
     private void setEraserPopupClickListener(View penSettingPopup, final PopupWindow popupWindow) {
-        final Button targetEraserBtn = penSettingPopup.findViewById(R.id.targetEraserBtn);
-        targetEraserBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                de.setCurrentMode(Mode.ERASE);
-                Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
-                popupWindow.dismiss();
-            }
-        });
+        final Button backgroundEraserBtn = penSettingPopup.findViewById(R.id.backgroundEraserBtn);
+        if(client.isMaster()) {
+            backgroundEraserBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    binding.drawingView.clearBackgroundImage();
+                    popupWindow.dismiss();
+                }
+            });
+        }
+        else {
+            backgroundEraserBtn.setEnabled(false);
+        }
 
         final Button clearBtn = penSettingPopup.findViewById(R.id.clearBtn);
         if(client.isMaster()) {
@@ -284,15 +323,56 @@ public class DrawingFragment extends Fragment {
                 else if (which == 1){
                     client.publish(data.getTopic() + "_delete", data.getName().getBytes()); // fixme hyeyeon
                 }
+
+                // fixme hyeyeon[5]
+                ((MainActivity)getActivity()).setOnKeyBackPressedListener(null);
+                //
             }
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
 
+    // fixme hyeyeon[5]
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        ((MainActivity)context).setOnKeyBackPressedListener(this);
+    }
+
+    @Override
+    public void onBackKey() {
+        Log.e("kkankkan", "드로잉프레그먼트 onbackpressed");
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setMessage("앱을 종료하시겠습니까?");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                MQTTClient client = MQTTClient.getInstance();
+                client.setBackPressed(true);
+                client.publish(client.getTopic_exit(), client.getMyName().getBytes());
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+    //
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         MqttMessageFormat messageFormat;
+        if(de.getBackgroundImage() != null) { //fixme minj - 우선 배경 이미지는 하나만
+            binding.backgroundView.removeAllViews();
+        }
+
         switch (requestCode) {
             case PICK_FROM_GALLERY:
                 if (data == null) {
@@ -374,9 +454,10 @@ public class DrawingFragment extends Fragment {
         ExifInterface exif = null;
         int orientation = 0;
 
-        if (mode == PICK_FROM_GALLERY)
-            orientation = ExifInterface.ORIENTATION_ROTATE_90;
-        else if (mode == PICK_FROM_CAMERA) {
+        if (mode == PICK_FROM_GALLERY) {
+            //orientation = ExifInterface.ORIENTATION_ROTATE_90;
+            orientation = ExifInterface.ORIENTATION_NORMAL; //fixme minj
+        } else if (mode == PICK_FROM_CAMERA) {
             try {
                 exif = new ExifInterface(drawingViewModel.getPhotoPath());
             } catch (IOException e) {
@@ -450,11 +531,9 @@ public class DrawingFragment extends Fragment {
                 // todo nayeon currentText 의 필요성 생각해보기
                 de.setCurrentText(null);
                 text.processFocusOut(); // 키보드 내리기
-                removeDoneButton();     // 텍스트 조작이 끝나면 기본 버튼들 세팅    //fixme minj
-
+                removeDoneButton();     // 텍스트 조작이 끝나면 기본 버튼들 세팅   \
                 de.setCurrentMode(Mode.DRAW);
             }
         });
     }
-
 }

@@ -58,7 +58,7 @@ class FrameLayoutDragListener implements View.OnDragListener {
 
                 text.sendMqttMessage(TextMode.DROP);
                 Log.i("drawing", "text drop");
-                //de.addHistory(new DrawingItem(TextMode.DROP, textAttribute)); //fixme minj - addHistory
+                de.addHistory(new DrawingItem(TextMode.DROP, textAttribute)); //fixme minj - addHistory
                 Log.i("drawing", "history.size()=" + de.getHistory().size());
                 de.clearUndoArray();
 

@@ -56,9 +56,7 @@ public class Text { // EditTextView
     //private boolean isTextInited = false; // fixme nayeon -> TextAttribute 클래스 멤버로
     private boolean isDragging = false;
 
-    private final int MAX_LENGTH = 15;
-
-    private boolean isModified = false;
+    private final int MAX_LENGTH = 30;
 
     public Text(DrawingFragment drawingFragment, TextAttribute textAttr) {    //fixme minj
         this.drawingFragment = drawingFragment;
@@ -270,7 +268,9 @@ public class Text { // EditTextView
             textAttribute.setTextInited(true);
 
             Log.i("drawing", "text create");
-            //de.addHistory(new DrawingItem(TextMode.CREATE, textAttribute)); //fixme minj - addHistory
+            de.addHistory(new DrawingItem(TextMode.CREATE, getTextAttribute())); //fixme minj - addHistory
+            if(de.getHistory().size() == 1)
+                de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
             Log.i("drawing", "history.size()=" + de.getHistory().size());
             de.clearUndoArray();
         }
@@ -289,23 +289,24 @@ public class Text { // EditTextView
         de.setCurrentText(null); // 현재 조작중인 텍스트 null 처리
         de.setTextBeingEdited(false); // 텍스트 편집 모드 false 처리
 
-
         removeEditTextToFrameLayout(); // EditText 를 레이아웃에서 제거하고
         addTextViewToFrameLayout();
 
-        sendMqttMessage(TextMode.DONE); // 사용 종료를 알리기 위해 보내야함 ( 사용자이름 : null )
-
         String preText = textAttribute.getPreText();
         if(preText != null && !preText.equals(textAttribute.getText())) {   //modify 이전과 text 가 달라졌을 때만 history 에 저장
-            isModified = true;
+            textAttribute.setModified(true);
             Log.i("drawing", "text modify");
-            //de.addHistory(new DrawingItem(TextMode.MODIFY, textAttribute));   //fixme minj - addHistory
+            de.addHistory(new DrawingItem(TextMode.MODIFY, getTextAttribute()));   //fixme minj - addHistory
             Log.i("drawing", "history.size()=" + de.getHistory().size());
             de.clearUndoArray();
         }
 
+        sendMqttMessage(TextMode.DONE); // 사용 종료를 알리기 위해 보내야함 ( 사용자이름 : null )
+
         de.setCurrentMode(Mode.DRAW); // 텍스트 편집이 완료 되면 현재 모드는 기본 드로잉 모드로
         drawingFragment.getBinding().drawBtn.performClick();
+        textAttribute.setModified(false);
+
     }
 
     public void activeEditText() {
@@ -339,12 +340,12 @@ public class Text { // EditTextView
         textView.setY(y);
     }
 
-    public void setPreTextViewLocation() {
+    public void setTextViewLocation(int x, int y) {
         // 텍스트 위치 비율 계산
-        calculateRatio(frameLayout.getWidth(), frameLayout.getHeight());
+        calculateRatio(frameLayout.getWidth(), frameLayout.getHeight()); // xRatio, yRatio 설정
 
-        textView.setX(textAttribute.getPreX() * xRatio);
-        textView.setY(textAttribute.getPreY() * yRatio);
+        textView.setX(x * xRatio - (textView.getWidth()/2));
+        textView.setY(y * yRatio - (textView.getHeight()/2));
     }
 
     private Text getText() { return this; }
@@ -378,7 +379,7 @@ public class Text { // EditTextView
                 eraseText();
                 sendMqttMessage(TextMode.ERASE);
                 Log.i("drawing", "text erase");
-                //de.addHistory(new DrawingItem(TextMode.ERASE, textAttribute));    //fixme minj - addHistory
+                de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme minj - addHistory
                 Log.i("drawing", "history.size()=" + de.getHistory().size());
                 de.clearUndoArray();
             } else {
@@ -434,6 +435,14 @@ public class Text { // EditTextView
             // System.out.println("onFling() called : "+v+", "+v1);
             return true;
         }
+    }
+
+    public void setDrawingFragment(DrawingFragment drawingFragment) {
+        this.drawingFragment = drawingFragment;
+        this.binding = drawingFragment.getBinding();
+
+        this.frameLayout = this.binding.drawingViewContainer;
+        this.inputMethodManager = this.drawingFragment.getInputMethodManager();
     }
 }
 

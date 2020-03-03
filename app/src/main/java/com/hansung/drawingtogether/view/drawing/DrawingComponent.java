@@ -13,9 +13,9 @@ import lombok.Setter;
 public abstract class DrawingComponent {
     protected ArrayList<Point> points = new ArrayList<>();
     protected int id;
-    protected String username;
-    protected String usersComponentId;
-    protected ComponentType type;
+    protected String username = null;
+    protected String usersComponentId = null;
+    protected ComponentType type = null;
     protected int strokeColor;
     protected int fillColor;            //도형에서 사용
     protected int strokeAlpha;
@@ -26,9 +26,9 @@ public abstract class DrawingComponent {
     protected float drawnCanvasHeight;  //draw 되는 canvas height
     protected float xRatio = 1;
     protected float yRatio = 1;
-    protected Point beginPoint;
-    protected Point endPoint;
-    protected Point datumPoint;         //도형 사각형의 왼쪽 위 꼭짓점
+    protected Point beginPoint = null;
+    protected Point endPoint = null;
+    protected Point datumPoint = null;  //사각형의 왼쪽 위 꼭짓점
     protected int width;
     protected int height;
     protected Boolean isErased = false;

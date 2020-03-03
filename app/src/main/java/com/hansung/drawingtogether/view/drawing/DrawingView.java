@@ -1,6 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
@@ -18,8 +19,10 @@ import java.util.Random;
 
 import androidx.annotation.Nullable;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class DrawingView extends View {
     private DrawingEditor de = DrawingEditor.getInstance();
     private MQTTClient client = MQTTClient.getInstance();
@@ -31,6 +34,7 @@ public class DrawingView extends View {
 
     private float canvasWidth;
     private float canvasHeight;
+    private int currentDrawAction = MotionEvent.ACTION_UP;
     private DrawingComponent dComponent;
     private Stroke stroke = new Stroke();
     private Rect rect = new Rect();
@@ -51,15 +55,23 @@ public class DrawingView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        // Log.e("DrawingView", "call onSizeChanged");
+        Log.e("DrawingView", "call onSizeChanged");
 
         canvasWidth = w;
         canvasHeight = h;
-        //de.setMyUsername("mm"); //fixme myUsername
-        de.setDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
-        de.setLastDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
-        de.setBackCanvas(new Canvas(de.getDrawingBitmap()));
-        de.initDrawingBoardArray(w, h);
+
+        if(de.getDrawingBitmap() == null) {
+            de.setDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
+            de.setLastDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
+            de.setBackCanvas(new Canvas(de.getDrawingBitmap()));
+        }
+        if(de.getDrawingBoardArray() == null) {
+            de.initDrawingBoardArray(w, h);
+        }
+        //if(client.isMaster()) {
+            Log.i("mqtt", "progressDialog dismiss");
+            client.getProgressDialog().dismiss();
+        //}
     }
 
     @Override
@@ -71,10 +83,17 @@ public class DrawingView extends View {
         //this.invalidate();
     }
 
+    boolean isIntercept = false;
     //Mode 검사 후
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        this.getParent().requestDisallowInterceptTouchEvent(true);
+        if(!isIntercept) {
+            this.getParent().requestDisallowInterceptTouchEvent(true);
+        } else {
+            Log.i("drawing", "intercept drawing view touch");
+            return false;
+        }
+        //this.getParent().requestDisallowInterceptTouchEvent(true);
 
         setEditorAttribute();
         switch (de.getCurrentMode()) {
@@ -175,6 +194,16 @@ public class DrawingView extends View {
         client.publish(client.getTopic_data(),  parser.jsonWrite(messageFormat));
     }
 
+    public void updateDrawingComponentId(DrawingComponent dComponent) {
+        try {
+            DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
+            Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
+            dComponent.setId(upComponent.getId());
+        } catch(NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void doInDrawActionUp(DrawingComponent dComponent) {
         initDrawingComponent();
 
@@ -184,15 +213,33 @@ public class DrawingView extends View {
         Log.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
 
         de.addHistory(new DrawingItem(de.getCurrentMode(), dComponent/*, de.getDrawingBitmap()*/));
+        if(de.getHistory().size() == 1)
+            de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
+
         Log.i("drawing", "history.size()=" + de.getHistory().size());
         if(dComponent.getType() != ComponentType.STROKE)
             de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
         de.clearUndoArray();
     }
 
+    public void InterceptTouchEventAndDoActionUp() {
+        if(currentDrawAction == MotionEvent.ACTION_UP) {
+            return;
+        }
+        isIntercept = true;
+        Log.i("drawing", "intercept touch event and do action up");
+
+        this.getParent().requestDisallowInterceptTouchEvent(false);
+        addPointAndDraw(dComponent, dComponent.getEndPoint());
+        sendDrawMqttMessage(MotionEvent.ACTION_UP);
+        updateDrawingComponentId(dComponent);
+        doInDrawActionUp(dComponent);
+    }
+
     boolean isExit = false;
     public boolean onTouchDrawMode(MotionEvent event/*, DrawingComponent dComponent*/) {
         Point point;
+        currentDrawAction = event.getAction();
 
         if(isExit && event.getAction() != MotionEvent.ACTION_DOWN) {
             Log.i("mqtt", "isExit1 = " + isExit);
@@ -200,6 +247,7 @@ public class DrawingView extends View {
         }
 
         if(event.getX()-5 < 0 || event.getY()-5 < 0 || de.getDrawnCanvasWidth()-5 < event.getX() || de.getDrawnCanvasHeight()-5 < event.getY()) {   //fixme 반응이 느려서 임시로 -5
+            currentDrawAction = MotionEvent.ACTION_UP;
             Log.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
             Log.i("drawing", "exit");
 
@@ -208,7 +256,7 @@ public class DrawingView extends View {
 
             //publish
             sendDrawMqttMessage(MotionEvent.ACTION_UP);
-
+            updateDrawingComponentId(dComponent);
             doInDrawActionUp(dComponent);
 
             isExit = true;
@@ -248,11 +296,7 @@ public class DrawingView extends View {
 
                 //publish
                 sendDrawMqttMessage(event.getAction());
-
-                Log.i("drawing", "dComponent: id=" + dComponent.getId() + ", endPoint=" + dComponent.getEndPoint().toString());
-                DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
-                Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
-                dComponent.setId(upComponent.getId());
+                updateDrawingComponentId(dComponent);
                 doInDrawActionUp(dComponent);
                 return true;
             default:
@@ -316,10 +360,39 @@ public class DrawingView extends View {
                 sendModeMqttMessage();
                 de.clearDrawingComponents();
                 de.clearTexts();
+                de.getDrawingFragment().getBinding().redoBtn.setEnabled(false);
+                de.getDrawingFragment().getBinding().undoBtn.setEnabled(false);
                 invalidate();
 
                 Log.i("drawing", "history.size()=" + de.getHistory().size());
                 Log.i("drawing", "clear");
+            }
+        });
+
+        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i("drawing", "canceled");
+            }
+        });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    public void clearBackgroundImage() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(de.getDrawingFragment().getActivity());
+        builder.setTitle("배경 초기화").setMessage("배경 이미지가 삭제됩니다.\n그래도 지우시겠습니까?");
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                de.setCurrentMode(Mode.CLEAR_BACKGROUND_IMAGE);
+                sendModeMqttMessage();
+                de.setBackgroundImage(null);
+                de.clearBackgroundImage();
+
+                Log.i("drawing", "clear background image");
             }
         });
 
@@ -339,6 +412,13 @@ public class DrawingView extends View {
         de.setCurrentMode(Mode.UNDO);
         sendModeMqttMessage();
         de.undo();
+
+        if(de.getUndoArray().size() == 1)
+            de.getDrawingFragment().getBinding().redoBtn.setEnabled(true);
+
+        if(de.getHistory().size() == 0)
+            de.getDrawingFragment().getBinding().undoBtn.setEnabled(false);
+
         invalidate();
         de.setCurrentMode(preMode);
     }
@@ -348,6 +428,12 @@ public class DrawingView extends View {
         de.setCurrentMode(Mode.REDO);
         sendModeMqttMessage();
         de.redo();
+        if(de.getHistory().size() == 1)
+            de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
+
+        if(de.getUndoArray().size() == 0)
+            de.getDrawingFragment().getBinding().redoBtn.setEnabled(false);
+
         invalidate();
         de.setCurrentMode(preMode);
     }

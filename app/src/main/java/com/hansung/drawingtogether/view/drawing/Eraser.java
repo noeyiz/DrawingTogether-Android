@@ -68,5 +68,6 @@ public class Eraser {
         //de.eraseDrawingComponents(erasedComponentIds);
         new EraserTask(erasedComponentIds).execute();
         erasedComponentIds.clear();
+        de.clearUndoArray();
     }
 }

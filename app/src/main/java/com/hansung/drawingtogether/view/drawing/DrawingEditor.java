@@ -21,7 +21,6 @@ public enum DrawingEditor {
     INSTANCE;
 
     private DrawingFragment drawingFragment;
-    private DrawingView drawingView;
 
     private Bitmap backgroundImage;             //
     private Bitmap drawingBitmap;               //그리기 bitmap
@@ -29,8 +28,9 @@ public enum DrawingEditor {
     private Bitmap lastDrawingBitmap = null;    //drawingBitmap 의 마지막 상태 bitmap --> 도형 그리기
 
     private int componentId = -1;
+    private int maxComponentId = -1;
     private Vector<Integer> removedComponentId = new Vector<>();
-    private Vector<Integer>[][] drawingBoardArray;
+    private Vector<Integer>[][] drawingBoardArray = null;
     private SparseArray<ArrayList<Point>> drawingBoardMap = new SparseArray<>();
 
     private ArrayList<DrawingComponent> drawingComponents = new ArrayList<>();  //현재 그려져있는 모든 drawing component 배열
@@ -40,6 +40,7 @@ public enum DrawingEditor {
     private Text currentText = null;
     private boolean isTextBeingEdited = false;
     private int textId = -1;
+    private int maxTextId = -1;
 
     private ArrayList<DrawingItem> history = new ArrayList<>();     //
     private ArrayList<DrawingItem> undoArray = new ArrayList<>();   //undo 배열
@@ -56,7 +57,7 @@ public enum DrawingEditor {
     private int strokeColor = Color.BLACK;      //fixme
     private int strokeAlpha = 255;              //fixme
     private int fillAlpha = 100;                //fixme
-    private int strokeWidth = 50;              //fixme
+    private int strokeWidth = 10;              //fixme
 
 
     // 드로잉 하는동안 저장되는 모든 데이터들 지우기 [나가기 버튼 눌렀을 때 처리 필요 - MQTTClient.java if(topic_exit, topic_delete) 부분에서 호출]
@@ -73,6 +74,7 @@ public enum DrawingEditor {
         drawingComponents.clear();
         currentComponents.clear();
 
+        //removeAllTextViewToFrameLayout();
         texts.clear();
         currentText = null;
         isTextBeingEdited = false;
@@ -83,8 +85,6 @@ public enum DrawingEditor {
 
         currentMode = Mode.DRAW;
         currentType = ComponentType.STROKE;
-
-        removeAllTextViewToFrameLayout();
     }
 
     public void printDrawingData() {
@@ -115,7 +115,6 @@ public enum DrawingEditor {
         private static final DrawingEditor INSTANCE = new DrawingEditor();
     }*/
 
-
     public void drawAllDrawingComponents() {   //drawingComponents draw
         Iterator<DrawingComponent> iterator = drawingComponents.iterator();
         while(iterator.hasNext()) {
@@ -123,25 +122,19 @@ public enum DrawingEditor {
         }
     }
 
-    public void drawAllDrawingComponentsForMid(float myCanvasWidth, float myCanvasHeight) {   //drawingComponents draw
+    public void drawAllDrawingComponentsForMid(/*float myCanvasWidth, float myCanvasHeight*/) {   //drawingComponents draw
         Iterator<DrawingComponent> iterator = drawingComponents.iterator();
         while(iterator.hasNext()) {
             DrawingComponent component = iterator.next();
-            component.calculateRatio(myCanvasWidth, myCanvasHeight);
+            component.calculateRatio(drawingBoardArray[0].length, drawingBoardArray.length);
             component.drawComponent(getBackCanvas());
 
-            splitPoints(component, myCanvasWidth, myCanvasHeight);
+            splitPoints(component, drawingBoardArray[0].length, drawingBoardArray.length);
         }
-        Log.i("drawing", "myCanvas w=" + myCanvasWidth + ", h=" + myCanvasHeight);
+        //Log.i("drawing", "myCanvas w=" + myCanvasWidth + ", h=" + myCanvasHeight);
         Log.i("drawing", "drawingBoardArray[][] w=" + drawingBoardArray[0].length + ", h=" + drawingBoardArray.length);
         Log.i("drawing", "dba[0][0] = " + drawingBoardArray[0][0].get(0));
     }
-
-    /*public void drawCurrentComponents() {   //currentComponents draw
-        for(DrawingComponent component: currentComponents) {
-            component.draw(getBackCanvas());
-        }
-    }*/
 
     public void addCurrentComponents(DrawingComponent component) {
         this.currentComponents.add(component);
@@ -157,7 +150,6 @@ public enum DrawingEditor {
     }
 
     public boolean isContainsCurrentComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우
-        //Vector<DrawingComponent> components = new Vector<>();
         String str = "cc = ";
         for(DrawingComponent component: getCurrentComponents()) {
             str += component.getId() + " ";
@@ -170,15 +162,6 @@ public enum DrawingEditor {
         }
         return false;
     }
-
-    /*public Vector<DrawingComponent> findCurrentComponents(String username) {    //username이 다른 drawing component vector return
-        Vector<DrawingComponent> components = new Vector<>();
-        for(DrawingComponent component: currentComponents) {
-            if(!component.getUsername().equals(username))
-                components.add(component);
-        }
-        return components;
-    }*/
 
     public DrawingComponent findCurrentComponent(String usersComponentId) {
         for(DrawingComponent component: currentComponents) {
@@ -195,10 +178,6 @@ public enum DrawingEditor {
     public void addAllDrawingComponents(Vector<DrawingComponent> components) {
         this.drawingComponents.addAll(components);
     }
-
-    /*public void removeAllDrawingComponents(Vector<DrawingComponent> components) {
-        drawingComponents.removeAll(components);
-    }*/
 
     public void removeAllDrawingComponents(Vector<Integer> ids) {
         for(int i: ids)
@@ -269,12 +248,6 @@ public enum DrawingEditor {
         }
     }
 
-    /*public void addAllTextViewToFrameLayout() {
-        for(Text t: texts) {
-            t.addTextViewToFrameLayout();
-        }
-    }*/
-
     public void addAllTextViewToFrameLayoutForMid() {
         for(Text t: texts) {
             t.addTextViewToFrameLayout();
@@ -283,7 +256,8 @@ public enum DrawingEditor {
     }
 
     public int textIdCounter() {
-        return ++textId;
+        maxTextId = ++textId;
+        return maxTextId;
     }
 
     public void addRemovedComponentIds(Vector<Integer> ids) {
@@ -323,6 +297,10 @@ public enum DrawingEditor {
         history.add(item);
     }
 
+    public void addUndoArray(DrawingItem item) {
+        undoArray.add(item);
+    }
+
     public void updateDrawingComponents(DrawingItem lastItem) {
         if(lastItem.getComponents() == null)
             return;
@@ -335,21 +313,19 @@ public enum DrawingEditor {
         }
         Log.i("drawing", "last item ids = " + ids.toString());
 
-        String str = "dc = ";
+        StringBuilder str = new StringBuilder("dc = ");
         for(DrawingComponent component: getDrawingComponents()) {
-            str += component.getId() + " ";
+            str.append(component.getId()).append(" ");
         }
-        Log.i("drawing", str);
+        Log.i("drawing", str.toString());
 
         switch(lastItem.getMode()) {
             case DRAW:
             case ERASE:
-                //if(drawingComponents.containsAll(lastItem.getComponents())) {       //erase
-                if(isContainsAllDrawingComponents(ids)) {       //erase
+                if(isContainsAllDrawingComponents(ids)) {                           //erase
                     Log.i("drawing", "update erase");
                     clearDrawingBitmap();
                     addRemovedComponentIds(ids);
-                    //removeAllDrawingComponents(lastItem.getComponents());
                     removeAllDrawingComponents(ids);
                     drawAllDrawingComponents();
                     eraseDrawingBoardArray(ids);
@@ -363,12 +339,13 @@ public enum DrawingEditor {
                     }
                     removeRemovedComponentIds(ids);
                     addAllDrawingComponents(lastItem.getComponents());
-                    //drawAllDrawingComponents();
                 }
                 setLastDrawingBitmap(getDrawingBitmap().copy(getDrawingBitmap().getConfig(), true));
                 Log.i("drawing", "removedComponentIds = " + getRemovedComponentId());
 
                 break;
+
+            case TEXT:  //text mode인 동안 다른 사람이 드로잉 했을 시
 
             case SELECT:
             case GROUP:
@@ -376,68 +353,15 @@ public enum DrawingEditor {
         }
     }
 
-    public void updateTexts(DrawingItem lastItem, boolean isUndo) {
-        if(lastItem.getTextAttribute() == null)
-            return;
-
-        Log.i("drawing", "text mode = " + lastItem.getTextMode().toString());
-
-        TextAttribute textAttr = lastItem.getTextAttribute();
-        Text text = findTextById(textAttr.getId());
-
-        switch(lastItem.getTextMode()) {
-            case CREATE:
-            case ERASE:
-                if(text != null && texts.contains(text)) {              //erase
-                    text.setTextAttribute(textAttr);
-                    text.removeTextViewToFrameLayout();
-                    removeTexts(text);
-                    Log.i("drawing", "texts.size()=" + texts.size());
-                } else {
-                    Text newText = new Text(drawingFragment, textAttr); //create
-                    newText.getTextAttribute().setTextInited(true);
-                    newText.addTextViewToFrameLayout();
-                    newText.createGestureDetecter();
-                    Log.i("drawing", "texts.size()=" + texts.size());
-                }
-                break;
-
-            case MODIFY:
-                if(isUndo) {
-                    Log.i("drawing", "pre text = " + textAttr.getPreText() );
-                    textAttr.setPostText(textAttr.getText());
-                    textAttr.setText(textAttr.getPreText());
-                } else {
-                    Log.i("drawing", "post text = " + textAttr.getPostText() );
-                    textAttr.setPreText(textAttr.getText());
-                    textAttr.setText(textAttr.getPostText());
-                }
-                if(text != null)
-                    text.modifyTextViewContent(textAttr.getText());
-
-                break;
-
-            case DROP:
-                if(text != null) {
-                    if(isUndo)
-                        text.setPreTextViewLocation();
-                    else
-                        text.setTextViewLocation();
-                }
-                break;
-        }
-        //invalidateDrawingView();
-    }
-
     public DrawingItem popHistory() {   //undo
         int index = history.size() - 1;
         DrawingItem lastItem = history.get(index);
         history.remove(index);
 
-        if(lastItem.getMode() != null)
-            updateDrawingComponents(lastItem);
-        else if(lastItem.getTextMode() != null) {
-            updateTexts(lastItem, true);
+        try {
+            updateLastItem(lastItem, true);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
         }
         return lastItem;
     }
@@ -446,17 +370,27 @@ public enum DrawingEditor {
         int index = undoArray.size() - 1;
         DrawingItem lastItem = undoArray.get(index);
 
-        if (lastItem.getMode() != null)
-            updateDrawingComponents(lastItem);
-        else if (lastItem.getTextMode() != null) {
-            updateTexts(lastItem, false);
+        try {
+            updateLastItem(lastItem, false);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
         }
         undoArray.remove(index);
+
         return lastItem;
+    }
+
+    public void updateLastItem(DrawingItem lastItem, boolean isUndo) {
+        if(lastItem.getMode() != null)
+            updateDrawingComponents(lastItem);
+        else if(lastItem.getTextMode() != null) {
+            new UpdateTextsTask(isUndo).execute(lastItem);
+        }
     }
 
     public void clearUndoArray() {
         undoArray.clear();
+        drawingFragment.getBinding().redoBtn.setEnabled(false);
     }   //redo 방지
 
     public DrawingComponent findDrawingComponentById(int id) {
@@ -469,8 +403,8 @@ public enum DrawingEditor {
     }
 
     public int componentIdCounter() {
-        return ++componentId;
-
+        maxComponentId = ++componentId;
+        return maxComponentId;
     }
 
     public void initDrawingBoardArray(int width, int height) {
@@ -494,8 +428,10 @@ public enum DrawingEditor {
         try {
             for (int i = 0; i < drawingBoardArray.length; i++) {
                 for (int j = 0; j < drawingBoardArray[i].length; j++) {
-                    drawingBoardArray[i][j].clear();
-                    drawingBoardArray[i][j].add(-1);
+                    if(drawingBoardArray[i][j].size() != 1) {
+                        drawingBoardArray[i][j].removeAllElements();
+                        drawingBoardArray[i][j].add(-1);
+                    }
                 }
             }
         } catch (OutOfMemoryError e) {
@@ -539,7 +475,6 @@ public enum DrawingEditor {
             if(!drawingBoardArray[y][x].contains(component.getId()))
                 drawingBoardArray[y][x].add(component.getId());
         }
-
         //Log.i("drawing", "newPoints = " + newPoints.toString());
     }
 
@@ -614,9 +549,7 @@ public enum DrawingEditor {
         }
 
         //Log.i("drawing", newPoints.toString());
-
         return newPoints;
-
     }
 
     public Vector<Integer> findEnclosingDrawingComponents(Point point) {
@@ -662,101 +595,7 @@ public enum DrawingEditor {
         drawingBitmap.eraseColor(Color.TRANSPARENT);
     }
 
-
-    /*
-
-    //겹쳐진 부분만 찾아서 지우기
-
-    public void redrawUnErasedDrawingComponent() {
-        Collections.sort(redrawIds);
-        for(int i=0; i<redrawIds.size(); i++) {
-            DrawingComponent component = findDrawingComponentById(redrawIds.get(i));
-
-            if(component == null)
-                return;
-
-            component.drawComponent(getBackCanvas());
-        }
-
-        redrawIds.clear();
-    }
-
-    public void findUnErasedDrawingComponent(int id) {
-        //DrawingComponent component = findDrawingComponentById(id);
-        ArrayList<Point> newPoints = drawingBoardMap.get(id);
-
-        Log.i("drawing", "redraw id=" + id);
-
-        //component.drawComponent(getBackCanvas());
-
-        //Vector<Integer> redrawIds = new Vector<>();
-        for(int i=0; i<newPoints.size(); i++) {
-            int x = newPoints.get(i).x;
-            int y = newPoints.get(i).y;
-
-            if(drawingBoardArray[y][x].contains(id)) {
-                if(drawingBoardArray[y][x].get(drawingBoardArray[y][x].size() - 1) != id) {
-                    if(!redrawIds.contains(drawingBoardArray[y][x].get(drawingBoardArray[y][x].size() - 1))) {
-                        redrawIds.add(drawingBoardArray[y][x].get(drawingBoardArray[y][x].size() - 1));
-                        findUnErasedDrawingComponent(drawingBoardArray[y][x].get(drawingBoardArray[y][x].size() - 1));
-                        Log.i("drawing", "x=" + x + ", y=" + y);
-                    }
-
-                }
-            }
-        }
-    }
-
-    Vector<Integer> redrawIds = new Vector<>();
-    public void eraseDrawingComponents(Vector<Integer> erasedComponentIds) {
-        //redrawErasedDrawingComponent(erasedComponentIds);
-
-        //Vector<Integer> redrawIds = new Vector<>();
-        for(int i=1; i<erasedComponentIds.size(); i++) {    //i=0 --> -1
-            int id = erasedComponentIds.get(i);
-
-            ArrayList<Point> newPoints = (drawingBoardMap.get(id));
-            Log.i("drawing", "id=" + id + ", newPoints.size()=" + newPoints.size());
-
-            for(int j=0; j<newPoints.size(); j++) {
-                int x = newPoints.get(j).x;
-                int y = newPoints.get(j).y;
-
-                if(drawingBoardArray[y][x].contains(id)) {
-                    drawingBoardArray[y][x].removeElement(id);
-                    if(drawingBoardArray[y][x].size() > 1) {
-                        //redrawUnErasedDrawingComponent(drawingBoardArray[y][x].get(drawingBoardArray[y][x].size() - 1));
-                        if(!redrawIds.contains(drawingBoardArray[y][x].get(drawingBoardArray[y][x].size() - 1)))
-                            redrawIds.add(drawingBoardArray[y][x].get(drawingBoardArray[y][x].size() - 1));
-
-                    }
-                }
-            }
-            removeDrawingComponents(id);
-            drawingBoardMap.remove(id);
-        }
-        Collections.sort(redrawIds);
-        Log.i("drawing", "redraw unErased ids = " + redrawIds.toString());
-        for(int i=0; i<redrawIds.size(); i++) {
-            findUnErasedDrawingComponent(redrawIds.get(i));
-        }
-        redrawUnErasedDrawingComponent();
-
-        addHistory(new DrawingItem(this.getCurrentMode(), erasedComponentIds, (drawingBitmap)));    //fixme
-        //drawingBitmap.eraseColor(Color.TRANSPARENT);
-        //drawAllDrawingComponents();
-    }
-
-     */
-
-
     public void eraseDrawingBoardArray(Vector<Integer> erasedComponentIds) {
-        /*for(int i=1;i<erasedComponentIds.size(); i++) {
-            int id = erasedComponentIds.get(i);
-            removeDrawingComponents(id);
-            drawAllDrawingComponents();
-        }*/
-
         for(int i=1; i<erasedComponentIds.size(); i++) {    //i=0 --> -1
             int id = erasedComponentIds.get(i);
 
@@ -774,18 +613,11 @@ public enum DrawingEditor {
                     drawingBoardArray[y][x].removeElement(id);
                 }
             }
-            //removeDrawingComponents(id);
             drawingBoardMap.remove(id);
         }
-
-        //drawAllDrawingComponents();
-        //addHistory(new DrawingItem(this.getCurrentMode(), erasedComponentIds, (drawingBitmap)));    //fixme
     }
 
     public void redraw() {
-        //getDrawingBitmap().eraseColor(Color.TRANSPARENT);
-        //drawAllDrawingComponents();
-
         if(lastDrawingBitmap == null) {
             drawingBitmap.eraseColor(Color.TRANSPARENT);
             return;
@@ -813,9 +645,6 @@ public enum DrawingEditor {
         }
 
         Log.i("drawing", "history.size()=" + getHistory().size());
-        /*Bitmap bitmap = history.get(history.size() - 1).getBitmap();
-        drawingBitmap = bitmap.copy(bitmap.getConfig(), true);
-        backCanvas.setBitmap(drawingBitmap);*/
     }
 
     public void redo() {
@@ -825,9 +654,6 @@ public enum DrawingEditor {
         history.add(popUndoArray());
 
         Log.i("drawing", "history.size()=" + getHistory().size());
-        /*Bitmap bitmap = history.get(history.size() - 1).getBitmap();
-        drawingBitmap = bitmap.copy(bitmap.getConfig(), true);
-        backCanvas.setBitmap(drawingBitmap);*/
     }
 
     public void clearDrawingComponents() {
@@ -836,8 +662,10 @@ public enum DrawingEditor {
         undoArray.clear();
         history.clear();
         drawingComponents.clear();
+        currentComponents.clear();
         componentId = -1;
         clearDrawingBoardArray();
+        removedComponentId.clear();
         drawingBoardMap.clear();
     }
 
@@ -847,9 +675,8 @@ public enum DrawingEditor {
         textId = -1;
     }
 
-    public void invalidateDrawingView() {
-        setDrawingView(getDrawingFragment().getBinding().drawingView);
-        drawingView.invalidate();
+    public void clearBackgroundImage() {
+        drawingFragment.getBinding().backgroundView.removeAllViews();
     }
 
     public byte[] bitmapToByteArray(Bitmap bitmap){
@@ -864,16 +691,10 @@ public enum DrawingEditor {
     }
 
 
-
-
     //-----setter-----
 
     public void setDrawingFragment(DrawingFragment drawingFragment) {
         this.drawingFragment = drawingFragment;
-    }
-
-    public void setDrawingView(DrawingView drawingView) {
-        this.drawingView = drawingView;
     }
 
     public void setBackgroundImage(Bitmap backgroundImage) {
@@ -892,16 +713,16 @@ public enum DrawingEditor {
         this.lastDrawingBitmap = lastDrawingBitmap;
     }
 
-    public void setDrawingBoardArray(Vector<Integer>[][] drawingBoardArray) {
-        this.drawingBoardArray = drawingBoardArray;
-    }
-
     public void setCurrentText(Text text) { this.currentText = text; }
 
     public void setTextBeingEdited(Boolean bool) { this.isTextBeingEdited = bool; } // fixme nayeon
 
     public void setHistory(ArrayList<DrawingItem> history) {
         this.history = history;
+    }
+
+    public void setUndoArray(ArrayList<DrawingItem> undoArray) {
+        this.undoArray = undoArray;
     }
 
     public void setRemovedComponentId(Vector<Integer> removedComponentId) {
@@ -959,9 +780,9 @@ public enum DrawingEditor {
     }
 
     public void setTexts(ArrayList<Text> texts) { this.texts = texts; }
-    // public void setBackgroundImage(Bitmap backgroundImage) { this.backgroundImage = backgroundImage; } // 위에 선언되어있음
 
     public void setComponentId(int componentId) { this.componentId = componentId; }
 
     public void setTextId(int textId) { this.textId = textId; }
+
 }
