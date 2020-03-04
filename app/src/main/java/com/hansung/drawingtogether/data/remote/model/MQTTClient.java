@@ -222,7 +222,6 @@ public enum MQTTClient {
     // fixme hyeyeon [1]
     public String userPrint() {
         String user = "";
-
         for (String name: userList) {
             user += name + "\n";
         }
@@ -390,7 +389,6 @@ public enum MQTTClient {
                         }
                     }
                     else {  // other or self // 메시지 형식이 "name":"이름"  일 경우
-
                         if (!myName.equals(name)) {  // other // 한 사람이 "name":"이름" 메시지 보냈을 경우 다른 사람들이 받아서 처리하는 부분
                             userList.add(name); // 들어온 사람의 이름을 추가
                             aliveCheckMap.put(name, 0);  // fixme hyeyeon[6]
@@ -423,7 +421,6 @@ public enum MQTTClient {
 
                             binding.drawingView.setIntercept(false);
                             Log.e("kkankkan", name + " join 후 : " + userList.toString());
-                            //drawingViewModel.setUserNumTv(userList.size());
 
                         } /*else {  // fixme hyeyeon - 생성자에서 자신의 이름 추가하도록 수정
                         }*/
@@ -434,9 +431,9 @@ public enum MQTTClient {
                     Log.e("after topic_join process", Arrays.toString(userList.toArray()));
                 }
 
-
                 if (newTopic.equals(topic_exit)) {
-                    if (myName.equals(message.toString())) {  // 내가 exit 하는 경우
+                    String msg = new String(message.getPayload());
+                    if (myName.equals(msg)) {  // 내가 exit 하는 경우
                         if (userList.size() == 1 && master) {  // 나==마지막 사용자, master==나
                             // db에 drawview data 저장
                             databaseReference.child(topic).runTransaction(new Transaction.Handler() {  // fixme hyeyeon[3]
@@ -493,16 +490,16 @@ public enum MQTTClient {
                         }
                     }
                     else {  // 다른 사람이 exit 하는 경우
-                        if (userList.contains(message.toString())) {
-                            userList.remove(message.toString());
-                            aliveCheckMap.remove(message.toString());  // fixme hyeyeon[6]
+                        if (userList.contains(msg)) {
+                            userList.remove(msg);
+                            aliveCheckMap.remove(msg);  // fixme hyeyeon[6]
 
                             if (myName.equals(userList.get(0)) && !master) {  // 확인 해봐야함
                                 master = true;
                                 Log.e("kkankkan", "새로운 master는 나야! " + master);
                             }
 
-                            Log.e("kkankkan", message.toString() + " exit 후" + userList.toString());
+                            Log.e("kkankkan", msg + " exit 후" + userList.toString());
                             drawingViewModel.setUserNum(userList.size());
                             drawingViewModel.setUserPrint(userPrint());
                         }
@@ -510,7 +507,8 @@ public enum MQTTClient {
                 }
 
                 if (newTopic.equals(topic_delete)) {
-                    if (message.toString().equals("master:delete")) {  // fixme hyeyeon [2]
+                    String msg = new String(message.getPayload());
+                    if (msg.equals("master:delete")) {  // fixme hyeyeon [2]
                         th.interrupt(); // fixme hyeyeon[6]
                         unsubscribeAllTopics();
 
@@ -522,7 +520,7 @@ public enum MQTTClient {
                         aliveCheckMap.clear();  // fixme hyeyeon[6]
                         drawingViewModel.back();
                     }
-                    if (message.toString().equals(myName) && master) {
+                    if (msg.equals(myName) && master) {
                         databaseReference.child(topic).runTransaction(new Transaction.Handler() {  // fixme hyeyeon[3]
                             @NonNull
                             @Override
@@ -530,7 +528,7 @@ public enum MQTTClient {
                                 if (mutableData.getValue() == null) {
                                     Log.e("kkankkan", "mutabledata null");
                                 }
-                                else  {
+                                else {
                                     databaseReference.child(topic).removeValue();
                                 }
                                 return Transaction.success(mutableData);
@@ -605,7 +603,7 @@ public enum MQTTClient {
                         });*/
                     }
                     // fixme hyeyeon - master가 아닌 사용자가 topic delete 누를 때 토스트를 출력해주기 위함
-                    else if (message.toString().equals(myName) && !master) {
+                    else if (msg.equals(myName) && !master) {
                         setToastMsg("master만 topic을 삭제할 수 있습니다");
                     }
                 }
@@ -642,13 +640,13 @@ public enum MQTTClient {
 
                 // fixme hyeyeon[6]
                 if (newTopic.equals(topic_alive)) {
-                    Log.e("kkankkan", message.toString() + " alive");
-                    String msg = message.toString();
-
+                    String msg = new String(message.getPayload());
+                    Log.e("kkankkan", msg + " alive");
                     if (aliveCheckMap.containsKey(msg)) {
                         aliveCheckMap.put(msg, aliveCheckMap.get(msg) + 1);
                     }
                 }
+                //
             }
 
             @Override
