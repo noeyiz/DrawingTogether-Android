@@ -1,6 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
@@ -18,8 +19,10 @@ import java.util.Random;
 
 import androidx.annotation.Nullable;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class DrawingView extends View {
     private DrawingEditor de = DrawingEditor.getInstance();
     private MQTTClient client = MQTTClient.getInstance();
@@ -31,7 +34,7 @@ public class DrawingView extends View {
 
     private float canvasWidth;
     private float canvasHeight;
-    private int currentDrawAction;
+    private int currentDrawAction = MotionEvent.ACTION_UP;
     private DrawingComponent dComponent;
     private Stroke stroke = new Stroke();
     private Rect rect = new Rect();
@@ -65,10 +68,10 @@ public class DrawingView extends View {
         if(de.getDrawingBoardArray() == null) {
             de.initDrawingBoardArray(w, h);
         }
-        if(client.isMaster()) {
+        //if(client.isMaster()) {
             Log.i("mqtt", "progressDialog dismiss");
-            client.getProgressDialog().dismiss(); // dismiss - exit progress dialog
-        }
+            client.getProgressDialog().dismiss();
+        //}
     }
 
     @Override
@@ -80,10 +83,17 @@ public class DrawingView extends View {
         //this.invalidate();
     }
 
+    boolean isIntercept = false;
     //Mode 검사 후
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        this.getParent().requestDisallowInterceptTouchEvent(true);
+        if(!isIntercept) {
+            this.getParent().requestDisallowInterceptTouchEvent(true);
+        } else {
+            Log.i("drawing", "intercept drawing view touch");
+            return false;
+        }
+        //this.getParent().requestDisallowInterceptTouchEvent(true);
 
         setEditorAttribute();
         switch (de.getCurrentMode()) {
@@ -216,8 +226,11 @@ public class DrawingView extends View {
         if(currentDrawAction == MotionEvent.ACTION_UP) {
             return;
         }
+        isIntercept = true;
         Log.i("drawing", "intercept touch event and do action up");
-        this.getParent().requestDisallowInterceptTouchEvent(false); // frame layout 이 Touch Event 가로채기 허용
+
+        this.getParent().requestDisallowInterceptTouchEvent(false);
+        addPointAndDraw(dComponent, dComponent.getEndPoint());
         sendDrawMqttMessage(MotionEvent.ACTION_UP);
         updateDrawingComponentId(dComponent);
         doInDrawActionUp(dComponent);

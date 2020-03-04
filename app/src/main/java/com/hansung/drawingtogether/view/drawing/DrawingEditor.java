@@ -1,30 +1,20 @@
 package com.hansung.drawingtogether.view.drawing;
 
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.util.Log;
 import android.util.SparseArray;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.Iterator;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import lombok.Getter;
-
-import static com.hansung.drawingtogether.view.drawing.TextMode.CREATE;
-import static com.hansung.drawingtogether.view.drawing.TextMode.DROP;
-import static com.hansung.drawingtogether.view.drawing.TextMode.ERASE;
-import static com.hansung.drawingtogether.view.drawing.TextMode.MODIFY;
 
 @Getter
 public enum DrawingEditor {
@@ -56,7 +46,6 @@ public enum DrawingEditor {
     private boolean isTextBeingEdited = false;
     private int textId = -1;
     private int maxTextId = -1;
-
 
     /* UNDO, REDO 를 위한 객체 */
     private ArrayList<DrawingItem> history = new ArrayList<>();     //
@@ -134,23 +123,18 @@ public enum DrawingEditor {
     }*/
 
     public void drawAllDrawingComponents() {   //drawingComponents draw
-        Iterator<DrawingComponent> iterator = drawingComponents.iterator();
-        while(iterator.hasNext()) {
-            iterator.next().drawComponent(getBackCanvas());
+        for (DrawingComponent drawingComponent : drawingComponents) {
+            drawingComponent.drawComponent(getBackCanvas());
         }
     }
 
-    // fixme nayeon - 이 부분에서 계속 가끔씩 오류나는데 확인해보기
-    public void drawAllDrawingComponentsForMid(/*float myCanvasWidth, float myCanvasHeight*/) {   //drawingComponents draw
-        Iterator<DrawingComponent> iterator = drawingComponents.iterator();
-        while(iterator.hasNext()) {
-            DrawingComponent component = iterator.next();
+    public void drawAllDrawingComponentsForMid() {   //drawingComponents draw
+        for (DrawingComponent component : drawingComponents) {
             component.calculateRatio(drawingBoardArray[0].length, drawingBoardArray.length);
             component.drawComponent(getBackCanvas());
 
             splitPoints(component, drawingBoardArray[0].length, drawingBoardArray.length);
         }
-        //Log.i("drawing", "myCanvas w=" + myCanvasWidth + ", h=" + myCanvasHeight);
         Log.i("drawing", "drawingBoardArray[][] w=" + drawingBoardArray[0].length + ", h=" + drawingBoardArray.length);
         Log.i("drawing", "dba[0][0] = " + drawingBoardArray[0][0].get(0));
     }
@@ -168,7 +152,7 @@ public enum DrawingEditor {
         }
     }
 
-    public boolean isContainsCurrentComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우 // fixme nayeon [동시성 처리]
+    public boolean isContainsCurrentComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우 // fixme nayeon [동시성 처리] //? 이건 드로잉에서 쓰는데?
         String str = "cc = ";
         for(DrawingComponent component: getCurrentComponents()) {
             str += component.getId() + " ";

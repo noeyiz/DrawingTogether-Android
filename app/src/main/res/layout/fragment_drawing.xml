@@ -97,7 +97,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent">
 
-                <FrameLayout
+                <com.hansung.drawingtogether.view.drawing.DrawingViewController
                     android:id="@+id/drawingViewContainer"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent">
@@ -121,7 +121,7 @@
 
                     </LinearLayout>
 
-                </FrameLayout>
+                </com.hansung.drawingtogether.view.drawing.DrawingViewController>
 
             </HorizontalScrollView>
 

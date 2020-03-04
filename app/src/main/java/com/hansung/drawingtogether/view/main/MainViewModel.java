@@ -80,6 +80,7 @@ public class MainViewModel extends BaseViewModel {
         //Log.e("kkankkan", storage.toString());
         //Log.e("kkankkan", storageReference.toString());
 
+        existTopic = false;
         newName = false;
         newMaster = false;
     }
@@ -175,6 +176,8 @@ public class MainViewModel extends BaseViewModel {
                 @Override
                 public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
                     existTopic = false;
+                    newName = false;
+                    newMaster = false;
 
                     if (mutableData.child("master").getValue() == null) {  // 새 토픽
                         mutableData.child("master").setValue(true);
