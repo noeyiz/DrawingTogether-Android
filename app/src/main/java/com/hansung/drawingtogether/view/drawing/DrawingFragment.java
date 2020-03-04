@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
-import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -44,12 +43,6 @@ import com.hansung.drawingtogether.view.main.JoinMessage;
 
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
-import com.kakao.kakaolink.v2.KakaoLinkResponse;
-import com.kakao.kakaolink.v2.KakaoLinkService;
-import com.kakao.message.template.LinkObject;
-import com.kakao.message.template.TextTemplate;
-import com.kakao.network.ErrorResult;
-import com.kakao.network.callback.ResponseCallback;
 
 import java.io.File;
 import java.io.IOException;
@@ -94,7 +87,8 @@ public class DrawingFragment extends Fragment {
 
         client.setDrawingFragment(this);
         de.setDrawingFragment(this);
-        de.setTextBorderDrawable(getResources().getDrawable(R.drawable.text_border)); // fixme nayeon 텍스트 테두리 설정
+        de.setTextMoveBorderDrawable(getResources().getDrawable(R.drawable.text_move_border)); // fixme nayeon 텍스트 테두리 설정
+        de.setTextFocusBorderDrawable(getResources().getDrawable(R.drawable.text_focus_border));
 
         binding.drawBtn.setBackgroundColor(Color.rgb(233, 233, 233));
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
@@ -462,11 +456,7 @@ public class DrawingFragment extends Fragment {
                 Text text = de.getCurrentText();
                 text.changeEditTextToTextView();
 
-                // todo nayeon currentText 의 필요성 생각해보기
-                de.setCurrentText(null);
-                text.processFocusOut(); // 키보드 내리기
-                removeDoneButton();     // 텍스트 조작이 끝나면 기본 버튼들 세팅   \
-                de.setCurrentMode(Mode.DRAW);
+                removeDoneButton(); // Done 버튼 제거
             }
         });
     }

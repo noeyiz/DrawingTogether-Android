@@ -49,7 +49,8 @@ public enum DrawingEditor {
     private ArrayList<DrawingComponent> currentComponents = new ArrayList<>();  //현재 그리기중인 drawing component 배열
 
     /* 텍스트에 필요한 객체 */
-    private Drawable textBorderDrawable; // 텍스트 포커싱 테두리
+    private Drawable textMoveBorderDrawable; // 텍스트 포커싱 테두리
+    private Drawable textFocusBorderDrawable;
     private ArrayList<Text> texts = new ArrayList<>(); // 현재 부착된 모든 text 배열
     private Text currentText = null;
     private boolean isTextBeingEdited = false;
@@ -715,7 +716,9 @@ public enum DrawingEditor {
         this.drawingFragment = drawingFragment;
     }
 
-    public void setTextBorderDrawable(Drawable textBorderDrawable) { this.textBorderDrawable = textBorderDrawable; } // 텍스트 테두리 그리기 위한 Drawable 설정
+    public void setTextMoveBorderDrawable(Drawable textMoveBorderDrawable) { this.textMoveBorderDrawable = textMoveBorderDrawable; } // 텍스트 테두리 그리기 위한 Drawable 설정
+
+    public void setTextFocusBorderDrawable(Drawable textFocusBorderDrawable) { this.textFocusBorderDrawable = textFocusBorderDrawable; }
 
     public void setBackgroundImage(Bitmap backgroundImage) {
         this.backgroundImage = backgroundImage;

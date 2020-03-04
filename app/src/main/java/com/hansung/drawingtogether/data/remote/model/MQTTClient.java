@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.graphics.Canvas;
 
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -178,7 +179,8 @@ public enum MQTTClient {
             MqttMessage message = new MqttMessage(payload.getBytes());
 
             client.publish(newTopic, payload.getBytes(), this.qos, false);
-            Log.i("mqtt", "PUBLISH topic: " + newTopic + ", msg: " + message);
+            //Log.i("mqtt", "PUBLISH topic: " + newTopic + ", msg: " + message); // fixme nayeon
+            // Log.e("mqtt payload size", Integer.toString(message.getPayload().length)); // fixme nayeon
         } catch(MqttException e) {
             showTimerAlertDialog("메시지 전송 실패", "메인 화면으로 이동합니다");
             e.printStackTrace();
@@ -830,9 +832,8 @@ public enum MQTTClient {
                     de.clearUndoArray();
                     break;
                 case DONE:
-                    if(textAttr.isModified()) {
-                        de.clearUndoArray();
-                    }
+                    text.getTextView().setBackground(null); // 테두리 설정 해제
+                    if(textAttr.isModified()) { de.clearUndoArray(); }
                     break;
                 case ERASE:
                     text.removeTextViewToFrameLayout();
@@ -841,6 +842,9 @@ public enum MQTTClient {
                     //Log.e("texts size", Integer.toString(de.getTexts().size()));
                     break;
                 case MODIFY:
+                    Log.e("text", textAttr.getText());
+
+                    text.getTextView().setBackground(de.getTextFocusBorderDrawable()); // 수정중일 때 텍스트 테두리 설정하여 수정중인 텍스트 표시
                     text.modifyTextViewContent(textAttr.getText());
                     break;
             }

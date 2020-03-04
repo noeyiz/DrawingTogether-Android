@@ -121,7 +121,7 @@ public class DrawingViewModel extends BaseViewModel {
 
         // 텍스트 속성 설정 ( 기본 도구에서 설정할 것인지 텍스트 도구에서 설정할 것인지? )
         TextAttribute textAttribute = new TextAttribute(de.setTextStringId(), de.getMyUsername(),
-                "Input Text", 20, Color.BLACK, Color.TRANSPARENT,
+                "", 20, Color.BLACK, Color.TRANSPARENT,
                 View.TEXT_ALIGNMENT_CENTER, Typeface.BOLD,
                 frameLayout.getWidth(), frameLayout.getHeight());
 
