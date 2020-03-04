@@ -134,7 +134,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             // fixme hyeyeon[6]
             AliveThread aTh = AliveThread.getInstance();
             aTh.setSecond(2000);
-            aTh.setCount(-3);
+            aTh.setCount(-5);
             Thread th = new Thread(aTh);
             th.start();
             client.setThread(th);

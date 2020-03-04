@@ -5,6 +5,7 @@ import android.util.Log;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.Getter;
 
@@ -16,7 +17,7 @@ public enum AliveThread implements Runnable {
     private MQTTClient client = MQTTClient.getInstance();  // 참조
     private int second = 2000;
     private int count = -5;
-    private HashMap<String, Integer> aliveCheckMap = client.getAliveCheckMap();  // 참조
+    private ConcurrentHashMap<String, Integer> aliveCheckMap = client.getAliveCheckMap();  // 참조
 
     public static AliveThread getInstance() {
         return INSTANCE;
@@ -31,14 +32,18 @@ public enum AliveThread implements Runnable {
                 client.publish(topic_alive, client.getMyName().getBytes());
                 Thread.sleep(second);
 
-                Iterator<String> iterator = aliveCheckMap.keySet().iterator();
-                while (iterator.hasNext()) {
-                    String key = iterator.next();
-                    aliveCheckMap.put(key, aliveCheckMap.get(key) - 1);
+                synchronized (aliveCheckMap) {  // fixme hyeyeon[7]
+                    Iterator<String> iterator = aliveCheckMap.keySet().iterator();
+                    while (iterator.hasNext()) {
+                        String key = iterator.next();
+                        aliveCheckMap.put(key, aliveCheckMap.get(key) - 1);
 
-                    if (aliveCheckMap.get(key) == count) {
-                        iterator.remove();
-                        client.removeUser(key);
+                        if (aliveCheckMap.get(key) == count) {
+                            iterator.remove();
+                            Log.e("kkankkan", "removeUser 부르기 전");
+                            client.removeUser(key);
+                            Log.e("kkankkan", "removeUser 부르기 후");
+                        }
                     }
                 }
 
