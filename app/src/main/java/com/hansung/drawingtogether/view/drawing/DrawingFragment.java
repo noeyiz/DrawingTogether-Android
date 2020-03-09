@@ -39,8 +39,11 @@ import lombok.Getter;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.data.remote.model.User;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
+import com.hansung.drawingtogether.view.main.DeleteMessage;
+import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
@@ -57,13 +60,12 @@ import java.io.IOException;
 import java.util.Objects;
 
 @Getter
-public class DrawingFragment extends Fragment implements MainActivity.onKeyBackPressedListener{  // fixme hyeyeon[5]
+public class DrawingFragment extends Fragment implements MainActivity.onKeyBackPressedListener{  // fixme hyeyeon
 
     private final int PICK_FROM_GALLERY = 0;
     private final int PICK_FROM_CAMERA = 1;
 
     Point size;
-    // fixme hyeyeon
 /*  private String ip;
     private String port;
     private String topic;
@@ -131,11 +133,10 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
             client.publish(drawingViewModel.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
 
-            // fixme hyeyeon[6]
-            AliveThread aTh = AliveThread.getInstance();
-            aTh.setSecond(2000);
-            aTh.setCount(-5);
-            Thread th = new Thread(aTh);
+            // fixme hyeyeon
+            AliveThread aliveTh = AliveThread.getInstance();
+            aliveTh.setSecond(2000);
+            Thread th = new Thread(aliveTh);
             th.start();
             client.setThread(th);
         }
@@ -318,22 +319,22 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (which == 0) {
-                    client.publish(data.getTopic() + "_exit", data.getName().getBytes()); // fixme hyeyeon
+                    ExitMessage exitMessage = new ExitMessage(client.getMyName());
+                    MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                    client.publish(data.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
                 }
                 else if (which == 1){
-                    client.publish(data.getTopic() + "_delete", data.getName().getBytes()); // fixme hyeyeon
+                    DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
+                    MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
+                    client.publish(data.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
                 }
-
-                // fixme hyeyeon[5]
-                ((MainActivity)getActivity()).setOnKeyBackPressedListener(null);
-                //
             }
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
 
-    // fixme hyeyeon[5]
+    // fixme hyeyeon
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -351,7 +352,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             public void onClick(DialogInterface dialog, int which) {
                 MQTTClient client = MQTTClient.getInstance();
                 client.setBackPressed(true);
-                client.publish(client.getTopic_exit(), client.getMyName().getBytes());
+                ExitMessage exitMessage = new ExitMessage(client.getMyName());
+                MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                client.publish(data.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
             }
         });
 

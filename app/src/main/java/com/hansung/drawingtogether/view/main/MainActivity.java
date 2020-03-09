@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private OnBackListener onBackListener;
 
 
-    // fixme hyeyeon[5]
+    // fixme hyeyeon
     private onKeyBackPressedListener mOnKeyBackPressedListener;  // 하단의 백버튼 리스너
 
     public interface onKeyBackPressedListener {
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // fixme hyeyeon[5]
+    // fixme hyeyeon
     @Override
     public void onBackPressed() {
         if (mOnKeyBackPressedListener != null) {

@@ -88,7 +88,7 @@ public class DrawingViewModel extends BaseViewModel {
         client.subscribe(topic + "_delete");
         client.subscribe(topic + "_data");
         client.subscribe(topic + "_mid");
-        client.subscribe(topic + "_alive"); // fixme hyeyeon[6]
+        client.subscribe(topic + "_alive"); // fixme hyeyeon
 
         // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)
         /*JoinMessage joinMessage = new JoinMessage(name);

@@ -2,6 +2,12 @@ package com.hansung.drawingtogether.data.remote.model;
 
 import android.util.Log;
 
+import com.hansung.drawingtogether.view.drawing.DrawingViewModel;
+import com.hansung.drawingtogether.view.drawing.JSONParser;
+import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
+import com.hansung.drawingtogether.view.main.AliveMessage;
+
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -9,15 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.Getter;
 
-// fixme hyeyeon[6] - second초에 한번씩 topic_alive로 자신의 이름 publish
+// fixme hyeyeon-second초에 한번씩 topic_alive로 자신의 이름 publish
 @Getter
 public enum AliveThread implements Runnable {
     INSTANCE;
 
     private MQTTClient client = MQTTClient.getInstance();  // 참조
     private int second = 2000;
-    private int count = -5;
-    private ConcurrentHashMap<String, Integer> aliveCheckMap = client.getAliveCheckMap();  // 참조
 
     public static AliveThread getInstance() {
         return INSTANCE;
@@ -25,29 +29,35 @@ public enum AliveThread implements Runnable {
 
     @Override
     public void run() {
-        String topic_alive = client.getTopic_alive();
-
+        String topic_alive = client.getTopic_alive();  // 복사
+        String myName = client.getMyName();  // 복사
         while (true) {
             try {
-                client.publish(topic_alive, client.getMyName().getBytes());
+                AliveMessage aliveMessage = new AliveMessage(myName);
+                MqttMessageFormat mqttMessageFormat = new MqttMessageFormat(aliveMessage);
+                client.publish(topic_alive, JSONParser.getInstance().jsonWrite(mqttMessageFormat));
                 Thread.sleep(second);
 
-                synchronized (aliveCheckMap) {  // fixme hyeyeon[7]
-                    Iterator<String> iterator = aliveCheckMap.keySet().iterator();
+/*                  synchronized (userList) {
+                    Iterator<User> iterator = userList.iterator();
                     while (iterator.hasNext()) {
-                        String key = iterator.next();
-                        aliveCheckMap.put(key, aliveCheckMap.get(key) - 1);
-
-                        if (aliveCheckMap.get(key) == count) {
+                        User user = iterator.next();
+                        user.setCount(user.getCount() - 1);
+                        if (user.getCount() == count) {
                             iterator.remove();
-                            Log.e("kkankkan", "removeUser 부르기 전");
-                            client.removeUser(key);
-                            Log.e("kkankkan", "removeUser 부르기 후");
-                        }
-                    }
-                }
+                            drawingViewModel.setUserNum(userList.size());
+                            drawingViewModel.setUserPrint(client.userPrint());
+                            if (userList.get(0).getName().equals(myName) && !client.isMaster()) {
+                                client.setMaster(true);
+                                Log.e("kkankkan", "새로운 master는 나야! " + client.isMaster());
+                            }
 
-                Log.e("kkankkan", "[AliveThread] : " + aliveCheckMap.toString());
+                            Log.e("kkankkan", user.getName() + " exit 후 [userList] : " + client.userPrint());
+                            client.setToastMsg("[ " + user.getName() + " ] 님 접속이 끊겼습니다");
+                        }
+                        Log.e("kkankkan", "[" + user.getName() + ", " + user.getCount() + "]");
+                    }
+                }*/
 /*
                 //aliveCheckMap = client.getAliveCheckMap();
                 for (String key: aliveCheckMap.keySet()) {
@@ -70,9 +80,4 @@ public enum AliveThread implements Runnable {
     public void setSecond(int second) {
         this.second = second;
     }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
-
 }
