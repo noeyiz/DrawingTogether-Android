@@ -124,7 +124,12 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickText(View view) {
+        if(de.isTextBeingEdited()) return; // fixme nayeon [ 추후에 키보드 내리기 이벤트 캐치해서 처리 필요 ]
+
         changeClickedButtonBackground(view);
+
+        // 텍스트 모드가 끝날 때 까지 (Done Button) 누르기 전 까지, 다른 버튼들 비활성화
+        enableDrawingMenuButton(false);
 
         de.setCurrentMode(Mode.TEXT);
         FrameLayout frameLayout = de.getDrawingFragment().getBinding().drawingViewContainer;
@@ -143,6 +148,9 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickDone(View view) {
+        // 텍스트 모드가 끝나면 다른 버튼들 활성화
+        enableDrawingMenuButton(true);
+
         changeClickedButtonBackground(preMenuButton); //  fixme nayeon  텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해
 
         Text text = de.getCurrentText();
@@ -170,6 +178,15 @@ public class DrawingViewModel extends BaseViewModel {
             drawingMenuLayout.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
         }
         view.setBackgroundColor(Color.rgb(233, 233, 233));
+    }
+
+    // fixme nayeon
+    public void enableDrawingMenuButton(Boolean bool) {
+        LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
+
+        for(int i=0; i<drawingMenuLayout.getChildCount() - 1; i++) {
+            drawingMenuLayout.getChildAt(i).setEnabled(bool);
+        }
     }
 
     public void getImageFromGallery(Fragment fragment) {

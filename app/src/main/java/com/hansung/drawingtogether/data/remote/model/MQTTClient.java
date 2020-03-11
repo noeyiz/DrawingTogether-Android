@@ -7,8 +7,6 @@ import android.graphics.Canvas;
 
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
@@ -22,9 +20,6 @@ import androidx.annotation.Nullable;
 
 import lombok.Getter;
 
-import com.google.android.gms.dynamic.IFragmentWrapper;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;

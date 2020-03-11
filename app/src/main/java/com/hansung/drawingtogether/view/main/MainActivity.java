@@ -1,35 +1,24 @@
 package com.hansung.drawingtogether.view.main;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
+
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.Window;
+
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.view.drawing.DrawingEditor;
+import com.hansung.drawingtogether.view.drawing.Mode;
 
-import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.kakao.util.helper.Utility;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import static com.kakao.util.maps.helper.Utility.getPackageInfo;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private TextView title;
 
-    //private DrawingEditor de = DrawingEditor.getInstance();
+    private DrawingEditor de = DrawingEditor.getInstance();
 
     public interface OnBackListener {
         public void onBack();
