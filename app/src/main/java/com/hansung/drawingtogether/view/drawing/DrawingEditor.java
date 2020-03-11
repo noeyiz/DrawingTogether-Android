@@ -87,6 +87,7 @@ public enum DrawingEditor {
         drawingComponents.clear();
         currentComponents.clear();
 
+        //removeAllTextViewToFrameLayout();
         texts.clear();
         currentText = null;
         isTextBeingEdited = false;
@@ -135,11 +136,13 @@ public enum DrawingEditor {
 
     public void drawAllDrawingComponentsForMid() {   //drawingComponents draw
         for (DrawingComponent component : drawingComponents) {
+
             component.calculateRatio(drawingBoardArray[0].length, drawingBoardArray.length);
             component.drawComponent(getBackCanvas());
 
             splitPoints(component, drawingBoardArray[0].length, drawingBoardArray.length);
         }
+
         Log.i("drawing", "drawingBoardArray[][] w=" + drawingBoardArray[0].length + ", h=" + drawingBoardArray.length);
         Log.i("drawing", "dba[0][0] = " + drawingBoardArray[0][0].get(0));
     }
@@ -157,7 +160,7 @@ public enum DrawingEditor {
         }
     }
 
-    public boolean isContainsCurrentComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우 // fixme nayeon [동시성 처리] //? 이건 드로잉에서 쓰는데?
+    public boolean isContainsCurrentComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우
         String str = "cc = ";
         for(DrawingComponent component: getCurrentComponents()) {
             str += component.getId() + " ";

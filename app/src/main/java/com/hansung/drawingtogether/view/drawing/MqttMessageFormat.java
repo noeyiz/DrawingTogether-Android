@@ -1,5 +1,9 @@
 package com.hansung.drawingtogether.view.drawing;
 
+import com.hansung.drawingtogether.data.remote.model.User;
+import com.hansung.drawingtogether.view.main.AliveMessage;
+import com.hansung.drawingtogether.view.main.DeleteMessage;
+import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 
 import java.util.ArrayList;
@@ -27,6 +31,14 @@ public class MqttMessageFormat {
 
     private JoinMessage joinMessage;
 
+
+    // fixme hyeyeon
+    private ExitMessage exitMessage;
+    private DeleteMessage deleteMessage;
+    private AliveMessage aliveMessage;
+    //
+
+    // fixme nayeon 중간자 처리 시 필요한 변수 추가
     private ArrayList<DrawingComponent> drawingComponents;
     private ArrayList<Text> texts;
     private ArrayList<DrawingItem> history;
@@ -71,7 +83,6 @@ public class MqttMessageFormat {
         this.bitmapByteArray = bitmapByteArray;
     }
 
-
     //fixme nayeon 중간자 처리 시 필요한 생성자 3개 추가
     //fixme minj - add history for undo, redo
     public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId, Integer maxComponentId, Integer maxTextId) {
@@ -100,4 +111,18 @@ public class MqttMessageFormat {
     public MqttMessageFormat(JoinMessage joinMessage) {
         this.joinMessage = joinMessage;
     }
+
+    // fixme hyeyeon
+    public MqttMessageFormat(ExitMessage exitMessage) {
+        this.exitMessage = exitMessage;
+    }
+
+    public MqttMessageFormat(DeleteMessage deleteMessage) {
+        this.deleteMessage = deleteMessage;
+    }
+
+    public MqttMessageFormat(AliveMessage aliveMessage) {
+        this.aliveMessage = aliveMessage;
+    }
+    //
 }

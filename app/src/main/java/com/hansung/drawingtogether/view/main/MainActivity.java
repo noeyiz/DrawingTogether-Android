@@ -1,6 +1,8 @@
 package com.hansung.drawingtogether.view.main;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -16,11 +18,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.hansung.drawingtogether.R;
-import com.hansung.drawingtogether.view.drawing.DrawingEditor;
-import com.hansung.drawingtogether.view.drawing.Mode;
-import com.hansung.drawingtogether.view.drawing.Text;
+
+import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.kakao.util.helper.Utility;
 
 import java.security.MessageDigest;
@@ -41,6 +44,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private OnBackListener onBackListener;
+
+
+    // fixme hyeyeon
+    private onKeyBackPressedListener mOnKeyBackPressedListener;  // 하단의 백버튼 리스너
+
+    public interface onKeyBackPressedListener {
+        void onBackKey();
+    }
+    //
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,15 +84,42 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    // fixme hyeyeon
     @Override
     public void onBackPressed() {
-       /* // fixme nayeon [ 뒤로가기 이벤트 != 키보드 내리기 이벤트 ]
-        if(de.getCurrentMode().equals(Mode.TEXT)) {
-            Text text = de.getCurrentText();
-            text.changeEditTextToTextView();
-        }*/
 
+        if (mOnKeyBackPressedListener != null) {
+            mOnKeyBackPressedListener.onBackKey();
+        }
+        else {
+            Log.e("kkankkan", "메인엑티비티 onbackpressed");
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setMessage("앱을 종료하시겠습니까?");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                    System.exit(0);
+                    android.os.Process.killProcess(android.os.Process.myPid());
+                }
+            });
+
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                }
+            });
+
+            AlertDialog alertDialog = builder.create();
+            alertDialog.show();
+        }
     }
+
+    public void setOnKeyBackPressedListener(onKeyBackPressedListener listener) {
+        this.mOnKeyBackPressedListener = listener;
+    }
+    //
 
     // title 설정
     public void setToolbarTitle(String title) {

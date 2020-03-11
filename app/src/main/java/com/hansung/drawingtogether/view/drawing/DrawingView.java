@@ -55,6 +55,7 @@ public class DrawingView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
+        Log.e("DrawingView", "call onSizeChanged");
 
         canvasWidth = w;
         canvasHeight = h;
@@ -195,7 +196,7 @@ public class DrawingView extends View {
         client.publish(client.getTopic_data(),  parser.jsonWrite(messageFormat));
     }
 
-    public void updateDrawingComponentId(DrawingComponent dComponent) { // ACTION_UP 이벤트 발생 시 호출
+    public void updateDrawingComponentId(DrawingComponent dComponent) {
         try {
             DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
             Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
@@ -214,6 +215,7 @@ public class DrawingView extends View {
         Log.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
 
         de.addHistory(new DrawingItem(de.getCurrentMode(), dComponent/*, de.getDrawingBitmap()*/)); // 드로잉 컴포넌트가 생성되면 History 에 저장
+
         if(de.getHistory().size() == 1)
             de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
 

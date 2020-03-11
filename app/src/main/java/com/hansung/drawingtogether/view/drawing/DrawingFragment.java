@@ -37,9 +37,13 @@ import androidx.navigation.fragment.NavHostFragment;
 import lombok.Getter;
 
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.data.remote.model.User;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
+import com.hansung.drawingtogether.view.main.DeleteMessage;
+import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
@@ -50,12 +54,13 @@ import java.io.IOException;
 import java.util.Objects;
 
 @Getter
-public class DrawingFragment extends Fragment {
+public class DrawingFragment extends Fragment implements MainActivity.onKeyBackPressedListener{  // fixme hyeyeon
 
     private final int PICK_FROM_GALLERY = 0;
     private final int PICK_FROM_CAMERA = 1;
 
     Point size;
+
     // fixme hyeyeon
 /*  private String ip;
     private String port;
@@ -75,7 +80,6 @@ public class DrawingFragment extends Fragment {
 
     //private LinearLayout topToolLayout;
     //private Button doneBtn;
-
 
     @Nullable
     @Override
@@ -130,8 +134,14 @@ public class DrawingFragment extends Fragment {
             JoinMessage joinMessage = new JoinMessage(drawingViewModel.getName());
             MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
             client.publish(drawingViewModel.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
-        }
 
+            // fixme hyeyeon
+            AliveThread aliveTh = AliveThread.getInstance();
+            aliveTh.setSecond(2000);
+            Thread th = new Thread(aliveTh);
+            th.start();
+            client.setThread(th);
+        }
 
 
         /*ip = getArguments().getString("ip");
@@ -185,6 +195,27 @@ public class DrawingFragment extends Fragment {
                 }
             }
         });
+
+/*  // fixme hyeyeon
+        JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
+
+        client.init(topic, name, master, drawingViewModel, ip, port);
+        client.setDrawingFragment(this);
+        client.setCallback();
+        client.subscribe(topic + "_join");
+        client.subscribe(topic + "_exit");
+        client.subscribe(topic + "_delete");
+        client.subscribe(topic + "_data");
+        client.subscribe(topic + "_mid");
+
+        // client.publish(topic_data ~~);
+
+        // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)
+        JoinMessage joinMessage = new JoinMessage(name);
+        MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
+        client.publish(topic + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
+        //
+*/
 
         binding.userInfo.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -289,16 +320,55 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (which == 0) {
-                    client.publish(data.getTopic() + "_exit", data.getName().getBytes()); // fixme hyeyeon
+                    ExitMessage exitMessage = new ExitMessage(client.getMyName());
+                    MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                    client.publish(data.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
                 }
                 else if (which == 1){
-                    client.publish(data.getTopic() + "_delete", data.getName().getBytes()); // fixme hyeyeon
+                    DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
+                    MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
+                    client.publish(data.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
                 }
             }
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
+
+    // fixme hyeyeon
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        ((MainActivity)context).setOnKeyBackPressedListener(this);
+    }
+
+    @Override
+    public void onBackKey() {
+        Log.e("kkankkan", "드로잉프레그먼트 onbackpressed");
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setMessage("앱을 종료하시겠습니까?");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                MQTTClient client = MQTTClient.getInstance();
+                client.setBackPressed(true);
+                ExitMessage exitMessage = new ExitMessage(client.getMyName());
+                MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                client.publish(data.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+    //
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
