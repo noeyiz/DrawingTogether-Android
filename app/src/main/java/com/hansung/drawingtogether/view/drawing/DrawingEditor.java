@@ -62,12 +62,16 @@ public enum DrawingEditor {
     private float drawnCanvasHeight;
     private float myCanvasWidth;
     private float myCanvasHeight;
-    private int fillColor = Color.TRANSPARENT;  // todo nayeon - Default Value
-    private int strokeColor = Color.BLACK;      //fixme
-    private int strokeAlpha = 255;              //fixme
-    private int fillAlpha = 100;                //fixme
-    private int strokeWidth = 10;              //fixme
 
+    /* 드로잉 펜 속성 */
+    private int fillColor = Color.TRANSPARENT;  // todo nayeon - Default Value
+    private int strokeColor = Color.BLACK;
+    private int strokeAlpha = 255;
+    private int fillAlpha = 100;
+    private int strokeWidth = 10;
+
+    /* 텍스트 속성 */
+    private EditText editText;
 
     // 드로잉 하는동안 저장되는 모든 데이터들 지우기 [나가기 버튼 눌렀을 때 처리 필요 - MQTTClient.java if(topic_exit, topic_delete) 부분에서 호출]
     public void removeAllDrawingData() {
@@ -83,7 +87,6 @@ public enum DrawingEditor {
         drawingComponents.clear();
         currentComponents.clear();
 
-        //removeAllTextViewToFrameLayout();
         texts.clear();
         currentText = null;
         isTextBeingEdited = false;
@@ -244,7 +247,7 @@ public enum DrawingEditor {
         return null;
     }
 
-    //fixme nayeon - 텍스트 동시
+    //fixme nayeon - [ 텍스트 아이디 = "사용자이름-textCount" ] 동시성 처리 필요 X
     public String setTextStringId() { return myUsername + "-" + textIdCounter(); }
 
     public void removeAllTextViewToFrameLayout() {
@@ -255,6 +258,14 @@ public enum DrawingEditor {
 
     public void addAllTextViewToFrameLayoutForMid() {
         for(Text t: texts) {
+            // fixme nayeon
+            // 다른 사용자(마스터)가 편집중일 텍스트일 경우 , TextAttribute 의 String text 는 계속해서 변하는 중
+            // 그리고 텍스트 테두리 설정 안 되어 있음
+            if(t.getTextAttribute().getUsername() != null) {
+                t.getTextView().setText(t.getTextAttribute().getPreText()); // 이전 텍스트로 설정
+                t.getTextView().setBackground(this.textFocusBorderDrawable); // 테두리 설정
+            }
+
             t.addTextViewToFrameLayout();
             t.createGestureDetecter(); // 텍스트 모두 붙이기를 중간자 처리, 재접속 시에만 한다고 가정했을 때.
         }

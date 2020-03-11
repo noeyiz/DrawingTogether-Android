@@ -69,6 +69,8 @@ public class DrawingViewModel extends BaseViewModel {
     private MQTTSettingData data = MQTTSettingData.getInstance();
     //
 
+    private Button preMenuButton;
+
     public DrawingViewModel() {
         setUserNum(0);
         setUserPrint("");  // fixme hyeyeon
@@ -92,7 +94,15 @@ public class DrawingViewModel extends BaseViewModel {
         client.subscribe(topic + "_mid");
     }
 
-    public void clickPen(View view) {
+    public void clickUndo(View view) {
+        de.getDrawingFragment().getBinding().drawingView.undo();
+    }
+
+    public void clickRedo(View view) {
+        de.getDrawingFragment().getBinding().drawingView.redo();
+    }
+
+    public void clickPen(View view) { // drawBtn1, drawBtn2, drawBtn3
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.STROKE);
@@ -101,6 +111,7 @@ public class DrawingViewModel extends BaseViewModel {
 
         Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
         //drawingCommands.postValue(new DrawingCommand.PenMode(view));      //fixme nayeon color picker [ View Model 과 Navigator 관계, 이벤트 처리 방식 ]
+        preMenuButton = (Button)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해
     }
 
     public void clickEraser(View view) {
@@ -111,15 +122,9 @@ public class DrawingViewModel extends BaseViewModel {
         Log.i("drawing", "mode = " + de.getCurrentMode().toString());
     }
 
-    public void clickUndo(View view) {
-        de.getDrawingFragment().getBinding().drawingView.undo();
-    }
-
-    public void clickRedo(View view) {
-        de.getDrawingFragment().getBinding().drawingView.redo();
-    }
-
     public void clickText(View view) {
+        changeClickedButtonBackground(view);
+
         de.setCurrentMode(Mode.TEXT);
         FrameLayout frameLayout = de.getDrawingFragment().getBinding().drawingViewContainer;
 
@@ -132,11 +137,13 @@ public class DrawingViewModel extends BaseViewModel {
         Text text = new Text(de.getDrawingFragment(), textAttribute);
         text.createGestureDetecter(); // Set Gesture ( Single Tap Up )
 
-        text.activeTextEditing(); // EditText 커서와 키보드 활성화
+        text.activeTextEditing(); // EditText 커서와 키보드 활성화, 텍스트 편집 시작 처리
         //drawingCommands.postValue(new DrawingCommand.TextMode(view));
     }
 
     public void clickDone(View view) {
+        changeClickedButtonBackground(preMenuButton); //  fixme nayeon  텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해
+
         Text text = de.getCurrentText();
         text.changeEditTextToTextView();
     }
@@ -152,6 +159,12 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void changeClickedButtonBackground(View view) {
         LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
+
+        // fixme nayeon
+        // preMenuButton -> 아무것도 누르지 않은 상태에서 텍스트 버튼 클릭했을 때 NULL
+        // 제일 첫 번째 버튼 (얇은 펜(그리기)) 로 지정
+        if(view == null) { view = drawingMenuLayout.getChildAt(0); }
+
         for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
             drawingMenuLayout.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
         }

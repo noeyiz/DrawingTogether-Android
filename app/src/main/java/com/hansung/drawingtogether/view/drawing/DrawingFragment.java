@@ -90,6 +90,7 @@ public class DrawingFragment extends Fragment {
 
         client.setDrawingFragment(this);
         de.setDrawingFragment(this);
+
         de.setTextMoveBorderDrawable(getResources().getDrawable(R.drawable.text_move_border)); // fixme nayeon 텍스트 테두리 설정
         de.setTextFocusBorderDrawable(getResources().getDrawable(R.drawable.text_focus_border));
 
