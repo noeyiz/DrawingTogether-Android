@@ -1,15 +1,14 @@
 package com.hansung.drawingtogether.view.main;
 
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
+
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
+
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,12 +16,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.hansung.drawingtogether.R;
-import com.kakao.util.helper.Utility;
+import com.hansung.drawingtogether.view.drawing.DrawingEditor;
+import com.hansung.drawingtogether.view.drawing.Mode;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import static com.kakao.util.maps.helper.Utility.getPackageInfo;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,11 +26,22 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private TextView title;
 
+    private DrawingEditor de = DrawingEditor.getInstance();
+
     public interface OnBackListener {
         public void onBack();
     }
 
     private OnBackListener onBackListener;
+
+
+    // fixme hyeyeon
+    private onKeyBackPressedListener mOnKeyBackPressedListener;  // 하단의 백버튼 리스너
+
+    public interface onKeyBackPressedListener {
+        void onBackKey();
+    }
+    //
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +70,45 @@ public class MainActivity extends AppCompatActivity {
             topicPassword = topic;
             topicPassword += "/" + password;
         }
+
     }
 
+    // fixme hyeyeon
     @Override
-    public void onBackPressed() { }
+    public void onBackPressed() {
+
+        if (mOnKeyBackPressedListener != null) {
+            mOnKeyBackPressedListener.onBackKey();
+        }
+        else {
+            Log.e("kkankkan", "메인엑티비티 onbackpressed");
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setMessage("앱을 종료하시겠습니까?");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                    System.exit(0);
+                    android.os.Process.killProcess(android.os.Process.myPid());
+                }
+            });
+
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                }
+            });
+
+            AlertDialog alertDialog = builder.create();
+            alertDialog.show();
+        }
+    }
+
+    public void setOnKeyBackPressedListener(onKeyBackPressedListener listener) {
+        this.mOnKeyBackPressedListener = listener;
+    }
+    //
 
     // title 설정
     public void setToolbarTitle(String title) {

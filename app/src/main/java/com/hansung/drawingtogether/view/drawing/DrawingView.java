@@ -73,10 +73,10 @@ public class DrawingView extends View {
         if(de.getDrawingBoardArray() == null) {
             de.initDrawingBoardArray(w, h);
         }
-        //if(client.isMaster()) {
+        if(client.isMaster()) {
             Log.i("mqtt", "progressDialog dismiss");
             client.getProgressDialog().dismiss();
-        //}
+        }
     }
 
     @Override
@@ -133,10 +133,12 @@ public class DrawingView extends View {
         de.setMyCanvasWidth(canvasWidth);
         de.setMyCanvasHeight(canvasHeight);
 
-        Random random = new Random();   //fixme
+        /*
+        Random random = new Random();   //fixme nayeon
         int color = Color.rgb(random.nextInt(128) +  128, random.nextInt(128) +  128, random.nextInt(128) +  128);
         de.setStrokeColor(color);
         de.setFillColor(color);
+        */
     }
 
     public void setDrawingComponentType() {
@@ -206,7 +208,7 @@ public class DrawingView extends View {
         client.publish(client.getTopic_data(),  parser.jsonWrite(messageFormat));
     }
 
-    public void updateDrawingComponentId(DrawingComponent dComponent) { // ACTION_UP 이벤트 발생 시 호출
+    public void updateDrawingComponentId(DrawingComponent dComponent) {
         try {
             DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
             Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
@@ -225,6 +227,7 @@ public class DrawingView extends View {
         Log.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
 
         de.addHistory(new DrawingItem(de.getCurrentMode(), dComponent/*, de.getDrawingBitmap()*/)); // 드로잉 컴포넌트가 생성되면 History 에 저장
+
         if(de.getHistory().size() == 1)
             de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
 
@@ -368,7 +371,7 @@ public class DrawingView extends View {
                         de.setPostSelectedComponents(selectedComponentId);
 
                         de.clearSelectedBitmap();
-                        de.drawSelectedComponentBorder(de.getSelectedComponent().getDatumPoint(), de.getSelectedComponent().getWidth(), de.getSelectedComponent().getHeight());
+                        de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMyCanvasWidth(), de.getMyCanvasHeight());
                         invalidate();
 
                         //todo publish - 다른 사람들 셀렉트 못하게
@@ -402,7 +405,7 @@ public class DrawingView extends View {
                     de.drawAllPostSelectedComponents();
                     de.drawSelectedComponent();
                     de.drawSelectedBitmaps();
-                    de.drawSelectedComponentBorder(de.getSelectedComponent().getDatumPoint(), de.getSelectedComponent().getWidth(), de.getSelectedComponent().getHeight());
+                    de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMyCanvasWidth(), de.getMyCanvasHeight());
                     invalidate();
 
                     //todo publish - selected down
@@ -426,7 +429,7 @@ public class DrawingView extends View {
                     de.moveSelectedComponent(moveX, moveY);
                     de.clearSelectedBitmap();
                     de.getSelectedComponent().drawComponent(de.getSelectedCanvas());
-                    de.drawSelectedComponentBorder(datumPoint, width, height);
+                    de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMyCanvasWidth(), de.getMyCanvasHeight());
                     invalidate();
 
                     //todo publish - selected move

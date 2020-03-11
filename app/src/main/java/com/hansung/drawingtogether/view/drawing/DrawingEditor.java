@@ -11,6 +11,7 @@ import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.SparseArray;
+import android.widget.EditText;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -50,10 +51,12 @@ public enum DrawingEditor {
     private Bitmap postSelectedComponentsBitmap;
 
     /* 텍스트에 필요한 객체 */
-    private Drawable textBorderDrawable; // 텍스트 포커싱 테두리
+    private Drawable textMoveBorderDrawable; // 텍스트 포커싱 테두리
+    private Drawable textFocusBorderDrawable;
     private ArrayList<Text> texts = new ArrayList<>(); // 현재 부착된 모든 text 배열
     private Text currentText = null;
     private boolean isTextBeingEdited = false;
+    private boolean isTextBeingModified = false; // fixme nayeon
     private int textId = -1;
     private int maxTextId = -1;
 
@@ -70,12 +73,16 @@ public enum DrawingEditor {
     private float drawnCanvasHeight;
     private float myCanvasWidth;
     private float myCanvasHeight;
-    private int fillColor = Color.TRANSPARENT;  //fixme
-    private int strokeColor = Color.BLACK;      //fixme
-    private int strokeAlpha = 255;              //fixme
-    private int fillAlpha = 100;                //fixme
-    private int strokeWidth = 10;              //fixme
 
+    /* 드로잉 펜 속성 */
+    private int fillColor = Color.TRANSPARENT;  // todo nayeon - Default Value
+    private int strokeColor = Color.BLACK;
+    private int strokeAlpha = 255;
+    private int fillAlpha = 100;
+    private int strokeWidth = 10;
+
+    /* 텍스트 속성 */
+    private EditText editText;
 
     // 드로잉 하는동안 저장되는 모든 데이터들 지우기 [나가기 버튼 눌렀을 때 처리 필요 - MQTTClient.java if(topic_exit, topic_delete) 부분에서 호출]
     public void removeAllDrawingData() {
@@ -102,6 +109,10 @@ public enum DrawingEditor {
 
         currentMode = Mode.DRAW;
         currentType = ComponentType.STROKE;
+        strokeColor = Color.BLACK;
+        strokeWidth = 10;
+
+        isIntercept = false;
     }
 
     public void printDrawingData() {
@@ -140,11 +151,13 @@ public enum DrawingEditor {
 
     public void drawAllDrawingComponentsForMid() {   //drawingComponents draw
         for (DrawingComponent component : drawingComponents) {
+
             component.calculateRatio(drawingBoardArray[0].length, drawingBoardArray.length);
             component.drawComponent(getBackCanvas());
 
             splitPoints(component, drawingBoardArray[0].length, drawingBoardArray.length);
         }
+
         Log.i("drawing", "drawingBoardArray[][] w=" + drawingBoardArray[0].length + ", h=" + drawingBoardArray.length);
         Log.i("drawing", "dba[0][0] = " + drawingBoardArray[0][0].get(0));
     }
@@ -162,7 +175,7 @@ public enum DrawingEditor {
         }
     }
 
-    public boolean isContainsCurrentComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우 // fixme nayeon [동시성 처리] //? 이건 드로잉에서 쓰는데?
+    public boolean isContainsCurrentComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우
         String str = "cc = ";
         for(DrawingComponent component: getCurrentComponents()) {
             str += component.getId() + " ";
@@ -271,7 +284,13 @@ public enum DrawingEditor {
         return false;
     }
 
-    public void drawSelectedComponentBorder(Point datumPoint, int width, int height) {
+    public void drawSelectedComponentBorder(DrawingComponent component, float canvasWidth, float canvasHeight) {
+        component.calculateRatio(canvasWidth, canvasHeight);
+        Point datumPoint = component.getDatumPoint();
+        int width = component.getWidth();
+        int height = component.getHeight();
+        int strokeWidth = component.getStrokeWidth();
+
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         try {
             DashPathEffect dashPath = new DashPathEffect(new float[]{12, 4}, 4);
@@ -280,15 +299,13 @@ public enum DrawingEditor {
             //paint.setStrokeCap(Paint.Cap.ROUND);
             paint.setStyle(Paint.Style.STROKE);     //윤곽선
             paint.setColor(Color.LTGRAY);
-            getSelectedCanvas().drawRect(datumPoint.x - 10, datumPoint.y - 10, datumPoint.x + width + 10, datumPoint.y + height + 10, paint);
+            getSelectedCanvas().drawRect(datumPoint.x - strokeWidth/2 - 10, datumPoint.y - strokeWidth/2 - 10, datumPoint.x + width + strokeWidth/2 + 10, datumPoint.y + height + strokeWidth/2 + 10, paint);
         }catch(NullPointerException e) {
             e.printStackTrace();
         }
     }
 
-    private Canvas selectedCanvas;/*
-    private Canvas notSelectedCanvas;
-    private Canvas afterSelectedCanvas;*/
+    private Canvas selectedCanvas;
     public void drawSelectedComponent() {
         selectedComponentBitmap.eraseColor(Color.TRANSPARENT);
         selectedCanvas = new Canvas(selectedComponentBitmap);
@@ -330,7 +347,7 @@ public enum DrawingEditor {
         backCanvas.setBitmap(drawingBitmap);
         clearSelectedBitmap();
         selectedComponent.drawComponent(backCanvas);
-        drawSelectedComponentBorder(getSelectedComponent().getDatumPoint(), getSelectedComponent().getWidth(), getSelectedComponent().getHeight()); //
+        drawSelectedComponentBorder(getSelectedComponent(), getMyCanvasWidth(), getMyCanvasHeight()); //
         backCanvas.drawBitmap(postSelectedComponentsBitmap, 0, 0, null);
     }
 
@@ -391,7 +408,7 @@ public enum DrawingEditor {
         return null;
     }
 
-    //fixme nayeon - 텍스트 동시
+    //fixme nayeon - [ 텍스트 아이디 = "사용자이름-textCount" ] 동시성 처리 필요 X
     public String setTextStringId() { return myUsername + "-" + textIdCounter(); }
 
     public void removeAllTextViewToFrameLayout() {
@@ -402,6 +419,14 @@ public enum DrawingEditor {
 
     public void addAllTextViewToFrameLayoutForMid() {
         for(Text t: texts) {
+            // fixme nayeon
+            // 다른 사용자(마스터)가 편집중일 텍스트일 경우 , TextAttribute 의 String text 는 계속해서 변하는 중
+            // 그리고 텍스트 테두리 설정 안 되어 있음
+            if(t.getTextAttribute().getUsername() != null) {
+                t.getTextView().setText(t.getTextAttribute().getPreText()); // 이전 텍스트로 설정
+                t.getTextView().setBackground(this.textFocusBorderDrawable); // 테두리 설정
+            }
+
             t.addTextViewToFrameLayout();
             t.createGestureDetecter(); // 텍스트 모두 붙이기를 중간자 처리, 재접속 시에만 한다고 가정했을 때.
         }
@@ -853,7 +878,9 @@ public enum DrawingEditor {
         this.drawingFragment = drawingFragment;
     }
 
-    public void setTextBorderDrawable(Drawable textBorderDrawable) { this.textBorderDrawable = textBorderDrawable; } // 텍스트 테두리 그리기 위한 Drawable 설정
+    public void setTextMoveBorderDrawable(Drawable textMoveBorderDrawable) { this.textMoveBorderDrawable = textMoveBorderDrawable; } // 텍스트 테두리 그리기 위한 Drawable 설정
+
+    public void setTextFocusBorderDrawable(Drawable textFocusBorderDrawable) { this.textFocusBorderDrawable = textFocusBorderDrawable; }
 
     public void setBackgroundImage(Bitmap backgroundImage) {
         this.backgroundImage = backgroundImage;
@@ -874,6 +901,8 @@ public enum DrawingEditor {
     public void setCurrentText(Text text) { this.currentText = text; }
 
     public void setTextBeingEdited(Boolean bool) { this.isTextBeingEdited = bool; } // 하나의 텍스트 편집 시 다른 텍스트 포커싱 막기 위해
+
+    public void setTextBeingModified(Boolean bool) { this.isTextBeingModified = bool; } // 텍스트 편집 시작 시점 알기위해
 
     public void setHistory(ArrayList<DrawingItem> history) {
         this.history = history;

@@ -97,7 +97,6 @@ public class MainViewModel extends BaseViewModel {
             hasSpecialCharacterAndBlank = true;
         }
 
-        // fixme hyeyeon - getter로 값 가져오기 -> 직접 값 가져오기 (복잡해보여서)
         if (topic.getValue().equals("")) {
             setTopicError("빈칸을 채워주세요");
             hasSpecialCharacterAndBlank = true;
@@ -184,7 +183,7 @@ public class MainViewModel extends BaseViewModel {
                         mutableData.child("password").setValue(password.getValue());
                         mutableData.child("username").child(name.getValue()).setValue(name.getValue());
 
-                        Log.e("kkankkan", "새 토픽 올림!, 마스터는 나야");  // 왜 계속 불려???? 진짜 이상한데 잘됨 ..0
+                        Log.e("kkankkan", "새 토픽 올림!, 마스터는 나야");  // todo hyeyeon 왜 계속 불리는지 체크
                     }
                     else {  // 기존 토픽
                         existTopic = true;
@@ -303,15 +302,14 @@ public class MainViewModel extends BaseViewModel {
                             //navigate(R.id.action_mainFragment_to_drawingFragment, bundle);
                         }
                     }
-                    newName = false;
-                    newMaster = false;
+                   /* newName = false;
+                    newMaster = false;*/  // fixme hyeyeon
 
                     //progressDialog.dismiss();
                 }
             });
         }
     }
-
 
     /*public void storageUpload() {
         storageReference.child(getTopic().getValue()).getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
