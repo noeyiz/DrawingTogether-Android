@@ -128,7 +128,7 @@ public class DrawingFragment extends Fragment {
             binding.backgroundView.addView(imageView);
         }
 
-        if(de.getDrawingBitmap() == null) { //fixme minj
+        if(de.getDrawingBitmap() == null) { // join 메시지 publish
             JoinMessage joinMessage = new JoinMessage(drawingViewModel.getName());
             MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
             client.publish(drawingViewModel.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));

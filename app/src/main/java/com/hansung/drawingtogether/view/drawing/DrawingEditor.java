@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
@@ -29,6 +31,7 @@ public enum DrawingEditor {
     private Bitmap lastDrawingBitmap = null;    //drawingBitmap 의 마지막 상태 bitmap --> 도형 그리기
 
     /* 드로잉 컴포넌트에 필요한 객체 */
+    private boolean isIntercept = false;
     private int componentId = -1;
     private int maxComponentId = -1;
     private Vector<Integer> removedComponentId = new Vector<>();
@@ -37,6 +40,14 @@ public enum DrawingEditor {
 
     private ArrayList<DrawingComponent> drawingComponents = new ArrayList<>();  //현재 그려져있는 모든 drawing component 배열
     private ArrayList<DrawingComponent> currentComponents = new ArrayList<>();  //현재 그리기중인 drawing component 배열
+
+    /* selector 에 필요한 객체 */
+    private DrawingComponent selectedComponent;
+    private Vector<DrawingComponent> preSelectedComponents = new Vector<>();
+    private Vector<DrawingComponent> postSelectedComponents = new Vector<>();
+    private Bitmap selectedComponentBitmap;
+    private Bitmap preSelectedComponentsBitmap;
+    private Bitmap postSelectedComponentsBitmap;
 
     /* 텍스트에 필요한 객체 */
     private Drawable textBorderDrawable; // 텍스트 포커싱 테두리
@@ -186,13 +197,14 @@ public enum DrawingEditor {
             removeDrawingComponents(i);
     }
 
-    public void removeDrawingComponents(int id) {
-        for(DrawingComponent component: drawingComponents) {
-            if(component.getId() == id) {
-                drawingComponents.remove(component);
-                break;
+    public int removeDrawingComponents(int id) {
+        for(int i=0; i<drawingComponents.size(); i++) {
+            if(drawingComponents.get(i).getId() == id) {
+                drawingComponents.remove(drawingComponents.get(i));
+                return i;
             }
         }
+        return -1;
     }
 
     public boolean isContainsAllDrawingComponents(Vector<Integer> ids) {
@@ -211,19 +223,157 @@ public enum DrawingEditor {
         return false;
     }
 
-    /*public void updateDrawingComponentsId(int changedId, DrawingComponent component) {
-        removeDrawingComponents(component.getId());
+    public void updateDrawingComponents(DrawingComponent newComponent) {    //속성 변경 update
+        int index = removeDrawingComponents(newComponent.getId());
+        drawingComponents.add(index, newComponent);
+        //addDrawingComponents(newComponent);
+    }
 
-        component.setId(changedId);
-        drawingComponents.add(component);
-
-        for(DrawingComponent dc: drawingComponents) {
-            Log.i("drawing", dc.getId() + "");
+    public void setPreSelectedComponents(int id) {
+        preSelectedComponents.clear();
+        for(DrawingComponent component: drawingComponents) {
+            if(component.getId() < id)
+                preSelectedComponents.add(component);
         }
-    }*/
+        String str = "pre selected = ";
+        for(DrawingComponent component: preSelectedComponents) {
+            str += component.getId() + " ";
+        }
+        Log.i("drawing", str);
+    }
 
-    public void updateDrawingComponents(Vector<DrawingComponent> components) {
-        //속성 변경 update
+    public void setPostSelectedComponents(int id) {
+        postSelectedComponents.clear();
+        for(DrawingComponent component: drawingComponents) {
+            if(id < component.getId())
+                postSelectedComponents.add(component);
+        }
+        String str = "post selected = ";
+        for(DrawingComponent component: postSelectedComponents) {
+            str += component.getId() + " ";
+        }
+        Log.i("drawing", str);
+    }
+
+    public boolean isContainsSelectedComponent(Point point) {
+        try {
+            if (selectedComponent.getType() == ComponentType.STROKE) return false;
+
+            Point datumPoint = selectedComponent.getDatumPoint();
+            int width = selectedComponent.getWidth();
+            int height = selectedComponent.getHeight();
+            if ((datumPoint.x <= point.x && point.x <= datumPoint.x + width) && (datumPoint.y <= point.y && point.y <= datumPoint.y + height))
+                return true;
+
+        } catch(NullPointerException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public void drawSelectedComponentBorder(Point datumPoint, int width, int height) {
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        try {
+            DashPathEffect dashPath = new DashPathEffect(new float[]{12, 4}, 4);
+            paint.setPathEffect(dashPath);
+            paint.setStrokeWidth(4);
+            //paint.setStrokeCap(Paint.Cap.ROUND);
+            paint.setStyle(Paint.Style.STROKE);     //윤곽선
+            paint.setColor(Color.LTGRAY);
+            getSelectedCanvas().drawRect(datumPoint.x - 10, datumPoint.y - 10, datumPoint.x + width + 10, datumPoint.y + height + 10, paint);
+        }catch(NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Canvas selectedCanvas;/*
+    private Canvas notSelectedCanvas;
+    private Canvas afterSelectedCanvas;*/
+    public void drawSelectedComponent() {
+        selectedComponentBitmap.eraseColor(Color.TRANSPARENT);
+        selectedCanvas = new Canvas(selectedComponentBitmap);
+        selectedComponent.draw(selectedCanvas);
+    }
+
+    public void drawAllPreSelectedComponents() {
+        preSelectedComponentsBitmap.eraseColor(Color.TRANSPARENT);
+        Canvas canvas = new Canvas(preSelectedComponentsBitmap);
+        for(DrawingComponent component: preSelectedComponents) {
+            component.drawComponent(canvas);
+        }
+    }
+
+    public void drawAllPostSelectedComponents() {
+        postSelectedComponentsBitmap.eraseColor(Color.TRANSPARENT);
+        Canvas canvas = new Canvas(postSelectedComponentsBitmap);
+        for(DrawingComponent component: postSelectedComponents) {
+            component.drawComponent(canvas);
+        }
+    }
+
+    public void drawSelectedBitmaps() {
+        drawingBitmap.eraseColor(Color.TRANSPARENT);
+        drawingBitmap = preSelectedComponentsBitmap.copy(preSelectedComponentsBitmap.getConfig(), true);
+        backCanvas.setBitmap(drawingBitmap);
+        backCanvas.drawBitmap(postSelectedComponentsBitmap, 0, 0, null);
+    }
+
+    public void moveSelectedComponent(int moveX, int moveY) {
+        selectedComponent.setBeginPoint(new Point(selectedComponent.getBeginPoint().x + moveX, selectedComponent.getBeginPoint().y + moveY));
+        selectedComponent.setEndPoint(new Point(selectedComponent.getEndPoint().x + moveX, selectedComponent.getEndPoint().y + moveY));
+        selectedComponent.setDatumPoint(new Point(selectedComponent.getDatumPoint().x + moveX, selectedComponent.getDatumPoint().y + moveY));
+    }
+
+    public void updateDrawingBitmap() {
+        drawingBitmap.eraseColor(Color.TRANSPARENT);
+        drawingBitmap = preSelectedComponentsBitmap.copy(preSelectedComponentsBitmap.getConfig(), true);
+        backCanvas.setBitmap(drawingBitmap);
+        clearSelectedBitmap();
+        selectedComponent.drawComponent(backCanvas);
+        drawSelectedComponentBorder(getSelectedComponent().getDatumPoint(), getSelectedComponent().getWidth(), getSelectedComponent().getHeight()); //
+        backCanvas.drawBitmap(postSelectedComponentsBitmap, 0, 0, null);
+    }
+
+    public void updateSelectedComponent(DrawingComponent component, float canvasWidth, float canvasHeight) {
+        if(component == null) return;
+
+        Vector<Integer> id = new Vector<>();
+        id.add(-1);
+        id.add(component.getId());
+        eraseDrawingBoardArray(id);
+
+        component.calculateRatio(canvasWidth, canvasHeight);
+        ArrayList<Point> newPoints = new ArrayList<>();
+
+        try{
+            if (component.getType() == ComponentType.STROKE) return;
+
+            Point datumPoint = component.getDatumPoint();
+            int width = component.getWidth();
+            int height = component.getHeight();
+
+            for(int i=datumPoint.y; i<=datumPoint.y + height; i++) {
+                newPoints.add(new Point(datumPoint.x, i));
+                newPoints.add(new Point(datumPoint.x + width, i));
+            }
+            for(int i=datumPoint.x; i<=datumPoint.x + width; i++) {
+                newPoints.add(new Point(i, datumPoint.y));
+                newPoints.add(new Point(i, datumPoint.y + height));
+            }
+
+        } catch(NullPointerException e) {
+            e.printStackTrace();
+        }
+
+        drawingBoardMap.put(component.getId(), newPoints);
+
+        for(Point point: newPoints) {
+            int x = point.x;
+            int y = point.y;
+
+            if(!drawingBoardArray[y][x].contains(component.getId()))
+                drawingBoardArray[y][x].add(component.getId());
+        }
     }
 
     public void addTexts(Text text) {
@@ -634,6 +784,10 @@ public enum DrawingEditor {
         backCanvas.setBitmap(drawingBitmap);*/
     }
 
+    public void clearSelectedBitmap() {
+        selectedComponentBitmap.eraseColor(Color.TRANSPARENT);
+    }
+
     //fixme undo, redo
     public void undo() {
         if(history.size() == 0)
@@ -787,4 +941,23 @@ public enum DrawingEditor {
 
     public void setTextId(int textId) { this.textId = textId; }
 
+    public void setIntercept(boolean intercept) {
+        isIntercept = intercept;
+    }
+
+    public void setSelectedComponent(DrawingComponent selectedComponent) {
+        this.selectedComponent = selectedComponent;
+    }
+
+    public void setSelectedComponentBitmap(Bitmap selectedComponentBitmap) {
+        this.selectedComponentBitmap = selectedComponentBitmap;
+    }
+
+    public void setPreSelectedComponentsBitmap(Bitmap preSelectedComponentsBitmap) {
+        this.preSelectedComponentsBitmap = preSelectedComponentsBitmap;
+    }
+
+    public void setPostSelectedComponentsBitmap(Bitmap postSelectedComponentsBitmap) {
+        this.postSelectedComponentsBitmap = postSelectedComponentsBitmap;
+    }
 }

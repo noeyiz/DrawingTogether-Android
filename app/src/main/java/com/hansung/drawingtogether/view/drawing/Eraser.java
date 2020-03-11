@@ -8,15 +8,18 @@ import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import lombok.Getter;
 
+@Getter
 public class Eraser {
     private DrawingEditor de = DrawingEditor.getInstance();
     private MQTTClient client = MQTTClient.getInstance();
     private JSONParser parser = JSONParser.getInstance();
     private int squareScope = 20;//(int) (((de.getMyCanvasWidth() * de.getMyCanvasHeight()) * 0.0014556040756914) / 100);
+    private Vector<Integer> erasedComponentIds;
 
     public void findComponentsToErase(Point eraserPoint) {
-        Vector<Integer> erasedComponentIds = new Vector<>();
+        erasedComponentIds = new Vector<>();
         erasedComponentIds.add(-1);
 
         int x = eraserPoint.x;

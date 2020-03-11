@@ -117,6 +117,7 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void clickText(View view) {
         de.setCurrentMode(Mode.TEXT);
+        Log.i("drawing", "mode = " + de.getCurrentMode().toString());
         FrameLayout frameLayout = de.getDrawingFragment().getBinding().drawingViewContainer;
 
         // 텍스트 속성 설정 ( 기본 도구에서 설정할 것인지 텍스트 도구에서 설정할 것인지? )
@@ -134,7 +135,21 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void clickShape(View view) {
         changeClickedButtonBackground(view);
+        de.setCurrentMode(Mode.DRAW);
+        de.setCurrentType(ComponentType.RECT);
         drawingCommands.postValue(new DrawingCommand.ShapeMode(view));
+    }
+
+    public void clickSelector(View view) {
+        changeClickedButtonBackground(view);
+        de.setCurrentMode(Mode.SELECT);
+        Log.i("drawing", "mode = " + de.getCurrentMode().toString());
+    }
+
+    public void clickGroup(View view) {
+        changeClickedButtonBackground(view);
+        de.setCurrentMode(Mode.GROUP);
+        Log.i("drawing", "mode = " + de.getCurrentMode().toString());
     }
 
     public void clickSearch(View view) {

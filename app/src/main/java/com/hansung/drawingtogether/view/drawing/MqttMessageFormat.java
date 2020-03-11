@@ -18,7 +18,7 @@ public class MqttMessageFormat {
     private int action;
 
     private String username;
-    private Vector<Integer> componentIds; //findComponentsToErase, select
+    private Vector<Integer> componentIds; //findComponentsToErase, findSelectedComponent
 
     private TextAttribute textAttr; // text
     private TextMode textMode;
