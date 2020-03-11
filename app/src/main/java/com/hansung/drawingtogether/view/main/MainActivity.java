@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.Window;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,6 +18,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.view.drawing.DrawingEditor;
+import com.hansung.drawingtogether.view.drawing.Mode;
+import com.hansung.drawingtogether.view.drawing.Text;
 import com.kakao.util.helper.Utility;
 
 import java.security.MessageDigest;
@@ -29,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private String topicPassword="";
     private Toolbar toolbar;
     private TextView title;
+
+    //private DrawingEditor de = DrawingEditor.getInstance();
 
     public interface OnBackListener {
         public void onBack();
@@ -63,10 +69,18 @@ public class MainActivity extends AppCompatActivity {
             topicPassword = topic;
             topicPassword += "/" + password;
         }
+
     }
 
     @Override
-    public void onBackPressed() { }
+    public void onBackPressed() {
+       /* // fixme nayeon [ 뒤로가기 이벤트 != 키보드 내리기 이벤트 ]
+        if(de.getCurrentMode().equals(Mode.TEXT)) {
+            Text text = de.getCurrentText();
+            text.changeEditTextToTextView();
+        }*/
+
+    }
 
     // title 설정
     public void setToolbarTitle(String title) {

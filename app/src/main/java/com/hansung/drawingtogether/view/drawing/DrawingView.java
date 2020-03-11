@@ -55,7 +55,6 @@ public class DrawingView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        Log.e("DrawingView", "call onSizeChanged");
 
         canvasWidth = w;
         canvasHeight = h;
@@ -121,10 +120,12 @@ public class DrawingView extends View {
         de.setMyCanvasWidth(canvasWidth);
         de.setMyCanvasHeight(canvasHeight);
 
-        Random random = new Random();   //fixme
+        /*
+        Random random = new Random();   //fixme nayeon
         int color = Color.rgb(random.nextInt(128) +  128, random.nextInt(128) +  128, random.nextInt(128) +  128);
         de.setStrokeColor(color);
         de.setFillColor(color);
+        */
     }
 
     public void setDrawingComponentType() {

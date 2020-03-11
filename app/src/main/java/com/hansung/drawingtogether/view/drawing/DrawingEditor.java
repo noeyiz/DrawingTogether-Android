@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.SparseArray;
+import android.widget.EditText;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ public enum DrawingEditor {
     private ArrayList<Text> texts = new ArrayList<>(); // 현재 부착된 모든 text 배열
     private Text currentText = null;
     private boolean isTextBeingEdited = false;
+    private boolean isTextBeingModified = false; // fixme nayeon
     private int textId = -1;
     private int maxTextId = -1;
 
@@ -60,7 +62,7 @@ public enum DrawingEditor {
     private float drawnCanvasHeight;
     private float myCanvasWidth;
     private float myCanvasHeight;
-    private int fillColor = Color.TRANSPARENT;  //fixme
+    private int fillColor = Color.TRANSPARENT;  // todo nayeon - Default Value
     private int strokeColor = Color.BLACK;      //fixme
     private int strokeAlpha = 255;              //fixme
     private int fillAlpha = 100;                //fixme
@@ -723,6 +725,8 @@ public enum DrawingEditor {
     public void setCurrentText(Text text) { this.currentText = text; }
 
     public void setTextBeingEdited(Boolean bool) { this.isTextBeingEdited = bool; } // 하나의 텍스트 편집 시 다른 텍스트 포커싱 막기 위해
+
+    public void setTextBeingModified(Boolean bool) { this.isTextBeingModified = bool; } // 텍스트 편집 시작 시점 알기위해
 
     public void setHistory(ArrayList<DrawingItem> history) {
         this.history = history;

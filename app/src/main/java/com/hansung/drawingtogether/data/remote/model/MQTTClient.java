@@ -807,7 +807,7 @@ public enum MQTTClient {
                     de.addHistory(new DrawingItem(TextMode.ERASE, textAttr));
                     publishProgress(message);
                     return null;
-                case MODIFY:
+                case MODIFY_START:
                     publishProgress(message);
                     return null;
             }
@@ -838,6 +838,7 @@ public enum MQTTClient {
                     break;
                 case DONE:
                     text.getTextView().setBackground(null); // 테두리 설정 해제
+                    text.modifyTextViewContent(textAttr.getText()); // 변경된 텍스트 설정
                     if(textAttr.isModified()) { de.clearUndoArray(); }
                     break;
                 case ERASE:
@@ -846,11 +847,11 @@ public enum MQTTClient {
                     de.clearUndoArray();
                     //Log.e("texts size", Integer.toString(de.getTexts().size()));
                     break;
-                case MODIFY:
+                case MODIFY_START: // fixme nayeon
                     Log.e("text", textAttr.getText());
 
                     text.getTextView().setBackground(de.getTextFocusBorderDrawable()); // 수정중일 때 텍스트 테두리 설정하여 수정중인 텍스트 표시
-                    text.modifyTextViewContent(textAttr.getText());
+                    //text.modifyTextViewContent(textAttr.getText());
                     break;
             }
 

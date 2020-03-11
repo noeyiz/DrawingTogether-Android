@@ -13,6 +13,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
@@ -95,8 +96,11 @@ public class DrawingViewModel extends BaseViewModel {
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.STROKE);
+
+        de.setStrokeWidth(Integer.parseInt(view.getContentDescription().toString())); // fixme nayeon
+
         Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
-        //drawingCommands.postValue(new DrawingCommand.PenMode(view));      //fixme minj color picker
+        //drawingCommands.postValue(new DrawingCommand.PenMode(view));      //fixme nayeon color picker [ View Model 과 Navigator 관계, 이벤트 처리 방식 ]
     }
 
     public void clickEraser(View view) {
@@ -127,9 +131,14 @@ public class DrawingViewModel extends BaseViewModel {
 
         Text text = new Text(de.getDrawingFragment(), textAttribute);
         text.createGestureDetecter(); // Set Gesture ( Single Tap Up )
-        text.addEditTextToFrameLayout(); // 처음 텍스트 생성 시 EditText 부착
-        text.activeEditText(); // EditText 커서와 키보드 활성화
+
+        text.activeTextEditing(); // EditText 커서와 키보드 활성화
         //drawingCommands.postValue(new DrawingCommand.TextMode(view));
+    }
+
+    public void clickDone(View view) {
+        Text text = de.getCurrentText();
+        text.changeEditTextToTextView();
     }
 
     public void clickShape(View view) {

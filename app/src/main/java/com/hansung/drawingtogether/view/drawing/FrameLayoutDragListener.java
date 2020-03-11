@@ -20,20 +20,26 @@ class FrameLayoutDragListener implements View.OnDragListener {
         TextView textView;
         ViewGroup viewGroup;
 
+        Log.e("Drag Event", Integer.toString(event.getAction()));
+
         View draggedView = (View) event.getLocalState();
-        if(draggedView instanceof TextView) { textView = (TextView) draggedView; }
+        if(draggedView instanceof TextView) {
+
+
+            textView = (TextView) draggedView;
+        }
         else { return true; }
 
         Text text = de.getCurrentText();
         TextAttribute textAttribute = text.getTextAttribute();
 
-        /*
-        int x = (int)event.getX() - (textView.getWidth()/2);
-        int y = (int)event.getY() - (textView.getHeight()/2);
-        */
-
         int x = (int)event.getX();
         int y = (int)event.getY();
+
+
+        // todo nayeon 텍스트 뷰 화면 넘어갈 때 처리
+        // if( (x + (textView.getWidth()/2)) > frameLayout.getWidth()) { x = frameLayout.getWidth() - textView.getWidth()/2; }
+
 
         switch (event.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:

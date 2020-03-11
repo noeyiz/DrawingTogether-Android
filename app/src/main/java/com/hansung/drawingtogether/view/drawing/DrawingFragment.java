@@ -68,11 +68,13 @@ public class DrawingFragment extends Fragment {
     private MQTTSettingData data = MQTTSettingData.getInstance();  // fixme hyeyeon
 
     private DrawingEditor de = DrawingEditor.getInstance();
+    private PaletteManager pm = PaletteManager.getInstance(); // fixme nayeon
     private FragmentDrawingBinding binding;
     private DrawingViewModel drawingViewModel;
     private InputMethodManager inputMethodManager;
-    private LinearLayout doneBtnLayout;
-    private Button doneBtn;
+
+    //private LinearLayout topToolLayout;
+    //private Button doneBtn;
 
 
     @Nullable
@@ -91,14 +93,15 @@ public class DrawingFragment extends Fragment {
         de.setTextMoveBorderDrawable(getResources().getDrawable(R.drawable.text_move_border)); // fixme nayeon 텍스트 테두리 설정
         de.setTextFocusBorderDrawable(getResources().getDrawable(R.drawable.text_focus_border));
 
-        binding.drawBtn.setBackgroundColor(Color.rgb(233, 233, 233));
+        // fixme nayeon
+        pm.setBinding(binding); // Palette Manager 의 FragmentDrawingBinding 변수 초기화
+        pm.setListener(); // 리스너 초기화
+        pm.setPaletteButtonListener(); // 색상 버튼들의 리스너 세팅
+        pm.showCurrentColor(de.getStrokeColor()); // 현재 색상 보여주기
+
+        binding.drawBtn1.setBackgroundColor(Color.rgb(233, 233, 233)); // 초기 얇은 펜으로 설정
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
         inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
-
-        //setting done Btn
-        doneBtnLayout = binding.doneBtnLayout;
-        doneBtn = new Button(this.getActivity()); //버튼 동적 생성
-        initDoneButton();
 
         //undo, redo 버튼 초기화
         if(de.getHistory().size() == 0)
@@ -432,34 +435,5 @@ public class DrawingFragment extends Fragment {
             bitmap.recycle();
 
         return resizeBitmap;
-    }
-
-    private void removeDoneButton() {
-        doneBtnLayout.removeView(doneBtn);
-    }
-
-    public void setDoneButton() {
-        doneBtnLayout.removeView(doneBtn);
-        doneBtnLayout.addView(doneBtn);
-    }
-
-    private void initDoneButton() {
-        doneBtn.setText("done");
-        doneBtn.setBackgroundColor(Color.TRANSPARENT);
-
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.gravity = Gravity.CENTER;
-        layoutParams.weight = 1;
-        doneBtn.setLayoutParams(layoutParams);
-
-        doneBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Text text = de.getCurrentText();
-                text.changeEditTextToTextView();
-
-                removeDoneButton(); // Done 버튼 제거
-            }
-        });
     }
 }
