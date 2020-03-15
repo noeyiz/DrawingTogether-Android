@@ -17,7 +17,7 @@ public class TextAttribute {
 
     private String preText;
     private String postText;
-    private String text;
+    private String text = "";
     private int textSize;
     private int textColor;
     private int textBackgroundColor;
@@ -80,7 +80,7 @@ public class TextAttribute {
         this.y = textAttr.y;
     }
 
-    public TextAttribute(String id, String username, String text, int textSize, int textColor, int textBackgroundColor,
+    public TextAttribute(String id, String username, int textSize, int textColor, int textBackgroundColor,
                          int textGravity, int style, int generatedLayoutWidth, int generatedLayoutHeight) {
         this.id = id;
         this.username = username;

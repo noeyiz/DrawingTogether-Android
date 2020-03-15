@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.SparseArray;
@@ -82,7 +83,10 @@ public enum DrawingEditor {
     private int strokeWidth = 10;
 
     /* 텍스트 속성 */
-    private EditText editText;
+    private int textSize = 20;
+    private int textColor = Color.BLACK;
+    private int fontStyle = Typeface.BOLD;
+    private int textBackground = Color.TRANSPARENT;
 
     // 드로잉 하는동안 저장되는 모든 데이터들 지우기 [나가기 버튼 눌렀을 때 처리 필요 - MQTTClient.java if(topic_exit, topic_delete) 부분에서 호출]
     public void removeAllDrawingData() {
@@ -958,6 +962,22 @@ public enum DrawingEditor {
 
     public void setStrokeWidth(int strokeWidth) {
         this.strokeWidth = strokeWidth;
+    }
+
+    public void setTextSize(int textSize) {
+        this.textSize = textSize;
+    }
+
+    public void setTextColor(int textColor) {
+        this.textColor = textColor;
+    }
+
+    public void setFontStyle(int fontStyle) {
+        this.fontStyle = fontStyle;
+    }
+
+    public void setTextBackground(int textBackground) {
+        this.textBackground = textBackground;
     }
 
     //public void setTextIdInCallback(int myTextArrayIndex) { this.texts.get(myTextArrayIndex).getTextAttribute().setId(this.textId); }

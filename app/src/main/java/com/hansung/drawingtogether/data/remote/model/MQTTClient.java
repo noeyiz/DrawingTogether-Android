@@ -269,7 +269,7 @@ public enum MQTTClient {
 
                     if (master != null) { // 메시지 형식이 "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..."  일 경우
                         //binding.drawingView.setIntercept(false);
-                        de.setIntercept(false);
+                        de.setIntercept(false); // 중간에 누가 들어왔을 때 선을 그리는 중이 아닌 다른 사용자들 터치 이벤트 부모뷰에서 가로채도록 (모두가 처리하는 부분)
                         Log.i("drawing", "isMid = " + isMid());
 
                         String to = joinMessage.getTo();
@@ -358,6 +358,8 @@ public enum MQTTClient {
                                 } else {
                                     MqttMessageFormat messageFormat = new MqttMessageFormat(new JoinMessage(userList.get(userList.size() - 1).getName()));
                                     publish(topic_join, parser.jsonWrite(messageFormat));
+
+                                    Log.e("master republish name", topic_join);
                                 }
                             }
                             //drawingViewModel.setUserNumTv(userList.size());
@@ -581,10 +583,10 @@ public enum MQTTClient {
                     MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
                     AliveMessage aliveMessage = mqttMessageFormat.getAliveMessage();
                     String name = aliveMessage.getName();
-                    Log.e("kkankkan", name);
+                    // Log.e("kkankkan", name); // fixme nayeon 출력 주석
 
                     if (myName.equals(name)) {
-                        Log.e("kkankkan", "COUNT PLUS BEFORE" + userPrintForLog());
+                        // Log.e("kkankkan", "COUNT PLUS BEFORE" + userPrintForLog());
                         Iterator<User> iterator = userList.iterator();
                         while (iterator.hasNext()) {
                             User user = iterator.next();
@@ -606,7 +608,7 @@ public enum MQTTClient {
                                 }
                             }
                         }
-                        Log.e("kkankkan", "COUNT PLUS AFTER" + userPrintForLog());
+                        // Log.e("kkankkan", "COUNT PLUS AFTER" + userPrintForLog());
                     } else {
                         for (User user : userList) {
                             if (user.getName().equals(name)) {
@@ -1051,21 +1053,6 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
     protected Void doInBackground(MqttMessageFormat... messages) {  //changeText()
         MqttMessageFormat message = messages[0];
 
-            /*
-            // 텍스트 모드고 텍스트가 처음 생성되었을 경우 [ 송신자 포함 모든 사용자가 처리하는 부분 ]
-            if(mode.equals(Mode.TEXT) && textMode.equals(TextMode.CREATE)) {
-                de.textIdCounter(); // DrawingEditor 에서 관리하는 텍스트 아이디를 증가시키고 [ int textId (DrawingEditor.java) 변수 값 증가 ]
-                message.getTextAttr().setId(de.getTextId()); // TextAttribute 에 증가된 아이디를 저장 - 이 후 수신자들은 이 textAttribute 를 바탕으로 텍스트 생성하기 때문에
-
-                if(de.getMyUsername().equals(username)) { // 송신자만 처리하는 부분
-                    de.setTextIdInCallback(message.getMyTextArrayIndex());
-                    return null;
-                }
-            }
-            */
-
-        // 중간자가 MID 모드의 메시지 보다 다른 모드(TEXT) 메시지 먼저 받는 경우 있음
-
         TextMode textMode = message.getTextMode();
         TextAttribute textAttr = message.getTextAttr();
 
@@ -1082,12 +1069,11 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
 
         switch (textMode) {
             case CREATE:
-                Text newText = new Text(client.getDrawingFragment(), textAttr);
+               /* Text newText = new Text(client.getDrawingFragment(), textAttr);
                 newText.getTextAttribute().setTextInited(true); // 만들어진 직후 상단 중앙에 놓이도록
                 de.addTexts(newText);
-                de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));
+                de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));*/
                 publishProgress(message);
-                Log.e("texts size", Integer.toString(de.getTexts().size()));
                 return null;
             case DRAG_LOCATION:
             case DRAG_EXITED:
@@ -1111,7 +1097,7 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
                 de.addHistory(new DrawingItem(TextMode.ERASE, textAttr));
                 publishProgress(message);
                 return null;
-            case MODIFY:
+            case MODIFY_START:
                 publishProgress(message);
                 return null;
         }
@@ -1128,9 +1114,12 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
         Text text = de.findTextById(textAttr.getId());
         switch(textMode) {
             case CREATE:
-                //textAttr.setId(de.textIdCounter());
-                text.addTextViewToFrameLayout();
-                text.createGestureDetecter();
+                Text newText = new Text(client.getDrawingFragment(), textAttr);
+                newText.getTextAttribute().setTextInited(true); // 만들어진 직후 상단 중앙에 놓이도록
+                de.addTexts(newText);
+                de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));
+                newText.addTextViewToFrameLayout();
+                newText.createGestureDetecter();
                 de.clearUndoArray();
                 break;
             case DRAG_STARTED:
@@ -1140,10 +1129,10 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
             case DROP:
                 de.clearUndoArray();
                 break;
-            case DONE:
-                if(textAttr.isModified()) {
-                    de.clearUndoArray();
-                }
+            case DONE: // fixme nayeon
+                text.getTextView().setBackground(null); // 테두리 설정 해제
+                text.setTextViewAttribute();
+                if(textAttr.isModified()) { de.clearUndoArray(); }
                 break;
             case ERASE:
                 text.removeTextViewToFrameLayout();
@@ -1151,8 +1140,9 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
                 de.clearUndoArray();
                 //Log.e("texts size", Integer.toString(de.getTexts().size()));
                 break;
-            case MODIFY:
-                text.modifyTextViewContent(textAttr.getText());
+            case MODIFY_START: // fixme nayeon
+                text.getTextView().setBackground(de.getTextFocusBorderDrawable()); // 수정중일 때 텍스트 테두리 설정하여 수정중인 텍스트 표시
+                //text.modifyTextViewContent(textAttr.getText());
                 break;
         }
 

@@ -19,7 +19,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -39,7 +38,6 @@ import lombok.Getter;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.data.remote.model.User;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.main.DeleteMessage;
@@ -73,7 +71,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     private MQTTSettingData data = MQTTSettingData.getInstance();  // fixme hyeyeon
 
     private DrawingEditor de = DrawingEditor.getInstance();
-    private PaletteManager pm = PaletteManager.getInstance(); // fixme nayeon
+    private AttributeManager am = AttributeManager.getInstance(); // fixme nayeon
     private FragmentDrawingBinding binding;
     private DrawingViewModel drawingViewModel;
     private InputMethodManager inputMethodManager;
@@ -98,11 +96,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         de.setTextMoveBorderDrawable(getResources().getDrawable(R.drawable.text_move_border)); // fixme nayeon 텍스트 테두리 설정
         de.setTextFocusBorderDrawable(getResources().getDrawable(R.drawable.text_focus_border));
 
-        // fixme nayeon
-        pm.setBinding(binding); // Palette Manager 의 FragmentDrawingBinding 변수 초기화
-        pm.setListener(); // 리스너 초기화
-        pm.setPaletteButtonListener(); // 색상 버튼들의 리스너 세팅
-        pm.showCurrentColor(de.getStrokeColor()); // 현재 색상 보여주기
+        am.setBinding(binding); // Palette Manager 의 FragmentDrawingBinding 변수 초기화
+        am.setListener(); // 리스너 초기화
+        am.showCurrentColor(de.getStrokeColor()); // 현재 색상 보여주기
 
         binding.drawBtn1.setBackgroundColor(Color.rgb(233, 233, 233)); // 초기 얇은 펜으로 설정
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
