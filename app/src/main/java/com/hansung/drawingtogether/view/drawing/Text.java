@@ -159,13 +159,17 @@ public class Text { // EditTextView
             public boolean onTouch(View view, MotionEvent event) {
                 view.getParent().requestDisallowInterceptTouchEvent(true);  // 부모(frame layout)가 터치 이벤트를 가로채지 못 하도록
 
-                // 텍스트에 대한 터치 이벤트가 발생하면,
-                // 현재 모드를 텍스트로 지정
-                // de.setCurrentMode(Mode.TEXT);
 
-                // 텍스트 이름이 지정되어 있지 않거나, 혹은 이름이 지정되어있으나 내 이름이 아닐 때
-                // 텍스트 사용불가 (다른 사람이 사용중)
-                if(textAttribute.getUsername() != null && !textAttribute.getUsername().equals(de.getMyUsername())) {
+                // 1. 중간에 다른 사용자가 들어오는 중일 경우 텍스트 터치 막기
+                // 2. 텍스트에 다른 사용자 이름이 지정되어 있으면
+                // 텍스트 사용불가 (다른 사람이 사용중) - 이름이 null 일 경우만 사용 가능
+                // 3. 현재 사용자가 한 텍스트 편집 중이라면, 다른 텍스트 편집 불가능 (한 번에 한 텍스트만 편집 가능)
+                if(de.isMidEntered()) {
+                    showToastMsg("다른 사용자가 접속 중 입니다 잠시만 기다려주세요");
+                    return true;
+                }
+
+                else if(textAttribute.getUsername() != null && !textAttribute.getUsername().equals(de.getMyUsername())) {
                     showToastMsg("다른 사용자가 편집중인 텍스트입니다");
                     return true;
                 }
@@ -175,7 +179,7 @@ public class Text { // EditTextView
                     return true;
                 }
 
-                else { textAttribute.setUsername(de.getMyUsername()); } // 텍스트 사용이 가능하다면 텍스트에 자신의 이름을 지정하고 사용 시작
+                // else { textAttribute.setUsername(de.getMyUsername()); } // 텍스트 사용이 가능하다면 텍스트에 자신의 이름을 지정하고 사용 시작
 
                 setTextAttribute(); // 터치가 시작될 때마다 텍스트가 생성된 레이아웃의 크기 지정(비율 계산을 위해)
 
@@ -381,7 +385,6 @@ public class Text { // EditTextView
         enableDrawingMenuButton(true); // fixme nayeon
 
         de.setTextBeingEdited(false); // 텍스트 편집 모드 false 처리
-        de.setTextBeingModified(false); // 텍스트 편집 종료
     }
 
     // TextAttribute 에 저장된 x, y 좌푯값을 바탕으로

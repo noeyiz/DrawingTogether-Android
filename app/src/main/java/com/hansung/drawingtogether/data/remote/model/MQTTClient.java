@@ -324,6 +324,10 @@ public enum MQTTClient {
                                 User user = new User(name, 0);  // fixme hyeyeon
                                 userList.add(user); // 들어온 사람의 이름을 추가
 
+                                // 다른 사용자가 들어왔다는 메시지를 받았을 경우
+                                // 텍스트 비활성화를 위해 플래그 설정
+                                de.setMidEntered(true); // fixme nayeon
+
                                 if (de.getCurrentMode() == Mode.DRAW) {  // current mode 가 DRAW 이면, 그리기 중이던 component 까지만 그리고 touch intercept   // todo 다른 모드에서도 intercept 하도록 추가
                                     de.setIntercept(true);
                                     //binding.drawingView.InterceptTouchEventAndDoActionUp();
@@ -333,7 +337,7 @@ public enum MQTTClient {
 
                             // 마스터이고, 모든 username 의 마지막 draw action 이 ACTION_UP 이면, 자신의 드로잉 구조체들 전송
                             if (isMaster()) {
-                                if (isUsersActionUp()) {
+                                if (isUsersActionUp() && isTextInUse()) { // fixme nayeon
                                     JoinMessage joinMsg = new JoinMessage(userList.get(0).getName(), userList.get(userList.size() - 1).getName(), userList);  // fixme hyeyeon
 
                                     MqttMessageFormat messageFormat;
@@ -635,6 +639,11 @@ public enum MQTTClient {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat messageFormat = (MqttMessageFormat)parser.jsonReader(msg);
 
+                    // fixme nayeon
+                    // 모든 사용자가 topic_mid 로 메시지 전송받음
+                    // 이 시점 중간자에게는 모든 데이터 저장 완료 후
+                    de.setMidEntered(false);
+
                     Log.i("mqtt", "isMid=" + isMid());
                     if(isMid && messageFormat.getUsername().equals(de.getMyUsername())) {
                         isMid = false;
@@ -749,6 +758,15 @@ public enum MQTTClient {
             }
         }
         Log.i("drawing", "userActionMap = " + usersActionMap.toString());
+        return true;
+    }
+
+    // fixme nayeon
+    public boolean isTextInUse() {
+        for(Text t : de.getTexts()) {
+            if(t.getTextAttribute().getUsername() != null)
+                return false;
+        }
         return true;
     }
 

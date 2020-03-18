@@ -57,9 +57,10 @@ public enum DrawingEditor {
     private ArrayList<Text> texts = new ArrayList<>(); // 현재 부착된 모든 text 배열
     private Text currentText = null;
     private boolean isTextBeingEdited = false;
-    private boolean isTextBeingModified = false; // fixme nayeon
     private int textId = -1;
     private int maxTextId = -1;
+
+    private boolean isMidEntered = false; // fixme nayeon 텍스트 중간자 처리를 위한 플래그
 
     /* UNDO, REDO 를 위한 객체 */
     private ArrayList<DrawingItem> history = new ArrayList<>();     //
@@ -914,7 +915,7 @@ public enum DrawingEditor {
 
     public void setTextBeingEdited(Boolean bool) { this.isTextBeingEdited = bool; } // 하나의 텍스트 편집 시 다른 텍스트 포커싱 막기 위해
 
-    public void setTextBeingModified(Boolean bool) { this.isTextBeingModified = bool; } // 텍스트 편집 시작 시점 알기위해
+    public void setMidEntered(Boolean bool) { this.isMidEntered = bool; } // fixme nayeon
 
     public void setHistory(ArrayList<DrawingItem> history) {
         this.history = history;

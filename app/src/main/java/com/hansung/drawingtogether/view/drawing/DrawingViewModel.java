@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
@@ -125,11 +126,17 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickText(View view) {
-        if(de.isTextBeingEdited()) return; // fixme nayeon [ 추후에 키보드 내리기 이벤트 캐치해서 처리 필요 ]
-
-        changeClickedButtonBackground(view);
+        // 사용자가 처음 텍스트 편집창에서 텍스트 생성중인 경우
+        // 텍스트 정보들을 모든 사용자가 갖고 있지 않음 ( 편집중인 사람만 갖고 있음 )
+        // 따라서 중간자가 들어오고 난 후에 텍스트 생성을 할 수 있도록 막아두기
+        if(de.isMidEntered() && !de.getCurrentText().getTextAttribute().isTextInited()) {
+           showToastMsg("다른 사용자가 접속 중 입니다 잠시만 기다려주세요");
+           return;
+        }
+        //if(de.isTextBeingEdited()) return; // 다른 텍스트 편집 중일 때 텍스트 클릭 못하도록
         // 텍스트 모드가 끝날 때 까지 (Done Button) 누르기 전 까지, 다른 버튼들 비활성화
         enableDrawingMenuButton(false);
+        changeClickedButtonBackground(view);
 
         de.setCurrentMode(Mode.TEXT);
         Log.i("drawing", "mode = " + de.getCurrentMode().toString());
@@ -285,6 +292,8 @@ public class DrawingViewModel extends BaseViewModel {
                 .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
                 .check();
     }
+
+    private void showToastMsg(final String message) { Toast.makeText(de.getDrawingFragment().getActivity(), message, Toast.LENGTH_SHORT).show(); }
 
     public String getPhotoPath() {
         return photoPath;
