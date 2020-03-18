@@ -431,8 +431,16 @@ public enum DrawingEditor {
                 t.getTextView().setBackground(this.textFocusBorderDrawable); // 테두리 설정
             }
 
+            // fixme nayeon
+            t.setTextViewInitialPlace(t.getTextAttribute());
+            t.setTextViewProperties();
+
             t.addTextViewToFrameLayout();
             t.createGestureDetecter(); // 텍스트 모두 붙이기를 중간자 처리, 재접속 시에만 한다고 가정했을 때.
+
+            Log.e("texts size, text id", texts.size() + ", " + t.getTextAttribute().getId());
+            Log.e("text view size", t.getTextView().getWidth() + ", " + t.getTextView().getHeight());
+            Log.e("text view location", t.getTextView().getX() + ", " + t.getTextView().getY());
         }
     }
 

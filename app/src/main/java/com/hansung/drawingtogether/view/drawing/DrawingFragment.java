@@ -110,6 +110,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         if(de.getUndoArray().size() == 0)
             binding.redoBtn.setEnabled(false);
 
+
         if(de.getTexts().size() != 0) { //text 다시 붙이기
             for(Text t: de.getTexts()) {
                 t.removeTextViewToFrameLayout();

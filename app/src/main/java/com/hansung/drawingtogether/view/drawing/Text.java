@@ -69,31 +69,18 @@ public class Text { // EditTextView
 
         // fixme nayeon [ TextView 가로 크기는 텍스트 편집 레이아웃 1/3, EditText 가로 크기는 텍스트 편집 레이아웃 3/4 ]
         this.textView = new TextView(drawingFragment.getActivity());
-        this.textView.setPadding(20, 20, 20, 20);
-        this.textView.setWidth(textEditLayout.getWidth()/3);
+        /*this.textView.setPadding(20, 20, 20, 20);
+        this.textView.setWidth(textEditLayout.getWidth()/3);*/ // addTextViewToFrameLayout
 
         this.editText = this.binding.editText; // fixme nayeon - EditText 를 fragment_drawing.xml 에 정의
-        this.editText.setWidth((int)(textEditLayout.getWidth()*0.75));
+        //this.editText.setWidth((int)(textEditLayout.getWidth()*0.75));*/ // drawingFragment
 
-
-       /* this.editText.setPadding(20, 20, 20, 20);
-        editText.setFilters( new InputFilter[] { new InputFilter.LengthFilter(MAX_LENGTH)} ); // 텍스트의 최대 글자 수 지정
-        editText.setHint("텍스트를 입력하세요");
-        setViewLayoutParams(editText); // Edit Text View 가 초기에 놓일 자리*/ // fixme nayeon - define in frament_drawing.xml
 
 
         setTextViewAttribute();
-        //setEditTextAttribute();
+        setTextViewInitialPlace(this.textAttribute);
 
 
-
-        // TextView 가 초기에 놓일 자리
-        if(this.textAttribute.isTextInited() && this.textAttribute.isTextMoved()) {
-            setTextViewLocationInConstructor();
-        } // 텍스트가 초기화 되어있을 경우 (이미 누군가에 의해 생성된 텍스트) - for middleman
-        else {
-            setViewLayoutParams(textView);
-        } // todo nayeon - ☆ ☆ LayoutParams 와 뷰의 좌푯값의 관계
 
 
         setListenerOnTextView();
@@ -137,6 +124,7 @@ public class Text { // EditTextView
         float x = textAttribute.getX() * xRatio - (textView.getMeasuredWidth()/2);
         float y = textAttribute.getY() * yRatio - (textView.getMeasuredHeight()/2);
 
+
         textView.setX(x);
         textView.setY(y);
     }
@@ -146,6 +134,17 @@ public class Text { // EditTextView
         FrameLayout.LayoutParams frameLayoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT); // frameLayoutParams 은 상단 중앙에 대한 위치 저장
         frameLayoutParams.gravity = Gravity.CENTER;
         view.setLayoutParams(frameLayoutParams);
+    }
+
+    public void setTextViewInitialPlace(TextAttribute textAttribute) {
+        // TextView 가 초기에 놓일 자리
+        if(textAttribute.isTextInited() && textAttribute.isTextMoved()) {
+            Log.e("text", "SET TEXT VIEW LOCATION IN CONSTRUCTOR()");
+            setTextViewLocationInConstructor();
+        } // 텍스트가 초기화 되어있을 경우 (이미 누군가에 의해 생성된 텍스트) - for middleman
+        else {
+            setViewLayoutParams(textView);
+        } // todo nayeon - ☆ ☆ LayoutParams 와 뷰의 좌푯값의 관계
     }
 
     private void setTextAttribute() {
@@ -234,6 +233,9 @@ public class Text { // EditTextView
     public void calculateRatio(float myLayoutWidth, float myLayoutHeight) {
         this.xRatio = myLayoutWidth / this.textAttribute.getGeneratedLayoutWidth();
         this.yRatio = myLayoutHeight / this.textAttribute.getGeneratedLayoutHeight();
+
+        Log.e("text", "my layout location = " + myLayoutWidth + ", " + myLayoutHeight);
+        Log.e("text", "attached layout location = " + textAttribute.getGeneratedLayoutWidth() + ", " + textAttribute.getGeneratedLayoutHeight());
     }
 
 
@@ -279,6 +281,11 @@ public class Text { // EditTextView
             sendMqttMessage(TextMode.CREATE); // 변경된 내용을 가진 TextAttribute 를 MQTT 메시지 전송
 
             deactivateTextEditing();
+
+            // set text view properties fixme nayeon
+            this.textView.setPadding(20, 20, 20, 20);
+            this.textView.setWidth(frameLayout.getWidth()/3);
+
             addTextViewToFrameLayout(); // TextView 를 레이아웃에 추가 // fixme nayeon ☆ 텍스트 처음 생성 시에만 TEXT VIEW 붙이기
 
 
@@ -334,6 +341,8 @@ public class Text { // EditTextView
         de.setTextBeingEdited(true);
 
         enableDrawingMenuButton(false); // fixme nayeon
+
+        editText.setWidth((int)(binding.textEditLayout.getWidth() * 0.75)); // fixme nayeon
 
         binding.redoBtn.setVisibility(View.INVISIBLE);
         binding.undoBtn.setVisibility(View.INVISIBLE); // 텍스트 편집 시 UNDO, REDO 버튼 안보이도록
@@ -425,7 +434,12 @@ public class Text { // EditTextView
 
     // todo nayeon ☆ ☆ ☆ 레이아웃에 텍스트 뷰 추가 시 오류 캐치
     public void addTextViewToFrameLayout() {
-        try { frameLayout.addView(textView); }
+        try {
+            frameLayout.addView(textView);
+            Log.e("text", "frameLayout in adding view " + frameLayout.toString());
+            Log.e("text", "text view size in adding view " + textView.getWidth() + ", " + textView.getHeight());
+
+        }
         catch(IllegalStateException ie) {
             ie.printStackTrace();
 
@@ -437,6 +451,10 @@ public class Text { // EditTextView
         }
     }
 
+    public void setTextViewProperties() {  // set text view padding & width
+        this.textView.setPadding(20, 20, 20, 20);
+        this.textView.setWidth(frameLayout.getWidth()/3);
+    }
 
     public void removeTextViewToFrameLayout()  { frameLayout.removeView(textView); }
 

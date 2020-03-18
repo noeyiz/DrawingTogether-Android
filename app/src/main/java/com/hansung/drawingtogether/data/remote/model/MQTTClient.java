@@ -314,13 +314,7 @@ public enum MQTTClient {
                             if(mqttMessageFormat.getBitmapByteArray() != null) {
                                 de.setBackgroundImage(de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()));
                             }
-/*
-                            Log.e("my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
-                            Log.e("my name, texts size", myName + ", " + de.getTexts().size());
-                            Log.e("componentId variable value, last componentId", de.getComponentId() + "");        // + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
-                            Log.e("textId variable value, last textId", de.getTextId() + "");                       //+ ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
-                            Log.e("removedComponentId[] = ", de.getRemovedComponentId().toString());
-*/
+
                             publish(topic_mid, JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)));
                             //publish(topic_data, JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)));
                         }
@@ -787,7 +781,7 @@ public enum MQTTClient {
                         dialog.dismiss();
                     }
                 })
-                .create();
+                .create(); // UI 스레드가 아닌 일반 쓰레드에서 UI 작업을 위해 new Handler()를 통해
 
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             private static final int AUTO_DISMISS_MILLIS = 6000;
@@ -1118,6 +1112,7 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
                 newText.getTextAttribute().setTextInited(true); // 만들어진 직후 상단 중앙에 놓이도록
                 de.addTexts(newText);
                 de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));
+                newText.setTextViewProperties();  // fixme nayeon
                 newText.addTextViewToFrameLayout();
                 newText.createGestureDetecter();
                 de.clearUndoArray();
