@@ -1081,10 +1081,9 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
 
         switch (textMode) {
             case CREATE:
-               /* Text newText = new Text(client.getDrawingFragment(), textAttr);
-                newText.getTextAttribute().setTextInited(true); // 만들어진 직후 상단 중앙에 놓이도록
-                de.addTexts(newText);
-                de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));*/
+            case MODIFY_START: // fixme nayeon
+            case START_COLOR_CHANGE:
+            case FINISH_COLOR_CHANGE:
                 publishProgress(message);
                 return null;
             case DRAG_LOCATION:
@@ -1107,9 +1106,6 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
                 return null;
             case ERASE:
                 de.addHistory(new DrawingItem(TextMode.ERASE, textAttr));
-                publishProgress(message);
-                return null;
-            case MODIFY_START:
                 publishProgress(message);
                 return null;
         }
@@ -1156,6 +1152,15 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
             case MODIFY_START: // fixme nayeon
                 text.getTextView().setBackground(de.getTextFocusBorderDrawable()); // 수정중일 때 텍스트 테두리 설정하여 수정중인 텍스트 표시
                 //text.modifyTextViewContent(textAttr.getText());
+                break;
+
+                // fixme nayeon
+            case START_COLOR_CHANGE:
+                text.getTextView().setBackground(de.getTextHighlightBorderDrawble()); // 텍스트 색상 편집 시작 테두리 설정
+                break;
+            case FINISH_COLOR_CHANGE:
+                text.getTextView().setBackground(null); // 텍스트 색상 편집 완료 후 테두리 제거
+                text.setTextViewAttribute(); // 변경된 색상 적용
                 break;
         }
 

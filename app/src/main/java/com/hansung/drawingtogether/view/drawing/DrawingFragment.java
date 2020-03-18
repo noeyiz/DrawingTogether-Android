@@ -95,6 +95,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
         de.setTextMoveBorderDrawable(getResources().getDrawable(R.drawable.text_move_border)); // fixme nayeon 텍스트 테두리 설정
         de.setTextFocusBorderDrawable(getResources().getDrawable(R.drawable.text_focus_border));
+        de.setTextHighlightBorderDrawable(getResources().getDrawable(R.drawable.text_highlight_border)); // fixme nayeon
 
         am.setBinding(binding); // Palette Manager 의 FragmentDrawingBinding 변수 초기화
         am.setListener(); // 리스너 초기화

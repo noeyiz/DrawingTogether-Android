@@ -75,13 +75,8 @@ public class Text { // EditTextView
         this.editText = this.binding.editText; // fixme nayeon - EditText 를 fragment_drawing.xml 에 정의
         //this.editText.setWidth((int)(textEditLayout.getWidth()*0.75));*/ // drawingFragment
 
-
-
         setTextViewAttribute();
         setTextViewInitialPlace(this.textAttribute);
-
-
-
 
         setListenerOnTextView();
     }
@@ -95,7 +90,7 @@ public class Text { // EditTextView
         textView.setText(textAttribute.getText());
         textView.setTextSize(textAttribute.getTextSize());
         textView.setTextColor(textAttribute.getTextColor());
-        textView.setBackgroundColor(textAttribute.getTextBackgroundColor());
+        //textView.setBackgroundColor(textAttribute.getTextBackgroundColor());
         textView.setGravity(textAttribute.getTextGravity());
         textView.setTypeface(null, textAttribute.getStyle());
     }
@@ -104,7 +99,7 @@ public class Text { // EditTextView
         editText.setText(textAttribute.getText());
         editText.setTextSize(textAttribute.getTextSize());
         editText.setTextColor(textAttribute.getTextColor());
-        editText.setBackgroundColor(textAttribute.getTextBackgroundColor());
+        //editText.setBackgroundColor(textAttribute.getTextBackgroundColor());
         editText.setGravity(textAttribute.getTextGravity());
         editText.setTypeface(null, textAttribute.getStyle());
 
@@ -224,7 +219,6 @@ public class Text { // EditTextView
         de.removeTexts(this); // 텍스트 리스트에서 텍스트 제거
     }
 
-
     // fixme nayeon Focusing - Edit Text 사용 시 포커스와 키보드 처리
     private void processFocusIn() {
         editText.requestFocus();
@@ -253,7 +247,6 @@ public class Text { // EditTextView
 
         activeTextEditing();
     }
-
 
     // todo nayeon 함수 정리 필요
     // Done Button 클릭 시 실행되는 함수
@@ -387,6 +380,36 @@ public class Text { // EditTextView
         de.setTextBeingEdited(false); // 텍스트 편집 모드 false 처리
     }
 
+    private void startTextColorChange() {
+        de.setCurrentText(this); // 현재 텍스트 지정
+        setTextAttribute(); // 텍스트 편집 전 사용자 이름 지정
+        textAttribute.setTextChangedColor(true); // 텍스트 컬러 변경중임을 나타내는 플래그 (중간자 처리 위해)
+
+        sendMqttMessage(TextMode.START_COLOR_CHANGE); // 다른 사용자의 텍스트 동시 처리 막기 위해 ( 이름, 테두리 설정 )
+
+        textView.setBackground(de.getTextHighlightBorderDrawble());
+
+        binding.currentColorBtn.setBackgroundColor(textAttribute.getTextColor()); // 현재 텍스트 컬러로 현재 색상 버튼 색깔 변경
+        visibleDrawingMenuAndTopToolButton(View.INVISIBLE); // 다른 메뉴 버튼들 숨기기
+        binding.textColorChangeButton.setVisibility(View.VISIBLE); // 텍스트 컬러 설정 버튼 보이기
+    }
+
+    public void finishTextColorChange() {
+        textAttribute.setUsername(null);
+        textAttribute.setTextChangedColor(false);
+
+        sendMqttMessage(TextMode.FINISH_COLOR_CHANGE);
+
+        textView.setBackground(null);
+        de.setCurrentText(null);
+
+        visibleDrawingMenuAndTopToolButton(View.VISIBLE);
+        binding.textColorChangeButton.setVisibility(View.INVISIBLE);
+        binding.currentColorBtn.setBackgroundColor(de.getStrokeColor()); // 이전에 선택했던 펜 컬러로 현재 색상 버튼 색깔 변경
+
+        de.setCurrentMode(Mode.DRAW);
+    }
+
     // TextAttribute 에 저장된 x, y 좌푯값을 바탕으로
     // TextView 의 위치 지정
     public void setTextViewLocation() {
@@ -426,6 +449,21 @@ public class Text { // EditTextView
 
         for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
             drawingMenuLayout.getChildAt(i).setEnabled(bool);
+        }
+    }
+
+
+    public void visibleDrawingMenuAndTopToolButton(int visibility) {
+        LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
+
+        for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
+            drawingMenuLayout.getChildAt(i).setVisibility(visibility);
+        }
+
+        LinearLayout topToolMenuLayout =  binding.topToolLayout;
+
+        for(int i=0; i<topToolMenuLayout.getChildCount(); i++) {
+            topToolMenuLayout.getChildAt(i).setVisibility(visibility);
         }
     }
 
@@ -488,7 +526,7 @@ public class Text { // EditTextView
                 Log.i("drawing", "history.size()=" + de.getHistory().size());
                 de.clearUndoArray();
             } else {
-                textView.setBackground(de.getTextMoveBorderDrawable());
+                //textView.setBackground(de.getTextMoveBorderDrawable());
                 de.setCurrentMode(Mode.TEXT);
             }
 
@@ -505,7 +543,7 @@ public class Text { // EditTextView
         public boolean onSingleTapUp(MotionEvent motionEvent) {
             System.out.println("onSingleTapUp() called");
 
-            textView.setBackground(null); //
+            //textView.setBackground(null); //
 
             textAttribute.setPreText(textAttribute.getText());
             changeTextViewToEditText();
@@ -535,9 +573,13 @@ public class Text { // EditTextView
             return true;
         }
 
+        // fixme nayeon - 텍스트 길게 누를 시 색상 선택
         @Override
         public void onLongPress(MotionEvent motionEvent) {
-            System.out.println("onLongPress() called");
+            //System.out.println("onLongPress() called");
+
+            startTextColorChange();
+
         }
 
         @Override

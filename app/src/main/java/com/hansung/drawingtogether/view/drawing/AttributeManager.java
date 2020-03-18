@@ -18,7 +18,6 @@ public enum AttributeManager {
     private View.OnClickListener colorButtonClickListener;
     private SeekBar.OnSeekBarChangeListener sizeBarChangeListener;
 
-
     // DECLARE LISTENER
     public void setListener() {
 
@@ -34,7 +33,7 @@ public enum AttributeManager {
                         de.setStrokeColor(color);
                         de.setFillColor(color);
                         break;
-                    case TEXT: // 텍스트 편집창에서만 색깔 변경 가능
+                    case TEXT:
                         if(de.getCurrentText() != null) { // 현재 선택 된 텍스트 색상 편집
                             Text text = de.getCurrentText();
                             text.getTextAttribute().setTextColor(color);

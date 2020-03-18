@@ -108,6 +108,25 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/textColorButtonLayout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="@+id/drawingMenuLayout"
+            app:layout_constraintTop_toTopOf="@+id/bottom_menu_guideline">
+
+            <Button
+                android:id="@+id/textColorChangeButton"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:onClick="@{vm::clickTextColor}"
+                android:text="text color change"
+                android:visibility="invisible" />
+        </LinearLayout>
+
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/palette_menu_guideline"
             android:layout_width="wrap_content"

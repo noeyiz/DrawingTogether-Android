@@ -52,8 +52,9 @@ public enum DrawingEditor {
     private Bitmap postSelectedComponentsBitmap;
 
     /* 텍스트에 필요한 객체 */
-    private Drawable textMoveBorderDrawable; // 텍스트 포커싱 테두리
-    private Drawable textFocusBorderDrawable;
+    private Drawable textMoveBorderDrawable; // 텍스트 움직일 때 테두리
+    private Drawable textFocusBorderDrawable; // 다른 사용자 사용 텍스트 표시
+    private Drawable textHighlightBorderDrawble; // 텍스트 색상 변경 시 사용 표시 // fixme nayeon
     private ArrayList<Text> texts = new ArrayList<>(); // 현재 부착된 모든 text 배열
     private Text currentText = null;
     private boolean isTextBeingEdited = false;
@@ -431,6 +432,7 @@ public enum DrawingEditor {
                 t.getTextView().setText(t.getTextAttribute().getPreText()); // 이전 텍스트로 설정
                 t.getTextView().setBackground(this.textFocusBorderDrawable); // 테두리 설정
             }
+            // 중간에 들어왔는데 색상
 
             // fixme nayeon
             t.setTextViewInitialPlace(t.getTextAttribute());
@@ -894,6 +896,8 @@ public enum DrawingEditor {
     public void setTextMoveBorderDrawable(Drawable textMoveBorderDrawable) { this.textMoveBorderDrawable = textMoveBorderDrawable; } // 텍스트 테두리 그리기 위한 Drawable 설정
 
     public void setTextFocusBorderDrawable(Drawable textFocusBorderDrawable) { this.textFocusBorderDrawable = textFocusBorderDrawable; }
+
+    public void setTextHighlightBorderDrawable(Drawable textHighlightBorderDrawble) { this.textHighlightBorderDrawble = textHighlightBorderDrawble; } // fixme nayeon
 
     public void setBackgroundImage(Bitmap backgroundImage) {
         this.backgroundImage = backgroundImage;
