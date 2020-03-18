@@ -12,7 +12,6 @@ public class TextAttribute {
 
     // 사용자가 선택한 텍스트 속성 저장
 
-    //private Integer id; // 텍스트 동시 제어를 위해 ID 값을 NULL 처리 할 필요
     private String id; // "이름 + textIdCounter"
     private String username;
 
@@ -37,7 +36,7 @@ public class TextAttribute {
 
     private boolean isModified = false;
 
-    private boolean isTextInited = false; // fixme nayeon (Text class -> TextAttribute Class)
+    private boolean isTextInited = false;
     private boolean isTextMoved = false;
 
 /*

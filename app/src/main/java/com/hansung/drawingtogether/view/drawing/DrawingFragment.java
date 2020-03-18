@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -36,6 +37,12 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 import lombok.Getter;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
@@ -48,12 +55,6 @@ import com.hansung.drawingtogether.view.main.JoinMessage;
 
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
-import com.kakao.kakaolink.v2.KakaoLinkResponse;
-import com.kakao.kakaolink.v2.KakaoLinkService;
-import com.kakao.message.template.LinkObject;
-import com.kakao.message.template.TextTemplate;
-import com.kakao.network.ErrorResult;
-import com.kakao.network.callback.ResponseCallback;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,27 +67,42 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     private final int PICK_FROM_CAMERA = 1;
 
     Point size;
-/*  private String ip;
-    private String port;
-    private String topic;
-    private String name;
-    private String password;
-    private boolean master;*/
 
     private MQTTClient client = MQTTClient.getInstance();
     private MQTTSettingData data = MQTTSettingData.getInstance();  // fixme hyeyeon
 
     private DrawingEditor de = DrawingEditor.getInstance();
+    private PaletteManager pm = PaletteManager.getInstance(); // fixme nayeon
     private FragmentDrawingBinding binding;
     private DrawingViewModel drawingViewModel;
     private InputMethodManager inputMethodManager;
-    private LinearLayout doneBtnLayout;
-    private Button doneBtn;
+
+    // fixme hyeyeon[2]
+    private DatabaseReference databaseReference;
+    private ExitOnClickListener exitOnClickListener;
+    //
+
+    private long lastTimeBackPressed;  // fixme hyeyeon[3]
+
+    //private LinearLayout topToolLayout;
+    //private Button doneBtn;
+
+    // fixme hyeyeon
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        ((MainActivity)context).setOnKeyBackPressedListener(this);
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.e("DrawingFragment", "onCreateView");
+
+        // fixme hyeyeon[2]
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+        exitOnClickListener = new ExitOnClickListener();
+        //
 
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
@@ -94,17 +110,21 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 
-        de.setDrawingFragment(this);
         client.setDrawingFragment(this);
+        de.setDrawingFragment(this);
 
-        binding.drawBtn.setBackgroundColor(Color.rgb(233, 233, 233));
+        de.setTextMoveBorderDrawable(getResources().getDrawable(R.drawable.text_move_border)); // fixme nayeon 텍스트 테두리 설정
+        de.setTextFocusBorderDrawable(getResources().getDrawable(R.drawable.text_focus_border));
+
+        // fixme nayeon
+        pm.setBinding(binding); // Palette Manager 의 FragmentDrawingBinding 변수 초기화
+        pm.setListener(); // 리스너 초기화
+        pm.setPaletteButtonListener(); // 색상 버튼들의 리스너 세팅
+        pm.showCurrentColor(de.getStrokeColor()); // 현재 색상 보여주기
+
+        binding.drawBtn1.setBackgroundColor(Color.rgb(233, 233, 233)); // 초기 얇은 펜으로 설정
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
         inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
-
-        //setting done Btn
-        doneBtnLayout = binding.doneBtnLayout;
-        doneBtn = new Button(this.getActivity()); //버튼 동적 생성
-        initDoneButton();
 
         //undo, redo 버튼 초기화
         if(de.getHistory().size() == 0)
@@ -128,7 +148,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             binding.backgroundView.addView(imageView);
         }
 
-        if(de.getDrawingBitmap() == null) { //fixme minj
+        if(de.getDrawingBitmap() == null) { // join 메시지 publish
             JoinMessage joinMessage = new JoinMessage(drawingViewModel.getName());
             MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
             client.publish(drawingViewModel.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
@@ -140,17 +160,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             th.start();
             client.setThread(th);
         }
-
-
-        /*ip = getArguments().getString("ip");
-        port = getArguments().getString("port");
-        topic = getArguments().getString("topic");
-        name = getArguments().getString("name");
-        password = getArguments().getString("password");
-        master = Boolean.parseBoolean(getArguments().getString("master"));
-
-        Log.e("kkankkan", "MainViewModel로부터 전달 받은 Data : "  + topic + " / " + password + " / " + name + " / " + master);
-*/
 
         // 디바이스 화면 size 구하기
         Display display = getActivity().getWindowManager().getDefaultDisplay();
@@ -193,7 +202,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 }
             }
         });
-
 
 /*  // fixme hyeyeon
         JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
@@ -313,59 +321,32 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         });
     }
 
+    // fixme hyeyeon[2]-messageArrived 콜백에서 처리 -> 나가기 버튼 누른 후 바로 처리하도록 변경
     public void exit() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setItems(R.array.exit, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0) {
-                    ExitMessage exitMessage = new ExitMessage(client.getMyName());
-                    MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-                    client.publish(data.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-                }
-                else if (which == 1){
-                    DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
-                    MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
-                    client.publish(data.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-                }
-            }
-        });
+        builder.setItems(R.array.exit, exitOnClickListener);
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
+    //
 
-    // fixme hyeyeon
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        ((MainActivity)context).setOnKeyBackPressedListener(this);
-    }
-
+    // fixme hyeyeon[3] - 2초 안에 2번 누르면 종료 하도록 변경
     @Override
     public void onBackKey() {
         Log.e("kkankkan", "드로잉프레그먼트 onbackpressed");
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setMessage("앱을 종료하시겠습니까?");
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                MQTTClient client = MQTTClient.getInstance();
-                client.setBackPressed(true);
-                ExitMessage exitMessage = new ExitMessage(client.getMyName());
-                MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-                client.publish(data.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-            }
-        });
-
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-            }
-        });
-
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
+        if (System.currentTimeMillis() - lastTimeBackPressed < 2000) {
+            ExitMessage exitMessage = new ExitMessage(client.getMyName());
+            MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+            client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
+            client.setExitPublish(true);
+            Log.e("kkankkan", "exit publish");
+            client.exitTask();
+            getActivity().finish();
+            return;
+        }
+        lastTimeBackPressed = System.currentTimeMillis();
+        Toast.makeText(getContext(), "뒤로 버튼을 한 번 더 누르면 종료됩니다", Toast.LENGTH_SHORT).show();
     }
     //
 
@@ -507,36 +488,106 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         return resizeBitmap;
     }
 
-    private void removeDoneButton() {
-        doneBtnLayout.removeView(doneBtn);
-    }
+    // fixme hyeyeon[2]
+    class ExitOnClickListener implements DialogInterface.OnClickListener {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            if (which == 0) {
+                ExitMessage exitMessage = new ExitMessage(client.getMyName());
+                MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
+                client.setExitPublish(true);
+                Log.e("kkankkan", "exit publish");
 
-    public void setDoneButton() {
-        doneBtnLayout.removeView(doneBtn);
-        doneBtnLayout.addView(doneBtn);
-    }
+                if (client.getUserList().size() == 1 && client.isMaster()) {
+                    databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
+                        @NonNull
+                        @Override
+                        public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+                            if (mutableData.getValue() == null) {
+                                Log.e("kkankkan", "mutabledata null");
+                            } else {
+                                mutableData.child("master").setValue(false);
+                            }
+                            return Transaction.success(mutableData);
+                        }
 
-    private void initDoneButton() {
-        doneBtn.setText("done");
-        doneBtn.setBackgroundColor(Color.TRANSPARENT);
+                        @Override
+                        public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                            Log.e("kkankkan", "DB master value change success");
+                            Log.e("kkankkan", "transaction complete");
 
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.gravity = Gravity.CENTER;
-        layoutParams.weight = 1;
-        doneBtn.setLayoutParams(layoutParams);
-
-        doneBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Text text = de.getCurrentText();
-                text.changeEditTextToTextView();
-
-                // todo nayeon currentText 의 필요성 생각해보기
-                de.setCurrentText(null);
-                text.processFocusOut(); // 키보드 내리기
-                removeDoneButton();     // 텍스트 조작이 끝나면 기본 버튼들 세팅   \
-                de.setCurrentMode(Mode.DRAW);
+                            client.exitTask();
+                            drawingViewModel.back();
+                        }
+                    });
+                }
+                else {
+                    client.exitTask();
+                    drawingViewModel.back();
+                }
             }
-        });
+            else if (which == 1){
+                if (client.isMaster()) {
+                    DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
+                    MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
+                    client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
+                    client.setExitPublish(true);
+                    databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {  // fixme hyeyeon
+                        @NonNull
+                        @Override
+                        public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+                            if (mutableData.getValue() == null) {
+                                Log.e("kkankkan", "mutabledata null");
+                            } else {
+                                databaseReference.child(client.getTopic()).removeValue();
+                            }
+                            return Transaction.success(mutableData);
+                        }
+
+                        @Override
+                        public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                            Log.e("kkankkan", "topic delete success");
+                            Log.e("kkankkan", "transaction complete");
+
+                            client.exitTask();
+                            drawingViewModel.back();
+                        }
+                    });
+                }
+                else {
+                    client.setToastMsg("master만 topic을 삭제할 수 있습니다");
+                }
+            }
+        }
+    }
+
+    // fixme hyeyeon[1]
+    @Override
+    public void onPause() {  // todo
+        super.onPause();
+        Log.i("lifeCycle", "DrawingFragment onPause()");
+    }
+
+    @Override
+    public void onDestroyView() {  // todo
+        super.onDestroyView();
+        Log.i("lifeCycle", "DrawingFragment onDestroyView()");
+        if (exitOnClickListener != null) {
+            exitOnClickListener = null;
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.i("lifeCycle", "DrawingFragment onDestroy()");
+    }
+
+    @Override
+    public void onDetach() {  // todo
+        super.onDetach();
+        Log.i("lifeCycle", "DrawingFragment onDetach()");
+        ((MainActivity)getContext()).setOnKeyBackPressedListener(null);
     }
 }

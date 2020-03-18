@@ -1,9 +1,12 @@
 package com.hansung.drawingtogether.view.search;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,11 +17,12 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentSearchBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.main.MainActivity;
 
-public class SearchFragment extends Fragment {
+public class SearchFragment extends Fragment{
 
     private SearchViewModel searchViewModel;
 
@@ -64,5 +68,18 @@ public class SearchFragment extends Fragment {
         super.onResume();
         ((MainActivity)getActivity()).setToolbarTitle("Search");
         ((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    // fixme hyeyeon[1]
+    @Override
+    public void onPause() {  // todo
+        super.onPause();
+        Log.i("lifeCycle", "SearchFragment onPause()");
+    }
+
+    @Override
+    public void onDestroyView() {  // todo
+        super.onDestroyView();
+        Log.i("lifeCycle", "SearchFragment onDestroyView()");
     }
 }

@@ -7,11 +7,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
@@ -26,6 +28,7 @@ import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
+import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
@@ -67,6 +70,46 @@ public class DrawingViewModel extends BaseViewModel {
     private MQTTSettingData data = MQTTSettingData.getInstance();
     //
 
+    private Button preMenuButton;
+
+    // fixme hyeyeon[1]
+    @Override
+    public void onCleared() {  // todo
+        super.onCleared();
+        Log.i("lifeCycle", "DrawingViewModel onCleared()");
+
+        if (client != null) {
+            // 꼭 여기서 처리 해줘야 하는 부분
+            client.getDe().removeAllDrawingData();
+            client.getUserList().clear();
+            //
+
+            // fixme hyeyeon[4] 강제 종료 시 불릴 경우 검사 후 해제, exit publish
+            if (!client.isExitPublish()) {
+                ExitMessage exitMessage = new ExitMessage(client.getMyName());
+                MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
+                client.setExitPublish(true);
+                Log.e("kkankkan", "exit publish");
+            }
+            if (!client.getTh().isInterrupted()) {
+                client.getTh().interrupt();
+                client.unsubscribeAllTopics();  // todo 여러번 unsubscribe 해도 문제 없는지 테스트
+            }
+            if (client.getUsersActionMap().size() != 0) {
+                client.getUsersActionMap().clear();
+            }
+            // todo isMid = true;
+            //
+        }
+
+        /*th.interrupt();
+        unsubscribeAllTopics();
+        isMid = true;
+        usersActionMap.clear();;*/
+
+    }
+
     public DrawingViewModel() {
         setUserNum(0);
         setUserPrint("");  // fixme hyeyeon
@@ -89,28 +132,6 @@ public class DrawingViewModel extends BaseViewModel {
         client.subscribe(topic + "_data");
         client.subscribe(topic + "_mid");
         client.subscribe(topic + "_alive"); // fixme hyeyeon
-
-        // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)
-        /*JoinMessage joinMessage = new JoinMessage(name);
-        MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
-        client.publish(topic + "_join", JSONParser.getInstance().jsonWrite(messageFormat));*/
-        //
-    }
-
-    public void clickPen(View view) {
-        changeClickedButtonBackground(view);
-        de.setCurrentMode(Mode.DRAW);
-        de.setCurrentType(ComponentType.STROKE);
-        Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
-        //drawingCommands.postValue(new DrawingCommand.PenMode(view));      //fixme minj color picker
-    }
-
-    public void clickEraser(View view) {
-        changeClickedButtonBackground(view);
-        if(de.getCurrentMode() == Mode.ERASE)
-            drawingCommands.postValue(new DrawingCommand.EraserMode(view));     //fixme minj add pixel eraser
-        de.setCurrentMode(Mode.ERASE);
-        Log.i("drawing", "mode = " + de.getCurrentMode().toString());
     }
 
     public void clickUndo(View view) {
@@ -121,27 +142,78 @@ public class DrawingViewModel extends BaseViewModel {
         de.getDrawingFragment().getBinding().drawingView.redo();
     }
 
+    public void clickPen(View view) { // drawBtn1, drawBtn2, drawBtn3
+        changeClickedButtonBackground(view);
+        de.setCurrentMode(Mode.DRAW);
+        de.setCurrentType(ComponentType.STROKE);
+
+        de.setStrokeWidth(Integer.parseInt(view.getContentDescription().toString())); // fixme nayeon
+
+        Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
+        //drawingCommands.postValue(new DrawingCommand.PenMode(view));      //fixme nayeon color picker [ View Model 과 Navigator 관계, 이벤트 처리 방식 ]
+        preMenuButton = (Button)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해
+    }
+
+    public void clickEraser(View view) {
+        changeClickedButtonBackground(view);
+        if(de.getCurrentMode() == Mode.ERASE)
+            drawingCommands.postValue(new DrawingCommand.EraserMode(view));     //fixme minj add pixel eraser
+        de.setCurrentMode(Mode.ERASE);
+        Log.i("drawing", "mode = " + de.getCurrentMode().toString());
+    }
+
     public void clickText(View view) {
+        if(de.isTextBeingEdited()) return; // fixme nayeon [ 추후에 키보드 내리기 이벤트 캐치해서 처리 필요 ]
+
+        changeClickedButtonBackground(view);
+
+        // 텍스트 모드가 끝날 때 까지 (Done Button) 누르기 전 까지, 다른 버튼들 비활성화
+        enableDrawingMenuButton(false);
+
         de.setCurrentMode(Mode.TEXT);
+        Log.i("drawing", "mode = " + de.getCurrentMode().toString());
         FrameLayout frameLayout = de.getDrawingFragment().getBinding().drawingViewContainer;
 
         // 텍스트 속성 설정 ( 기본 도구에서 설정할 것인지 텍스트 도구에서 설정할 것인지? )
-        TextAttribute textAttribute = new TextAttribute(de.setTextStringId(), de.getMyUsername(), //fixme nayeon - Text ID 초기값 NULL
-                "Input Text", 20, Color.BLACK, Color.TRANSPARENT,
+        TextAttribute textAttribute = new TextAttribute(de.setTextStringId(), de.getMyUsername(),
+                "", 20, Color.BLACK, Color.TRANSPARENT,
                 View.TEXT_ALIGNMENT_CENTER, Typeface.BOLD,
                 frameLayout.getWidth(), frameLayout.getHeight());
 
-
         Text text = new Text(de.getDrawingFragment(), textAttribute);
         text.createGestureDetecter(); // Set Gesture ( Single Tap Up )
-        text.addEditTextToFrameLayout(); // 처음 텍스트 생성 시 EditText 부착
-        text.activeEditText(); // EditText 커서와 키보드 활성화
+
+        text.activeTextEditing(); // EditText 커서와 키보드 활성화, 텍스트 편집 시작 처리
         //drawingCommands.postValue(new DrawingCommand.TextMode(view));
+    }
+
+    public void clickDone(View view) {
+        // 텍스트 모드가 끝나면 다른 버튼들 활성화
+        enableDrawingMenuButton(true);
+
+        changeClickedButtonBackground(preMenuButton); //  fixme nayeon  텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해
+
+        Text text = de.getCurrentText();
+        text.changeEditTextToTextView();
     }
 
     public void clickShape(View view) {
         changeClickedButtonBackground(view);
+        de.setCurrentMode(Mode.DRAW);
+        de.setCurrentType(ComponentType.RECT);
         drawingCommands.postValue(new DrawingCommand.ShapeMode(view));
+    }
+
+    public void clickSelector(View view) {
+        changeClickedButtonBackground(view);
+        de.setCurrentMode(Mode.SELECT);
+        Log.i("drawing", "mode = " + de.getCurrentMode().toString());
+    }
+
+    public void clickGroup(View view) {
+        changeClickedButtonBackground(view);
+        de.setCurrentMode(Mode.GROUP);
+        Log.i("drawing", "mode = " + de.getCurrentMode().toString());
     }
 
     public void clickSearch(View view) {
@@ -150,10 +222,25 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void changeClickedButtonBackground(View view) {
         LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
+
+        // fixme nayeon
+        // preMenuButton -> 아무것도 누르지 않은 상태에서 텍스트 버튼 클릭했을 때 NULL
+        // 제일 첫 번째 버튼 (얇은 펜(그리기)) 로 지정
+        if(view == null) { view = drawingMenuLayout.getChildAt(0); }
+
         for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
             drawingMenuLayout.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
         }
         view.setBackgroundColor(Color.rgb(233, 233, 233));
+    }
+
+    // fixme nayeon
+    public void enableDrawingMenuButton(Boolean bool) {
+        LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
+
+        for(int i=0; i<drawingMenuLayout.getChildCount() - 1; i++) {
+            drawingMenuLayout.getChildAt(i).setEnabled(bool);
+        }
     }
 
     public void getImageFromGallery(Fragment fragment) {

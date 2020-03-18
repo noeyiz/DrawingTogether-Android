@@ -17,7 +17,6 @@ public class TextAdapter implements JsonSerializer<Text>, JsonDeserializer<Text>
     private final String TEXT_ATTRIBUTE = "textAttribute";
     private DrawingFragment drawingFragment;
 
-    // fixme nayeon Context
     public TextAdapter(DrawingFragment drawingFragment) { this.drawingFragment = drawingFragment; }
 
     @Override
@@ -37,6 +36,6 @@ public class TextAdapter implements JsonSerializer<Text>, JsonDeserializer<Text>
 
         JsonElement element = jsonObject.get(TEXT_ATTRIBUTE);
         TextAttribute textAttribute = context.deserialize(element, TextAttribute.class);
-        return new Text(drawingFragment, textAttribute); // fixme nayeon context
+        return new Text(drawingFragment, textAttribute);
     }
 }

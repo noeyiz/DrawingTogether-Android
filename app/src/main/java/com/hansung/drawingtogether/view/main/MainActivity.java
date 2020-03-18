@@ -1,39 +1,37 @@
 package com.hansung.drawingtogether.view.main;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
+
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
+
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.kakao.util.helper.Utility;
+import com.hansung.drawingtogether.view.drawing.DrawingEditor;
+import com.hansung.drawingtogether.view.drawing.JSONParser;
+import com.hansung.drawingtogether.view.drawing.Mode;
+import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import static com.kakao.util.maps.helper.Utility.getPackageInfo;
 
 public class MainActivity extends AppCompatActivity {
 
     private String topicPassword="";
     private Toolbar toolbar;
     private TextView title;
+
+    private DrawingEditor de = DrawingEditor.getInstance();
+    private long lastTimeBackPressed;  // fixme hyeyon[3]
 
     public interface OnBackListener {
         public void onBack();
@@ -54,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.i("lifeCycle", "MainActivity onCreate()");
 
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         title = (TextView)findViewById(R.id.toolbar_title);
@@ -77,9 +76,10 @@ public class MainActivity extends AppCompatActivity {
             topicPassword = topic;
             topicPassword += "/" + password;
         }
+
     }
 
-    // fixme hyeyeon
+    // fixme hyeyeon[3] - 2초 안에 2번 누르면 종료 하도록 변경
     @Override
     public void onBackPressed() {
         if (mOnKeyBackPressedListener != null) {
@@ -87,26 +87,12 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             Log.e("kkankkan", "메인엑티비티 onbackpressed");
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-            builder.setMessage("앱을 종료하시겠습니까?");
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    finish();
-                    System.exit(0);
-                    android.os.Process.killProcess(android.os.Process.myPid());
-                }
-            });
-
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                }
-            });
-
-            AlertDialog alertDialog = builder.create();
-            alertDialog.show();
+            if (System.currentTimeMillis() - lastTimeBackPressed < 2000) {
+                super.onBackPressed();
+                return;
+            }
+            lastTimeBackPressed = System.currentTimeMillis();
+            Toast.makeText(this, "뒤로 버튼을 한 번 더 누르면 종료됩니다", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -138,5 +124,48 @@ public class MainActivity extends AppCompatActivity {
             onBackListener.onBack();
 
         return super.onOptionsItemSelected(item);
+    }
+
+    // fixme hyeyeon[1]
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.i("lifeCycle", "MainActivity onRestart()");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i("lifeCycle", "MainActivity onStart()");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i("lifeCycle", "MainActivity onResume()");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.i("lifeCycle", "MainActivity onPause()");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.i("lifeCycle", "MainActivity onStop()");
+    }
+
+    @Override
+    protected void onDestroy() {  // todo
+        super.onDestroy();
+        Log.i("lifeCycle", "MainActivity onDestroy()");
+        if (isFinishing()) {
+            Log.i("lifeCycle", "isFinishing() " + isFinishing());
+        }
+        else {
+            Log.i("lifeCycle", "isFinishing() " + isFinishing());
+        }
     }
 }

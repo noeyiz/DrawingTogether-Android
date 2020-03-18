@@ -20,7 +20,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.9"/>
+            app:layout_constraintGuide_percent="0.9" />
 
         <LinearLayout
             android:id="@+id/drawingMenuLayout"
@@ -31,49 +31,34 @@
             app:layout_constraintTop_toTopOf="@id/bottom_menu_guideline">
 
             <Button
-                android:id="@+id/drawBtn"
+                android:id="@+id/drawBtn1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@null"
+                android:contentDescription="10"
                 android:onClick="@{vm::clickPen}"
-                android:text="그리기" />
+                android:text="얇은 펜" />
 
             <Button
-                android:id="@+id/eraseBtn"
+                android:id="@+id/drawBtn2"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@null"
-                android:onClick="@{vm::clickEraser}"
-                android:text="지우기" />
+                android:contentDescription="20"
+                android:onClick="@{vm::clickPen}"
+                android:text="중간 펜" />
 
             <Button
-                android:id="@+id/undoBtn"
+                android:id="@+id/drawBtn3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@null"
-                android:onClick="@{vm::clickUndo}"
-                android:text="undo" />
-
-            <Button
-                android:id="@+id/redoBtn"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@null"
-                android:onClick="@{vm::clickRedo}"
-                android:text="redo" />
-
-            <Button
-                android:id="@+id/textBtn"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@null"
-                android:onClick="@{vm::clickText}"
-                android:text="text" />
+                android:contentDescription="30"
+                android:onClick="@{vm::clickPen}"
+                android:text="굵은 펜" />
 
             <Button
                 android:id="@+id/shapeBtn"
@@ -84,14 +69,256 @@
                 android:onClick="@{vm::clickShape}"
                 android:text="shape" />
 
+            <Button
+                android:id="@+id/textBtn"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:onClick="@{vm::clickText}"
+                android:text="text"
+                android:enabled = "true" /> <!-- fixme nayeon 텍스트 수정 전 까지 비활성화 -->
+
+            <Button
+                android:id="@+id/eraseBtn"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:onClick="@{vm::clickEraser}"
+                android:text="지우개" />
+
+            <Button
+                android:id="@+id/selectBtn"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:onClick="@{vm::clickSelector}"
+                android:text="셀렉터" />
+
+            <!--<Button
+                android:id="@+id/groupBtn"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:onClick="@{vm::clickGroup}"
+                android:text="group" />-->
+
+        </LinearLayout>
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/palette_menu_guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.85" />
+
+        <LinearLayout
+            android:id="@+id/paletteLayout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@+id/bottom_menu_guideline"
+            app:layout_constraintTop_toTopOf="@+id/palette_menu_guideline">
+
+            <LinearLayout
+                android:id="@+id/currentColorLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/currentColorBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/current_color_button"
+                    android:enabled="false"
+                    android:text="CurrentColor"
+                    android:textSize="0sp" />
+            </LinearLayout>
+
+            <HorizontalScrollView
+                android:id="@+id/colorScrollView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <LinearLayout
+                    android:id="@+id/colorLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.9"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/whiteColorBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="#FFFFFF"
+                        android:text="#FFFFFF"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/blackColorBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.3"
+                        android:background="#000000"
+                        android:text="#000000"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/blueColorButton"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:background="#2196F3"
+                        android:text="#2196F3"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/greenColorBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:background="#4CAF50"
+                        android:text="#4CAF50"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/yellowColorBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFEB3B"
+                        android:text="#FFEB3B"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/orangeColorBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:background="#FF9800"
+                        android:text="#FF9800"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/redColorBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:background="#F44336"
+                        android:text="#F44336"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/brownColorBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:background="#795548"
+                        android:text="#795548"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/purpleColorBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:background="#9C27B0"
+                        android:text="#9C27B0"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/grayBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="#999999"
+                        android:text="#999999"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/pastelBlueBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="#AEE4FF"
+                        android:text="#AEE4FF"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/pastelNavyBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="#CCCCEE"
+                        android:text="#CCCCEE"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/pastelGreenBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="#BEE9B4"
+                        android:text="#BEE9B4"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/pastelYellowBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="#FCFFB0"
+                        android:text="#FCFFB0"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/pastelOrangeBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="#F2CFA5"
+                        android:text="#F2CFA5"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/pastelRedBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="#FFAFB0"
+                        android:text="#FFAFB0"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/pastelBrownBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="#BFA380"
+                        android:text="#BFA380"
+                        android:textSize="0sp" />
+
+                    <Button
+                        android:id="@+id/pastelPurpleBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="#CAA6FE"
+                        android:text="#CAA6FE"
+                        android:textSize="0sp" />
+
+                </LinearLayout>
+            </HorizontalScrollView>
         </LinearLayout>
 
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/palette_menu_guideline"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/bottom_menu_guideline">
+            app:layout_constraintTop_toTopOf="parent">
 
             <HorizontalScrollView
                 android:layout_width="wrap_content"
@@ -121,6 +348,28 @@
 
                     </LinearLayout>
 
+                    <FrameLayout
+                        android:id="@+id/textEditLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@android:color/transparent"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/doneBtn"
+                            android:visibility="invisible"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="right"
+                            android:layout_margin="5dp"
+                            android:layout_marginTop="5dp"
+                            android:layout_marginEnd="5dp"
+                            android:background="@null"
+                            android:onClick="@{vm::clickDone}"
+                            android:text="done" />
+
+                    </FrameLayout>
+
                 </com.hansung.drawingtogether.view.drawing.DrawingViewController>
 
             </HorizontalScrollView>
@@ -142,13 +391,13 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="현재 인원 : "/>
+                        android:text="현재 인원 : " />
 
                     <TextView
                         android:id="@+id/user_num"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@={vm.userNum}"/>
+                        android:text="@={vm.userNum}" />
 
                 </LinearLayout>
 
@@ -156,22 +405,41 @@
                     android:id="@+id/user_print"
                     android:layout_width="100dp"
                     android:layout_height="200dp"
-                    android:visibility="invisible"
                     android:background="#FFFFFF"
-                    android:text="@={vm.userPrint}"/>
+                    android:text="@={vm.userPrint}"
+                    android:visibility="invisible" />
 
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/doneBtnLayout"
-                android:layout_width="wrap_content"
+                android:id="@+id/topToolLayout"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
                 android:layout_margin="5dp"
                 android:layout_marginTop="5dp"
                 android:layout_marginEnd="5dp"
                 android:gravity="right"
-                android:orientation="horizontal" />
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/undoBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="right"
+                    android:background="@null"
+                    android:onClick="@{vm::clickUndo}"
+                    android:text="undo" />
+
+                <Button
+                    android:id="@+id/redoBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="right"
+                    android:background="@null"
+                    android:onClick="@{vm::clickRedo}"
+                    android:text="redo" />
+            </LinearLayout>
 
         </FrameLayout>
 

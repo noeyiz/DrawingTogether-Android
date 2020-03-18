@@ -6,9 +6,6 @@ import java.util.List;
 
 import lombok.Getter;
 
-
-// fixme nayeon 이 클래스는 어디 패키지에 위치해야할까요...????
-
 @Getter
 public class JoinMessage {
     String master; // 마스터 이름 (master:"이름")
