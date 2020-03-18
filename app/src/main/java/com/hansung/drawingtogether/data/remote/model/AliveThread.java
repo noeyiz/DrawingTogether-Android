@@ -22,6 +22,11 @@ public enum AliveThread implements Runnable {
 
     private MQTTClient client = MQTTClient.getInstance();  // 참조
     private int second = 2000;
+    private boolean kill;
+
+    public void setKill(boolean kill) {
+        this.kill = kill;
+    }
 
     public static AliveThread getInstance() {
         return INSTANCE;
@@ -70,6 +75,7 @@ public enum AliveThread implements Runnable {
                     Log.e("kkankkan", key + " " + aliveCheckMap.get(key));
                 }*/
             } catch (InterruptedException e) {
+                kill = true;
                 Log.e("kkankkan", "alive thread is dead");
                 break;
             }

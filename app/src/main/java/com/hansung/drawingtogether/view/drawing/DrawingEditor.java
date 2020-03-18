@@ -862,8 +862,9 @@ public enum DrawingEditor {
 
     public byte[] bitmapToByteArray(Bitmap bitmap){
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        //bitmap.recycle();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+//        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream); // fixme jiyeon
+        bitmap.recycle();
         return stream.toByteArray();
     }
 

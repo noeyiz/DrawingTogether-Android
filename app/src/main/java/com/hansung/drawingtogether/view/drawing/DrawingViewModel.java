@@ -25,6 +25,7 @@ import lombok.Getter;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
@@ -92,10 +93,15 @@ public class DrawingViewModel extends BaseViewModel {
                 client.setExitPublish(true);
                 Log.e("kkankkan", "exit publish");
             }
-            if (!client.getTh().isInterrupted()) {
+            if (!AliveThread.getInstance().isKill()) {  // todo isInterruped() false 문제 해결
                 client.getTh().interrupt();
                 client.unsubscribeAllTopics();  // todo 여러번 unsubscribe 해도 문제 없는지 테스트
             }
+            /*if (!client.getTh().isInterrupted()) {  // 그냥 false임 짱남!
+                Log.e("kkankkan", AliveThread.getInstance().isKill() + "");
+                client.getTh().interrupt();
+                client.unsubscribeAllTopics();
+            }*/
             if (client.getUsersActionMap().size() != 0) {
                 client.getUsersActionMap().clear();
             }

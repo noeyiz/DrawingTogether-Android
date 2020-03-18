@@ -736,7 +736,9 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
         de.setMyCanvasWidth(myCanvasWidth);
         de.setMyCanvasHeight(myCanvasHeight);
 
-        if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW)) { return null; }
+        // fixme jiyeon - 자기 자신의 background image도 콜백에서 처리
+        if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW) && !mode.equals(Mode.BACKGROUND_IMAGE)) { return null; }
+//            if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW)) { return null; }
 
         switch(mode) {
             case DRAW:
