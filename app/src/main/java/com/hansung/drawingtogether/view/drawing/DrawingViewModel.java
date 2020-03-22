@@ -93,9 +93,9 @@ public class DrawingViewModel extends BaseViewModel {
                 client.setExitPublish(true);
                 Log.e("kkankkan", "exit publish");
             }
-            if (!AliveThread.getInstance().isKill()) {  // todo isInterruped() false 문제 해결
+            if (!(client.getTh().getState() == Thread.State.TERMINATED)) {  // todo isInterruped() false 문제 해결 -> Thead의 STATE 검사
                 client.getTh().interrupt();
-                client.unsubscribeAllTopics();  // todo 여러번 unsubscribe 해도 문제 없는지 테스트
+                client.unsubscribeAllTopics();
             }
             /*if (!client.getTh().isInterrupted()) {  // 그냥 false임 짱남!
                 Log.e("kkankkan", AliveThread.getInstance().isKill() + "");

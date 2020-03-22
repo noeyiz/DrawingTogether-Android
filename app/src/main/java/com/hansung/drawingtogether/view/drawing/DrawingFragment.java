@@ -156,7 +156,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
             // fixme hyeyeon
             AliveThread aliveTh = AliveThread.getInstance();
-            aliveTh.setKill(false);
             aliveTh.setSecond(2000);
             Thread th = new Thread(aliveTh);
             th.start();
@@ -343,9 +342,36 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
             client.setExitPublish(true);
             Log.e("kkankkan", "exit publish");
-            client.exitTask();
-            getActivity().finish();
-            return;
+
+            if (client.getUserList().size() == 1 && client.isMaster()) {
+                databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
+                    @NonNull
+                    @Override
+                    public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+                        if (mutableData.getValue() == null) {
+                            Log.e("kkankkan", "mutabledata null");
+                        } else {
+                            mutableData.child("master").setValue(false);
+                        }
+                        return Transaction.success(mutableData);
+                    }
+
+                    @Override
+                    public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                        Log.e("kkankkan", "DB master value change success");
+                        Log.e("kkankkan", "transaction complete");
+
+                        client.exitTask();
+                        getActivity().finish();
+                        return;
+                    }
+                });
+            }
+            else {
+                client.exitTask();
+                getActivity().finish();
+                return;
+            }
         }
         lastTimeBackPressed = System.currentTimeMillis();
         Toast.makeText(getContext(), "뒤로 버튼을 한 번 더 누르면 종료됩니다", Toast.LENGTH_SHORT).show();
