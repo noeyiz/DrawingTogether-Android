@@ -1,6 +1,7 @@
 package com.hansung.drawingtogether.view.main;
 
 import android.app.ProgressDialog;
+import android.transition.Transition;
 import android.util.Log;
 import android.view.View;
 
@@ -25,12 +26,13 @@ import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
+import lombok.Setter;
+
 public class MainViewModel extends BaseViewModel {
 
     private MutableLiveData<String> topic = new MutableLiveData<>();
     private MutableLiveData<String> password = new MutableLiveData<>();
     private MutableLiveData<String> name = new MutableLiveData<>();
-    private MutableLiveData<Boolean> masterCheck = new MutableLiveData<>();
 
     private MutableLiveData<String> ipError = new MutableLiveData<>();
     private MutableLiveData<String> portError = new MutableLiveData<>();
@@ -43,9 +45,6 @@ public class MainViewModel extends BaseViewModel {
 
     private FirebaseDatabase database;
     private DatabaseReference databaseReference;
-    private boolean existTopic;
-    private boolean newName;
-    private boolean newMaster;
 
     private MQTTSettingData data = MQTTSettingData.getInstance();
 
@@ -53,6 +52,8 @@ public class MainViewModel extends BaseViewModel {
 
     private MQTTClient client = MQTTClient.getInstance();
     private ProgressDialog progressDialog;
+
+    private TranscationHandler transcationHandler;
 
     // fixme hyeyeon[1]
     @Override
@@ -91,7 +92,6 @@ public class MainViewModel extends BaseViewModel {
         setTopic("");
         setPassword("");
         setName("");
-        setMasterCheck(false);
 
         setIpError("");
         setTopicError("");
@@ -105,9 +105,7 @@ public class MainViewModel extends BaseViewModel {
         database = FirebaseDatabase.getInstance();
         databaseReference = database.getReference();
 
-        existTopic = false;
-        newName = false;
-        newMaster = false;
+        transcationHandler = new TranscationHandler();
     }
 
     public void hasSpecialCharacterAndBlank() {
@@ -184,8 +182,6 @@ public class MainViewModel extends BaseViewModel {
 
         hasSpecialCharacterAndBlank();
 
-        Log.e("kkankkan", hasSpecialCharacterAndBlank + "");
-
         Log.e("kkankkan", topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
 
         if (!hasSpecialCharacterAndBlank) {
@@ -195,107 +191,130 @@ public class MainViewModel extends BaseViewModel {
             client.setProgressDialog(progressDialog);
             progressDialog.show();
 
-            databaseReference.child(topic.getValue()).runTransaction(new Transaction.Handler() {
-                @NonNull
-                @Override
-                public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                    existTopic = false;
-                    newName = false;
-                    newMaster = false;
+            switch (view.getId()) {
+                case R.id.master_login:
+                    transcationHandler.setMode("masterMode");
+                    databaseReference.child(topic.getValue()).runTransaction(transcationHandler);
+                    break;
+                case R.id.join:
+                    transcationHandler.setMode("joinMode");
+                    databaseReference.child(topic.getValue()).runTransaction(transcationHandler);
+                    break;
+            }
+        }
+    }
 
-                    if (mutableData.child("master").getValue() == null) {  // 새 토픽
-                        mutableData.child("master").setValue(true);
-                        mutableData.child("password").setValue(password.getValue());
-                        mutableData.child("username").child(name.getValue()).setValue(name.getValue());
+    @Setter
+    class TranscationHandler implements Transaction.Handler {
+        private String mode = "";
+        private String topicErrorMsg = "";
+        private String pwdErrorMsg = "";
+        private String nameErrorMsg = "";
 
-                        Log.e("kkankkan", "새 토픽 올림!, 마스터는 나야");  // todo hyeyeon 왜 계속 불리는지 체크
-                    }
-                    else {  // 기존 토픽
-                        existTopic = true;
-                        if (mutableData.child("password").getValue().equals(password.getValue())) {
-                            if (mutableData.child("username").hasChild(name.getValue())) {
-                                setNameError("이미 사용중인 이름입니다");
-                                Log.e("kkankkan", "이미 사용중인 이름");
-                                progressDialog.dismiss();
-                            }
-                            else {
-                                newName = true;
-                                if (mutableData.child("master").getValue().equals(true)) {
-                                    mutableData.child("username").child(name.getValue()).setValue(name.getValue());
-                                    Log.e("kkankkan", "마스터 이미 있음");
-                                }
-                                else {
-                                    newMaster = true;
-                                    mutableData.child("master").setValue(true);
-                                    mutableData.child("username").child(name.getValue()).setValue(name.getValue());
-                                    Log.e("kkankkan", "마스터는 나야");
-
-                                }
-                            }
+        @NonNull
+        @Override
+        public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+            topicErrorMsg = "";
+            pwdErrorMsg = "";
+            nameErrorMsg = "";
+            if (mutableData.getValue() != null) {
+                Log.e("transaction", "exist topic " + mutableData.getValue());
+                switch (mode) {
+                    case "masterMode":
+                        topicErrorMsg = "이미 존재하는 토픽입니다";
+                        break;
+                    case "joinMode":
+                        if (!mutableData.child("password").getValue().equals(password.getValue())) {
+                            pwdErrorMsg = "비밀번호가 일치하지 않습니다";
+                            break;
+                        }
+                        if (mutableData.child("username").hasChild(name.getValue())) {
+                            nameErrorMsg = "이미 사용중인 이름입니다";
+                            break;
                         }
                         else {
-                            setPasswordError("비밀번호가 일치하지 않습니다");
-                            Log.e("kkankkan", "비밀번호 틀림");
-                            progressDialog.dismiss();
+                            mutableData.child("username").child(name.getValue()).setValue(name.getValue());
+                            break;
                         }
-
-                    }
-                    return Transaction.success(mutableData);
                 }
+                Log.e("transaction", "transaction success");
+                return Transaction.success(mutableData);
+            }
+            Log.e("transaction", "new topic " + mutableData.getChildrenCount());
+            switch (mode) {
+                case "masterMode":
+                    mutableData.child("password").setValue(password.getValue());
+                    mutableData.child("username").child(name.getValue()).setValue(name.getValue());
+                    mutableData.child("master").setValue(true);
+                    break;
+                case "joinMode":
+                    topicErrorMsg = "존재하지 않는 토픽입니다";
+                    break;
+            }
+            Log.e("transaction", "transaction success");
+            return Transaction.success(mutableData);
+        }
 
-                @Override
-                public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                    Log.e("kkankkan", "transaction complete");
-                    if (!existTopic) {
-                        // fixme hyeyeon
-                        data.setIp(ip.getValue());
-                        data.setPort(port.getValue());
-                        data.setTopic(topic.getValue());
-                        data.setPassword(password.getValue());
-                        data.setName(name.getValue());
-                        data.setMaster(true);
-
-                        setTopic("");
-                        setPassword("");
-                        setName("");
-                        Log.e("kkankkan", "메인뷰모델 초기화");
-
-                        navigate(R.id.action_mainFragment_to_drawingFragment);
+        @Override
+        public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+            Log.e("transaction", "transaction complete");
+            if (databaseError != null) {
+                Log.e("transaction", databaseError.getDetails());
+                progressDialog.dismiss();
+                return;
+            }
+            switch (mode) {
+                case "masterMode":
+                    if (!topicErrorMsg.equals("")) {
+                        setTopicError(topicErrorMsg);
+                        progressDialog.dismiss();
+                        return;
                     }
-                    else if (newName) {
-                        if (newMaster) {
-                            data.setIp(ip.getValue());
-                            data.setPort(port.getValue());
-                            data.setTopic(topic.getValue());
-                            data.setPassword(password.getValue());
-                            data.setName(name.getValue());
-                            data.setMaster(true);
-
-                            setTopic("");
-                            setPassword("");
-                            setName("");
-                            Log.e("kkankkan", "메인뷰모델 초기화");
-
-                            navigate(R.id.action_mainFragment_to_drawingFragment);
-                        }
-                        else {
-                            data.setIp(ip.getValue());
-                            data.setPort(port.getValue());
-                            data.setTopic(topic.getValue());
-                            data.setPassword(password.getValue());
-                            data.setName(name.getValue());
-                            data.setMaster(false);
-
-                            setTopic("");
-                            setPassword("");
-                            setName("");
-                            Log.e("kkankkan", "메인뷰모델 초기화");
-
-                            navigate(R.id.action_mainFragment_to_drawingFragment);
-                        }
+                    break;
+                case "joinMode":
+                    if (!topicErrorMsg.equals("")) {
+                        setTopicError(topicErrorMsg);
+                        progressDialog.dismiss();
+                        return;
                     }
-                }
-            });
+                    if (!pwdErrorMsg.equals("")) {
+                        setPasswordError(pwdErrorMsg);
+                        progressDialog.dismiss();
+                        return;
+                    }
+                    if (!nameErrorMsg.equals("")) {
+                        setNameError(nameErrorMsg);
+                        progressDialog.dismiss();
+                        return;
+                    }
+                    break;
+            }
+
+            data.setIp(ip.getValue());
+            data.setPort(port.getValue());
+            data.setTopic(topic.getValue());
+            data.setPassword(password.getValue());
+            data.setName(name.getValue());
+
+            switch (mode) {
+                case "masterMode":
+                    data.setMaster(true);
+                    break;
+                case "joinMode":
+                    data.setMaster(false);
+                    break;
+            }
+
+            setTopic("");
+            setPassword("");
+            setName("");
+
+            setIpError("");
+            setTopicError("");
+            setPasswordError("");
+            setNameError("");
+
+            navigate(R.id.action_mainFragment_to_drawingFragment);
         }
     }
 
@@ -313,10 +332,6 @@ public class MainViewModel extends BaseViewModel {
 
     public MutableLiveData<String> getName() {
         return name;
-    }
-
-    public MutableLiveData<Boolean> getMasterCheck() {
-        return masterCheck;
     }
 
     public MutableLiveData<String> getIpError() {
@@ -351,10 +366,6 @@ public class MainViewModel extends BaseViewModel {
         this.name.postValue(text);
     }
 
-    public void setMasterCheck(boolean ckeck) {
-        this.masterCheck.postValue(ckeck);
-    }
-
     public void setIpError(String ip) {
         this.ipError.postValue(ip);
     }
@@ -362,7 +373,6 @@ public class MainViewModel extends BaseViewModel {
     public void setPortError(String port) {
         this.portError.postValue(port);
     }
-
 
     public void setTopicError(String text) {
         this.topicError.postValue(text);

@@ -91,17 +91,11 @@ public class DrawingViewModel extends BaseViewModel {
                 MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
                 client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
                 client.setExitPublish(true);
-                Log.e("kkankkan", "exit publish");
             }
-            if (!(client.getTh().getState() == Thread.State.TERMINATED)) {  // todo isInterruped() false 문제 해결 -> Thead의 STATE 검사
+            if (!(client.getTh().getState() == Thread.State.TERMINATED)) {  // todo isInterruped() false 문제 해결 -> Thead의 state 검사
                 client.getTh().interrupt();
                 client.unsubscribeAllTopics();
             }
-            /*if (!client.getTh().isInterrupted()) {  // 그냥 false임 짱남!
-                Log.e("kkankkan", AliveThread.getInstance().isKill() + "");
-                client.getTh().interrupt();
-                client.unsubscribeAllTopics();
-            }*/
             if (client.getUsersActionMap().size() != 0) {
                 client.getUsersActionMap().clear();
             }

@@ -37,6 +37,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 import lombok.Getter;
+import lombok.Setter;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -100,10 +101,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.e("DrawingFragment", "onCreateView");
 
-        // fixme hyeyeon[2]
         databaseReference = FirebaseDatabase.getInstance().getReference();
         exitOnClickListener = new ExitOnClickListener();
-        //
+        exitOnClickListener.setBackKeyPressed(false);
 
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
@@ -324,59 +324,100 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
     // fixme hyeyeon[2]-messageArrived 콜백에서 처리 -> 나가기 버튼 누른 후 바로 처리하도록 변경
     public void exit() {
+        exitOnClickListener.setBackKeyPressed(false);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setItems(R.array.exit, exitOnClickListener);
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }
-    //
-
-    // fixme hyeyeon[3] - 2초 안에 2번 누르면 종료 하도록 변경
-    @Override
-    public void onBackKey() {
-        Log.e("kkankkan", "드로잉프레그먼트 onbackpressed");
-
-        if (System.currentTimeMillis() - lastTimeBackPressed < 2000) {
-            ExitMessage exitMessage = new ExitMessage(client.getMyName());
-            MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-            client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
-            client.setExitPublish(true);
-            Log.e("kkankkan", "exit publish");
-
-            if (client.getUserList().size() == 1 && client.isMaster()) {
-                databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
-                    @NonNull
-                    @Override
-                    public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                        if (mutableData.getValue() == null) {
-                            Log.e("kkankkan", "mutabledata null");
-                        } else {
-                            mutableData.child("master").setValue(false);
-                        }
-                        return Transaction.success(mutableData);
-                    }
-
-                    @Override
-                    public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                        Log.e("kkankkan", "DB master value change success");
-                        Log.e("kkankkan", "transaction complete");
-
-                        client.exitTask();
-                        getActivity().finish();
-                        return;
-                    }
-                });
-            }
-            else {
-                client.exitTask();
-                getActivity().finish();
+        if (client.isMaster()) {
+            builder.setMessage(R.string.master_exit);
+        } else {
+            builder.setMessage(R.string.joiner_exit);
+        }
+        builder.setPositiveButton(android.R.string.ok, exitOnClickListener);
+        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
                 return;
             }
-        }
-        lastTimeBackPressed = System.currentTimeMillis();
-        Toast.makeText(getContext(), "뒤로 버튼을 한 번 더 누르면 종료됩니다", Toast.LENGTH_SHORT).show();
+        });
+        builder.create().show();
     }
-    //
+
+    @Override
+    public void onBackKey() {
+        exitOnClickListener.setBackKeyPressed(true);
+        Log.e("kkankkan", "드로잉프레그먼트 onbackpressed");
+        AlertDialog dialog = new AlertDialog.Builder(getContext())
+                .setMessage("앱을 종료하시겠습니까?")
+                .setPositiveButton(android.R.string.ok, exitOnClickListener)
+                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        return;
+                    }
+                })
+                .create();
+        dialog.show();
+    }
+
+    @Setter
+    class ExitOnClickListener implements DialogInterface.OnClickListener {
+        private boolean backKeyPressed;
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
+                @NonNull
+                @Override
+                public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+                    if (mutableData.getValue() != null && client.isMaster()) {
+                        mutableData.setValue(null);
+                    }
+                    if (mutableData.getValue() != null && !client.isMaster()) {
+                        mutableData.child("username").child(client.getMyName()).setValue(null);
+                    }
+                    Log.e("transaction", "transaction success");
+                    return Transaction.success(mutableData);
+                }
+
+                @Override
+                public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                    Log.e("transaction", "transaction complete");
+                    if (databaseError != null) {
+                        Log.e("transaction", databaseError.getDetails());
+                        return;
+                    }
+                    if (client.isMaster()) {
+                        DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
+                        MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
+                        client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
+                        client.setExitPublish(true);
+                        client.exitTask();
+                        if (backKeyPressed) {
+                            getActivity().finish();
+                            return;
+                        }
+                        else {
+                            drawingViewModel.back();
+                            return;
+                        }
+                    } else {
+                        ExitMessage exitMessage = new ExitMessage(client.getMyName());
+                        MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                        client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
+                        client.setExitPublish(true);
+                        client.exitTask();
+                        if (backKeyPressed) {
+                            getActivity().finish();
+                            return;
+                        }
+                        else {
+                            drawingViewModel.back();
+                            return;
+                        }
+                    }
+                }
+            });
+        }
+    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -540,80 +581,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 //
 //        return resizeBitmap;
 //    }
-
-    // fixme hyeyeon[2]
-    class ExitOnClickListener implements DialogInterface.OnClickListener {
-        @Override
-        public void onClick(DialogInterface dialog, int which) {
-            if (which == 0) {
-                ExitMessage exitMessage = new ExitMessage(client.getMyName());
-                MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-                client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
-                client.setExitPublish(true);
-                Log.e("kkankkan", "exit publish");
-
-                if (client.getUserList().size() == 1 && client.isMaster()) {
-                    databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
-                        @NonNull
-                        @Override
-                        public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                            if (mutableData.getValue() == null) {
-                                Log.e("kkankkan", "mutabledata null");
-                            } else {
-                                mutableData.child("master").setValue(false);
-                            }
-                            return Transaction.success(mutableData);
-                        }
-
-                        @Override
-                        public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                            Log.e("kkankkan", "DB master value change success");
-                            Log.e("kkankkan", "transaction complete");
-
-                            client.exitTask();
-                            drawingViewModel.back();
-                        }
-                    });
-                }
-                else {
-                    client.exitTask();
-                    drawingViewModel.back();
-                }
-            }
-            else if (which == 1){
-                if (client.isMaster()) {
-                    DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
-                    MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
-                    client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-                    client.setExitPublish(true);
-                    databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {  // fixme hyeyeon
-                        @NonNull
-                        @Override
-                        public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                            if (mutableData.getValue() == null) {
-                                Log.e("kkankkan", "mutabledata null");
-                            } else {
-                                databaseReference.child(client.getTopic()).removeValue();
-                            }
-                            return Transaction.success(mutableData);
-                        }
-
-                        @Override
-                        public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                            Log.e("kkankkan", "topic delete success");
-                            Log.e("kkankkan", "transaction complete");
-
-                            client.exitTask();
-                            drawingViewModel.back();
-                        }
-                    });
-                }
-                else {
-                    client.setToastMsg("master만 topic을 삭제할 수 있습니다");
-                }
-            }
-        }
-    }
 
     // fixme hyeyeon[1]
     @Override

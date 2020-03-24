@@ -92,8 +92,7 @@ public enum MQTTClient {
     private String topic_delete;
     private String topic_data;
     private String topic_mid;
-
-    private String topic_alive; // fixme hyeyeon-토픽 추가
+    private String topic_alive;
     // private String topic_load;
 
     private DrawingViewModel drawingViewModel;
@@ -111,7 +110,7 @@ public enum MQTTClient {
     private ProgressDialog progressDialog;
 
     private Thread th;
-    private boolean exitPublish;  // fixme heyeon [4]
+    private boolean exitPublish;
 
     public static MQTTClient getInstance() { return INSTANCE; }
 
@@ -125,7 +124,7 @@ public enum MQTTClient {
         this.topic = topic;
         this.myName = name;
 
-        User user = new User(myName, 0);  // fixme hyeyeon
+        User user = new User(myName, 0);
         userList.add(user); // 생성자에서 사용자 리스트에 내 이름 추가
 
         topic_join = this.topic + "_join";
@@ -133,7 +132,7 @@ public enum MQTTClient {
         topic_delete = this.topic + "_delete";
         topic_data = this.topic + "_data";
         topic_mid = this.topic + "_mid";
-        topic_alive = this.topic + "_alive"; // fixme hyeyeon
+        topic_alive = this.topic + "_alive";
 
         this.drawingViewModel = drawingViewModel;
         this.drawingViewModel.setUserNum(userList.size());
@@ -141,7 +140,7 @@ public enum MQTTClient {
 
         this.usersActionMap = new HashMap<>();
         de.setMyUsername(name);
-        this.exitPublish = false;  // fixme hyeyeon[4]
+        this.exitPublish = false;
     }
 
     public void connect(String ip, String port) {
@@ -196,7 +195,7 @@ public enum MQTTClient {
             client.unsubscribe(topic_delete);
             client.unsubscribe(topic_data);
             client.unsubscribe(topic_mid);
-            client.unsubscribe(topic_alive);  // fixme hyeyeon
+            client.unsubscribe(topic_alive);
 
             Log.e("kkankkan", "unsubscribe 완료");
 
@@ -205,7 +204,6 @@ public enum MQTTClient {
         }
     }
 
-    // fixme hyeyeon
     public void exitTask() {
         try {
             Log.e("kkankkan", "exitTask 시작");
@@ -220,11 +218,11 @@ public enum MQTTClient {
             usersActionMap.clear();
             Log.i("drawing", "userActionMap = " + usersActionMap.toString());
             /*
-            fixme hyeyeon[1] - drawingViewModel의 onCleared()에서 처리하도록 변경
+            fixme hyeyeon - drawingViewModel의 onCleared()에서 처리하도록 변경
             de.removeAllDrawingData();
-            fixme hyeyeon[1] - drawingFragment의 onDetach()에서 처리하도록 변경
+            fixme hyeyeon - drawingFragment의 onDetach()에서 처리하도록 변경
             ((MainActivity)drawingFragment.getActivity()).setOnKeyBackPressedListener(null);
-            fixme hyeyeon[1] - exitTask()만 수행하고 back()하지 않아야 하는 경우가 있어서 exitTask()를 호출할 때 따로 콜 하도록 변경
+            fixme hyeyeon - exitTask()만 수행하고 back()하지 않아야 하는 경우가 있어서 exitTask()를 호출할 때 따로 콜 하도록 변경
             drawingViewModel.back();
             */
 
@@ -234,13 +232,22 @@ public enum MQTTClient {
             e.printStackTrace();
         }
     }
-    //
 
-    // fixme hyeyeon
     public String userPrint() {
         String names = "";
-        for (User user: userList) {
-            names += user.getName() + "\n";
+        for (int i=0; i<userList.size(); i++) {
+            if (i == 0) {
+                if (userList.get(i).getName().equals(myName))
+                    names += userList.get(i).getName() + " ★ (나)\n";
+                else
+                    names += userList.get(i).getName() + " ★\n";
+            }
+            else {
+                if (userList.get(i).getName().equals(myName))
+                    names += userList.get(i).getName() + " (나)\n";
+                else
+                    names += userList.get(i).getName() + "\n";
+            }
         }
         return names;
     }
@@ -275,7 +282,7 @@ public enum MQTTClient {
 
                     String master = joinMessage.getMaster(); // null or not-null ( "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..." )
                     String name = joinMessage.getName(); // null or not-null ( "name":"이름" )
-                    List<User> users = joinMessage.getUserList(); // null or not-null  // fixme hyeyeon
+                    List<User> users = joinMessage.getUserList(); // null or not-null
 
                     if (master != null) { // 메시지 형식이 "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..."  일 경우
                         //binding.drawingView.setIntercept(false);
@@ -295,10 +302,11 @@ public enum MQTTClient {
                                 }
                             }
                             userList.clear(); // 중간자는 마스터에게 사용자 리스트를 받기 전에 userList.add() 했음 따라서 자신의 리스트를 지우고 마스터가 보내준 배열 저장
-                            for (User user: users) {  // 메시지로 전송받은 리스트 배열 세팅 // fixme hyeyeon
+                            for (User user: users) {  // 메시지로 전송받은 리스트 배열 세팅
                                 user.setCount(0);
                                 userList.add(user);
                             }
+                            // todo hyeyeon - master로부터 데이터 받기 전에 exit한 사용자들 remove
                             //topic_data = loadingData;
 
                             Log.e("who I am", to);
@@ -337,7 +345,7 @@ public enum MQTTClient {
                     } else {  // other or self // 메시지 형식이 "name":"이름"  일 경우
                         if (!myName.equals(name)) {  // other // 한 사람이 "name":"이름" 메시지 보냈을 경우 다른 사람들이 받아서 처리하는 부분 - '나'는 처리 안하는 부분
                             if (!isContainsUserList(name)) {
-                                User user = new User(name, 0);  // fixme hyeyeon
+                                User user = new User(name, 0);
                                 userList.add(user); // 들어온 사람의 이름을 추가
 
                                 if (de.getCurrentMode() == Mode.DRAW) {  // current mode 가 DRAW 이면, 그리기 중이던 component 까지만 그리고 touch intercept   // todo 다른 모드에서도 intercept 하도록 추가
@@ -384,18 +392,14 @@ public enum MQTTClient {
                     ExitMessage exitMessage = mqttMessageFormat.getExitMessage();
                     String name = exitMessage.getName();
 
-                    // fixme hyeyeon[2]
                     if (!myName.equals(name)) {  // 다른 사용자가 exit 하는 경우
+                        // todo hyeyeon - master로부터 데이터 받기 전에 exit 하는 사용자들 기억해두기
                         for (User user: userList) {
                             if (user.getName().equals(name)) {
                                 usersActionMap.remove(user.getName());
                                 Log.i("drawing", "userActionMap = " + usersActionMap.toString());
                                 userList.remove(user); break;
                             }
-                        }
-                        if (myName.equals(userList.get(0).getName()) && !isMaster()) {
-                            master = true;
-                            Log.e("kkankkan", "새로운 master는 나야! " + isMaster());
                         }
                         drawingViewModel.setUserNum(userList.size());
                         drawingViewModel.setUserPrint(userPrint());
@@ -424,23 +428,10 @@ public enum MQTTClient {
                     String name = deleteMessage.getName();
 
                     if (!name.equals(myName)) {  // 마스터가 topic을 delete한 경우
-                        exitTask();  // fixme hyeyeon[4]
-                        drawingViewModel.back();
-                            /*th.interrupt();
-                            unsubscribeAllTopics();
-                            isMid = true;
-                            de.removeAllDrawingData();
-                            usersActionMap.clear();
-                            Log.i("drawing", "userActionMap = " + usersActionMap.toString());
-                            //de.printDrawingData();
-
-                            //userList.clear();
-                            //((MainActivity)drawingFragment.getActivity()).setOnKeyBackPressedListener(null);
-                            drawingViewModel.back();*/
+                        showExitAlertDialog();
                     }
                 }
 
-                // fixme hyeyeon
                 if (newTopic.equals(topic_alive)) {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
@@ -462,10 +453,6 @@ public enum MQTTClient {
                                     iterator.remove();
                                     drawingViewModel.setUserNum(userList.size());
                                     drawingViewModel.setUserPrint(userPrint());
-                                    if (userList.get(0).getName().equals(myName) && !isMaster()) {
-                                        master = true;
-                                        Log.e("kkankkan", "새로운 master는 나야! " + isMaster());
-                                    }
                                     Log.e("kkankkan", user.getName() + " exit 후 [userList] : " + userPrintForLog());
                                     setToastMsg("[ " + user.getName() + " ] 님 접속이 끊겼습니다");
                                 }
@@ -475,12 +462,12 @@ public enum MQTTClient {
                     } else {
                         for (User user : userList) {
                             if (user.getName().equals(name)) {
-                                user.setCount(0); break;
+                                user.setCount(0);
+                                break;
                             }
                         }
                     }
                 }
-                //
 
                 //drawing
                 if (newTopic.equals(topic_data) && de.getDrawingBitmap() != null) {
@@ -561,8 +548,6 @@ public enum MQTTClient {
     }
 
     public void doInBack() {
-
-        // fixme hyeyeon-back해서 홈화면으로 가는 다이얼로그라면 exit publish 필요
         ExitMessage exitMessage = new ExitMessage(myName);
         MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
         publish(topic_exit, JSONParser.getInstance().jsonWrite(messageFormat));
@@ -579,47 +564,73 @@ public enum MQTTClient {
         drawingViewModel.back();
     }
 
-    public void showTimerAlertDialog(String title, String message) {
-        AlertDialog dialog = new AlertDialog.Builder(de.getDrawingFragment().getActivity())
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i("drawing", "dialog onclick");
-                        doInBack();
-                        //dialog.cancel();
-                        dialog.dismiss();
-                    }
-                })
-                .create();
-
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            private static final int AUTO_DISMISS_MILLIS = 6000;
+    public void showTimerAlertDialog(final String title, final String message) {
+        Objects.requireNonNull(drawingFragment.getActivity()).runOnUiThread(new Runnable() {
             @Override
-            public void onShow(final DialogInterface dialog) {
-                final Button defaultButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-                final CharSequence negativeButtonText = defaultButton.getText();
-                new CountDownTimer(AUTO_DISMISS_MILLIS, 100) {
+            public void run() {
+                AlertDialog dialog = new AlertDialog.Builder(de.getDrawingFragment().getActivity())
+                        .setTitle(title)
+                        .setMessage(message)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Log.i("drawing", "dialog onclick");
+                                doInBack();
+                                //dialog.cancel();
+                                dialog.dismiss();
+                            }
+                        })
+                        .create();
+
+                dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    private static final int AUTO_DISMISS_MILLIS = 6000;
                     @Override
-                    public void onTick(long millisUntilFinished) {
-                        defaultButton.setText(String.format(
-                                Locale.getDefault(), "%s (%d)",
-                                negativeButtonText,
-                                TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) + 1 //add one so it never displays zero
-                        ));
+                    public void onShow(final DialogInterface dialog) {
+                        final Button defaultButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+                        final CharSequence negativeButtonText = defaultButton.getText();
+                        new CountDownTimer(AUTO_DISMISS_MILLIS, 100) {
+                            @Override
+                            public void onTick(long millisUntilFinished) {
+                                defaultButton.setText(String.format(
+                                        Locale.getDefault(), "%s (%d)",
+                                        negativeButtonText,
+                                        TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) + 1 //add one so it never displays zero
+                                ));
+                            }
+                            @Override
+                            public void onFinish() {
+                                if (((AlertDialog) dialog).isShowing()) {
+                                    doInBack();
+                                    dialog.dismiss();
+                                }
+                            }
+                        }.start();
                     }
-                    @Override
-                    public void onFinish() {
-                        if (((AlertDialog) dialog).isShowing()) {
-                            doInBack();
-                            dialog.dismiss();
-                        }
-                    }
-                }.start();
+                });
+                dialog.show();
             }
         });
-        dialog.show();
+    }
+
+    public void showExitAlertDialog() {
+        Objects.requireNonNull(drawingFragment.getActivity()).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                AlertDialog dialog = new AlertDialog.Builder(drawingFragment.getActivity())
+                        .setTitle("토픽 종료")
+                        .setMessage("마스터가 토픽을 종료하였습니다")
+                        .setCancelable(false)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                exitTask();
+                                drawingViewModel.back();
+                            }
+                        })
+                        .create();
+                dialog.show();
+            }
+        });
     }
 
     //-----setter-----

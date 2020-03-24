@@ -30,14 +30,14 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.1"/>
+            app:layout_constraintGuide_percent="0.2"/>
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/view_bottom_guide"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.9"/>
+            app:layout_constraintGuide_percent="0.8"/>
 
         <EditText
             android:id="@+id/ip"
@@ -93,8 +93,8 @@
             android:imeOptions="actionNext"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/port"
-            app:layout_constraintBottom_toTopOf="@id/password"
+            app:layout_constraintTop_toBottomOf="@id/port_error"
+            app:layout_constraintBottom_toTopOf="@id/topic_error"
             android:hint="topic"
             android:text="@={vm.topic}"/>
 
@@ -155,34 +155,33 @@
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/name"
-            app:layout_constraintBottom_toTopOf="@id/mastercheck"
+            app:layout_constraintBottom_toTopOf="@id/master_login"
             android:text="@={vm.nameError}"
             android:textSize="12dp"
             android:textColor="@color/colorAccent"/>
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/mastercheck"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@+id/view_start_guide"
-            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/name"
-            app:layout_constraintBottom_toTopOf="@id/login"
-            android:layout_margin="10dp"
-            android:text="마스터"
-            android:checked="@={vm.masterCheck}"
-            android:visibility="invisible"/>
-
         <Button
-            android:id="@+id/login"
+            android:id="@+id/master_login"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/mastercheck"
+            app:layout_constraintTop_toBottomOf="@id/name_error"
+            app:layout_constraintBottom_toTopOf="@id/join"
+            android:layout_margin="10dp"
+            android:text="Master Login"
+            android:onClick="@{vm::startDrawing}"/>
+
+        <Button
+            android:id="@+id/join"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toBottomOf="@id/master_login"
             app:layout_constraintBottom_toTopOf="@id/local"
             android:layout_margin="10dp"
-            android:text="Drawing Start"
+            android:text="Join"
             android:onClick="@{vm::startDrawing}"/>
 
         <Button
@@ -191,7 +190,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/login"
+            app:layout_constraintTop_toBottomOf="@id/join"
             app:layout_constraintBottom_toBottomOf="@id/view_bottom_guide"
             android:layout_margin="10dp"
             android:text="Local Start"

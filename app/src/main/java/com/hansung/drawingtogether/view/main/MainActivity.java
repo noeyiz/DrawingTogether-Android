@@ -79,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    // fixme hyeyeon[3] - 2초 안에 2번 누르면 종료 하도록 변경
     @Override
     public void onBackPressed() {
         if (mOnKeyBackPressedListener != null) {
@@ -87,12 +86,25 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             Log.e("kkankkan", "메인엑티비티 onbackpressed");
-            if (System.currentTimeMillis() - lastTimeBackPressed < 2000) {
-                super.onBackPressed();
-                return;
-            }
-            lastTimeBackPressed = System.currentTimeMillis();
-            Toast.makeText(this, "뒤로 버튼을 한 번 더 누르면 종료됩니다", Toast.LENGTH_SHORT).show();
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setMessage("앱을 종료하시겠습니까?")
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            MainActivity.super.onBackPressed();
+                            return;
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            return;
+                        }
+                    })
+                    .create();
+            dialog.show();
+
+
         }
     }
 
