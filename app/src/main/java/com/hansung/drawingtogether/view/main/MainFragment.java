@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.view.main;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,7 +41,8 @@ public class MainFragment extends Fragment {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if(i == EditorInfo.IME_ACTION_DONE) {
-                    binding.login.performClick();
+                    binding.masterLogin.performClick();
+                    binding.join.performClick();
                     inputMethodManager.hideSoftInputFromWindow(binding.name.getWindowToken(), 0);
                 }
 
@@ -83,5 +85,18 @@ public class MainFragment extends Fragment {
         super.onResume();
         ((MainActivity)getActivity()).setToolbarTitle("Drawing Together");
         ((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+    }
+
+    // fixme hyeyeon[1]
+    @Override
+    public void onPause() {  // todo
+        super.onPause();
+        Log.i("lifeCycle", "MainFragment onPause()");
+    }
+
+    @Override
+    public void onDestroyView() {  // todo
+        super.onDestroyView();
+        Log.i("lifeCycle", "MainFragment onDestroyView()");
     }
 }

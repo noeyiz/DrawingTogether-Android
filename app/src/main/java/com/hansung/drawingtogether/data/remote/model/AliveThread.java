@@ -22,7 +22,6 @@ public enum AliveThread implements Runnable {
 
     private MQTTClient client = MQTTClient.getInstance();  // 참조
     private int second = 2000;
-
     public static AliveThread getInstance() {
         return INSTANCE;
     }

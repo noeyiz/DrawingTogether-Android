@@ -27,9 +27,11 @@ import lombok.Getter;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
+import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
@@ -73,6 +75,42 @@ public class DrawingViewModel extends BaseViewModel {
 
     private Button preMenuButton;
 
+    // fixme hyeyeon[1]
+    @Override
+    public void onCleared() {  // todo
+        super.onCleared();
+        Log.i("lifeCycle", "DrawingViewModel onCleared()");
+
+        if (client != null) {
+            // 꼭 여기서 처리 해줘야 하는 부분
+            client.getDe().removeAllDrawingData();
+            client.getUserList().clear();
+            //
+
+            // fixme hyeyeon[4] 강제 종료 시 불릴 경우 검사 후 해제, exit publish
+            if (!client.isExitPublish()) {
+                ExitMessage exitMessage = new ExitMessage(client.getMyName());
+                MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
+                client.setExitPublish(true);
+            }
+            if (!(client.getTh().getState() == Thread.State.TERMINATED)) {  // todo isInterruped() false 문제 해결 -> Thead의 state 검사
+                client.getTh().interrupt();
+                client.unsubscribeAllTopics();
+            }
+            if (client.getUsersActionMap().size() != 0) {
+                client.getUsersActionMap().clear();
+            }
+            // todo isMid = true;
+            //
+        }
+
+        /*th.interrupt();
+        unsubscribeAllTopics();
+        isMid = true;
+        usersActionMap.clear();;*/
+
+    }
     public DrawingViewModel() {
         setUserNum(0);
         setUserPrint("");  // fixme hyeyeon
@@ -138,6 +176,7 @@ public class DrawingViewModel extends BaseViewModel {
         enableDrawingMenuButton(false);
         changeClickedButtonBackground(view);
 
+
         de.setCurrentMode(Mode.TEXT);
         Log.i("drawing", "mode = " + de.getCurrentMode().toString());
         FrameLayout frameLayout = de.getDrawingFragment().getBinding().drawingViewContainer;
@@ -146,14 +185,14 @@ public class DrawingViewModel extends BaseViewModel {
         TextAttribute textAttribute = new TextAttribute(de.setTextStringId(), de.getMyUsername(),
                 de.getTextSize(), de.getTextColor(), de.getTextBackground(),
                 Gravity.CENTER, de.getFontStyle(),
-                frameLayout.getWidth(), frameLayout.getHeight());
 
+                frameLayout.getWidth(), frameLayout.getHeight());
 
         Text text = new Text(de.getDrawingFragment(), textAttribute);
         text.createGestureDetecter(); // Set Gesture ( Single Tap Up )
 
-
         text.changeTextViewToEditText(); // EditText 커서와 키보드 활성화, 텍스트 편집 시작 처리
+
         //drawingCommands.postValue(new DrawingCommand.TextMode(view));
     }
 

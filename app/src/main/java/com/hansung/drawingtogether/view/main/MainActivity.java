@@ -8,8 +8,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,6 +17,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.hansung.drawingtogether.R;
+
+import com.hansung.drawingtogether.data.remote.model.Logger;
+import com.hansung.drawingtogether.view.drawing.DrawingEditor;
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -26,6 +30,10 @@ public class MainActivity extends AppCompatActivity {
 
     public static Context context; // fixme nayeon
 
+    private Logger logger = Logger.getInstance(); // fixme nayeon ☆☆☆☆☆ 1. Log 기록에 사용할 클래스 참조
+
+    private DrawingEditor de = DrawingEditor.getInstance();
+    private long lastTimeBackPressed;  // fixme hyeyon[3]
 
     public interface OnBackListener {
         public void onBack();
@@ -47,8 +55,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.e("activity", "onCreate()");
         setContentView(R.layout.activity_main);
+        Log.i("lifeCycle", "MainActivity onCreate()");
 
         context = this; // fixme nayeon
+
+
+        // fixme nayeon ☆☆☆☆☆ 2. Log 종류
+        logger.info("MainActivity Logging Test");
+        logger.info("logging information");
+        logger.warn("logging warning");
+        logger.error("logging error");
+
 
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         title = (TextView)findViewById(R.id.toolbar_title);
@@ -72,53 +89,8 @@ public class MainActivity extends AppCompatActivity {
             topicPassword = topic;
             topicPassword += "/" + password;
         }
-
-
-
-
-
-
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.e("activity", "onStart()");
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.e("activity", "onRestart()");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.e("activity", "onResume()");
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.e("activity", "onResume()");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.e("activity", "onStop()");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.e("activity", "onDestroy");
-    }
-
-
-
-    // fixme hyeyeon
     @Override
     public void onBackPressed() {
 
@@ -127,26 +99,25 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             Log.e("kkankkan", "메인엑티비티 onbackpressed");
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setMessage("앱을 종료하시겠습니까?")
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            MainActivity.super.onBackPressed();
+                            return;
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            return;
+                        }
+                    })
+                    .create();
+            dialog.show();
 
-            builder.setMessage("앱을 종료하시겠습니까?");
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    finish();
-                    System.exit(0);
-                    android.os.Process.killProcess(android.os.Process.myPid());
-                }
-            });
 
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                }
-            });
-
-            AlertDialog alertDialog = builder.create();
-            alertDialog.show();
         }
     }
 
@@ -178,5 +149,48 @@ public class MainActivity extends AppCompatActivity {
             onBackListener.onBack();
 
         return super.onOptionsItemSelected(item);
+    }
+
+    // fixme hyeyeon[1]
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.i("lifeCycle", "MainActivity onRestart()");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i("lifeCycle", "MainActivity onStart()");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i("lifeCycle", "MainActivity onResume()");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.i("lifeCycle", "MainActivity onPause()");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.i("lifeCycle", "MainActivity onStop()");
+    }
+
+    @Override
+    protected void onDestroy() {  // todo
+        super.onDestroy();
+        Log.i("lifeCycle", "MainActivity onDestroy()");
+        if (isFinishing()) {
+            Log.i("lifeCycle", "isFinishing() " + isFinishing());
+        }
+        else {
+            Log.i("lifeCycle", "isFinishing() " + isFinishing());
+        }
     }
 }

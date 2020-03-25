@@ -79,9 +79,6 @@ public enum MQTTClient {
     private MqttClient client;
     private String BROKER_ADDRESS;
 
-    private FirebaseStorage storage;
-    private StorageReference storageReference;
-
     private FirebaseDatabase database;
     private DatabaseReference databaseReference;
 
@@ -96,7 +93,7 @@ public enum MQTTClient {
     private String topic_data;
     private String topic_mid;
 
-    private String topic_alive; // fixme hyeyeon-토픽 추가
+    private String topic_alive;
     // private String topic_load;
 
     private DrawingViewModel drawingViewModel;
@@ -113,20 +110,15 @@ public enum MQTTClient {
 
     private ProgressDialog progressDialog;
 
-    // fixme hyeyeon
-    private boolean backPressed;
     private Thread th;
-    //
+    private boolean exitPublish;
 
-    public static MQTTClient getInstance() { return INSTANCE; }
+    public static MQTTClient getInstance() {
+        return INSTANCE;
+    }
 
     public void init(String topic, String name, boolean master, DrawingViewModel drawingViewModel, String ip, String port) {
         connect(ip, port);
-
-        userList.clear();  // fixme hyeyeon-exit,delete시 clear대신 init시 clear로 변경
-
-        storage = FirebaseStorage.getInstance();
-        storageReference = storage.getReference();
 
         database = FirebaseDatabase.getInstance();
         databaseReference = database.getReference();
@@ -135,7 +127,7 @@ public enum MQTTClient {
         this.topic = topic;
         this.myName = name;
 
-        User user = new User(myName, 0);  // fixme hyeyeon
+        User user = new User(myName, 0);
         userList.add(user); // 생성자에서 사용자 리스트에 내 이름 추가
 
         topic_join = this.topic + "_join";
@@ -143,7 +135,7 @@ public enum MQTTClient {
         topic_delete = this.topic + "_delete";
         topic_data = this.topic + "_data";
         topic_mid = this.topic + "_mid";
-        topic_alive = this.topic + "_alive"; // fixme hyeyeon
+        topic_alive = this.topic + "_alive";
 
         this.drawingViewModel = drawingViewModel;
         this.drawingViewModel.setUserNum(userList.size());
@@ -151,8 +143,7 @@ public enum MQTTClient {
 
         this.usersActionMap = new HashMap<>();
         de.setMyUsername(name);
-
-        this.backPressed = false; // fixme hyeyeon
+        this.exitPublish = false;
     }
 
     public void connect(String ip, String port) {
@@ -172,7 +163,7 @@ public enum MQTTClient {
 
             String currentClientId = client.getClientId();
             Log.i("mqtt", "Client ID: " + currentClientId);
-        } catch(MqttException e) {
+        } catch (MqttException e) {
             e.printStackTrace();
             showTimerAlertDialog("브로커 연결 실패", "메인 화면으로 이동합니다");
         }
@@ -188,24 +179,13 @@ public enum MQTTClient {
         }
     }
 
-/*    public void publish(String newTopic, byte[] payload) {
-        try {
-            MqttMessage message = new MqttMessage(payload);
-            client.publish(newTopic, message);
-            Log.e("kkankkan", newTopic + " publish");
-        } catch (MqttException e) {
-            e.printStackTrace();
-            showTimerAlertDialog("메시지 전송 실패", "메인 화면으로 이동합니다");
-        }
-    }*/
-
     public void publish(String newTopic, String payload) {
         try {
             MqttMessage message = new MqttMessage(payload.getBytes());
             client.publish(newTopic, payload.getBytes(), this.qos, false);
             //Log.i("mqtt", "PUBLISH topic: " + newTopic + ", msg: " + message); // fixme nayeon
             // Log.e("mqtt payload size", Integer.toString(message.getPayload().length)); // fixme nayeon
-        } catch(MqttException e) {
+        } catch (MqttException e) {
             e.printStackTrace();
             showTimerAlertDialog("메시지 전송 실패", "메인 화면으로 이동합니다");
         }
@@ -218,7 +198,7 @@ public enum MQTTClient {
             client.unsubscribe(topic_delete);
             client.unsubscribe(topic_data);
             client.unsubscribe(topic_mid);
-            client.unsubscribe(topic_alive);  // fixme hyeyeon
+            client.unsubscribe(topic_alive);
 
             Log.e("kkankkan", "unsubscribe 완료");
 
@@ -227,18 +207,56 @@ public enum MQTTClient {
         }
     }
 
-    // fixme hyeyeon
+    public void exitTask() {
+        try {
+            Log.e("kkankkan", "exitTask 시작");
+            th.interrupt();
+            client.unsubscribe(topic_join);
+            client.unsubscribe(topic_exit);
+            client.unsubscribe(topic_delete);
+            client.unsubscribe(topic_data);
+            client.unsubscribe(topic_mid);
+            client.unsubscribe(topic_alive);
+            isMid = true;
+            usersActionMap.clear();
+            Log.i("drawing", "userActionMap = " + usersActionMap.toString());
+            /*
+            fixme hyeyeon - drawingViewModel의 onCleared()에서 처리하도록 변경
+            de.removeAllDrawingData();
+            fixme hyeyeon - drawingFragment의 onDetach()에서 처리하도록 변경
+            ((MainActivity)drawingFragment.getActivity()).setOnKeyBackPressedListener(null);
+            fixme hyeyeon - exitTask()만 수행하고 back()하지 않아야 하는 경우가 있어서 exitTask()를 호출할 때 따로 콜 하도록 변경
+            drawingViewModel.back();
+            */
+
+            Log.e("kkankkan", "exitTask 완료");
+
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
     public String userPrint() {
         String names = "";
-        for (User user: userList) {
-            names += user.getName() + "\n";
+        for (int i = 0; i < userList.size(); i++) {
+            if (i == 0) {
+                if (userList.get(i).getName().equals(myName))
+                    names += userList.get(i).getName() + " ★ (나)\n";
+                else
+                    names += userList.get(i).getName() + " ★\n";
+            } else {
+                if (userList.get(i).getName().equals(myName))
+                    names += userList.get(i).getName() + " (나)\n";
+                else
+                    names += userList.get(i).getName() + "\n";
+            }
         }
         return names;
     }
 
     public String userPrintForLog() {
         String names = "";
-        for (User user: userList) {
+        for (User user : userList) {
             names += "[" + user.getName() + "," + user.getCount() + "] ";
         }
         return names;
@@ -257,6 +275,7 @@ public enum MQTTClient {
 
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
+                Log.e("kkankkan", "message Arrived");
                 // [ 중간자 ]
                 if (newTopic.equals(topic_join)) {
                     String msg = new String(message.getPayload());
@@ -265,11 +284,12 @@ public enum MQTTClient {
 
                     String master = joinMessage.getMaster(); // null or not-null ( "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..." )
                     String name = joinMessage.getName(); // null or not-null ( "name":"이름" )
-                    List<User> users = joinMessage.getUserList(); // null or not-null  // fixme hyeyeon
+                    List<User> users = joinMessage.getUserList(); // null or not-null
 
                     if (master != null) { // 메시지 형식이 "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..."  일 경우
                         //binding.drawingView.setIntercept(false);
                         de.setIntercept(false); // 중간에 누가 들어왔을 때 선을 그리는 중이 아닌 다른 사용자들 터치 이벤트 부모뷰에서 가로채도록 (모두가 처리하는 부분)
+
                         Log.i("drawing", "isMid = " + isMid());
 
                         String to = joinMessage.getTo();
@@ -285,10 +305,12 @@ public enum MQTTClient {
                                 }
                             }
                             userList.clear(); // 중간자는 마스터에게 사용자 리스트를 받기 전에 userList.add() 했음 따라서 자신의 리스트를 지우고 마스터가 보내준 배열 저장
-                            for (User user: users) {  // 메시지로 전송받은 리스트 배열 세팅 // fixme hyeyeon
+
+                            for (User user : users) {  // 메시지로 전송받은 리스트 배열 세팅
                                 user.setCount(0);
                                 userList.add(user);
                             }
+                            // todo hyeyeon - master로부터 데이터 받기 전에 exit한 사용자들 remove
                             //topic_data = loadingData;
 
                             Log.e("who I am", to);
@@ -311,7 +333,7 @@ public enum MQTTClient {
                             // de.setTextId(mqttMessageFormat.getMaxTextId()); // fixme nayeon - 텍스트 아이디는 "사용자이름-textIdCount" 이므로 textIdCount 가 같아도 고유
                             Log.i("drawing", "component id = " + mqttMessageFormat.getMaxComponentId() + ", text id = " + mqttMessageFormat.getMaxTextId());
 
-                            if(mqttMessageFormat.getBitmapByteArray() != null) {
+                            if (mqttMessageFormat.getBitmapByteArray() != null) {
                                 de.setBackgroundImage(de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()));
                             }
 
@@ -373,6 +395,22 @@ public enum MQTTClient {
                     MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
                     ExitMessage exitMessage = mqttMessageFormat.getExitMessage();
                     String name = exitMessage.getName();
+
+                    if (!myName.equals(name)) {  // 다른 사용자가 exit 하는 경우
+                        // todo hyeyeon - master로부터 데이터 받기 전에 exit 하는 사용자들 기억해두기
+                        for (User user : userList) {
+                            if (user.getName().equals(name)) {
+                                usersActionMap.remove(user.getName());
+                                Log.i("drawing", "userActionMap = " + usersActionMap.toString());
+                                userList.remove(user);
+                                break;
+                            }
+                        }
+                        drawingViewModel.setUserNum(userList.size());
+                        drawingViewModel.setUserPrint(userPrint());
+
+                        Log.e("kkankkan", name + " exit 후 " + userPrintForLog());
+                    }
                    /* String exitMsg = exitMessage.getMessage();  // fixme hyeyeon-자신도 모르는 사이에 자신이 강제종료 되는 경우가 생긴다면 추가할 부분
 
                     if (myName.equals(name) && exitMessage != null) {
@@ -384,198 +422,19 @@ public enum MQTTClient {
                         Log.i("drawing", "userActionMap = " + usersActionMap.toString());
                         drawingViewModel.back();
                     }*/
-
-                    if (myName.equals(name)) {  // 내가 exit 하는 경우
-                        if (userList.size() == 1 && isMaster()) {  // 나==마지막 사용자, master==나
-                            // db에 drawview data 저장
-                            databaseReference.child(topic).runTransaction(new Transaction.Handler() {  // fixme hyeyeon-DB접근 부분 트랜젝션 함수 사용하도록 변경함
-                                @NonNull
-                                @Override
-                                public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                                    if (mutableData.getValue() == null) {
-                                        Log.e("kkankkan", "mutabledata null");
-                                    } else {
-                                        mutableData.child("master").setValue(false);
-                                    }
-                                    return Transaction.success(mutableData);
-                                }
-
-                                @Override
-                                public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                                    Log.e("kkankkan", "DB master value change success");
-                                    Log.e("kkankkan", "transaction complete");
-
-                                    th.interrupt(); // fixme hyeyeon
-                                    unsubscribeAllTopics();
-                                    isMid = true;
-                                    de.removeAllDrawingData();
-                                    usersActionMap.clear();
-                                    Log.i("drawing", "userActionMap = " + usersActionMap.toString());
-                                    //de.printDrawingData();
-                                    //userList.clear();
-
-                                    if (backPressed) {  // fixme hyeyeon
-                                        drawingFragment.getActivity().finish();
-                                        System.exit(0);
-                                        android.os.Process.killProcess(android.os.Process.myPid());
-                                    }
-                                    ((MainActivity)drawingFragment.getActivity()).setOnKeyBackPressedListener(null);  // fixme hyeyeon
-                                    drawingViewModel.back();
-                                }
-                            });
-                        } else {  // master 아닌데 그냥 exit
-                            th.interrupt(); // fixme hyeyeon
-                            unsubscribeAllTopics();
-                            isMid = true;
-                            de.removeAllDrawingData();
-                            usersActionMap.clear();
-                            Log.i("drawing", "userActionMap = " + usersActionMap.toString());
-                            //de.printDrawingData();
-                            //userList.clear();
-
-                            if (backPressed) {  // fixme hyeyeon
-                                drawingFragment.getActivity().finish();
-                                System.exit(0);
-                                android.os.Process.killProcess(android.os.Process.myPid());
-                            }
-                            ((MainActivity)drawingFragment.getActivity()).setOnKeyBackPressedListener(null);  // fixme hyeyeon
-                            drawingViewModel.back();
-                        }
-                    } else {  // 다른 사람이 exit 하는 경우
-                        for (User user: userList) {
-                            if (user.getName().equals(name)) {
-                                usersActionMap.remove(user.getName());
-                                Log.i("drawing", "userActionMap = " + usersActionMap.toString());
-                                userList.remove(user); break;
-                            }
-                        }
-                        if (myName.equals(userList.get(0).getName()) && !isMaster()) {
-                            master = true;
-                            Log.e("kkankkan", "새로운 master는 나야! " + isMaster());
-                        }
-                        drawingViewModel.setUserNum(userList.size());
-                        drawingViewModel.setUserPrint(userPrint());
-
-                        Log.e("kkankkan", name + " exit 후 " + userPrintForLog());
-                    }
                 }
-
                 if (newTopic.equals(topic_delete)) {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
                     DeleteMessage deleteMessage = mqttMessageFormat.getDeleteMessage();
 
                     String name = deleteMessage.getName();
-                    String deleteMsg = deleteMessage.getMessage();
 
-                    if (deleteMsg != null) {  // fixme hyeyeon-마스터가 topic을 delete한 경우
-                        th.interrupt(); // fixme hyeyeon
-                        unsubscribeAllTopics();
-                        isMid = true;
-                        de.removeAllDrawingData();
-                        usersActionMap.clear();
-                        Log.i("drawing", "userActionMap = " + usersActionMap.toString());
-                        //de.printDrawingData();
-
-                        //userList.clear();
-                        ((MainActivity)drawingFragment.getActivity()).setOnKeyBackPressedListener(null);  // fixme hyeyeon
-                        drawingViewModel.back();
-                    }
-                    if (name.equals(myName) && isMaster()) {
-                        databaseReference.child(topic).runTransaction(new Transaction.Handler() {  // fixme hyeyeon
-                            @NonNull
-                            @Override
-                            public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                                if (mutableData.getValue() == null) {
-                                    Log.e("kkankkan", "mutabledata null");
-                                } else {
-                                    databaseReference.child(topic).removeValue();
-                                }
-                                return Transaction.success(mutableData);
-                            }
-
-                            @Override
-                            public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                                Log.e("kkankkan", "topic delete success");
-                                Log.e("kkankkan", "transaction complete");
-
-                                th.interrupt(); // fixme hyeyeon
-                                unsubscribeAllTopics();
-
-                                DeleteMessage delMessage = new DeleteMessage(myName, "delete");
-                                MqttMessageFormat messageFormat = new MqttMessageFormat(delMessage);
-                                publish(topic_delete, JSONParser.getInstance().jsonWrite(messageFormat));  // fixme hyeyeon
-
-                                isMid = true;
-                                de.removeAllDrawingData();
-                                usersActionMap.clear();
-                                Log.i("drawing", "userActionMap = " + usersActionMap.toString());
-
-                                //userList.clear();
-                                ((MainActivity)drawingFragment.getActivity()).setOnKeyBackPressedListener(null);  // fixme hyeyeon
-                                drawingViewModel.back();
-                            }
-                        });
-                        /*
-                        databaseReference.child(topic).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Log.e("kkankkan", "topic delete success");
-
-                                unsubscribeAllTopics();
-
-                                publish(topic_delete, "master:delete".getBytes());  // fixme hyeyeon [2]
-
-                                isMid = true;
-                                de.removeAllDrawingData();
-
-                                userList.clear();
-                                usersActionMap.clear();
-                                Log.i("drawing", "userActionMap = " + usersActionMap.toString());
-
-                                drawingViewModel.back();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.e("kkankkan", e.toString());
-                            }
-                        });*/
-
-                        /*storageReference.child(topic).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Log.e("kkankkan", "topic delete success");
-                                try {
-                                    client.unsubscribe(topic_join);
-                                    client.unsubscribe(topic_exit);
-                                    client.unsubscribe(topic_delete);
-                                    client.unsubscribe(topic_data);
-
-                                    client.publish(topic_delete, new MqttMessage("master".getBytes()));
-                                    Log.e("kkankkan", "unsubscribe 완료");
-
-                                } catch (MqttException e) {
-                                    e.printStackTrace();
-                                }
-                                // 나가기
-                                drawingViewModel.back();
-
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.e("kkankkan", e.toString());
-                            }
-                        });*/
-                    }
-                    // fixme hyeyeon - master가 아닌 사용자가 topic delete 누를 때 토스트를 출력해주기 위함
-                    else if (name.equals(myName) && !isMaster()) {
-                        setToastMsg("master만 topic을 삭제할 수 있습니다");
+                    if (!name.equals(myName)) {  // 마스터가 topic을 delete한 경우
+                        showExitAlertDialog();
                     }
                 }
 
-                // fixme hyeyeon
                 if (newTopic.equals(topic_alive)) {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
@@ -597,47 +456,42 @@ public enum MQTTClient {
                                     iterator.remove();
                                     drawingViewModel.setUserNum(userList.size());
                                     drawingViewModel.setUserPrint(userPrint());
-                                    if (userList.get(0).getName().equals(myName) && !isMaster()) {
-                                        master = true;
-                                        Log.e("kkankkan", "새로운 master는 나야! " + isMaster());
-                                    }
                                     Log.e("kkankkan", user.getName() + " exit 후 [userList] : " + userPrintForLog());
                                     setToastMsg("[ " + user.getName() + " ] 님 접속이 끊겼습니다");
                                 }
                             }
                         }
-                        // Log.e("kkankkan", "COUNT PLUS AFTER" + userPrintForLog());
+                        Log.e("kkankkan", "COUNT PLUS AFTER" + userPrintForLog());
                     } else {
                         for (User user : userList) {
                             if (user.getName().equals(name)) {
-                                user.setCount(0); break;
+                                user.setCount(0);
+                                break;
                             }
                         }
                     }
                 }
-                //
 
                 //drawing
                 if (newTopic.equals(topic_data) && de.getDrawingBitmap() != null) {
                     String msg = new String(message.getPayload());
-                    MqttMessageFormat messageFormat = (MqttMessageFormat)parser.jsonReader(msg);
+                    MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
-                    if(messageFormat.getMode() == Mode.TEXT) {  //TEXT 모드일 경우, username 이 다른 경우만 task 생성
-                        if(!messageFormat.getUsername().equals(de.getMyUsername())) {
+                    if (messageFormat.getMode() == Mode.TEXT) {  //TEXT 모드일 경우, username 이 다른 경우만 task 생성
+                        if (!messageFormat.getUsername().equals(de.getMyUsername())) {
                             Log.i("drawing", "username = " + messageFormat.getUsername() + ", text id = " + messageFormat.getTextAttr().getId() + ", mode = " + messageFormat.getMode() + ", text mode = " + messageFormat.getTextMode());
                             new TextTask().execute(messageFormat);
                         }
-                    }
-                    else {  // todo - background image 도 따로 task 만들어 관리
+                    } else {  // todo - background image 도 따로 task 만들어 관리
                         drawingTask = new DrawingTask();
                         drawingTask.execute(messageFormat);
                     }
                 }
 
                 //mid data 처리
-                if(newTopic.equals(topic_mid)) {
+                if (newTopic.equals(topic_mid)) {
                     String msg = new String(message.getPayload());
-                    MqttMessageFormat messageFormat = (MqttMessageFormat)parser.jsonReader(msg);
+                    MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
                     // fixme nayeon
                     // 모든 사용자가 topic_mid 로 메시지 전송받음
@@ -645,73 +499,12 @@ public enum MQTTClient {
                     de.setMidEntered(false);
 
                     Log.i("mqtt", "isMid=" + isMid());
-                    if(isMid && messageFormat.getUsername().equals(de.getMyUsername())) {
+                    if (isMid && messageFormat.getUsername().equals(de.getMyUsername())) {
                         isMid = false;
                         Log.i("mqtt", "mid username=" + messageFormat.getUsername());
                         new MidTask().execute();
                     }
                 }
-                /*
-                topic_join으로 오는 메시지 종류
-                1. "name":"이름"
-                2. "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..."
-                 */
-              /*  if (newTopic.equals(topic_join)) {
-                    String data[] = message.toString().split(":");
-
-                    if (data[0].equals("master")) {
-                        String token[] = message.toString().split("/");
-                        String name = token[1].split(":")[1];
-                        String users = token[2].split(":")[1];
-                        String loadingData = token[3].split(":")[1];
-
-                        if (name.equals(myName)) {
-                            Log.e("kkankkan", "master가 보낸 userList : " + users);
-
-                            userList.removeAll(userList);
-                            for (int i=0; i<users.split(",").length; i++) {
-                                userList.add(users.split(",")[i]);
-                            }
-
-                            Log.e("kkankkan", userList.toString());
-
-                            topic_data = loadingData;
-                        }
-
-                    }
-                    else {  // other or self
-                        String name = data[1];
-
-                        if (!myName.equals(name)) {  // other
-                            userList.add(name);
-
-                            if (master) {
-                                String users = "";
-                                for(int i=0; i<userList.size(); i++) {
-                                    users += userList.get(i);
-                                    if (i == userList.size()-1)
-                                        break;
-                                    users += ",";
-                                }
-
-                                //MqttMessage msg = new MqttMessage(("master:" + userList.get(0) + "/userList:" + users + "/loadingData:" + topic_data).getBytes());
-                                MqttMessage msg = new MqttMessage(("master:" + userList.get(0) + "/to:" + userList.get(userList.size()-1) + "/userList:" + users + "/loadingData:" + topic_data).getBytes());
-                                client.publish(topic_join, msg);
-
-                                Log.e("kkankkan", "master data -> " + msg);
-                            }
-
-                            Log.e("kkankkan", name + " join 후 : " + userList.toString());
-                            //drawingViewModel.setUserNumTv(userList.size());
-                        }
-                        else {  // self
-                            userList.add(name);
-                        }
-
-                    }
-                    drawingViewModel.setUserNum(userList.size());
-                }
-                */
             }
 
             @Override
@@ -721,18 +514,9 @@ public enum MQTTClient {
         });
     }
 
-    public void setToastMsg(final String message) {
-        Objects.requireNonNull(drawingFragment.getActivity()).runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(Objects.requireNonNull(drawingFragment.getContext()).getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
     public boolean isContainsUserList(String username) {
-        for(int i=0; i<userList.size(); i++) {
-            if(userList.get(i).getName().equals(username))
+        for (int i = 0; i < userList.size(); i++) {
+            if (userList.get(i).getName().equals(username))
                 return true;
         }
         return false;
@@ -763,70 +547,107 @@ public enum MQTTClient {
 
     // fixme nayeon
     public boolean isTextInUse() {
-        for(Text t : de.getTexts()) {
-            if(t.getTextAttribute().getUsername() != null)
+        for (Text t : de.getTexts()) {
+            if (t.getTextAttribute().getUsername() != null)
                 return false;
         }
         return true;
     }
 
     public void doInBack() {
-        th.interrupt();
-        unsubscribeAllTopics();
-        ((MainActivity)drawingFragment.getActivity()).setOnKeyBackPressedListener(null);
-        // fixme hyeyeon-back해서 홈화면으로 가는 다이얼로그라면 exit publish 필요
         ExitMessage exitMessage = new ExitMessage(myName);
         MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
         publish(topic_exit, JSONParser.getInstance().jsonWrite(messageFormat));
         //
+        /*th.interrupt();
+        unsubscribeAllTopics();
+        ((MainActivity)drawingFragment.getActivity()).setOnKeyBackPressedListener(null);
         isMid = true;
         de.removeAllDrawingData();
         usersActionMap.clear();
-        Log.i("drawing", "userActionMap = " + usersActionMap.toString());
+        Log.i("drawing", "userActionMap = " + usersActionMap.toString());*/
+
+        exitTask();
         drawingViewModel.back();
     }
 
-    public void showTimerAlertDialog(String title, String message) {
-        AlertDialog dialog = new AlertDialog.Builder(de.getDrawingFragment().getActivity())
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i("drawing", "dialog onclick");
-                        doInBack();
-                        //dialog.cancel();
-                        dialog.dismiss();
-                    }
-                })
-                .create(); // UI 스레드가 아닌 일반 쓰레드에서 UI 작업을 위해 new Handler()를 통해
-
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            private static final int AUTO_DISMISS_MILLIS = 6000;
+    public void showTimerAlertDialog(final String title, final String message) {
+        Objects.requireNonNull(drawingFragment.getActivity()).runOnUiThread(new Runnable() {
             @Override
-            public void onShow(final DialogInterface dialog) {
-                final Button defaultButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-                final CharSequence negativeButtonText = defaultButton.getText();
-                new CountDownTimer(AUTO_DISMISS_MILLIS, 100) {
+            public void run() {
+                AlertDialog dialog = new AlertDialog.Builder(de.getDrawingFragment().getActivity())
+                        .setTitle(title)
+                        .setMessage(message)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Log.i("drawing", "dialog onclick");
+                                doInBack();
+                                //dialog.cancel();
+                                dialog.dismiss();
+                            }
+                        })
+                        .create();
+
+                dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    private static final int AUTO_DISMISS_MILLIS = 6000;
                     @Override
-                    public void onTick(long millisUntilFinished) {
-                        defaultButton.setText(String.format(
-                                Locale.getDefault(), "%s (%d)",
-                                negativeButtonText,
-                                TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) + 1 //add one so it never displays zero
-                        ));
+                    public void onShow(final DialogInterface dialog) {
+                        final Button defaultButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+                        final CharSequence negativeButtonText = defaultButton.getText();
+                        new CountDownTimer(AUTO_DISMISS_MILLIS, 100) {
+                            @Override
+                            public void onTick(long millisUntilFinished) {
+                                defaultButton.setText(String.format(
+                                        Locale.getDefault(), "%s (%d)",
+                                        negativeButtonText,
+                                        TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) + 1 //add one so it never displays zero
+                                ));
+                            }
+                            @Override
+                            public void onFinish() {
+                                if (((AlertDialog) dialog).isShowing()) {
+                                    doInBack();
+                                    dialog.dismiss();
+                                }
+                            }
+                        }.start();
                     }
-                    @Override
-                    public void onFinish() {
-                        if (((AlertDialog) dialog).isShowing()) {
-                            doInBack();
-                            dialog.dismiss();
-                        }
-                    }
-                }.start();
+                });
+                dialog.show();
             }
         });
-        dialog.show();
+    }
+
+    public void showExitAlertDialog() {
+        Objects.requireNonNull(drawingFragment.getActivity()).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                AlertDialog dialog = new AlertDialog.Builder(drawingFragment.getActivity())
+                        .setTitle("토픽 종료")
+                        .setMessage("마스터가 토픽을 종료하였습니다")
+                        .setCancelable(false)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                exitTask();
+                                drawingViewModel.back();
+                            }
+                        })
+                        .create();
+                dialog.show();
+            }
+        });
+    }
+
+    public void setToastMsg(final String message) {
+        Objects.requireNonNull(drawingFragment.getActivity()).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(Objects.requireNonNull(drawingFragment.getContext()).getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+
+            }
+        });
     }
 
     //-----setter-----
@@ -841,12 +662,12 @@ public enum MQTTClient {
         this.progressDialog = progressDialog;
     }
 
-    public void setBackPressed(boolean backPressed) {  // fixme hyeyeon
-        this.backPressed = backPressed;
-    }
-
     public void setThread(Thread th) {  // fixme hyeyeon
         this.th = th;
+    }
+
+    public void setExitPublish(boolean exitPublish) {  // fixme hyeyeon[4]
+        this.exitPublish = exitPublish;
     }
 }
 
@@ -943,7 +764,9 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
         de.setMyCanvasWidth(myCanvasWidth);
         de.setMyCanvasHeight(myCanvasHeight);
 
-        if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW)) { return null; }
+        // fixme jiyeon - 자기 자신의 background image도 콜백에서 처리
+        if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW) && !mode.equals(Mode.BACKGROUND_IMAGE)) { return null; }
+//            if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW)) { return null; }
 
         switch(mode) {
             case DRAW:
@@ -1154,7 +977,7 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
                 //text.modifyTextViewContent(textAttr.getText());
                 break;
 
-                // fixme nayeon
+            // fixme nayeon
             case START_COLOR_CHANGE:
                 text.getTextView().setBackground(de.getTextHighlightBorderDrawble()); // 텍스트 색상 편집 시작 테두리 설정
                 break;

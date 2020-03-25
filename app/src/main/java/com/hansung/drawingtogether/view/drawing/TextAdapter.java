@@ -40,10 +40,8 @@ public class TextAdapter implements JsonSerializer<Text>, JsonDeserializer<Text>
             throws JsonParseException {
         JsonObject jsonObject = json.getAsJsonObject();
 
-
         JsonElement element = jsonObject.get(TEXT_ATTRIBUTE);
         TextAttribute textAttribute = context.deserialize(element, TextAttribute.class);
         return new Text(drawingFragment, textAttribute);
-
     }
 }

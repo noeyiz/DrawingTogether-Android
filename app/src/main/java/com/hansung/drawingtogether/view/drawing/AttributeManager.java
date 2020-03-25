@@ -1,7 +1,6 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Color;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;

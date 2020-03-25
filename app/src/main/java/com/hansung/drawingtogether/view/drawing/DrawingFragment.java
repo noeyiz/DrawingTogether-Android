@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -26,6 +27,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,7 +36,14 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 import lombok.Getter;
+import lombok.Setter;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
@@ -59,30 +68,41 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
     Point size;
 
-    // fixme hyeyeon
-/*  private String ip;
-    private String port;
-    private String topic;
-    private String name;
-    private String password;
-    private boolean master;*/
-
     private MQTTClient client = MQTTClient.getInstance();
     private MQTTSettingData data = MQTTSettingData.getInstance();  // fixme hyeyeon
 
     private DrawingEditor de = DrawingEditor.getInstance();
     private AttributeManager am = AttributeManager.getInstance(); // fixme nayeon
+
     private FragmentDrawingBinding binding;
     private DrawingViewModel drawingViewModel;
     private InputMethodManager inputMethodManager;
 
+    // fixme hyeyeon[2]
+    private DatabaseReference databaseReference;
+    private ExitOnClickListener exitOnClickListener;
+    //
+
+    private long lastTimeBackPressed;  // fixme hyeyeon[3]
+
     //private LinearLayout topToolLayout;
     //private Button doneBtn;
+
+    // fixme hyeyeon
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        ((MainActivity)context).setOnKeyBackPressedListener(this);
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.e("DrawingFragment", "onCreateView");
+
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+        exitOnClickListener = new ExitOnClickListener();
+        exitOnClickListener.setBackKeyPressed(false);
 
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
@@ -140,17 +160,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             th.start();
             client.setThread(th);
         }
-
-
-        /*ip = getArguments().getString("ip");
-        port = getArguments().getString("port");
-        topic = getArguments().getString("topic");
-        name = getArguments().getString("name");
-        password = getArguments().getString("password");
-        master = Boolean.parseBoolean(getArguments().getString("master"));
-
-        Log.e("kkankkan", "MainViewModel로부터 전달 받은 Data : "  + topic + " / " + password + " / " + name + " / " + master);
-*/
 
         // 디바이스 화면 size 구하기
         Display display = getActivity().getWindowManager().getDefaultDisplay();
@@ -312,61 +321,102 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         });
     }
 
+    // fixme hyeyeon[2]-messageArrived 콜백에서 처리 -> 나가기 버튼 누른 후 바로 처리하도록 변경
     public void exit() {
+        exitOnClickListener.setBackKeyPressed(false);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setItems(R.array.exit, new DialogInterface.OnClickListener() {
+        if (client.isMaster()) {
+            builder.setMessage(R.string.master_exit);
+        } else {
+            builder.setMessage(R.string.joiner_exit);
+        }
+        builder.setPositiveButton(android.R.string.ok, exitOnClickListener);
+        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (which == 0) {
-                    ExitMessage exitMessage = new ExitMessage(client.getMyName());
-                    MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-                    client.publish(data.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-                }
-                else if (which == 1){
-                    DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
-                    MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
-                    client.publish(data.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-                }
+                return;
             }
         });
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }
-
-    // fixme hyeyeon
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        ((MainActivity)context).setOnKeyBackPressedListener(this);
+        builder.create().show();
     }
 
     @Override
     public void onBackKey() {
+        exitOnClickListener.setBackKeyPressed(true);
         Log.e("kkankkan", "드로잉프레그먼트 onbackpressed");
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setMessage("앱을 종료하시겠습니까?");
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                MQTTClient client = MQTTClient.getInstance();
-                client.setBackPressed(true);
-                ExitMessage exitMessage = new ExitMessage(client.getMyName());
-                MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-                client.publish(data.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-            }
-        });
-
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-            }
-        });
-
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
+        AlertDialog dialog = new AlertDialog.Builder(getContext())
+                .setMessage("앱을 종료하시겠습니까?")
+                .setPositiveButton(android.R.string.ok, exitOnClickListener)
+                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        return;
+                    }
+                })
+                .create();
+        dialog.show();
     }
-    //
+
+    @Setter
+    class ExitOnClickListener implements DialogInterface.OnClickListener {
+        private boolean backKeyPressed;
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
+                @NonNull
+                @Override
+                public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+                    if (mutableData.getValue() != null && client.isMaster()) {
+                        mutableData.setValue(null);
+                    }
+                    if (mutableData.getValue() != null && !client.isMaster()) {
+                        mutableData.child("username").child(client.getMyName()).setValue(null);
+                    }
+                    Log.e("transaction", "transaction success");
+                    return Transaction.success(mutableData);
+                }
+
+                @Override
+                public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                    Log.e("transaction", "transaction complete");
+                    if (databaseError != null) {
+                        Log.e("transaction", databaseError.getDetails());
+                        return;
+                    }
+                    if (client.isMaster()) {
+                        DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
+                        MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
+                        client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
+                        client.setExitPublish(true);
+                        client.exitTask();
+                        if (backKeyPressed) {
+                            getActivity().finish();
+                            return;
+                        }
+                        else {
+                            drawingViewModel.back();
+                            return;
+                        }
+                    } else {
+                        ExitMessage exitMessage = new ExitMessage(client.getMyName());
+                        MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                        client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
+                        client.setExitPublish(true);
+                        client.exitTask();
+                        if (backKeyPressed) {
+                            getActivity().finish();
+                            return;
+                        }
+                        else {
+                            drawingViewModel.back();
+                            return;
+                        }
+                    }
+                }
+            });
+        }
+    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -380,38 +430,57 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 if (data == null) {
                     return;
                 }
-                Uri uri = data.getData();
-                Bitmap galleryBitmap = null;
+                // fixme jiyeon
                 try {
-                    galleryBitmap = rotateBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri), PICK_FROM_GALLERY);
-                    galleryBitmap = resizeBitmap(galleryBitmap);
-                    ImageView imageView = new ImageView(getContext());
-                    imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
-                    imageView.setImageBitmap(galleryBitmap);
-                    de.setBackgroundImage(galleryBitmap);
-                    binding.backgroundView.addView(imageView);
+                    Uri uri = data.getData();
+                    Bitmap galleryBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
+                    String filePath = getRealPathFromURI(uri);
+                    galleryBitmap = rotateBitmap(galleryBitmap, filePath);
 
-                    messageFormat = new MqttMessageFormat(de.getUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(galleryBitmap));
+                    messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(galleryBitmap));
                     client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
 
-                } catch(IOException e) { e.printStackTrace(); }
+//                Uri uri = data.getData();
+//                Bitmap galleryBitmap = null;
+//                try {
+//                    galleryBitmap = rotateBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri), PICK_FROM_GALLERY);
+//                    galleryBitmap = resizeBitmap(galleryBitmap);
+//                    ImageView imageView = new ImageView(getContext());
+//                    imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
+//                    imageView.setImageBitmap(galleryBitmap);
+//                    de.setBackgroundImage(galleryBitmap);
+//                    binding.backgroundView.addView(imageView);
+//
+//                    messageFormat = new MqttMessageFormat(de.getUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(galleryBitmap));
+//                    client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
 
+                } catch(IOException e) {
+                    e.printStackTrace();
+                }
                 break;
             case PICK_FROM_CAMERA:
                 try {
+                    // fixme jiyeon
                     File file = new File(drawingViewModel.getPhotoPath());
-                    Bitmap cameraBitmap = rotateBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file)), PICK_FROM_CAMERA);
-                    cameraBitmap = resizeBitmap(cameraBitmap);
-                    if (cameraBitmap != null) {
-                        ImageView imageView = new ImageView(getContext());
-                        imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
-                        imageView.setImageBitmap(cameraBitmap);
-                        de.setBackgroundImage(cameraBitmap);
-                        binding.backgroundView.addView(imageView);
+                    Bitmap cameraBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file));
+                    cameraBitmap = rotateBitmap(cameraBitmap, drawingViewModel.getPhotoPath());
 
-                        messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(cameraBitmap));
-                        client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
-                    }
+                    messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(cameraBitmap));
+                    client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
+
+//                    File file = new File(drawingViewModel.getPhotoPath());
+//                    Bitmap cameraBitmap = rotateBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file)), PICK_FROM_CAMERA);
+//                    cameraBitmap = resizeBitmap(cameraBitmap);
+//                    if (cameraBitmap != null) {
+//                        ImageView imageView = new ImageView(getContext());
+//                        imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
+//                        imageView.setImageBitmap(cameraBitmap);
+//                        de.setBackgroundImage(cameraBitmap);
+//                        binding.backgroundView.addView(imageView);
+//
+//                        messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(cameraBitmap));
+//                        client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
+//                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -452,22 +521,15 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         return super.onOptionsItemSelected(item);
     }
 
-    private Bitmap rotateBitmap(Bitmap bitmap, int mode) {
+    // fixme jiyeon
+    private Bitmap rotateBitmap(Bitmap bitmap, String path) {
         ExifInterface exif = null;
-        int orientation = 0;
-
-        if (mode == PICK_FROM_GALLERY) {
-            //orientation = ExifInterface.ORIENTATION_ROTATE_90;
-            orientation = ExifInterface.ORIENTATION_NORMAL; //fixme minj
-        } else if (mode == PICK_FROM_CAMERA) {
-            try {
-                exif = new ExifInterface(drawingViewModel.getPhotoPath());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                    ExifInterface.ORIENTATION_UNDEFINED);
+        try {
+            exif = new ExifInterface(path);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
 
         Matrix matrix = new Matrix();
         switch (orientation) {
@@ -494,15 +556,57 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         }
     }
 
-    private Bitmap resizeBitmap(Bitmap bitmap) {
-        int resizeWidth = size.x/2;
+    // fixme jiyeon
+    private String getRealPathFromURI(Uri contentURI) {
+        String result; Cursor cursor = getContext().getContentResolver().query(contentURI, null, null, null, null);
+        if (cursor == null) {
+            result = contentURI.getPath();
+        } else {
+            cursor.moveToFirst();
+            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            result = cursor.getString(idx); cursor.close();
+        }
+        return result;
+    }
 
-        double aspectRatio = (double) bitmap.getHeight() / (double) bitmap.getWidth();
-        int resizeHeight = (int) (resizeWidth * aspectRatio);
-        Bitmap resizeBitmap = Bitmap.createScaledBitmap(bitmap, resizeWidth, resizeHeight, true);
-        if (resizeBitmap != bitmap)
-            bitmap.recycle();
+//    private Bitmap resizeBitmap(Bitmap bitmap) {
+//        int resizeWidth = size.x/2;
+//
+//        double aspectRatio = (double) bitmap.getHeight() / (double) bitmap.getWidth();
+//        int resizeHeight = (int) (resizeWidth * aspectRatio);
+//        Bitmap resizeBitmap = Bitmap.createScaledBitmap(bitmap, resizeWidth, resizeHeight, true);
+//        if (resizeBitmap != bitmap)
+//            bitmap.recycle();
+//
+//        return resizeBitmap;
+//    }
 
-        return resizeBitmap;
+    // fixme hyeyeon[1]
+    @Override
+    public void onPause() {  // todo
+        super.onPause();
+        Log.i("lifeCycle", "DrawingFragment onPause()");
+    }
+
+    @Override
+    public void onDestroyView() {  // todo
+        super.onDestroyView();
+        Log.i("lifeCycle", "DrawingFragment onDestroyView()");
+        if (exitOnClickListener != null) {
+            exitOnClickListener = null;
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.i("lifeCycle", "DrawingFragment onDestroy()");
+    }
+
+    @Override
+    public void onDetach() {  // todo
+        super.onDetach();
+        Log.i("lifeCycle", "DrawingFragment onDetach()");
+        ((MainActivity)getContext()).setOnKeyBackPressedListener(null);
     }
 }

@@ -92,6 +92,7 @@ public class DrawingView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         Log.i("drawing", "drawing view isIntercept = " + isIntercept + ", de isIntercept = " + de.isIntercept());
+
         if(!de.isIntercept()) this.isIntercept = false;
 
         if(!isIntercept) {

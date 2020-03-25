@@ -39,13 +39,12 @@ public class TextAttribute {
     private boolean isTextInited = false;
     private boolean isTextMoved = false;
 
+    private boolean isTextChangedColor = false;
 /*
-
     public TextAttribute(int id, String username, String text, int textSize, int textColor, int textBackgroundColor,
                          int textGravity, int style, int generatedLayoutWidth, int generatedLayoutHeight) {
         this.id = id;
         this.username = username;
-
         this.text = text;
         this.textSize = textSize;
         this.textColor = textColor;

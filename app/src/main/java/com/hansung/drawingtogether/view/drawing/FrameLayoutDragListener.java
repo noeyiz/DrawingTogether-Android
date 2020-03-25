@@ -20,6 +20,8 @@ class FrameLayoutDragListener implements View.OnDragListener {
         TextView textView;
         ViewGroup viewGroup;
 
+        Log.e("Drag Event", Integer.toString(event.getAction()));
+
         View draggedView = (View) event.getLocalState();
         if(draggedView instanceof TextView) {
             textView = (TextView) draggedView;
@@ -40,6 +42,7 @@ class FrameLayoutDragListener implements View.OnDragListener {
         else if( (x - (textView.getWidth()/2)) < 0 ) {
             x = 0 + textView.getWidth()/2; // 우측으로 넘어갈 경우
         }
+
 
         switch (event.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:

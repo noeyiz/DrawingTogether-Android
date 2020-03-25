@@ -27,6 +27,13 @@ import retrofit2.Response;
 public class SearchViewModel extends BaseViewModel {
     private ObservableField<String> keyword;
 
+    // fixme hyeyeon[1]
+    @Override
+    public void onCleared() {  // todo
+        super.onCleared();
+        Log.i("lifeCycle", "SearchViewModel onCleared()");
+    }
+
     public SearchViewModel() {
         this.keyword = new ObservableField<>();
     }

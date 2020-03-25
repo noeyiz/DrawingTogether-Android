@@ -432,6 +432,7 @@ public enum DrawingEditor {
                 t.getTextView().setText(t.getTextAttribute().getPreText()); // 이전 텍스트로 설정
                 t.getTextView().setBackground(this.textFocusBorderDrawable); // 테두리 설정
             }
+            // 중간에 들어왔는데 색상
 
             // fixme nayeon
             t.setTextViewInitialPlace(t.getTextAttribute());
