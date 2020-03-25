@@ -3,9 +3,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.content.ClipData;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.text.Editable;
-import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -20,6 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.hansung.drawingtogether.data.remote.model.LogContent;
+import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 
@@ -33,6 +33,8 @@ public class Text { // EditTextView
     private DrawingEditor de = DrawingEditor.getInstance();
     private MQTTClient client = MQTTClient.getInstance();
     private JSONParser parser = JSONParser.getInstance();
+
+    private Logger logger = Logger.getInstance();
 
     private DrawingFragment drawingFragment;
     private FragmentDrawingBinding binding;
@@ -79,6 +81,9 @@ public class Text { // EditTextView
         setTextViewInitialPlace(this.textAttribute);
 
         setListenerOnTextView();
+
+        logger.info("new text");
+        logger.warn("warn message test");
     }
 
     public void sendMqttMessage(TextMode textMode) {
@@ -277,6 +282,7 @@ public class Text { // EditTextView
 
             sendMqttMessage(TextMode.CREATE); // 변경된 내용을 가진 TextAttribute 를 MQTT 메시지 전송
 
+
             deactivateTextEditing();
 
             // set text view properties fixme nayeon
@@ -383,7 +389,6 @@ public class Text { // EditTextView
     private void startTextColorChange() {
         de.setCurrentText(this); // 현재 텍스트 지정
         setTextAttribute(); // 텍스트 편집 전 사용자 이름 지정
-        textAttribute.setTextChangedColor(true); // 텍스트 컬러 변경중임을 나타내는 플래그 (중간자 처리 위해)
 
         sendMqttMessage(TextMode.START_COLOR_CHANGE); // 다른 사용자의 텍스트 동시 처리 막기 위해 ( 이름, 테두리 설정 )
 
@@ -396,7 +401,6 @@ public class Text { // EditTextView
 
     public void finishTextColorChange() {
         textAttribute.setUsername(null);
-        textAttribute.setTextChangedColor(false);
 
         sendMqttMessage(TextMode.FINISH_COLOR_CHANGE);
 
@@ -477,12 +481,16 @@ public class Text { // EditTextView
     public void addTextViewToFrameLayout() {
         try {
             frameLayout.addView(textView);
+            //frameLayout.addView(textView);
+
             Log.e("text", "frameLayout in adding view " + frameLayout.toString());
             Log.e("text", "text view size in adding view " + textView.getWidth() + ", " + textView.getHeight());
 
         }
         catch(IllegalStateException ie) {
             ie.printStackTrace();
+
+            logger.error("text add view error"); // fixme nayeon
 
             Log.e("error", "☆ ☆ ☆  frameLayout.addView ☆ ☆ ☆");
             Log.e("drawing editor text size", Integer.toString(de.getTexts().size()));

@@ -129,7 +129,7 @@ public class DrawingViewModel extends BaseViewModel {
         // 사용자가 처음 텍스트 편집창에서 텍스트 생성중인 경우
         // 텍스트 정보들을 모든 사용자가 갖고 있지 않음 ( 편집중인 사람만 갖고 있음 )
         // 따라서 중간자가 들어오고 난 후에 텍스트 생성을 할 수 있도록 막아두기
-        if(de.isMidEntered() && !de.getCurrentText().getTextAttribute().isTextInited()) { // fixme nayeon
+        if(de.isMidEntered() && !de.getCurrentText().getTextAttribute().isTextInited()) { // todo nayeon ☆☆☆ 텍스트 중간자 처리
            showToastMsg("다른 사용자가 접속 중 입니다 잠시만 기다려주세요");
            return;
         }
