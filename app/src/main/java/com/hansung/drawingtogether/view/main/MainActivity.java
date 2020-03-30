@@ -1,34 +1,36 @@
 package com.hansung.drawingtogether.view.main;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 
+import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.hansung.drawingtogether.R;
-import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+
+import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
-import com.hansung.drawingtogether.view.drawing.JSONParser;
-import com.hansung.drawingtogether.view.drawing.Mode;
-import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
+
 
 
 public class MainActivity extends AppCompatActivity {
-
     private String topicPassword="";
     private Toolbar toolbar;
     private TextView title;
+
+    public static Context context; // fixme nayeon
+
+    private Logger logger = Logger.getInstance(); // fixme nayeon ☆☆☆☆☆ 1. Log 기록에 사용할 클래스 참조
 
     private DrawingEditor de = DrawingEditor.getInstance();
     private long lastTimeBackPressed;  // fixme hyeyon[3]
@@ -51,8 +53,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e("activity", "onCreate()");
         setContentView(R.layout.activity_main);
         Log.i("lifeCycle", "MainActivity onCreate()");
+
+        context = this; // fixme nayeon
+
+
+        // fixme nayeon ☆☆☆☆☆ 2. Log 종류
+        logger.info("MainActivity Logging Test");
+        logger.info("logging information");
+        logger.warn("logging warning");
+        logger.error("logging error");
+
 
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         title = (TextView)findViewById(R.id.toolbar_title);
@@ -76,11 +89,11 @@ public class MainActivity extends AppCompatActivity {
             topicPassword = topic;
             topicPassword += "/" + password;
         }
-
     }
 
     @Override
     public void onBackPressed() {
+
         if (mOnKeyBackPressedListener != null) {
             mOnKeyBackPressedListener.onBackKey();
         }

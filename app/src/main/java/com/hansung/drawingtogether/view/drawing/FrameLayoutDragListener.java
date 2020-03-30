@@ -24,9 +24,8 @@ class FrameLayoutDragListener implements View.OnDragListener {
 
         View draggedView = (View) event.getLocalState();
         if(draggedView instanceof TextView) {
-
-
             textView = (TextView) draggedView;
+            viewGroup = (ViewGroup) textView.getParent();
         }
         else { return true; }
 
@@ -36,9 +35,13 @@ class FrameLayoutDragListener implements View.OnDragListener {
         int x = (int)event.getX();
         int y = (int)event.getY();
 
-
         // todo nayeon 텍스트 뷰 화면 넘어갈 때 처리
-        // if( (x + (textView.getWidth()/2)) > frameLayout.getWidth()) { x = frameLayout.getWidth() - textView.getWidth()/2; }
+        if( (x + (textView.getWidth()/2)) > viewGroup.getWidth() ) { // 좌측으로 넘어갈 경우
+            x = viewGroup.getWidth() - textView.getWidth()/2;
+        }
+        else if( (x - (textView.getWidth()/2)) < 0 ) {
+            x = 0 + textView.getWidth()/2; // 우측으로 넘어갈 경우
+        }
 
 
         switch (event.getAction()) {
@@ -84,7 +87,6 @@ class FrameLayoutDragListener implements View.OnDragListener {
 
                 break;
             case DragEvent.ACTION_DRAG_EXITED:
-                viewGroup = (ViewGroup) textView.getParent(); // ViewGroup = FrameLayout
                 viewGroup.removeView(textView);
 
                 textAttribute.setCoordinates(preX, preY); // TextAttribute 에 좌푯값 저장

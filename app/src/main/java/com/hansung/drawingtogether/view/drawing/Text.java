@@ -15,10 +15,12 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 
@@ -32,6 +34,7 @@ public class Text { // EditTextView
     private DrawingEditor de = DrawingEditor.getInstance();
     private MQTTClient client = MQTTClient.getInstance();
     private JSONParser parser = JSONParser.getInstance();
+    private Logger logger = Logger.getInstance();
 
     private DrawingFragment drawingFragment;
     private FragmentDrawingBinding binding;
@@ -53,19 +56,11 @@ public class Text { // EditTextView
 
     private boolean isDragging = false;
 
-    private final int MAX_LENGTH = 20; // fixme nayeon
+    private final int MAX_LENGTH = 40;
 
-    public Text(DrawingFragment drawingFragment, TextAttribute textAttr) {    //fixme minj
+    public Text(DrawingFragment drawingFragment, TextAttribute textAttr) {
         this.drawingFragment = drawingFragment;
         this.binding = drawingFragment.getBinding();
-
-        this.textView = new TextView(drawingFragment.getActivity());
-        this.textView.setPadding(20, 20, 20, 20);       //fixme minj
-
-        this.editText = new EditText(drawingFragment.getActivity());
-        this.editText.setPadding(20, 20, 20, 20);
-
-        editText.setFilters( new InputFilter[] { new InputFilter.LengthFilter(MAX_LENGTH)} ); // 텍스트의 최대 글자 수 지정
 
         this.frameLayout = this.binding.drawingViewContainer;
         this.textEditLayout = this.binding.textEditLayout;
@@ -74,25 +69,16 @@ public class Text { // EditTextView
         this.textAttribute = textAttr;
 
 
-        editText.setHint("텍스트를 입력하세요");
+        // fixme nayeon [ TextView 가로 크기는 텍스트 편집 레이아웃 1/3, EditText 가로 크기는 텍스트 편집 레이아웃 3/4 ]
+        this.textView = new TextView(drawingFragment.getActivity());
+        /*this.textView.setPadding(20, 20, 20, 20);
+        this.textView.setWidth(textEditLayout.getWidth()/3);*/ // addTextViewToFrameLayout
+
+        this.editText = this.binding.editText; // fixme nayeon - EditText 를 fragment_drawing.xml 에 정의
+        //this.editText.setWidth((int)(textEditLayout.getWidth()*0.75));*/ // drawingFragment
 
         setTextViewAttribute();
-        setEditTextAttribute();
-
-        setViewLayoutParams(editText); // Edit Text View 가 초기에 놓일 자리
-
-
-        // TextView 가 초기에 놓일 자리
-        if(this.textAttribute.isTextInited() && this.textAttribute.isTextMoved()) {
-            Log.e("text", "call setTextViewLocationInConstructor");
-            Log.e("text attr", "isTextInited = " + textAttr.isTextInited() + " isTextMoved = " + textAttr.isTextMoved());
-            setTextViewLocationInConstructor();
-        } // 텍스트가 초기화 되어있을 경우 (이미 누군가에 의해 생성된 텍스트) - for middleman
-        else {
-            Log.e("text attr", "isTextInited = " + textAttr.isTextInited() + " isTextMoved = " + textAttr.isTextMoved());
-            setViewLayoutParams(textView);
-        } // todo nayeon - ☆ ☆ LayoutParams 와 뷰의 좌푯값의 관계
-
+        setTextViewInitialPlace(this.textAttribute);
 
         setListenerOnTextView();
     }
@@ -102,22 +88,24 @@ public class Text { // EditTextView
         client.publish(client.getTopic_data(), parser.jsonWrite(message));
     }
 
-    private void setTextViewAttribute() {
+    public void setTextViewAttribute() {
         textView.setText(textAttribute.getText());
         textView.setTextSize(textAttribute.getTextSize());
         textView.setTextColor(textAttribute.getTextColor());
-        textView.setBackgroundColor(textAttribute.getTextBackgroundColor());
+        //textView.setBackgroundColor(textAttribute.getTextBackgroundColor());
         textView.setGravity(textAttribute.getTextGravity());
         textView.setTypeface(null, textAttribute.getStyle());
     }
 
-    private void setEditTextAttribute() {
+    public void setEditTextAttribute() {
         editText.setText(textAttribute.getText());
         editText.setTextSize(textAttribute.getTextSize());
         editText.setTextColor(textAttribute.getTextColor());
-        editText.setBackgroundColor(textAttribute.getTextBackgroundColor());
+        //editText.setBackgroundColor(textAttribute.getTextBackgroundColor());
         editText.setGravity(textAttribute.getTextGravity());
         editText.setTypeface(null, textAttribute.getStyle());
+
+        editText.setSelection(editText.length()); // fixme nayeon - Edit Text 커서 뒤로
     }
 
     // 중간자 또는 불러오기 시 텍스트의 좌표가 정해진 후 지정해서 레이아웃에 붙여야하는 경우
@@ -133,6 +121,7 @@ public class Text { // EditTextView
         float x = textAttribute.getX() * xRatio - (textView.getMeasuredWidth()/2);
         float y = textAttribute.getY() * yRatio - (textView.getMeasuredHeight()/2);
 
+
         textView.setX(x);
         textView.setY(y);
     }
@@ -142,6 +131,17 @@ public class Text { // EditTextView
         FrameLayout.LayoutParams frameLayoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT); // frameLayoutParams 은 상단 중앙에 대한 위치 저장
         frameLayoutParams.gravity = Gravity.CENTER;
         view.setLayoutParams(frameLayoutParams);
+    }
+
+    public void setTextViewInitialPlace(TextAttribute textAttribute) {
+        // TextView 가 초기에 놓일 자리
+        if(textAttribute.isTextInited() && textAttribute.isTextMoved()) {
+            Log.e("text", "SET TEXT VIEW LOCATION IN CONSTRUCTOR()");
+            setTextViewLocationInConstructor();
+        } // 텍스트가 초기화 되어있을 경우 (이미 누군가에 의해 생성된 텍스트) - for middleman
+        else {
+            setViewLayoutParams(textView);
+        } // todo nayeon - ☆ ☆ LayoutParams 와 뷰의 좌푯값의 관계
     }
 
     private void setTextAttribute() {
@@ -156,13 +156,17 @@ public class Text { // EditTextView
             public boolean onTouch(View view, MotionEvent event) {
                 view.getParent().requestDisallowInterceptTouchEvent(true);  // 부모(frame layout)가 터치 이벤트를 가로채지 못 하도록
 
-                // 텍스트에 대한 터치 이벤트가 발생하면,
-                // 현재 모드를 텍스트로 지정
-                // de.setCurrentMode(Mode.TEXT);
 
-                // 텍스트 이름이 지정되어 있지 않거나, 혹은 이름이 지정되어있으나 내 이름이 아닐 때
-                // 텍스트 사용불가 (다른 사람이 사용중)
-                if(textAttribute.getUsername() != null && !textAttribute.getUsername().equals(de.getMyUsername())) {
+                // 1. 중간에 다른 사용자가 들어오는 중일 경우 텍스트 터치 막기
+                // 2. 텍스트에 다른 사용자 이름이 지정되어 있으면
+                // 텍스트 사용불가 (다른 사람이 사용중) - 이름이 null 일 경우만 사용 가능
+                // 3. 현재 사용자가 한 텍스트 편집 중이라면, 다른 텍스트 편집 불가능 (한 번에 한 텍스트만 편집 가능)
+                if(de.isMidEntered()) {
+                    showToastMsg("다른 사용자가 접속 중 입니다 잠시만 기다려주세요");
+                    return true;
+                }
+
+                else if(textAttribute.getUsername() != null && !textAttribute.getUsername().equals(de.getMyUsername())) {
                     showToastMsg("다른 사용자가 편집중인 텍스트입니다");
                     return true;
                 }
@@ -172,7 +176,7 @@ public class Text { // EditTextView
                     return true;
                 }
 
-                else { textAttribute.setUsername(de.getMyUsername()); } // 텍스트 사용이 가능하다면 텍스트에 자신의 이름을 지정하고 사용 시작
+                // else { textAttribute.setUsername(de.getMyUsername()); } // 텍스트 사용이 가능하다면 텍스트에 자신의 이름을 지정하고 사용 시작
 
                 setTextAttribute(); // 터치가 시작될 때마다 텍스트가 생성된 레이아웃의 크기 지정(비율 계산을 위해)
 
@@ -184,33 +188,21 @@ public class Text { // EditTextView
 
 
 
+        // fixme nayeon
+        // EditText 를 하나만 두고 쓰다보니까 현재 편집중인 텍스트를 명확하게 잡아줘야함.
         TextWatcher textWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) {
-                //Log.i("Before Text Changed", charSequence.toString() + " " + start + " " + before + " " + count);
-            }
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int start, int count, int after) {
-                //Log.i("On Text Changed", charSequence.toString() + " " + start + " " + count + " " + after);
-            }
+            public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) { }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int count, int after) { }
 
             @Override
             public void afterTextChanged(Editable editable) {
-                //Log.i("After Text Changed", editable.toString());
-                // todo nayeon ** TextAttribute 세팅 필요성 - 사용자 이름변경은 changeTextViewToEditText 에서
-
-                // 처음 텍스트 생성을 위해 사용자가 텍스트를 수정 중일 경우 메시지 전송 X
-                if(!textAttribute.isTextInited()) return;
-
-                // 텍스트 수정을 시작할 시점에만 메시지 전송
-                // 변경된 텍스트는 TextMode.DONE 에서 처리
-                if(!de.isTextBeingModified()) {
-                    de.setTextBeingModified(true);
-                    sendMqttMessage(TextMode.MODIFY_START);
-                }
-
-                textAttribute.setText(editable.toString());
+                // fixme nayeon
+                Text text = de.getCurrentText();
+                if(text != null) { text.getTextAttribute().setText(editable.toString()); }
             }
         };
 
@@ -229,7 +221,6 @@ public class Text { // EditTextView
         de.removeTexts(this); // 텍스트 리스트에서 텍스트 제거
     }
 
-
     // fixme nayeon Focusing - Edit Text 사용 시 포커스와 키보드 처리
     private void processFocusIn() {
         editText.requestFocus();
@@ -242,20 +233,22 @@ public class Text { // EditTextView
     public void calculateRatio(float myLayoutWidth, float myLayoutHeight) {
         this.xRatio = myLayoutWidth / this.textAttribute.getGeneratedLayoutWidth();
         this.yRatio = myLayoutHeight / this.textAttribute.getGeneratedLayoutHeight();
+
+        Log.e("text", "my layout location = " + myLayoutWidth + ", " + myLayoutHeight);
+        Log.e("text", "attached layout location = " + textAttribute.getGeneratedLayoutWidth() + ", " + textAttribute.getGeneratedLayoutHeight());
     }
 
 
-    private void changeTextViewToEditText() {
+    public void changeTextViewToEditText() {
         de.setCurrentMode(Mode.TEXT); // 텍스트 편집시 텍스트 모드 지정
 
         textAttribute.setUsername(de.getMyUsername()); // 텍스트 사용을 시작하면 텍스트에 자신의 이름 지정하기
 
         textAttribute.setText(textView.getText().toString()); // TextView 에 쓰여져 있던 내용을 TextAttribute 에 저장
-        setEditTextAttribute(); // 앞서 변경한 TextAttribute 로 (텍스트 내용) EditText 에 설정
+        setEditTextAttribute(); // 앞서 변경한 TextAttribute 로 (텍스트 내용) EditText 에 설정 [ 색 굵기 등등 ]
 
         activeTextEditing();
     }
-
 
     // todo nayeon 함수 정리 필요
     // Done Button 클릭 시 실행되는 함수
@@ -275,7 +268,6 @@ public class Text { // EditTextView
                 return;
             }
 
-            textAttribute.setText(editText.getText().toString()); // EditText 에서 변경된 내용(문자열)을 TextAttribute 에 저장
 
             textAttribute.setUsername(null); // send mqtt message
             textAttribute.setTextInited(true);
@@ -288,6 +280,11 @@ public class Text { // EditTextView
             sendMqttMessage(TextMode.CREATE); // 변경된 내용을 가진 TextAttribute 를 MQTT 메시지 전송
 
             deactivateTextEditing();
+
+            // set text view properties fixme nayeon
+            this.textView.setPadding(20, 20, 20, 20);
+            this.textView.setWidth(frameLayout.getWidth()/3);
+
             addTextViewToFrameLayout(); // TextView 를 레이아웃에 추가 // fixme nayeon ☆ 텍스트 처음 생성 시에만 TEXT VIEW 붙이기
 
 
@@ -339,37 +336,80 @@ public class Text { // EditTextView
     }
 
     public void activeTextEditing() {
+        de.setCurrentText(this);
+        de.setTextBeingEdited(true);
+
+        enableDrawingMenuButton(false); // fixme nayeon
+
+        editText.setWidth((int)(binding.textEditLayout.getWidth() * 0.75)); // fixme nayeon
+
         binding.redoBtn.setVisibility(View.INVISIBLE);
         binding.undoBtn.setVisibility(View.INVISIBLE); // 텍스트 편집 시 UNDO, REDO 버튼 안보이도록
 
         textView.setVisibility(View.INVISIBLE);
 
         binding.doneBtn.setVisibility(View.VISIBLE);
+        binding.sizeBar.setVisibility(View.VISIBLE);
 
         binding.textEditLayout.setBackgroundColor(Color.parseColor("#80D3D3D3")); // 50% 투명도 회색 배경
-        binding.textEditLayout.addView(editText); // todo nayeon - Attach EditText
+
+        editText.setVisibility(View.VISIBLE);
+        editText.setEnabled(true);
+
 
         processFocusIn(); // Edit Text 를 붙인 후 자동 포커싱
-        de.setCurrentText(this);
-        de.setTextBeingEdited(true);
     }
 
     public void deactivateTextEditing() {
         textEditLayout.setBackgroundColor(Color.TRANSPARENT); // 텍스트 편집이 종료되면 레이아웃 색깔 다시 무색으로
 
         binding.doneBtn.setVisibility(View.INVISIBLE); // DONE 버튼 숨기기
+        binding.sizeBar.setVisibility(View.INVISIBLE);
 
         textView.setVisibility(View.VISIBLE); // 편집 들어갔던 텍스트 뷰 다시 보이기
 
         binding.redoBtn.setVisibility(View.VISIBLE);
         binding.undoBtn.setVisibility(View.VISIBLE);
 
-        binding.textEditLayout.removeView(editText);// todo nayeon - Detach EditText
+        //binding.textEditLayout.removeView(editText);// todo nayeon - Detach EditText
+        editText.setVisibility(View.INVISIBLE);
+        editText.setEnabled(false);
 
         processFocusOut();
 
+        enableDrawingMenuButton(true); // fixme nayeon
+
         de.setTextBeingEdited(false); // 텍스트 편집 모드 false 처리
-        de.setTextBeingModified(false); // 텍스트 편집 종료
+    }
+
+    private void startTextColorChange() {
+        de.setCurrentText(this); // 현재 텍스트 지정
+        setTextAttribute(); // 텍스트 편집 전 사용자 이름 지정
+        textAttribute.setTextChangedColor(true); // 텍스트 컬러 변경중임을 나타내는 플래그 (중간자 처리 위해)
+
+        sendMqttMessage(TextMode.START_COLOR_CHANGE); // 다른 사용자의 텍스트 동시 처리 막기 위해 ( 이름, 테두리 설정 )
+
+        textView.setBackground(de.getTextHighlightBorderDrawble());
+
+        binding.currentColorBtn.setBackgroundColor(textAttribute.getTextColor()); // 현재 텍스트 컬러로 현재 색상 버튼 색깔 변경
+        visibleDrawingMenuAndTopToolButton(View.INVISIBLE); // 다른 메뉴 버튼들 숨기기
+        binding.textColorChangeButton.setVisibility(View.VISIBLE); // 텍스트 컬러 설정 버튼 보이기
+    }
+
+    public void finishTextColorChange() {
+        textAttribute.setUsername(null);
+        textAttribute.setTextChangedColor(false);
+
+        sendMqttMessage(TextMode.FINISH_COLOR_CHANGE);
+
+        textView.setBackground(null);
+        de.setCurrentText(null);
+
+        visibleDrawingMenuAndTopToolButton(View.VISIBLE);
+        binding.textColorChangeButton.setVisibility(View.INVISIBLE);
+        binding.currentColorBtn.setBackgroundColor(de.getStrokeColor()); // 이전에 선택했던 펜 컬러로 현재 색상 버튼 색깔 변경
+
+        de.setCurrentMode(Mode.DRAW);
     }
 
     // TextAttribute 에 저장된 x, y 좌푯값을 바탕으로
@@ -392,19 +432,6 @@ public class Text { // EditTextView
 
     private Text getText() { return this; } // For Using In Gesture Class
 
-    // todo nayeon ☆ ☆ ☆ 레이아웃에 텍스트 뷰 추가 시 오류 캐치
-    public void addTextViewToFrameLayout() {
-        try { frameLayout.addView(textView); }
-        catch(IllegalStateException ie) {
-            ie.printStackTrace();
-
-            Log.e("error", "☆ ☆ ☆  frameLayout.addView ☆ ☆ ☆");
-            Log.e("drawing editor text size", Integer.toString(de.getTexts().size()));
-            Log.e("frame layout children count", Integer.toString(frameLayout.getChildCount()));
-
-            for(Text text: de.getTexts()) { Log.e("text id", text.getTextAttribute().getId()); } // 모든 텍스트 아이디 출력
-        }
-    }
 
     private void showToastMsg(final String message) { Toast.makeText(drawingFragment.getActivity(), message, Toast.LENGTH_SHORT).show(); }
 
@@ -419,11 +446,66 @@ public class Text { // EditTextView
 
     private boolean isEditTextContentEmpty() { return editText.getText().toString().matches(""); }
 
+    public void enableDrawingMenuButton(Boolean bool) {
+        LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
+
+        for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
+            drawingMenuLayout.getChildAt(i).setEnabled(bool);
+        }
+    }
+
+
+    public void visibleDrawingMenuAndTopToolButton(int visibility) {
+        LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
+
+        for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
+            drawingMenuLayout.getChildAt(i).setVisibility(visibility);
+        }
+
+        LinearLayout topToolMenuLayout =  binding.topToolLayout;
+
+        for(int i=0; i<topToolMenuLayout.getChildCount(); i++) {
+            topToolMenuLayout.getChildAt(i).setVisibility(visibility);
+        }
+    }
+
     /*
      *
      *  뷰를 변경하는 작업 : 메인 스레드에서 처리되어야 하는 작업들
      *
      */
+
+    // todo nayeon ☆ ☆ ☆ 레이아웃에 텍스트 뷰 추가 시 오류 캐치
+    public void addTextViewToFrameLayout() {
+        try {
+            frameLayout.addView(textView);
+
+            Log.e("text", "frameLayout in adding view " + frameLayout.toString());
+            Log.e("text", "text view size in adding view " + textView.getWidth() + ", " + textView.getHeight());
+
+        }
+        catch(IllegalStateException ie) {
+            ie.printStackTrace();
+
+            logger.error("☆ ☆ ☆  frameLayout.addView ☆ ☆ ☆");
+            logger.error("drawing editor text size = " + de.getTexts().size());
+            logger.error("frame layout children count = " + frameLayout.getChildCount());
+
+            for(Text text: de.getTexts()) { logger.error("text id = " + text.getTextAttribute().getId()); } // 모든 텍스트 아이디 출력
+
+            Log.e("error", "☆ ☆ ☆  frameLayout.addView ☆ ☆ ☆");
+            Log.e("drawing editor text size", Integer.toString(de.getTexts().size()));
+            Log.e("frame layout children count", Integer.toString(frameLayout.getChildCount()));
+
+            for(Text text: de.getTexts()) { Log.e("text id", text.getTextAttribute().getId()); } // 모든 텍스트 아이디 출력
+        }
+    }
+
+    public void setTextViewProperties() {  // set text view padding & width
+        this.textView.setPadding(20, 20, 20, 20);
+        this.textView.setWidth(frameLayout.getWidth()/3);
+    }
+
     public void removeTextViewToFrameLayout()  { frameLayout.removeView(textView); }
 
     public void modifyTextViewContent(String text) { textView.setText(text); }
@@ -453,6 +535,7 @@ public class Text { // EditTextView
                 Log.i("drawing", "history.size()=" + de.getHistory().size());
                 de.clearUndoArray();
             } else {
+                //textView.setBackground(de.getTextMoveBorderDrawable());
                 de.setCurrentMode(Mode.TEXT);
             }
 
@@ -462,17 +545,19 @@ public class Text { // EditTextView
         @Override
         public void onShowPress(MotionEvent motionEvent) {
             System.out.println("onShowPress() called");
-            textView.setBackground(de.getTextMoveBorderDrawable());
+            //textView.setBackground(de.getTextMoveBorderDrawable());
         }
 
         @Override
         public boolean onSingleTapUp(MotionEvent motionEvent) {
             System.out.println("onSingleTapUp() called");
 
-            textView.setBackground(null); //
+            //textView.setBackground(null); //
 
             textAttribute.setPreText(textAttribute.getText());
             changeTextViewToEditText();
+
+            sendMqttMessage(TextMode.MODIFY_START);
 
             return true;
         }
@@ -497,9 +582,13 @@ public class Text { // EditTextView
             return true;
         }
 
+        // fixme nayeon - 텍스트 길게 누를 시 색상 선택
         @Override
         public void onLongPress(MotionEvent motionEvent) {
-            System.out.println("onLongPress() called");
+            //System.out.println("onLongPress() called");
+
+            startTextColorChange();
+
         }
 
         @Override
@@ -509,4 +598,3 @@ public class Text { // EditTextView
         }
     }
 }
-

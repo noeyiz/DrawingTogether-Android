@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -18,7 +19,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:name=".data.remote.model.DrawingTogetherApplication"> <!-- fixme nayeon [ android:name="" ] Registration LogApplication Class -->
         <activity android:name=".view.splash.SplashActivity"
             android:theme="@style/SplashTheme">
             <intent-filter>

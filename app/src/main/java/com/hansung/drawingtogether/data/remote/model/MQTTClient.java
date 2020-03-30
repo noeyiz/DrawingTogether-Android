@@ -92,6 +92,7 @@ public enum MQTTClient {
     private String topic_delete;
     private String topic_data;
     private String topic_mid;
+
     private String topic_alive;
     // private String topic_load;
 
@@ -112,7 +113,9 @@ public enum MQTTClient {
     private Thread th;
     private boolean exitPublish;
 
-    public static MQTTClient getInstance() { return INSTANCE; }
+    public static MQTTClient getInstance() {
+        return INSTANCE;
+    }
 
     public void init(String topic, String name, boolean master, DrawingViewModel drawingViewModel, String ip, String port) {
         connect(ip, port);
@@ -160,7 +163,7 @@ public enum MQTTClient {
 
             String currentClientId = client.getClientId();
             Log.i("mqtt", "Client ID: " + currentClientId);
-        } catch(MqttException e) {
+        } catch (MqttException e) {
             e.printStackTrace();
             showTimerAlertDialog("브로커 연결 실패", "메인 화면으로 이동합니다");
         }
@@ -182,7 +185,7 @@ public enum MQTTClient {
             client.publish(newTopic, payload.getBytes(), this.qos, false);
             //Log.i("mqtt", "PUBLISH topic: " + newTopic + ", msg: " + message); // fixme nayeon
             // Log.e("mqtt payload size", Integer.toString(message.getPayload().length)); // fixme nayeon
-        } catch(MqttException e) {
+        } catch (MqttException e) {
             e.printStackTrace();
             showTimerAlertDialog("메시지 전송 실패", "메인 화면으로 이동합니다");
         }
@@ -235,14 +238,13 @@ public enum MQTTClient {
 
     public String userPrint() {
         String names = "";
-        for (int i=0; i<userList.size(); i++) {
+        for (int i = 0; i < userList.size(); i++) {
             if (i == 0) {
                 if (userList.get(i).getName().equals(myName))
                     names += userList.get(i).getName() + " ★ (나)\n";
                 else
                     names += userList.get(i).getName() + " ★\n";
-            }
-            else {
+            } else {
                 if (userList.get(i).getName().equals(myName))
                     names += userList.get(i).getName() + " (나)\n";
                 else
@@ -254,7 +256,7 @@ public enum MQTTClient {
 
     public String userPrintForLog() {
         String names = "";
-        for (User user: userList) {
+        for (User user : userList) {
             names += "[" + user.getName() + "," + user.getCount() + "] ";
         }
         return names;
@@ -286,7 +288,8 @@ public enum MQTTClient {
 
                     if (master != null) { // 메시지 형식이 "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..."  일 경우
                         //binding.drawingView.setIntercept(false);
-                        de.setIntercept(false);
+                        de.setIntercept(false); // 중간에 누가 들어왔을 때 선을 그리는 중이 아닌 다른 사용자들 터치 이벤트 부모뷰에서 가로채도록 (모두가 처리하는 부분)
+
                         Log.i("drawing", "isMid = " + isMid());
 
                         String to = joinMessage.getTo();
@@ -302,7 +305,8 @@ public enum MQTTClient {
                                 }
                             }
                             userList.clear(); // 중간자는 마스터에게 사용자 리스트를 받기 전에 userList.add() 했음 따라서 자신의 리스트를 지우고 마스터가 보내준 배열 저장
-                            for (User user: users) {  // 메시지로 전송받은 리스트 배열 세팅
+
+                            for (User user : users) {  // 메시지로 전송받은 리스트 배열 세팅
                                 user.setCount(0);
                                 userList.add(user);
                             }
@@ -329,24 +333,22 @@ public enum MQTTClient {
                             // de.setTextId(mqttMessageFormat.getMaxTextId()); // fixme nayeon - 텍스트 아이디는 "사용자이름-textIdCount" 이므로 textIdCount 가 같아도 고유
                             Log.i("drawing", "component id = " + mqttMessageFormat.getMaxComponentId() + ", text id = " + mqttMessageFormat.getMaxTextId());
 
-                            if(mqttMessageFormat.getBitmapByteArray() != null) {
+                            if (mqttMessageFormat.getBitmapByteArray() != null) {
                                 de.setBackgroundImage(de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()));
                             }
-/*
-                            Log.e("my name, drawingComponents size", myName + ", " + de.getDrawingComponents().size());
-                            Log.e("my name, texts size", myName + ", " + de.getTexts().size());
-                            Log.e("componentId variable value, last componentId", de.getComponentId() + "");        // + ", " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId());
-                            Log.e("textId variable value, last textId", de.getTextId() + "");                       //+ ", " + de.getTexts().get(de.getTexts().size()-1).getTextAttribute().getId());
-                            Log.e("removedComponentId[] = ", de.getRemovedComponentId().toString());
-*/
+
                             publish(topic_mid, JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)));
                             //publish(topic_data, JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)));
                         }
                     } else {  // other or self // 메시지 형식이 "name":"이름"  일 경우
                         if (!myName.equals(name)) {  // other // 한 사람이 "name":"이름" 메시지 보냈을 경우 다른 사람들이 받아서 처리하는 부분 - '나'는 처리 안하는 부분
                             if (!isContainsUserList(name)) {
-                                User user = new User(name, 0);
+                                User user = new User(name, 0);  // fixme hyeyeon
                                 userList.add(user); // 들어온 사람의 이름을 추가
+
+                                // 다른 사용자가 들어왔다는 메시지를 받았을 경우
+                                // 텍스트 비활성화를 위해 플래그 설정
+                                de.setMidEntered(true); // fixme nayeon
 
                                 if (de.getCurrentMode() == Mode.DRAW) {  // current mode 가 DRAW 이면, 그리기 중이던 component 까지만 그리고 touch intercept   // todo 다른 모드에서도 intercept 하도록 추가
                                     de.setIntercept(true);
@@ -357,7 +359,7 @@ public enum MQTTClient {
 
                             // 마스터이고, 모든 username 의 마지막 draw action 이 ACTION_UP 이면, 자신의 드로잉 구조체들 전송
                             if (isMaster()) {
-                                if (isUsersActionUp()) {
+                                if (isUsersActionUp() && isTextInUse()) { // fixme nayeon
                                     JoinMessage joinMsg = new JoinMessage(userList.get(0).getName(), userList.get(userList.size() - 1).getName(), userList);  // fixme hyeyeon
 
                                     MqttMessageFormat messageFormat;
@@ -376,6 +378,8 @@ public enum MQTTClient {
                                 } else {
                                     MqttMessageFormat messageFormat = new MqttMessageFormat(new JoinMessage(userList.get(userList.size() - 1).getName()));
                                     publish(topic_join, parser.jsonWrite(messageFormat));
+
+                                    Log.e("master republish name", topic_join);
                                 }
                             }
                             //drawingViewModel.setUserNumTv(userList.size());
@@ -394,11 +398,12 @@ public enum MQTTClient {
 
                     if (!myName.equals(name)) {  // 다른 사용자가 exit 하는 경우
                         // todo hyeyeon - master로부터 데이터 받기 전에 exit 하는 사용자들 기억해두기
-                        for (User user: userList) {
+                        for (User user : userList) {
                             if (user.getName().equals(name)) {
                                 usersActionMap.remove(user.getName());
                                 Log.i("drawing", "userActionMap = " + usersActionMap.toString());
-                                userList.remove(user); break;
+                                userList.remove(user);
+                                break;
                             }
                         }
                         drawingViewModel.setUserNum(userList.size());
@@ -417,9 +422,7 @@ public enum MQTTClient {
                         Log.i("drawing", "userActionMap = " + usersActionMap.toString());
                         drawingViewModel.back();
                     }*/
-
                 }
-
                 if (newTopic.equals(topic_delete)) {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
@@ -437,10 +440,10 @@ public enum MQTTClient {
                     MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
                     AliveMessage aliveMessage = mqttMessageFormat.getAliveMessage();
                     String name = aliveMessage.getName();
-                    Log.e("kkankkan", name);
+                    // Log.e("kkankkan", name); // fixme nayeon 출력 주석
 
                     if (myName.equals(name)) {
-                        Log.e("kkankkan", "COUNT PLUS BEFORE" + userPrintForLog());
+                        // Log.e("kkankkan", "COUNT PLUS BEFORE" + userPrintForLog());
                         Iterator<User> iterator = userList.iterator();
                         while (iterator.hasNext()) {
                             User user = iterator.next();
@@ -472,27 +475,31 @@ public enum MQTTClient {
                 //drawing
                 if (newTopic.equals(topic_data) && de.getDrawingBitmap() != null) {
                     String msg = new String(message.getPayload());
-                    MqttMessageFormat messageFormat = (MqttMessageFormat)parser.jsonReader(msg);
+                    MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
-                    if(messageFormat.getMode() == Mode.TEXT) {  //TEXT 모드일 경우, username 이 다른 경우만 task 생성
-                        if(!messageFormat.getUsername().equals(de.getMyUsername())) {
+                    if (messageFormat.getMode() == Mode.TEXT) {  //TEXT 모드일 경우, username 이 다른 경우만 task 생성
+                        if (!messageFormat.getUsername().equals(de.getMyUsername())) {
                             Log.i("drawing", "username = " + messageFormat.getUsername() + ", text id = " + messageFormat.getTextAttr().getId() + ", mode = " + messageFormat.getMode() + ", text mode = " + messageFormat.getTextMode());
                             new TextTask().execute(messageFormat);
                         }
-                    }
-                    else {  // todo - background image 도 따로 task 만들어 관리
+                    } else {  // todo - background image 도 따로 task 만들어 관리
                         drawingTask = new DrawingTask();
                         drawingTask.execute(messageFormat);
                     }
                 }
 
                 //mid data 처리
-                if(newTopic.equals(topic_mid)) {
+                if (newTopic.equals(topic_mid)) {
                     String msg = new String(message.getPayload());
-                    MqttMessageFormat messageFormat = (MqttMessageFormat)parser.jsonReader(msg);
+                    MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
+
+                    // fixme nayeon
+                    // 모든 사용자가 topic_mid 로 메시지 전송받음
+                    // 이 시점 중간자에게는 모든 데이터 저장 완료 후
+                    de.setMidEntered(false);
 
                     Log.i("mqtt", "isMid=" + isMid());
-                    if(isMid && messageFormat.getUsername().equals(de.getMyUsername())) {
+                    if (isMid && messageFormat.getUsername().equals(de.getMyUsername())) {
                         isMid = false;
                         Log.i("mqtt", "mid username=" + messageFormat.getUsername());
                         new MidTask().execute();
@@ -507,18 +514,9 @@ public enum MQTTClient {
         });
     }
 
-    public void setToastMsg(final String message) {
-        Objects.requireNonNull(drawingFragment.getActivity()).runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(Objects.requireNonNull(drawingFragment.getContext()).getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
     public boolean isContainsUserList(String username) {
-        for(int i=0; i<userList.size(); i++) {
-            if(userList.get(i).getName().equals(username))
+        for (int i = 0; i < userList.size(); i++) {
+            if (userList.get(i).getName().equals(username))
                 return true;
         }
         return false;
@@ -544,6 +542,15 @@ public enum MQTTClient {
             }
         }
         Log.i("drawing", "userActionMap = " + usersActionMap.toString());
+        return true;
+    }
+
+    // fixme nayeon
+    public boolean isTextInUse() {
+        for (Text t : de.getTexts()) {
+            if (t.getTextAttribute().getUsername() != null)
+                return false;
+        }
         return true;
     }
 
@@ -629,6 +636,16 @@ public enum MQTTClient {
                         })
                         .create();
                 dialog.show();
+            }
+        });
+    }
+
+    public void setToastMsg(final String message) {
+        Objects.requireNonNull(drawingFragment.getActivity()).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(Objects.requireNonNull(drawingFragment.getContext()).getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+
             }
         });
     }
@@ -871,21 +888,6 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
     protected Void doInBackground(MqttMessageFormat... messages) {  //changeText()
         MqttMessageFormat message = messages[0];
 
-            /*
-            // 텍스트 모드고 텍스트가 처음 생성되었을 경우 [ 송신자 포함 모든 사용자가 처리하는 부분 ]
-            if(mode.equals(Mode.TEXT) && textMode.equals(TextMode.CREATE)) {
-                de.textIdCounter(); // DrawingEditor 에서 관리하는 텍스트 아이디를 증가시키고 [ int textId (DrawingEditor.java) 변수 값 증가 ]
-                message.getTextAttr().setId(de.getTextId()); // TextAttribute 에 증가된 아이디를 저장 - 이 후 수신자들은 이 textAttribute 를 바탕으로 텍스트 생성하기 때문에
-
-                if(de.getMyUsername().equals(username)) { // 송신자만 처리하는 부분
-                    de.setTextIdInCallback(message.getMyTextArrayIndex());
-                    return null;
-                }
-            }
-            */
-
-        // 중간자가 MID 모드의 메시지 보다 다른 모드(TEXT) 메시지 먼저 받는 경우 있음
-
         TextMode textMode = message.getTextMode();
         TextAttribute textAttr = message.getTextAttr();
 
@@ -902,12 +904,10 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
 
         switch (textMode) {
             case CREATE:
-                Text newText = new Text(client.getDrawingFragment(), textAttr);
-                newText.getTextAttribute().setTextInited(true); // 만들어진 직후 상단 중앙에 놓이도록
-                de.addTexts(newText);
-                de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));
+            case MODIFY_START: // fixme nayeon
+            case START_COLOR_CHANGE:
+            case FINISH_COLOR_CHANGE:
                 publishProgress(message);
-                Log.e("texts size", Integer.toString(de.getTexts().size()));
                 return null;
             case DRAG_LOCATION:
             case DRAG_EXITED:
@@ -931,9 +931,6 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
                 de.addHistory(new DrawingItem(TextMode.ERASE, textAttr));
                 publishProgress(message);
                 return null;
-            case MODIFY:
-                publishProgress(message);
-                return null;
         }
         return null;
     }
@@ -948,9 +945,13 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
         Text text = de.findTextById(textAttr.getId());
         switch(textMode) {
             case CREATE:
-                //textAttr.setId(de.textIdCounter());
-                text.addTextViewToFrameLayout();
-                text.createGestureDetecter();
+                Text newText = new Text(client.getDrawingFragment(), textAttr);
+                newText.getTextAttribute().setTextInited(true); // 만들어진 직후 상단 중앙에 놓이도록
+                de.addTexts(newText);
+                de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));
+                newText.setTextViewProperties();  // fixme nayeon
+                newText.addTextViewToFrameLayout();
+                newText.createGestureDetecter();
                 de.clearUndoArray();
                 break;
             case DRAG_STARTED:
@@ -960,10 +961,10 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
             case DROP:
                 de.clearUndoArray();
                 break;
-            case DONE:
-                if(textAttr.isModified()) {
-                    de.clearUndoArray();
-                }
+            case DONE: // fixme nayeon
+                text.getTextView().setBackground(null); // 테두리 설정 해제
+                text.setTextViewAttribute();
+                if(textAttr.isModified()) { de.clearUndoArray(); }
                 break;
             case ERASE:
                 text.removeTextViewToFrameLayout();
@@ -971,8 +972,18 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
                 de.clearUndoArray();
                 //Log.e("texts size", Integer.toString(de.getTexts().size()));
                 break;
-            case MODIFY:
-                text.modifyTextViewContent(textAttr.getText());
+            case MODIFY_START: // fixme nayeon
+                text.getTextView().setBackground(de.getTextFocusBorderDrawable()); // 수정중일 때 텍스트 테두리 설정하여 수정중인 텍스트 표시
+                //text.modifyTextViewContent(textAttr.getText());
+                break;
+
+            // fixme nayeon
+            case START_COLOR_CHANGE:
+                text.getTextView().setBackground(de.getTextHighlightBorderDrawble()); // 텍스트 색상 편집 시작 테두리 설정
+                break;
+            case FINISH_COLOR_CHANGE:
+                text.getTextView().setBackground(null); // 텍스트 색상 편집 완료 후 테두리 제거
+                text.setTextViewAttribute(); // 변경된 색상 적용
                 break;
         }
 

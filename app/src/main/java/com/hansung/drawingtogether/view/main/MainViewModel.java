@@ -1,7 +1,7 @@
+
 package com.hansung.drawingtogether.view.main;
 
 import android.app.ProgressDialog;
-import android.transition.Transition;
 import android.util.Log;
 import android.view.View;
 
@@ -15,15 +15,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
+
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.BaseViewModel;
-import com.hansung.drawingtogether.view.drawing.JSONParser;
-import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
 
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import lombok.Setter;

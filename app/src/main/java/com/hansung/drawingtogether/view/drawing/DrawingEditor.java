@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.SparseArray;
@@ -51,14 +52,16 @@ public enum DrawingEditor {
     private Bitmap postSelectedComponentsBitmap;
 
     /* 텍스트에 필요한 객체 */
-    private Drawable textMoveBorderDrawable; // 텍스트 포커싱 테두리
-    private Drawable textFocusBorderDrawable;
+    private Drawable textMoveBorderDrawable; // 텍스트 움직일 때 테두리
+    private Drawable textFocusBorderDrawable; // 다른 사용자 사용 텍스트 표시
+    private Drawable textHighlightBorderDrawble; // 텍스트 색상 변경 시 사용 표시 // fixme nayeon
     private ArrayList<Text> texts = new ArrayList<>(); // 현재 부착된 모든 text 배열
     private Text currentText = null;
     private boolean isTextBeingEdited = false;
-    private boolean isTextBeingModified = false; // fixme nayeon
     private int textId = -1;
     private int maxTextId = -1;
+
+    private boolean isMidEntered = false; // fixme nayeon 텍스트 중간자 처리를 위한 플래그
 
     /* UNDO, REDO 를 위한 객체 */
     private ArrayList<DrawingItem> history = new ArrayList<>();     //
@@ -82,7 +85,10 @@ public enum DrawingEditor {
     private int strokeWidth = 10;
 
     /* 텍스트 속성 */
-    private EditText editText;
+    private int textSize = 20;
+    private int textColor = Color.BLACK;
+    private int fontStyle = Typeface.BOLD;
+    private int textBackground = Color.TRANSPARENT;
 
     // 드로잉 하는동안 저장되는 모든 데이터들 지우기 [나가기 버튼 눌렀을 때 처리 필요 - MQTTClient.java if(topic_exit, topic_delete) 부분에서 호출]
     public void removeAllDrawingData() {
@@ -426,9 +432,18 @@ public enum DrawingEditor {
                 t.getTextView().setText(t.getTextAttribute().getPreText()); // 이전 텍스트로 설정
                 t.getTextView().setBackground(this.textFocusBorderDrawable); // 테두리 설정
             }
+            // 중간에 들어왔는데 색상
+
+            // fixme nayeon
+            t.setTextViewInitialPlace(t.getTextAttribute());
+            t.setTextViewProperties();
 
             t.addTextViewToFrameLayout();
             t.createGestureDetecter(); // 텍스트 모두 붙이기를 중간자 처리, 재접속 시에만 한다고 가정했을 때.
+
+            Log.e("texts size, text id", texts.size() + ", " + t.getTextAttribute().getId());
+            Log.e("text view size", t.getTextView().getWidth() + ", " + t.getTextView().getHeight());
+            Log.e("text view location", t.getTextView().getX() + ", " + t.getTextView().getY());
         }
     }
 
@@ -862,9 +877,8 @@ public enum DrawingEditor {
 
     public byte[] bitmapToByteArray(Bitmap bitmap){
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream);
-//        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream); // fixme jiyeon
-        bitmap.recycle();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        //bitmap.recycle();
         return stream.toByteArray();
     }
 
@@ -882,6 +896,8 @@ public enum DrawingEditor {
     public void setTextMoveBorderDrawable(Drawable textMoveBorderDrawable) { this.textMoveBorderDrawable = textMoveBorderDrawable; } // 텍스트 테두리 그리기 위한 Drawable 설정
 
     public void setTextFocusBorderDrawable(Drawable textFocusBorderDrawable) { this.textFocusBorderDrawable = textFocusBorderDrawable; }
+
+    public void setTextHighlightBorderDrawable(Drawable textHighlightBorderDrawble) { this.textHighlightBorderDrawble = textHighlightBorderDrawble; } // fixme nayeon
 
     public void setBackgroundImage(Bitmap backgroundImage) {
         this.backgroundImage = backgroundImage;
@@ -903,7 +919,7 @@ public enum DrawingEditor {
 
     public void setTextBeingEdited(Boolean bool) { this.isTextBeingEdited = bool; } // 하나의 텍스트 편집 시 다른 텍스트 포커싱 막기 위해
 
-    public void setTextBeingModified(Boolean bool) { this.isTextBeingModified = bool; } // 텍스트 편집 시작 시점 알기위해
+    public void setMidEntered(Boolean bool) { this.isMidEntered = bool; } // fixme nayeon
 
     public void setHistory(ArrayList<DrawingItem> history) {
         this.history = history;
@@ -959,6 +975,22 @@ public enum DrawingEditor {
 
     public void setStrokeWidth(int strokeWidth) {
         this.strokeWidth = strokeWidth;
+    }
+
+    public void setTextSize(int textSize) {
+        this.textSize = textSize;
+    }
+
+    public void setTextColor(int textColor) {
+        this.textColor = textColor;
+    }
+
+    public void setFontStyle(int fontStyle) {
+        this.fontStyle = fontStyle;
+    }
+
+    public void setTextBackground(int textBackground) {
+        this.textBackground = textBackground;
     }
 
     //public void setTextIdInCallback(int myTextArrayIndex) { this.texts.get(myTextArrayIndex).getTextAttribute().setId(this.textId); }
