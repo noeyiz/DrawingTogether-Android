@@ -572,51 +572,46 @@ public enum MQTTClient {
     }
 
     public void showTimerAlertDialog(final String title, final String message) {
-        Objects.requireNonNull(drawingFragment.getActivity()).runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                AlertDialog dialog = new AlertDialog.Builder(de.getDrawingFragment().getActivity())
-                        .setTitle(title)
-                        .setMessage(message)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Log.i("drawing", "dialog onclick");
-                                doInBack();
-                                //dialog.cancel();
-                                dialog.dismiss();
-                            }
-                        })
-                        .create();
-
-                dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-                    private static final int AUTO_DISMISS_MILLIS = 6000;
+        AlertDialog dialog = new AlertDialog.Builder(de.getDrawingFragment().getActivity())
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onShow(final DialogInterface dialog) {
-                        final Button defaultButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-                        final CharSequence negativeButtonText = defaultButton.getText();
-                        new CountDownTimer(AUTO_DISMISS_MILLIS, 100) {
-                            @Override
-                            public void onTick(long millisUntilFinished) {
-                                defaultButton.setText(String.format(
-                                        Locale.getDefault(), "%s (%d)",
-                                        negativeButtonText,
-                                        TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) + 1 //add one so it never displays zero
-                                ));
-                            }
-                            @Override
-                            public void onFinish() {
-                                if (((AlertDialog) dialog).isShowing()) {
-                                    doInBack();
-                                    dialog.dismiss();
-                                }
-                            }
-                        }.start();
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.i("drawing", "dialog onclick");
+                        doInBack();
+                        //dialog.cancel();
+                        dialog.dismiss();
                     }
-                });
-                dialog.show();
+                })
+                .create();
+
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            private static final int AUTO_DISMISS_MILLIS = 6000;
+            @Override
+            public void onShow(final DialogInterface dialog) {
+                final Button defaultButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+                final CharSequence negativeButtonText = defaultButton.getText();
+                new CountDownTimer(AUTO_DISMISS_MILLIS, 100) {
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                        defaultButton.setText(String.format(
+                                Locale.getDefault(), "%s (%d)",
+                                negativeButtonText,
+                                TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) + 1 //add one so it never displays zero
+                        ));
+                    }
+                    @Override
+                    public void onFinish() {
+                        if (((AlertDialog) dialog).isShowing()) {
+                            doInBack();
+                            dialog.dismiss();
+                        }
+                    }
+                }.start();
             }
         });
+        dialog.show();
     }
 
     public void showExitAlertDialog() {

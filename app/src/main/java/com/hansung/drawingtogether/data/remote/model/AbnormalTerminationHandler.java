@@ -51,6 +51,10 @@ public class AbnormalTerminationHandler
     public void uncaughtException(Thread thread, Throwable e) {
         Log.e("terminate", "Abnormal Termination Handler");
 
+        if (client == null) {
+            return;
+        }
+
         databaseRef.child(client.getTopic()).runTransaction(new Transaction.Handler() {
             @NonNull
             @Override
@@ -78,12 +82,16 @@ public class AbnormalTerminationHandler
                     client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
                     client.setExitPublish(true);
                     client.exitTask();
+                    MainActivity mainActivity = (MainActivity)MainActivity.context;
+                    mainActivity.finish();
                 } else {
                     ExitMessage exitMessage = new ExitMessage(client.getMyName());
                     MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
                     client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
                     client.setExitPublish(true);
                     client.exitTask();
+                    MainActivity mainActivity = (MainActivity)MainActivity.context;
+                    mainActivity.finish();
                 }
             }
         });
