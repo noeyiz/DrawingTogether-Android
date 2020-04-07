@@ -50,6 +50,7 @@ public class AbnormalTerminationHandler
     @Override
     public void uncaughtException(Thread thread, Throwable e) {
         Log.e("terminate", "Abnormal Termination Handler");
+        Log.e("why", "abnormalTermiation");
 
         databaseRef.child(client.getTopic()).runTransaction(new Transaction.Handler() {
             @NonNull

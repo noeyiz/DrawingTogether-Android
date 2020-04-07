@@ -15,20 +15,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import lombok.Getter;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.MutableData;
-import com.google.firebase.database.Transaction;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
+import com.hansung.drawingtogether.view.audio.AudioPlayThread;
 import com.hansung.drawingtogether.view.drawing.ComponentType;
 import com.hansung.drawingtogether.view.drawing.DrawingComponent;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
@@ -44,6 +36,7 @@ import com.hansung.drawingtogether.view.drawing.Text;
 import com.hansung.drawingtogether.view.drawing.TextAttribute;
 import com.hansung.drawingtogether.view.drawing.TextMode;
 import com.hansung.drawingtogether.view.main.AliveMessage;
+import com.hansung.drawingtogether.view.main.AudioMessage;
 import com.hansung.drawingtogether.view.main.DeleteMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
@@ -57,10 +50,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-import java.net.UnknownServiceException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -69,7 +59,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Vector;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Getter
@@ -83,7 +72,8 @@ public enum MQTTClient {
     private DatabaseReference databaseReference;
 
     private boolean master;
-    private List<User> userList = new ArrayList<>();  // fixme hyeyeon-User객제 arrayList로 변경
+    private List<User> userList = new ArrayList<>(100);  // fixme hyeyeon-User객제 arrayList로 변경
+    private List<AudioPlayThread> audioPlayThreadList = new ArrayList<>(100); // fixme jiyeon
     private String myName;
 
     private String topic;
@@ -92,11 +82,13 @@ public enum MQTTClient {
     private String topic_delete;
     private String topic_data;
     private String topic_mid;
+    private String topic_audio; // fixme jiyeon
 
     private String topic_alive;
     // private String topic_load;
 
     private DrawingViewModel drawingViewModel;
+    private boolean audioPlaying = false; // fixme jiyeon
 
     private int qos = 2;
     private JSONParser parser = JSONParser.getInstance();
@@ -129,6 +121,11 @@ public enum MQTTClient {
 
         User user = new User(myName, 0);
         userList.add(user); // 생성자에서 사용자 리스트에 내 이름 추가
+        // fixme jiyeon
+        AudioPlayThread audioPlayThread = new AudioPlayThread();
+        audioPlayThread.setName(myName);
+        audioPlayThread.setBufferUnitSize(2);
+        audioPlayThreadList.add(audioPlayThread);
 
         topic_join = this.topic + "_join";
         topic_exit = this.topic + "_exit";
@@ -136,6 +133,7 @@ public enum MQTTClient {
         topic_data = this.topic + "_data";
         topic_mid = this.topic + "_mid";
         topic_alive = this.topic + "_alive";
+        topic_audio = this.topic + "_audio";
 
         this.drawingViewModel = drawingViewModel;
         this.drawingViewModel.setUserNum(userList.size());
@@ -199,6 +197,7 @@ public enum MQTTClient {
             client.unsubscribe(topic_data);
             client.unsubscribe(topic_mid);
             client.unsubscribe(topic_alive);
+//            client.unsubscribe(topic_audio);
 
             Log.e("kkankkan", "unsubscribe 완료");
 
@@ -217,6 +216,23 @@ public enum MQTTClient {
             client.unsubscribe(topic_data);
             client.unsubscribe(topic_mid);
             client.unsubscribe(topic_alive);
+            if (drawingViewModel.isAudioFlag()) { // fixme jiyeon - 오디오 처리
+                drawingViewModel.getRecThread().setFlag(false);
+                for (AudioPlayThread audioPlayThread : audioPlayThreadList) {
+                    if (audioPlayThread.getName().equals(myName)) continue;
+
+                    audioPlayThread.setFlag(false);
+                    synchronized (audioPlayThread.getBuffer()) {
+                        audioPlayThread.getBuffer().clear();
+                        Log.e("2yeonz", audioPlayThread.getBuffer().size() + " : clear 후" + audioPlayThread.getName());
+                    }
+                }
+                client.unsubscribe(topic_audio);
+                audioPlaying = false;
+            }
+            audioPlayThreadList.clear();
+            Log.e("2yeonz", audioPlayThreadList.size() + " : 모두 clear 후");
+
             isMid = true;
             usersActionMap.clear();
             Log.i("drawing", "userActionMap = " + usersActionMap.toString());
@@ -275,7 +291,7 @@ public enum MQTTClient {
 
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
-                Log.e("kkankkan", "message Arrived");
+//                Log.e("kkankkan", "message Arrived");
                 // [ 중간자 ]
                 if (newTopic.equals(topic_join)) {
                     String msg = new String(message.getPayload());
@@ -305,11 +321,18 @@ public enum MQTTClient {
                                 }
                             }
                             userList.clear(); // 중간자는 마스터에게 사용자 리스트를 받기 전에 userList.add() 했음 따라서 자신의 리스트를 지우고 마스터가 보내준 배열 저장
+                            audioPlayThreadList.clear(); // fixme hyeyeon
 
                             for (User user : users) {  // 메시지로 전송받은 리스트 배열 세팅
                                 user.setCount(0);
                                 userList.add(user);
+                                // fixme jiyeon
+                                AudioPlayThread audioPlayThread = new AudioPlayThread();
+                                audioPlayThread.setName(user.getName());
+                                audioPlayThread.setBufferUnitSize(2);
+                                audioPlayThreadList.add(audioPlayThread);
                             }
+
                             // todo hyeyeon - master로부터 데이터 받기 전에 exit한 사용자들 remove
                             //topic_data = loadingData;
 
@@ -345,6 +368,16 @@ public enum MQTTClient {
                             if (!isContainsUserList(name)) {
                                 User user = new User(name, 0);  // fixme hyeyeon
                                 userList.add(user); // 들어온 사람의 이름을 추가
+                                // fixme jiyeon
+                                AudioPlayThread audioPlayThread = new AudioPlayThread();
+                                audioPlayThread.setName(name);
+                                audioPlayThread.setBufferUnitSize(2);
+                                audioPlayThreadList.add(audioPlayThread);
+                                Log.e("2yeonz", audioPlayThreadList.size() + " : add 후");
+                                if(drawingViewModel.isAudioFlag()) {
+                                    audioPlayThread.setFlag(true);
+                                    new Thread(audioPlayThread).start();
+                                }
 
                                 // 다른 사용자가 들어왔다는 메시지를 받았을 경우
                                 // 텍스트 비활성화를 위해 플래그 설정
@@ -398,11 +431,17 @@ public enum MQTTClient {
 
                     if (!myName.equals(name)) {  // 다른 사용자가 exit 하는 경우
                         // todo hyeyeon - master로부터 데이터 받기 전에 exit 하는 사용자들 기억해두기
-                        for (User user : userList) {
-                            if (user.getName().equals(name)) {
-                                usersActionMap.remove(user.getName());
+                        for (int i=0; i<userList.size(); i++) {
+                            if (userList.get(i).getName().equals(name)) {
+                                usersActionMap.remove(userList.get(i).getName());
                                 Log.i("drawing", "userActionMap = " + usersActionMap.toString());
-                                userList.remove(user);
+                                userList.remove(i);
+                                // fixme jiyeon
+                                Log.e("2yeonz", audioPlayThreadList.size() + " : remove 전");
+                                audioPlayThreadList.get(i).setFlag(false);
+                                audioPlayThreadList.get(i).getBuffer().clear();
+                                audioPlayThreadList.remove(i);
+                                Log.e("2yeonz", audioPlayThreadList.size() + " : remove 후");
                                 break;
                             }
                         }
@@ -423,6 +462,7 @@ public enum MQTTClient {
                         drawingViewModel.back();
                     }*/
                 }
+
                 if (newTopic.equals(topic_delete)) {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
@@ -461,7 +501,7 @@ public enum MQTTClient {
                                 }
                             }
                         }
-                        Log.e("kkankkan", "COUNT PLUS AFTER" + userPrintForLog());
+//                        Log.e("kkankkan", "COUNT PLUS AFTER" + userPrintForLog());
                     } else {
                         for (User user : userList) {
                             if (user.getName().equals(name)) {
@@ -503,6 +543,58 @@ public enum MQTTClient {
                         isMid = false;
                         Log.i("mqtt", "mid username=" + messageFormat.getUsername());
                         new MidTask().execute();
+                    }
+                }
+
+                // fixme jiyeon
+                if (newTopic.equals(topic_audio)) {
+                    if (!audioPlaying && drawingViewModel.isAudioFlag()) { // 오디오 start
+                        audioPlaying = true;
+                        Log.e("2yeonz", "audioPlaying");
+                        Log.e("2yeonz", audioPlayThreadList.size() + " : 오디오 start");
+                        for (AudioPlayThread audioPlayThread : audioPlayThreadList) {
+                            if (audioPlayThread.getName().equals(myName)) continue;
+
+                            audioPlayThread.setFlag(true);
+                            new Thread(audioPlayThread).start();
+                        }
+                    }
+
+                    if (audioPlaying && !drawingViewModel.isAudioFlag()) { // 오디오 stop
+                        Log.e("2yeonz", "audioPlaying NONO");
+                        Log.e("2yeonz", audioPlayThreadList.size() + " : 오디오 stop");
+                        for (AudioPlayThread audioPlayThread : audioPlayThreadList) {
+                            if (audioPlayThread.getName().equals(myName)) continue;
+
+                            audioPlayThread.setFlag(false);
+                            synchronized (audioPlayThread.getBuffer()) {
+                                audioPlayThread.getBuffer().clear();
+                            }
+                        }
+                        audioPlaying = false;
+                        client.unsubscribe(topic_audio);
+                        return;
+                    }
+
+                    String msg = new String(message.getPayload());
+                    MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
+
+                    AudioMessage audioMessage = mqttMessageFormat.getAudioMessage();
+                    String name = audioMessage.getName();
+
+                    if (myName.equals(name)) return;
+
+                    byte[] data = audioMessage.getData();
+
+
+                    Log.e("2yeonz", audioPlayThreadList.size() + " : 데이터 add");
+                    for (AudioPlayThread audioPlayThread : audioPlayThreadList) {
+                        if (audioPlayThread.getName().equals(name)) {
+                            synchronized (audioPlayThread.getBuffer()) {
+                                audioPlayThread.getBuffer().add(data);
+                            }
+                            break;
+                        }
                     }
                 }
             }
@@ -555,27 +647,28 @@ public enum MQTTClient {
     }
 
     public void doInBack() {
-        ExitMessage exitMessage = new ExitMessage(myName);
-        MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-        publish(topic_exit, JSONParser.getInstance().jsonWrite(messageFormat));
+//        ExitMessage exitMessage = new ExitMessage(myName);
+//        MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+//        publish(topic_exit, JSONParser.getInstance().jsonWrite(messageFormat));
         //
-        /*th.interrupt();
-        unsubscribeAllTopics();
+        th.interrupt();
+        /*unsubscribeAllTopics();
         ((MainActivity)drawingFragment.getActivity()).setOnKeyBackPressedListener(null);
         isMid = true;
         de.removeAllDrawingData();
         usersActionMap.clear();
         Log.i("drawing", "userActionMap = " + usersActionMap.toString());*/
 
-        exitTask();
+//        exitTask();
         drawingViewModel.back();
     }
 
     public void showTimerAlertDialog(final String title, final String message) {
-        Objects.requireNonNull(drawingFragment.getActivity()).runOnUiThread(new Runnable() {
+        final MainActivity mainActivity = (MainActivity)MainActivity.context; // fixme hyeyeon
+        Objects.requireNonNull(mainActivity).runOnUiThread(new Runnable() {
             @Override
-            public void run() {
-                AlertDialog dialog = new AlertDialog.Builder(de.getDrawingFragment().getActivity())
+            public void run() { // fixme hyeyeon
+                AlertDialog dialog = new AlertDialog.Builder(mainActivity) // fixme hyeyeon
                         .setTitle(title)
                         .setMessage(message)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
@@ -591,6 +684,7 @@ public enum MQTTClient {
 
                 dialog.setOnShowListener(new DialogInterface.OnShowListener() {
                     private static final int AUTO_DISMISS_MILLIS = 6000;
+
                     @Override
                     public void onShow(final DialogInterface dialog) {
                         final Button defaultButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
@@ -604,6 +698,7 @@ public enum MQTTClient {
                                         TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) + 1 //add one so it never displays zero
                                 ));
                             }
+
                             @Override
                             public void onFinish() {
                                 if (((AlertDialog) dialog).isShowing()) {
@@ -620,10 +715,11 @@ public enum MQTTClient {
     }
 
     public void showExitAlertDialog() {
-        Objects.requireNonNull(drawingFragment.getActivity()).runOnUiThread(new Runnable() {
+        final MainActivity mainActivity = (MainActivity)MainActivity.context; // fixme hyeyeon
+        Objects.requireNonNull(mainActivity).runOnUiThread(new Runnable() {
             @Override
-            public void run() {
-                AlertDialog dialog = new AlertDialog.Builder(drawingFragment.getActivity())
+            public void run() { // fixme hyeyeon
+                AlertDialog dialog = new AlertDialog.Builder(mainActivity) // fixme hyeyeon
                         .setTitle("토픽 종료")
                         .setMessage("마스터가 토픽을 종료하였습니다")
                         .setCancelable(false)
@@ -641,10 +737,11 @@ public enum MQTTClient {
     }
 
     public void setToastMsg(final String message) {
-        Objects.requireNonNull(drawingFragment.getActivity()).runOnUiThread(new Runnable() {
+        final MainActivity mainActivity = (MainActivity)MainActivity.context; // fixme hyeyeon
+        Objects.requireNonNull(mainActivity).runOnUiThread(new Runnable() {
             @Override
-            public void run() {
-                Toast.makeText(Objects.requireNonNull(drawingFragment.getContext()).getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+            public void run() { // fixme hyeyeon
+                Toast.makeText(Objects.requireNonNull(mainActivity).getApplicationContext(), message, Toast.LENGTH_SHORT).show(); // fixme hyeyeon
 
             }
         });

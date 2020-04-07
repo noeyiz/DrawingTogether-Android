@@ -2,14 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/drawing_search"
-        android:title="검색"
-        app:showAsAction="ifRoom"
-        android:icon="@drawable/search"/>
+        android:id="@+id/drawing_voice"
+        android:title="음성 대화"
+        app:showAsAction="always"
+        android:icon="@drawable/voiceno"/>
     <item
         android:id="@+id/drawing_image"
         android:title="이미지"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         android:icon="@drawable/image">
         <menu>
             <item
@@ -20,6 +20,11 @@
                 android:title="카메라"/>
         </menu>
     </item>
+    <item
+        android:id="@+id/drawing_search"
+        android:title="검색"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/search"/>
     <item
         android:id="@+id/drawing_plus"
         android:title="친구 초대"
