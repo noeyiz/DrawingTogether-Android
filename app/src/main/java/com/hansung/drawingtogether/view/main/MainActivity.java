@@ -19,8 +19,10 @@ import androidx.appcompat.widget.Toolbar;
 import com.hansung.drawingtogether.R;
 
 import com.hansung.drawingtogether.data.remote.model.Logger;
+import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -186,10 +188,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {  // todo
         super.onDestroy();
         Log.i("lifeCycle", "MainActivity onDestroy()");
-        if (isFinishing()) {
+        if (isFinishing()) {  // 앱 종료 시
             Log.i("lifeCycle", "isFinishing() " + isFinishing());
+
+            // todo database 접근하는 코드 추가할지 말지 고민중
+            MQTTClient client = MQTTClient.getInstance();
+            if (client != null && client.getClient().isConnected()) {
+                try {
+                    client.getClient().disconnect();
+                    client.getClient().close();
+                    Log.i("lifeCycle", "mqttClient closed");
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+                client = null;
+            }
         }
-        else {
+        else {  // 화면 회전 시
             Log.i("lifeCycle", "isFinishing() " + isFinishing());
         }
     }

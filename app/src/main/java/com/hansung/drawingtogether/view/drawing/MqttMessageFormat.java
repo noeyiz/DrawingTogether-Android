@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import com.hansung.drawingtogether.data.remote.model.User;
 import com.hansung.drawingtogether.view.main.AliveMessage;
+import com.hansung.drawingtogether.view.main.AudioMessage;
 import com.hansung.drawingtogether.view.main.DeleteMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
@@ -36,7 +37,9 @@ public class MqttMessageFormat {
     private ExitMessage exitMessage;
     private DeleteMessage deleteMessage;
     private AliveMessage aliveMessage;
-    //
+
+    // fixme jiyeon
+    private AudioMessage audioMessage;
 
     // fixme nayeon 중간자 처리 시 필요한 변수 추가
     private ArrayList<DrawingComponent> drawingComponents;
@@ -124,5 +127,9 @@ public class MqttMessageFormat {
     public MqttMessageFormat(AliveMessage aliveMessage) {
         this.aliveMessage = aliveMessage;
     }
-    //
+
+    // fixme jiyeon
+    public MqttMessageFormat(AudioMessage audioMessage) {
+        this.audioMessage = audioMessage;
+    }
 }

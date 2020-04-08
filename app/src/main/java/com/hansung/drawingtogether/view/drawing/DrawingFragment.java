@@ -237,6 +237,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         binding.setLifecycleOwner(this);
 
         setHasOptionsMenu(true);
+        drawingViewModel.checkPermission(getContext());
 
         ((MainActivity)getActivity()).setOnBackListener(new MainActivity.OnBackListener() {
             @Override
@@ -323,6 +324,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
     // fixme hyeyeon[2]-messageArrived 콜백에서 처리 -> 나가기 버튼 누른 후 바로 처리하도록 변경
     public void exit() {
+        Log.e("why", "exit");
         exitOnClickListener.setBackKeyPressed(false);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         if (client.isMaster()) {
@@ -342,6 +344,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
     @Override
     public void onBackKey() {
+        Log.e("why", "onBackKey");
         exitOnClickListener.setBackKeyPressed(true);
         Log.e("kkankkan", "드로잉프레그먼트 onbackpressed");
         AlertDialog dialog = new AlertDialog.Builder(getContext())
@@ -363,6 +366,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
         @Override
         public void onClick(DialogInterface dialog, int which) {
+            Log.e("why", "exitOnClickListener : " + backKeyPressed);
             databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
                 @NonNull
                 @Override
@@ -439,21 +443,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
                     messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(galleryBitmap));
                     client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
-
-//                Uri uri = data.getData();
-//                Bitmap galleryBitmap = null;
-//                try {
-//                    galleryBitmap = rotateBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri), PICK_FROM_GALLERY);
-//                    galleryBitmap = resizeBitmap(galleryBitmap);
-//                    ImageView imageView = new ImageView(getContext());
-//                    imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
-//                    imageView.setImageBitmap(galleryBitmap);
-//                    de.setBackgroundImage(galleryBitmap);
-//                    binding.backgroundView.addView(imageView);
-//
-//                    messageFormat = new MqttMessageFormat(de.getUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(galleryBitmap));
-//                    client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
-
                 } catch(IOException e) {
                     e.printStackTrace();
                 }
@@ -467,20 +456,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
                     messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(cameraBitmap));
                     client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
-
-//                    File file = new File(drawingViewModel.getPhotoPath());
-//                    Bitmap cameraBitmap = rotateBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file)), PICK_FROM_CAMERA);
-//                    cameraBitmap = resizeBitmap(cameraBitmap);
-//                    if (cameraBitmap != null) {
-//                        ImageView imageView = new ImageView(getContext());
-//                        imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
-//                        imageView.setImageBitmap(cameraBitmap);
-//                        de.setBackgroundImage(cameraBitmap);
-//                        binding.backgroundView.addView(imageView);
-//
-//                        messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(cameraBitmap));
-//                        client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
-//                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -501,17 +476,26 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         inflater.inflate(R.menu.application_menu, menu);
     }
 
+    // fixme jiyeon
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
-            case R.id.drawing_search:
-                drawingViewModel.clickSearch(getView());
+            case R.id.drawing_voice:
+                boolean click = drawingViewModel.clickVoice(DrawingFragment.this);
+                if (click) {
+                    item.setIcon(R.drawable.voice);
+                } else {
+                    item.setIcon(R.drawable.voiceno);
+                }
                 break;
             case R.id.gallery:
                 drawingViewModel.getImageFromGallery(DrawingFragment.this);
                 break;
             case R.id.camera:
                 drawingViewModel.getImageFromCamera(DrawingFragment.this);
+                break;
+            case R.id.drawing_search:
+                drawingViewModel.clickSearch(getView());
                 break;
             case R.id.drawing_plus:
                 drawingViewModel.plusUser(DrawingFragment.this, data.getTopic(), data.getPassword());  // fixme hyeyeon

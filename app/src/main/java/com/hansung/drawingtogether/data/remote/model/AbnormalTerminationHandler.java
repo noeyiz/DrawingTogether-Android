@@ -50,55 +50,52 @@ public class AbnormalTerminationHandler
     @Override
     public void uncaughtException(Thread thread, Throwable e) {
         Log.e("terminate", "Abnormal Termination Handler");
+        Log.e("why", "abnormalTermiation");
 
-        if (client == null) {
-            return;
+        if (databaseRef != null && client.getClient().isConnected()) {
+            databaseRef.child(client.getTopic()).runTransaction(new Transaction.Handler() {
+                @NonNull
+                @Override
+                public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+                    if (mutableData.getValue() != null && client.isMaster()) {
+                        mutableData.setValue(null);
+                    }
+                    if (mutableData.getValue() != null && !client.isMaster()) {
+                        mutableData.child("username").child(client.getMyName()).setValue(null);
+                    }
+                    Log.e("transaction", "transaction success");
+                    return Transaction.success(mutableData);
+                }
+
+                @Override
+                public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                    Log.e("transaction", "transaction complete");
+                    if (databaseError != null) {
+                        Log.e("transaction", databaseError.getDetails());
+                        return;
+                    }
+                    if (client.isMaster()) {
+                        DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
+                        MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
+                        client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
+                        client.setExitPublish(true);
+                        client.exitTask();
+                    } else {
+                        ExitMessage exitMessage = new ExitMessage(client.getMyName());
+                        MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                        client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
+                        client.setExitPublish(true);
+                        client.exitTask();
+                    }
+                }
+            });
         }
 
-        databaseRef.child(client.getTopic()).runTransaction(new Transaction.Handler() {
-            @NonNull
-            @Override
-            public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                if (mutableData.getValue() != null && client.isMaster()) {
-                    mutableData.setValue(null);
-                }
-                if (mutableData.getValue() != null && !client.isMaster()) {
-                    mutableData.child("username").child(client.getMyName()).setValue(null);
-                }
-                Log.e("transaction", "transaction success");
-                return Transaction.success(mutableData);
-            }
-
-            @Override
-            public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                Log.e("transaction", "transaction complete");
-                if (databaseError != null) {
-                    Log.e("transaction", databaseError.getDetails());
-                    return;
-                }
-                if (client.isMaster()) {
-                    DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
-                    MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
-                    client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-                    client.setExitPublish(true);
-                    client.exitTask();
-                    MainActivity mainActivity = (MainActivity)MainActivity.context;
-                    mainActivity.finish();
-                } else {
-                    ExitMessage exitMessage = new ExitMessage(client.getMyName());
-                    MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-                    client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
-                    client.setExitPublish(true);
-                    client.exitTask();
-                    MainActivity mainActivity = (MainActivity)MainActivity.context;
-                    mainActivity.finish();
-                }
-            }
-        });
-
-/*        try {
+        /*  fixme hyeyeon-주석처리!
+        try {
             client.getClient().unsubscribe(client.getTopic_data()); // data topic 구독 취소
-        } catch (MqttException me) { me.printStackTrace(); }*/
+        } catch (MqttException me) { me.printStackTrace(); }
+        */
 
         logger.loggingUncaughtException(thread, e.getStackTrace()); // 발생한 오류에 대한 메시지 로그에 기록
 
