@@ -323,7 +323,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     }
 
     // fixme hyeyeon[2]-messageArrived 콜백에서 처리 -> 나가기 버튼 누른 후 바로 처리하도록 변경
-    public void exit() {
+    public void exit() { // 우측 상단 뒤로가기 버튼
         Log.e("why", "exit");
         exitOnClickListener.setBackKeyPressed(false);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -333,6 +333,13 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             builder.setMessage(R.string.joiner_exit);
         }
         builder.setPositiveButton(android.R.string.ok, exitOnClickListener);
+        builder.setNeutralButton("저장 후 종료", new DialogInterface.OnClickListener() { // fixme nayeon
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                drawingViewModel.clickSave();
+                exitOnClickListener.onClick(dialog, which);
+            }
+        }); // fixme nayeon
         builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -343,13 +350,20 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     }
 
     @Override
-    public void onBackKey() {
+    public void onBackKey() { // 디바이스 자체 뒤로가기 버튼
         Log.e("why", "onBackKey");
         exitOnClickListener.setBackKeyPressed(true);
         Log.e("kkankkan", "드로잉프레그먼트 onbackpressed");
         AlertDialog dialog = new AlertDialog.Builder(getContext())
                 .setMessage("앱을 종료하시겠습니까?")
                 .setPositiveButton(android.R.string.ok, exitOnClickListener)
+                .setNeutralButton("저장 후 종료", new DialogInterface.OnClickListener() { // fixme nayeon
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        drawingViewModel.clickSave();
+                        exitOnClickListener.onClick(dialog, which);
+                    }
+                })
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -499,6 +513,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 break;
             case R.id.drawing_plus:
                 drawingViewModel.plusUser(DrawingFragment.this, data.getTopic(), data.getPassword());  // fixme hyeyeon
+                break;
+            case R.id.drawing_save:
+                drawingViewModel.clickSave();
                 break;
         }
 

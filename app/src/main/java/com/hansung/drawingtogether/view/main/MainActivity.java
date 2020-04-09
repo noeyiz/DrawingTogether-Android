@@ -110,6 +110,13 @@ public class MainActivity extends AppCompatActivity {
                             return;
                         }
                     })
+                    /*.setNeutralButton("save and exit", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            MainActivity.super.onBackPressed();
+                            return;
+                        }
+                    })*/ // todo nayeon - mOnKeyBackPressedListener 가 null 일 경우가 언제?
                     .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {

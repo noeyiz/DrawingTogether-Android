@@ -69,6 +69,7 @@ public class AbnormalTerminationHandler
                     }
                     Log.e("transaction", "transaction success");
                     return Transaction.success(mutableData);
+
                 }
 
                 @Override
@@ -184,7 +185,7 @@ class ErrorAlertDialogThread extends Thread {
         builder.setMessage(logger.getUncaughtException());
         builder.setCancelable(false); // 다른 영역 터치 시 다이얼로그가 사라지지 않도록
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 android.os.Process.killProcess(android.os.Process.myPid());

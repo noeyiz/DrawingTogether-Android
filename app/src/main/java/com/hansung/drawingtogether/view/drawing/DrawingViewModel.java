@@ -33,6 +33,7 @@ import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
+
 import com.hansung.drawingtogether.data.remote.model.User;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
@@ -167,22 +168,23 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     // fixme nayeon
-    public void clickPNGExport(View view) {
-        checkPermission(de.getDrawingFragment().getContext()); // todo nayeon 권한 체크 앱 처음 실행 시 하도록 수정하기
+    public void clickSave() {
 
-        DrawingFragment df = de.getDrawingFragment();
-        FragmentDrawingBinding binding = df.getBinding();
+        DrawingFragment fragment = de.getDrawingFragment();
+
+        checkPermission(fragment.getContext()); // todo nayeon 권한 체크 앱 처음 실행 시 하도록 수정하기
 
         // todo nayeon
-        DrawingViewController dvc = binding.drawingViewContainer;
+        DrawingViewController dvc = fragment.getBinding().drawingViewContainer;
         dvc.setDrawingCacheEnabled(true);
         dvc.buildDrawingCache();
         Bitmap captureContainer = dvc.getDrawingCache();
 
 
         FileOutputStream fos;
+        String fileName = "image-" + client.getTopic() + client.getSavedFileCount() + ".png";
         String filePath = Environment.getExternalStorageDirectory() + File.separator  + "Pictures"
-                + File.separator + System.currentTimeMillis() + ".png"; // todo nayeon - change file name
+                + File.separator + fileName; // todo nayeon - change file name
 
 
         File fileCacheItem = new File(filePath);
@@ -194,7 +196,7 @@ public class DrawingViewModel extends BaseViewModel {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
-            df.getContext().sendBroadcast(new Intent( Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(fileCacheItem)));
+            fragment.getContext().sendBroadcast(new Intent( Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(fileCacheItem)));
             Log.e("export", "capture path == " + filePath);
         }
 
@@ -340,7 +342,6 @@ public class DrawingViewModel extends BaseViewModel {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
             return false;
         }
     }

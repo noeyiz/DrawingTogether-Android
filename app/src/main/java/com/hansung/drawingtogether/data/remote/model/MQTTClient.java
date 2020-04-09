@@ -73,6 +73,7 @@ public enum MQTTClient {
 
     private boolean master;
     private String masterName;  // fixme hyeyeon
+
     private List<User> userList = new ArrayList<>(100);  // fixme hyeyeon-User객제 arrayList로 변경
     private List<AudioPlayThread> audioPlayThreadList = new ArrayList<>(100); // fixme jiyeon
     private String myName;
@@ -106,6 +107,9 @@ public enum MQTTClient {
 
     private Thread th;
     private boolean exitPublish;
+
+    private int savedFileCount = 0; // fixme nayeon
+    private boolean exitCompleteFlag = false; // fixme nayeon
 
     public static MQTTClient getInstance() {
         return INSTANCE;
@@ -254,6 +258,9 @@ public enum MQTTClient {
 
             Log.e("kkankkan", "exitTask 완료");
 
+            exitCompleteFlag = true; // todo nayeon
+
+
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -327,6 +334,7 @@ public enum MQTTClient {
                                 }
                             }
                             userList.clear(); // 중간자는 마스터에게 사용자 리스트를 받기 전에 userList.add() 했음 따라서 자신의 리스트를 지우고 마스터가 보내준 배열 저장
+                            audioPlayThreadList.clear(); // fixme hyeyeon
 
                             audioPlayThreadList.clear();
 
@@ -390,10 +398,6 @@ public enum MQTTClient {
                                 // 텍스트 비활성화를 위해 플래그 설정
                                 de.setMidEntered(true); // fixme nayeon
 
-                                // 다른 사용자가 들어왔다는 메시지를 받았을 경우
-                                // 텍스트 비활성화를 위해 플래그 설정
-                                de.setMidEntered(true); // fixme nayeon
-
                                 if (de.getCurrentMode() == Mode.DRAW) {  // current mode 가 DRAW 이면, 그리기 중이던 component 까지만 그리고 touch intercept   // todo 다른 모드에서도 intercept 하도록 추가
                                     de.setIntercept(true);
                                     //binding.drawingView.InterceptTouchEventAndDoActionUp();
@@ -442,7 +446,7 @@ public enum MQTTClient {
 
                     if (!myName.equals(name)) {  // 다른 사용자가 exit 하는 경우
 
-                        // todo hyeyeon - master로부터 데이터 받기 전에 exit 하는 사용자들 기억해두기 -> master로부터 데이터를 받은 시점을 알리는 변수 정해야함
+                        // todo hyeyeon - master로부터 데이터 받기 전에 exit 하는 사용자들 기억해두기
                         for (int i=0; i<userList.size(); i++) {
                             if (userList.get(i).getName().equals(name)) {
                                 usersActionMap.remove(userList.get(i).getName());
@@ -463,6 +467,7 @@ public enum MQTTClient {
                         Log.e("kkankkan", name + " exit 후 " + userPrintForLog());
                     }
                 }
+
                 if (newTopic.equals(topic_delete)) {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
@@ -500,7 +505,6 @@ public enum MQTTClient {
                                 }
                             }
                         }
-
                         // Log.e("kkankkan", "COUNT PLUS AFTER" + userPrintForLog());
 
                     } else {
@@ -653,6 +657,7 @@ public enum MQTTClient {
         de.removeAllDrawingData();
         usersActionMap.clear();
         Log.i("drawing", "userActionMap = " + usersActionMap.toString());
+
         drawingViewModel.back();
     }
 
@@ -708,6 +713,7 @@ public enum MQTTClient {
     }
 
     public void showExitAlertDialog(final String message) {
+
         final MainActivity mainActivity = (MainActivity)MainActivity.context; // fixme hyeyeon
         Objects.requireNonNull(mainActivity).runOnUiThread(new Runnable() {
             @Override
@@ -725,6 +731,16 @@ public enum MQTTClient {
                                 drawingViewModel.back();
                             }
                         })
+                        .setNeutralButton("저장 후 종료", new DialogInterface.OnClickListener() { // fixme nayeon
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if(!exitCompleteFlag) drawingViewModel.clickSave(); // fixme nayeon 저장
+                                exitTask();
+                                if (progressDialog.isShowing())
+                                    progressDialog.dismiss();  // todo 로딩하는 동안 터치 안먹히도록 수정해야함
+                                drawingViewModel.back();
+                            }
+                        })
                         .create();
                 dialog.show();
             }
@@ -732,7 +748,6 @@ public enum MQTTClient {
     }
 
     public void setToastMsg(final String message) {
-
         final MainActivity mainActivity = (MainActivity)MainActivity.context; // fixme hyeyeon
         Objects.requireNonNull(mainActivity).runOnUiThread(new Runnable() {
             @Override
@@ -766,6 +781,8 @@ public enum MQTTClient {
     public void setAliveCount(int aliveCount) {
         this.aliveCount = aliveCount;
     }
+
+    public int getSavedFileCount() { return ++savedFileCount; }
 }
 
 
