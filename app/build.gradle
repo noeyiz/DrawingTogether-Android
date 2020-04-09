@@ -60,8 +60,8 @@ dependencies {
     implementation group: 'com.kakao.sdk', name: 'push', version: "$kakao_version"
 
     // lombok
-    compileOnly "org.projectlombok:lombok:$lombok_version"
-    annotationProcessor "org.projectlombok:lombok:$lombok_version"
+    compileOnly 'org.projectlombok:lombok:1.18.10'
+    annotationProcessor 'org.projectlombok:lombok:1.18.10'
 
     // gson
     implementation "com.google.code.gson:gson:$gson_version"

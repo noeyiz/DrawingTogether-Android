@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -16,6 +17,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -29,6 +31,7 @@ import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
 import com.hansung.drawingtogether.view.main.ExitMessage;
@@ -42,6 +45,8 @@ import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -142,6 +147,43 @@ public class DrawingViewModel extends BaseViewModel {
     public void clickRedo(View view) {
         de.getDrawingFragment().getBinding().drawingView.redo();
     }
+
+    // fixme nayeon
+    public void clickPNGExport(View view) {
+        checkPermission(de.getDrawingFragment().getContext()); // todo nayeon 권한 체크 앱 처음 실행 시 하도록 수정하기
+
+        DrawingFragment df = de.getDrawingFragment();
+        FragmentDrawingBinding binding = df.getBinding();
+
+        // todo nayeon
+        DrawingViewController dvc = binding.drawingViewContainer;
+        dvc.setDrawingCacheEnabled(true);
+        dvc.buildDrawingCache();
+        Bitmap captureContainer = dvc.getDrawingCache();
+
+
+        FileOutputStream fos;
+        String filePath = Environment.getExternalStorageDirectory() + File.separator  + "Pictures"
+                + File.separator + System.currentTimeMillis() + ".png"; // todo nayeon - change file name
+
+
+        File fileCacheItem = new File(filePath);
+
+
+        try {
+            fos = new FileOutputStream(fileCacheItem);
+            captureContainer.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            df.getContext().sendBroadcast(new Intent( Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(fileCacheItem)));
+            Log.e("export", "capture path == " + filePath);
+        }
+
+        dvc.setDrawingCacheEnabled(false);
+
+    }
+
 
     public void clickPen(View view) { // drawBtn1, drawBtn2, drawBtn3
         changeClickedButtonBackground(view);

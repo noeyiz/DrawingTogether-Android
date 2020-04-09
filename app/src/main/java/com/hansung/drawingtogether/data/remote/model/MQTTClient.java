@@ -275,7 +275,7 @@ public enum MQTTClient {
 
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
-                Log.e("kkankkan", "message Arrived");
+                // Log.e("kkankkan", "message Arrived");
                 // [ 중간자 ]
                 if (newTopic.equals(topic_join)) {
                     String msg = new String(message.getPayload());
@@ -461,7 +461,7 @@ public enum MQTTClient {
                                 }
                             }
                         }
-                        Log.e("kkankkan", "COUNT PLUS AFTER" + userPrintForLog());
+                        // Log.e("kkankkan", "COUNT PLUS AFTER" + userPrintForLog());
                     } else {
                         for (User user : userList) {
                             if (user.getName().equals(name)) {

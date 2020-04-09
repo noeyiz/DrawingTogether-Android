@@ -477,6 +477,11 @@ public class Text { // EditTextView
 
     // todo nayeon ☆ ☆ ☆ 레이아웃에 텍스트 뷰 추가 시 오류 캐치
     public void addTextViewToFrameLayout() {
+
+        // todo nayeon - 강제 오류 발생시키기
+        //frameLayout.addView(textView);
+        //frameLayout.addView(textView);
+
         try {
             frameLayout.addView(textView);
 
