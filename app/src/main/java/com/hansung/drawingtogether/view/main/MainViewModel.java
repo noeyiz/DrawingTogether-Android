@@ -51,6 +51,8 @@ public class MainViewModel extends BaseViewModel {
 
     private TranscationHandler transcationHandler;
 
+    private String masterName;  // fixme hyeyeon
+
     // fixme hyeyeon[1]
     @Override
     public void onCleared() {  // todo
@@ -66,16 +68,7 @@ public class MainViewModel extends BaseViewModel {
         if (data != null) {
             data = null;
         }
-        if (client.getClient() != null) {
-            try {
-                client.getClient().disconnect();
-                client.getClient().close();
-                Log.i("lifeCycle", "mqttClient closed");
-            } catch (MqttException e) {
-                e.printStackTrace();
-            }
-            client = null;
-        }
+
     }
     //
 
@@ -102,6 +95,8 @@ public class MainViewModel extends BaseViewModel {
         databaseReference = database.getReference();
 
         transcationHandler = new TranscationHandler();
+
+        masterName = "";  // fixme hyeyeon
     }
 
     public void hasSpecialCharacterAndBlank() {
@@ -230,6 +225,8 @@ public class MainViewModel extends BaseViewModel {
                         }
                         else {
                             mutableData.child("username").child(name.getValue()).setValue(name.getValue());
+                            masterName = mutableData.child("master").getValue().toString();  // fixme hyeyeon
+                            Log.i("login", "masterName: " + masterName);
                             break;
                         }
                 }
@@ -241,7 +238,9 @@ public class MainViewModel extends BaseViewModel {
                 case "masterMode":
                     mutableData.child("password").setValue(password.getValue());
                     mutableData.child("username").child(name.getValue()).setValue(name.getValue());
-                    mutableData.child("master").setValue(true);
+                    mutableData.child("master").setValue(name.getValue());
+                    masterName = name.getValue();  // fixme hyeyeon
+                    Log.i("login", "masterName: " + masterName);
                     break;
                 case "joinMode":
                     topicErrorMsg = "존재하지 않는 토픽입니다";
@@ -291,6 +290,7 @@ public class MainViewModel extends BaseViewModel {
             data.setTopic(topic.getValue());
             data.setPassword(password.getValue());
             data.setName(name.getValue());
+            data.setMasterName(masterName);  // fixme hyeyeon
 
             switch (mode) {
                 case "masterMode":

@@ -7,10 +7,25 @@ import android.net.Uri;
 import android.os.Looper;
 import android.util.Log;
 
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
+
+import com.hansung.drawingtogether.view.drawing.JSONParser;
+import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
+import com.hansung.drawingtogether.view.main.DeleteMessage;
+import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.MainActivity;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -28,15 +43,63 @@ public class AbnormalTerminationHandler
     private FirebaseStorage storage = FirebaseStorage.getInstance();
     private StorageReference storageRef = storage.getReference();
 
+    private FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private DatabaseReference databaseRef = database.getReference();
+
     private ProgressDialog progressDialog;
 
     @Override
     public void uncaughtException(Thread thread, Throwable e) {
-        Log.e("terminate", "Abnormal Termination Handler");
+        /*try {
+            client.getClient().unsubscribe(client.getTopic_data()); // data topic 구독 취소
+        } catch (MqttException me) { me.printStackTrace(); }*/ // todo nayeon - process MQTTClient "exitTask()"
 
+        Log.e("exception", "UncaughtException");
+
+        if (databaseRef != null && client.getClient().isConnected()) {
+            databaseRef.child(client.getTopic()).runTransaction(new Transaction.Handler() {
+                @NonNull
+                @Override
+                public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+                    if (mutableData.getValue() != null && client.isMaster()) {
+                        mutableData.setValue(null);
+                    }
+                    if (mutableData.getValue() != null && !client.isMaster()) {
+                        mutableData.child("username").child(client.getMyName()).setValue(null);
+                    }
+                    Log.e("transaction", "transaction success");
+                    return Transaction.success(mutableData);
+                }
+
+                @Override
+                public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                    Log.e("transaction", "transaction complete");
+                    if (databaseError != null) {
+                        Log.e("transaction", databaseError.getDetails());
+                        return;
+                    }
+                    if (client.isMaster()) {
+                        DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
+                        MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
+                        client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
+                        client.setExitPublish(true);
+                        client.exitTask();
+                    } else {
+                        ExitMessage exitMessage = new ExitMessage(client.getMyName());
+                        MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                        client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
+                        client.setExitPublish(true);
+                        client.exitTask();
+                    }
+                }
+            });
+        }
+
+        /*  fixme hyeyeon-주석처리!
         try {
             client.getClient().unsubscribe(client.getTopic_data()); // data topic 구독 취소
         } catch (MqttException me) { me.printStackTrace(); }
+        */
 
         logger.loggingUncaughtException(thread, e.getStackTrace()); // 발생한 오류에 대한 메시지 로그에 기록
 

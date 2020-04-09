@@ -25,6 +25,7 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 import lombok.Getter;
+import lombok.Setter;
 
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
@@ -32,8 +33,11 @@ import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
+import com.hansung.drawingtogether.data.remote.model.User;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
+import com.hansung.drawingtogether.view.audio.AudioPlayThread;
+import com.hansung.drawingtogether.view.audio.RecordThread;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
@@ -43,6 +47,8 @@ import com.kakao.message.template.LinkObject;
 import com.kakao.message.template.TextTemplate;
 import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
+
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -55,6 +61,7 @@ import java.util.List;
 import static java.security.AccessController.getContext;
 
 @Getter
+@Setter
 public class DrawingViewModel extends BaseViewModel {
     public final SingleLiveEvent<DrawingCommand> drawingCommands = new SingleLiveEvent<>();
     private MutableLiveData<String> userNum = new MutableLiveData<>();
@@ -73,10 +80,14 @@ public class DrawingViewModel extends BaseViewModel {
     private String name;
     private String password;
     private boolean master;
+    private String masterName;  // fixme hyeyeon
 
     private MQTTClient client = MQTTClient.getInstance();
     private MQTTSettingData data = MQTTSettingData.getInstance();
-    //
+
+    // fixme jiyeon
+    private boolean audioFlag = false;
+    private RecordThread recThread;
 
     private Button preMenuButton;
 
@@ -86,14 +97,18 @@ public class DrawingViewModel extends BaseViewModel {
         super.onCleared();
         Log.i("lifeCycle", "DrawingViewModel onCleared()");
 
-        if (client != null) {
+        if (client != null && client.getClient().isConnected()) {
             // 꼭 여기서 처리 해줘야 하는 부분
             client.getDe().removeAllDrawingData();
             client.getUserList().clear();
-            //
 
             // fixme hyeyeon[4] 강제 종료 시 불릴 경우 검사 후 해제, exit publish
             if (!client.isExitPublish()) {
+                // fixme jiyeon
+                for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+                    audioPlayThread.getBuffer().clear();
+                }
+
                 ExitMessage exitMessage = new ExitMessage(client.getMyName());
                 MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
                 client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
@@ -127,10 +142,12 @@ public class DrawingViewModel extends BaseViewModel {
         name = data.getName();
         password = data.getPassword();
         master = data.isMaster();
+        masterName = data.getMasterName();  // fixme hyeyeon
 
-        Log.e("kkankkan", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master);
+        Log.e("kkankkan", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master + "/" + masterName);
 
-        client.init(topic, name, master, this, ip, port);
+        client.init(topic, name, master, this, ip, port, masterName);
+        client.setAliveCount(3);
         client.setCallback();
         client.subscribe(topic + "_join");
         client.subscribe(topic + "_exit");
@@ -138,6 +155,7 @@ public class DrawingViewModel extends BaseViewModel {
         client.subscribe(topic + "_data");
         client.subscribe(topic + "_mid");
         client.subscribe(topic + "_alive"); // fixme hyeyeon
+//        client.subscribe(topic + "_audio"); // fixme jiyeon
     }
 
     public void clickUndo(View view) {
@@ -302,17 +320,38 @@ public class DrawingViewModel extends BaseViewModel {
         }
     }
 
-    public void getImageFromGallery(Fragment fragment) {
-        checkPermission(fragment.getContext());
+    //fixme jiyeon
+    public boolean clickVoice(Fragment fragment) {
+        if (!audioFlag) { // RECORD 시작
+            audioFlag = true;
+            client.subscribe(client.getTopic() + "_audio");
+            Toast.makeText(fragment.getContext(), "RECORD START", Toast.LENGTH_SHORT).show();
+            recThread = new RecordThread();
+            recThread.setFlag(audioFlag);
+            recThread.setBufferUnitSize(2);
+            new Thread(recThread).start();
 
+            return true;
+        } else {
+            try {
+                audioFlag = false;
+                Toast.makeText(fragment.getContext(), "RECORD STOP", Toast.LENGTH_SHORT).show();
+                recThread.setFlag(audioFlag);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return false;
+        }
+    }
+
+    public void getImageFromGallery(Fragment fragment) {
         Intent galleryIntent = new Intent(Intent.ACTION_PICK);
         galleryIntent.setType(MediaStore.Images.Media.CONTENT_TYPE);
         fragment.startActivityForResult(galleryIntent, PICK_FROM_GALLERY);
     }
 
     public void getImageFromCamera(Fragment fragment) {
-        checkPermission(fragment.getContext());
-
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (cameraIntent.resolveActivity(fragment.getContext().getPackageManager()) != null) {
             File photoFile = null;
@@ -358,7 +397,7 @@ public class DrawingViewModel extends BaseViewModel {
         return image;
     }
 
-    private void checkPermission(Context context) {
+    public void checkPermission(Context context) {
         PermissionListener permissionListener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
@@ -373,7 +412,7 @@ public class DrawingViewModel extends BaseViewModel {
         TedPermission.with(context)
                 .setPermissionListener(permissionListener)
                 .setDeniedMessage(context.getResources().getString(R.string.permission_camera))
-                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO)
                 .check();
     }
 
