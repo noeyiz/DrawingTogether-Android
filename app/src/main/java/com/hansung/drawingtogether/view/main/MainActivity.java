@@ -21,8 +21,6 @@ import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 
-
-
 public class MainActivity extends AppCompatActivity {
     private String topicPassword="";
     private Toolbar toolbar;

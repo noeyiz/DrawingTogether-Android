@@ -1,13 +1,11 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.Manifest;
-import android.app.AlertDialog;
+import android.app.Service;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -28,16 +26,12 @@ import lombok.Setter;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
-import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.data.remote.model.User;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
-import com.hansung.drawingtogether.view.audio.AudioPlayThread;
-import com.hansung.drawingtogether.view.audio.RecordThread;
 import com.hansung.drawingtogether.view.main.ExitMessage;
-import com.hansung.drawingtogether.view.main.JoinMessage;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
+import com.hansung.drawingtogether.view.main.MainActivity;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
 import com.kakao.message.template.LinkObject;
@@ -45,15 +39,11 @@ import com.kakao.message.template.TextTemplate;
 import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-
-import static java.security.AccessController.getContext;
 
 @Getter
 @Setter
@@ -82,6 +72,7 @@ public class DrawingViewModel extends BaseViewModel {
     // fixme jiyeon
     private boolean audioFlag = false;
     private RecordThread recThread;
+    private AudioManager audioManager = (AudioManager) ((MainActivity)MainActivity.context).getSystemService(Service.AUDIO_SERVICE); // fixme jiyeon
 
     private Button preMenuButton;
 
@@ -102,6 +93,8 @@ public class DrawingViewModel extends BaseViewModel {
                 for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
                     audioPlayThread.getBuffer().clear();
                 }
+                // fixme jiyeon
+                audioManager.setSpeakerphoneOn(false);
 
                 ExitMessage exitMessage = new ExitMessage(client.getMyName());
                 MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
@@ -276,11 +269,10 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     //fixme jiyeon
-    public boolean clickVoice(Fragment fragment) {
+    public boolean clickVoice() {
         if (!audioFlag) { // RECORD 시작
             audioFlag = true;
             client.subscribe(client.getTopic() + "_audio");
-            Toast.makeText(fragment.getContext(), "RECORD START", Toast.LENGTH_SHORT).show();
             recThread = new RecordThread();
             recThread.setFlag(audioFlag);
             recThread.setBufferUnitSize(2);
@@ -290,13 +282,28 @@ public class DrawingViewModel extends BaseViewModel {
         } else {
             try {
                 audioFlag = false;
-                Toast.makeText(fragment.getContext(), "RECORD STOP", Toast.LENGTH_SHORT).show();
                 recThread.setFlag(audioFlag);
+                audioManager.setSpeakerphoneOn(false);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             return false;
+        }
+    }
+
+    // fixme jiyeon
+    public boolean changeSpeakerMode() {
+        if (audioManager.isSpeakerphoneOn()) {
+            audioManager.setSpeakerphoneOn(false);
+            Log.e("audio", "SPEAKER : " + audioManager.isSpeakerphoneOn());
+
+            return false;
+        } else {
+            audioManager.setSpeakerphoneOn(true);
+            Log.e("audio", "SPEAKER : " + audioManager.isSpeakerphoneOn());
+
+            return true;
         }
     }
 

@@ -7,9 +7,16 @@
         app:showAsAction="always"
         android:icon="@drawable/voiceno"/>
     <item
+        android:id="@+id/drawing_speaker"
+        android:title="스피커 모드"
+        app:showAsAction="always"
+        android:icon="@drawable/speaker"
+        android:visible="false"/>
+
+    <item
         android:id="@+id/drawing_image"
         android:title="이미지"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
         android:icon="@drawable/image">
         <menu>
             <item

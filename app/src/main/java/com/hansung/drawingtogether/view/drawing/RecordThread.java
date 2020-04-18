@@ -1,17 +1,11 @@
-package com.hansung.drawingtogether.view.audio;
+package com.hansung.drawingtogether.view.drawing;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.util.Log;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.view.drawing.JSONParser;
-import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
 import com.hansung.drawingtogether.view.main.AudioMessage;
-import com.hansung.drawingtogether.view.main.DeleteMessage;
-
-import org.eclipse.paho.client.mqttv3.MqttClient;
 
 import lombok.Setter;
 
@@ -19,14 +13,14 @@ import lombok.Setter;
 @Setter
 public class RecordThread implements Runnable {
 
-    private int audioSource = MediaRecorder.AudioSource.MIC;
+    private int audioSource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
     private int sampleRate = 5000;
     private int channelCount = AudioFormat.CHANNEL_IN_STEREO;
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
     private int bufferUnit = 2500;
     private int bufferSize = 5000;
 
-    private AudioRecord audioRecord = new AudioRecord(audioSource, sampleRate, channelCount, audioFormat, bufferSize);
+    private AudioRecord audioRecord; // fixme jiyeon
 
     private MQTTClient mqttClient = MQTTClient.getInstance();
     private boolean flag = false;
@@ -36,6 +30,15 @@ public class RecordThread implements Runnable {
     @Override
     public void run() {
         // todo permission 생각해야 함
+        audioRecord = new AudioRecord.Builder() // fixme jiyeon
+                .setAudioSource(audioSource)
+                .setAudioFormat(new AudioFormat.Builder()
+                        .setEncoding(audioFormat)
+                        .setSampleRate(sampleRate)
+                        .setChannelMask(channelCount)
+                        .build())
+                .setBufferSizeInBytes(bufferSize)
+                .build();
         audioRecord.startRecording();
 
         while(flag) {
