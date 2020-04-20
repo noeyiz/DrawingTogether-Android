@@ -245,6 +245,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         binding.setLifecycleOwner(this);
 
         setHasOptionsMenu(true);
+        drawingViewModel.checkPermission(getContext());
 
         ((MainActivity)getActivity()).setOnBackListener(new MainActivity.OnBackListener() {
             @Override
@@ -338,7 +339,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     }
 
     // fixme hyeyeon[2]-messageArrived 콜백에서 처리 -> 나가기 버튼 누른 후 바로 처리하도록 변경
-    public void exit() {
+    public void exit() { // 우측 상단 뒤로가기 버튼
+        Log.e("why", "exit");
         exitOnClickListener.setBackKeyPressed(false);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         if (client.isMaster()) {
@@ -347,6 +349,13 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             builder.setMessage(R.string.joiner_exit);
         }
         builder.setPositiveButton(android.R.string.ok, exitOnClickListener);
+        builder.setNeutralButton("저장 후 종료", new DialogInterface.OnClickListener() { // fixme nayeon
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                drawingViewModel.clickSave();
+                exitOnClickListener.onClick(dialog, which);
+            }
+        }); // fixme nayeon
         builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -367,12 +376,20 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     }
 
     @Override
-    public void onBackKey() {
+    public void onBackKey() { // 디바이스 자체 뒤로가기 버튼
+        Log.e("why", "onBackKey");
         exitOnClickListener.setBackKeyPressed(true);
         Log.e("kkankkan", "드로잉프레그먼트 onbackpressed");
         AlertDialog dialog = new AlertDialog.Builder(getContext())
                 .setMessage("앱을 종료하시겠습니까?")
                 .setPositiveButton(android.R.string.ok, exitOnClickListener)
+                .setNeutralButton("저장 후 종료", new DialogInterface.OnClickListener() { // fixme nayeon
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        drawingViewModel.clickSave();
+                        exitOnClickListener.onClick(dialog, which);
+                    }
+                })
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -390,6 +407,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         @Override
         public void onClick(DialogInterface dialog, int which) {
             logger.uploadLogFile(ExitType.NORMAL); // fixme nayeon
+
+            Log.e("why", "exitOnClickListener : " + backKeyPressed);
 
             databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
                 @NonNull
@@ -469,21 +488,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
                     messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(galleryBitmap));
                     client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
-
-//                Uri uri = data.getData();
-//                Bitmap galleryBitmap = null;
-//                try {
-//                    galleryBitmap = rotateBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri), PICK_FROM_GALLERY);
-//                    galleryBitmap = resizeBitmap(galleryBitmap);
-//                    ImageView imageView = new ImageView(getContext());
-//                    imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
-//                    imageView.setImageBitmap(galleryBitmap);
-//                    de.setBackgroundImage(galleryBitmap);
-//                    binding.backgroundView.addView(imageView);
-//
-//                    messageFormat = new MqttMessageFormat(de.getUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(galleryBitmap));
-//                    client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
-
                 } catch(IOException e) {
                     e.printStackTrace();
                 }
@@ -497,20 +501,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
                     messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(cameraBitmap));
                     client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
-
-//                    File file = new File(drawingViewModel.getPhotoPath());
-//                    Bitmap cameraBitmap = rotateBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file)), PICK_FROM_CAMERA);
-//                    cameraBitmap = resizeBitmap(cameraBitmap);
-//                    if (cameraBitmap != null) {
-//                        ImageView imageView = new ImageView(getContext());
-//                        imageView.setLayoutParams(new LinearLayout.LayoutParams(size.x, ViewGroup.LayoutParams.MATCH_PARENT));
-//                        imageView.setImageBitmap(cameraBitmap);
-//                        de.setBackgroundImage(cameraBitmap);
-//                        binding.backgroundView.addView(imageView);
-//
-//                        messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(cameraBitmap));
-//                        client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
-//                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -531,11 +521,17 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         inflater.inflate(R.menu.application_menu, menu);
     }
 
+    // fixme jiyeon
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
-            case R.id.drawing_search:
-                drawingViewModel.clickSearch(getView());
+            case R.id.drawing_voice:
+                boolean click = drawingViewModel.clickVoice(DrawingFragment.this);
+                if (click) {
+                    item.setIcon(R.drawable.voice);
+                } else {
+                    item.setIcon(R.drawable.voiceno);
+                }
                 break;
             case R.id.gallery:
                 drawingViewModel.getImageFromGallery(DrawingFragment.this);
@@ -543,8 +539,14 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             case R.id.camera:
                 drawingViewModel.getImageFromCamera(DrawingFragment.this);
                 break;
+            case R.id.drawing_search:
+                drawingViewModel.clickSearch(getView());
+                break;
             case R.id.drawing_plus:
                 drawingViewModel.plusUser(DrawingFragment.this, data.getTopic(), data.getPassword());  // fixme hyeyeon
+                break;
+            case R.id.drawing_save:
+                drawingViewModel.clickSave();
                 break;
         }
 

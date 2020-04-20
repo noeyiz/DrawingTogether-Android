@@ -464,7 +464,7 @@ public class DrawingView extends View {
         AlertDialog.Builder builder = new AlertDialog.Builder(de.getDrawingFragment().getActivity());
         builder.setTitle("화면 초기화").setMessage("모든 그리기 내용이 삭제됩니다.\n그래도 지우시겠습니까?");
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 de.setCurrentMode(Mode.CLEAR);
@@ -495,7 +495,7 @@ public class DrawingView extends View {
         AlertDialog.Builder builder = new AlertDialog.Builder(de.getDrawingFragment().getActivity());
         builder.setTitle("배경 초기화").setMessage("배경 이미지가 삭제됩니다.\n그래도 지우시겠습니까?");
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 de.setCurrentMode(Mode.CLEAR_BACKGROUND_IMAGE);

@@ -30,6 +30,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="@id/bottom_menu_guideline">
 
+
             <Button
                 android:id="@+id/drawBtn1"
                 android:layout_width="0dp"
@@ -347,7 +348,7 @@
                     android:id="@+id/drawingViewContainer"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:background="@null">
+                    android:background="#FFFFFF">
 
                     <LinearLayout
                         android:id="@+id/background_view"

@@ -14,6 +14,7 @@ public class MQTTSettingData {
     private String name;
     private String password;
     private boolean master;
+    private String masterName;  // fixme hyeyeon
 
     public static MQTTSettingData getInstance() {
         return data;
