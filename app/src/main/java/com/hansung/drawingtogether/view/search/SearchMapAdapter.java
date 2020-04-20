@@ -2,17 +2,13 @@ package com.hansung.drawingtogether.view.search;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.LocationVO;
 import com.hansung.drawingtogether.databinding.LayoutSearchMapBinding;
 

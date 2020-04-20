@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
+import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 
 public enum AttributeManager {
@@ -13,6 +14,7 @@ public enum AttributeManager {
 
     private FragmentDrawingBinding binding;
     private DrawingEditor de = DrawingEditor.getInstance();
+    private Logger logger = Logger.getInstance();
 
     private View.OnClickListener colorButtonClickListener;
     private SeekBar.OnSeekBarChangeListener sizeBarChangeListener;
@@ -23,6 +25,7 @@ public enum AttributeManager {
         colorButtonClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                logger.info("button", "color button click"); // fixme nayeon
 
                 String hexColor = ((Button)view).getText().toString();
                 int color = Color.parseColor(hexColor);

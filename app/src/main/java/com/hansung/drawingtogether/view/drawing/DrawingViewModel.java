@@ -1,13 +1,9 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -27,12 +23,11 @@ import lombok.Getter;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
-import com.hansung.drawingtogether.data.remote.model.AliveThread;
+import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
 import com.hansung.drawingtogether.view.main.ExitMessage;
-import com.hansung.drawingtogether.view.main.JoinMessage;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
@@ -47,13 +42,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import static java.security.AccessController.getContext;
-
 @Getter
 public class DrawingViewModel extends BaseViewModel {
     public final SingleLiveEvent<DrawingCommand> drawingCommands = new SingleLiveEvent<>();
     private MutableLiveData<String> userNum = new MutableLiveData<>();
     private MutableLiveData<String> userPrint = new MutableLiveData<>();  // fixme hyeyeon
+
+    private Logger logger = Logger.getInstance();
 
     private final int PICK_FROM_GALLERY = 0;
     private final int PICK_FROM_CAMERA = 1;
@@ -136,14 +131,20 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickUndo(View view) {
+        logger.info("button", "undo button click");
+
         de.getDrawingFragment().getBinding().drawingView.undo();
     }
 
     public void clickRedo(View view) {
+        logger.info("button", "redo button click");
+
         de.getDrawingFragment().getBinding().drawingView.redo();
     }
 
     public void clickPen(View view) { // drawBtn1, drawBtn2, drawBtn3
+        logger.info("button", "pen button click");
+
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.STROKE);
@@ -156,6 +157,8 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickEraser(View view) {
+        logger.info("button", "eraser button click");
+
         changeClickedButtonBackground(view);
         if(de.getCurrentMode() == Mode.ERASE)
             drawingCommands.postValue(new DrawingCommand.EraserMode(view));     //fixme minj add pixel eraser
@@ -164,6 +167,8 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickText(View view) {
+        logger.info("button", "text button click");
+
         // 사용자가 처음 텍스트 편집창에서 텍스트 생성중인 경우
         // 텍스트 정보들을 모든 사용자가 갖고 있지 않음 ( 편집중인 사람만 갖고 있음 )
         // 따라서 중간자가 들어오고 난 후에 텍스트 생성을 할 수 있도록 막아두기
@@ -197,6 +202,8 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickDone(View view) {
+        logger.info("button", "done button click");
+
         // 텍스트 모드가 끝나면 다른 버튼들 활성화
         enableDrawingMenuButton(true);
 
@@ -207,6 +214,8 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickShape(View view) {
+        logger.info("button", "shape button click");
+
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.RECT);
@@ -217,6 +226,8 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickSelector(View view) {
+        logger.info("button", "selector button click");
+
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.SELECT);
         Log.i("drawing", "mode = " + de.getCurrentMode().toString());
@@ -230,10 +241,14 @@ public class DrawingViewModel extends BaseViewModel {
 
     // fixme nayeon
     public void clickTextColor(View view) {
+        logger.info("button", "text color button click");
+
         de.getCurrentText().finishTextColorChange();
     }
 
     public void clickSearch(View view) {
+        logger.info("button", "search button click");
+
         navigate(R.id.action_drawingFragment_to_searchFragment);
     }
 

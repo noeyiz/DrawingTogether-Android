@@ -34,7 +34,7 @@ public class AbnormalTerminationHandler
     public void uncaughtException(Thread thread, Throwable e) {
         Log.e("terminate", "Abnormal Termination Handler");
 
-        try {
+       /* try {
             client.getClient().unsubscribe(client.getTopic_data()); // data topic 구독 취소
         } catch (MqttException me) { me.printStackTrace(); }
 
@@ -59,7 +59,11 @@ public class AbnormalTerminationHandler
 
         new UploadProgressDialogDismissThread(progressDialog).start(); // 다이얼로그 끝내기
 
-        new ErrorAlertDialogThread().start(); // 오류 메시지를 보여주는 알림창 띄우기
+        new ErrorAlertDialogThread().start(); // 오류 메시지를 보여주는 알림창 띄우기 */
+
+        logger.loggingUncaughtException(thread, e.getStackTrace()); // 발생한 오류에 대한 메시지 로그에 기록
+        logger.uploadLogFile(ExitType.ABNORMAL);
+
     }
 
     private void setProgressDialog() {
@@ -121,16 +125,20 @@ class ErrorAlertDialogThread extends Thread {
         builder.setMessage(logger.getUncaughtException());
         builder.setCancelable(false); // 다른 영역 터치 시 다이얼로그가 사라지지 않도록
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                logger.info("button", "error dialog ok button click"); // fixme nayeon
+
                 android.os.Process.killProcess(android.os.Process.myPid());
                 System.exit(10);
             }
         });
 
+
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+        logger.info("uncaught exception", "error dialog show"); // fixme nayeon
 
         Looper.loop();
     }

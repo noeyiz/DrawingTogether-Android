@@ -60,13 +60,6 @@ public class MainActivity extends AppCompatActivity {
         context = this; // fixme nayeon
 
 
-        // fixme nayeon ☆☆☆☆☆ 2. Log 종류
-        logger.info("MainActivity Logging Test");
-        logger.info("logging information");
-        logger.warn("logging warning");
-        logger.error("logging error");
-
-
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         title = (TextView)findViewById(R.id.toolbar_title);
         setSupportActionBar(toolbar);
@@ -104,6 +97,8 @@ public class MainActivity extends AppCompatActivity {
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            logger.info("button", "back press ok button click"); // fixme nayeon
+
                             MainActivity.super.onBackPressed();
                             return;
                         }
@@ -111,6 +106,8 @@ public class MainActivity extends AppCompatActivity {
                     .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            logger.info("button", "back press cancel button click"); // fixme nayeon
+
                             return;
                         }
                     })

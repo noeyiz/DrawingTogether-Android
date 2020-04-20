@@ -15,19 +15,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import lombok.Getter;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.MutableData;
-import com.google.firebase.database.Transaction;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.drawing.ComponentType;
 import com.hansung.drawingtogether.view.drawing.DrawingComponent;
@@ -47,7 +38,6 @@ import com.hansung.drawingtogether.view.main.AliveMessage;
 import com.hansung.drawingtogether.view.main.DeleteMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
-import com.hansung.drawingtogether.view.main.MainActivity;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -57,10 +47,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-import java.net.UnknownServiceException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -69,7 +56,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Vector;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Getter
@@ -101,6 +87,7 @@ public enum MQTTClient {
     private int qos = 2;
     private JSONParser parser = JSONParser.getInstance();
     private DrawingEditor de = DrawingEditor.getInstance();
+    private Logger logger = Logger.getInstance(); // fixme nayeon
     private DrawingFragment drawingFragment;
     private FragmentDrawingBinding binding;
     private DrawingTask drawingTask;
@@ -582,6 +569,7 @@ public enum MQTTClient {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 Log.i("drawing", "dialog onclick");
+                                logger.info("button", "timer dialog ok button click"); // fixme nayeon
                                 doInBack();
                                 //dialog.cancel();
                                 dialog.dismiss();
@@ -615,6 +603,7 @@ public enum MQTTClient {
                     }
                 });
                 dialog.show();
+                logger.info("mqtt", "timer dialog show"); // fixme nayeon
             }
         });
     }
@@ -630,12 +619,15 @@ public enum MQTTClient {
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                logger.info("button", "exit dialog ok button click"); // fixme nayeon
+
                                 exitTask();
                                 drawingViewModel.back();
                             }
                         })
                         .create();
                 dialog.show();
+                logger.info("mqtt", "exit dialog show"); // fixme nayeon
             }
         });
     }

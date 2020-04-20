@@ -1,6 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -46,6 +47,8 @@ import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
+import com.hansung.drawingtogether.data.remote.model.ExitType;
+import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
@@ -72,7 +75,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     private MQTTSettingData data = MQTTSettingData.getInstance();  // fixme hyeyeon
 
     private DrawingEditor de = DrawingEditor.getInstance();
-    private AttributeManager am = AttributeManager.getInstance(); // fixme nayeon
+    private AttributeManager am = AttributeManager.getInstance();
+    private Logger logger = Logger.getInstance(); // fixme nayeon
 
     private FragmentDrawingBinding binding;
     private DrawingViewModel drawingViewModel;
@@ -82,6 +86,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     private DatabaseReference databaseReference;
     private ExitOnClickListener exitOnClickListener;
     //
+
+    private ProgressDialog progressDialog;
 
     private long lastTimeBackPressed;  // fixme hyeyeon[3]
 
@@ -227,6 +233,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         binding.userInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                logger.info("button", "user info"); // fixme nayeon
+
                 if (binding.userPrint.getVisibility() == View.VISIBLE)
                     binding.userPrint.setVisibility(View.INVISIBLE);
                 else
@@ -273,6 +281,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             backgroundEraserBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    logger.info("button", "background eraser button click"); // fixme nayeon
+
                     binding.drawingView.clearBackgroundImage();
                     popupWindow.dismiss();
                 }
@@ -287,6 +297,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             clearBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    logger.info("button", "drawing clear button click"); // fixme nayeon
+
                     binding.drawingView.clear();
                     popupWindow.dismiss();
                 }
@@ -302,6 +314,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         rectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                logger.info("button", "rect shape button click"); // fixme nayeon
+
                 de.setCurrentMode(Mode.DRAW);
                 de.setCurrentType(ComponentType.RECT);
                 Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
@@ -313,6 +327,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         ovalBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                logger.info("button", "oval shape button click"); // fixme nayeon
+
                 de.setCurrentMode(Mode.DRAW);
                 de.setCurrentType(ComponentType.OVAL);
                 Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
@@ -334,10 +350,20 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                logger.info("button", "exit dialog cancel button click"); // fixme nayeon
+
                 return;
             }
         });
         builder.create().show();
+    }
+
+    private void setProgressDialog() {
+        progressDialog = new ProgressDialog(MainActivity.context);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setTitle("오류 발생");
+        progressDialog.setMessage("로그 파일 업로드 중");
+        progressDialog.setCancelable(false);
     }
 
     @Override
@@ -363,6 +389,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
         @Override
         public void onClick(DialogInterface dialog, int which) {
+            logger.uploadLogFile(ExitType.NORMAL); // fixme nayeon
+
             databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
                 @NonNull
                 @Override
@@ -380,6 +408,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 @Override
                 public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
                     Log.e("transaction", "transaction complete");
+
+
                     if (databaseError != null) {
                         Log.e("transaction", databaseError.getDetails());
                         return;

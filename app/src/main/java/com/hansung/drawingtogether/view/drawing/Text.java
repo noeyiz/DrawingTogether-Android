@@ -477,8 +477,12 @@ public class Text { // EditTextView
 
     // todo nayeon ☆ ☆ ☆ 레이아웃에 텍스트 뷰 추가 시 오류 캐치
     public void addTextViewToFrameLayout() {
+        frameLayout.addView(textView);
+        frameLayout.addView(textView);
+
+
         try {
-            frameLayout.addView(textView);
+            //frameLayout.addView(textView);
 
             Log.e("text", "frameLayout in adding view " + frameLayout.toString());
             Log.e("text", "text view size in adding view " + textView.getWidth() + ", " + textView.getHeight());
@@ -487,11 +491,8 @@ public class Text { // EditTextView
         catch(IllegalStateException ie) {
             ie.printStackTrace();
 
-            logger.error("☆ ☆ ☆  frameLayout.addView ☆ ☆ ☆");
-            logger.error("drawing editor text size = " + de.getTexts().size());
-            logger.error("frame layout children count = " + frameLayout.getChildCount());
 
-            for(Text text: de.getTexts()) { logger.error("text id = " + text.getTextAttribute().getId()); } // 모든 텍스트 아이디 출력
+            for(Text text: de.getTexts()) {  } // 모든 텍스트 아이디 출력
 
             Log.e("error", "☆ ☆ ☆  frameLayout.addView ☆ ☆ ☆");
             Log.e("drawing editor text size", Integer.toString(de.getTexts().size()));
