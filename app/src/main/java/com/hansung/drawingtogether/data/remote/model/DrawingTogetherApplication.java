@@ -1,7 +1,6 @@
 package com.hansung.drawingtogether.data.remote.model;
 
 import android.app.Application;
-import android.util.Log;
 
 
 public class DrawingTogetherApplication extends Application {

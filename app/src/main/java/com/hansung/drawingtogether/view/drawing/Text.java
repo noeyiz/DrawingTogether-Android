@@ -3,11 +3,8 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.content.ClipData;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.text.Editable;
-import android.text.InputFilter;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -23,6 +20,8 @@ import android.widget.Toast;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+
 
 import lombok.Getter;
 import lombok.Setter;
@@ -479,11 +478,11 @@ public class Text { // EditTextView
     public void addTextViewToFrameLayout() {
 
         // todo nayeon - 강제 오류 발생시키기
-        frameLayout.addView(textView);
-        frameLayout.addView(textView);
+        // frameLayout.addView(textView);
+        // frameLayout.addView(textView);
 
         try {
-            //frameLayout.addView(textView);
+            frameLayout.addView(textView);
 
             Log.e("text", "frameLayout in adding view " + frameLayout.toString());
             Log.e("text", "text view size in adding view " + textView.getWidth() + ", " + textView.getHeight());

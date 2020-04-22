@@ -2,7 +2,6 @@ package com.hansung.drawingtogether.view.main;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +19,8 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.hansung.drawingtogether.databinding.FragmentMainBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+
 
 import java.util.Objects;
 

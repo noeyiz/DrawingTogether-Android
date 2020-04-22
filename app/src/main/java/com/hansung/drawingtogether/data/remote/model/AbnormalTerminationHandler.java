@@ -5,7 +5,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Looper;
-import android.util.Log;
 
 
 import androidx.annotation.NonNull;

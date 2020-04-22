@@ -7,7 +7,6 @@ import android.graphics.Canvas;
 
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -19,6 +18,7 @@ import lombok.Getter;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.hansung.drawingtogether.BuildConfig;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.audio.AudioPlayThread;
 import com.hansung.drawingtogether.view.drawing.ComponentType;
@@ -518,6 +518,7 @@ public enum MQTTClient {
                     }
                 }
 
+
                 //drawing
                 if (newTopic.equals(topic_data) && de.getDrawingBitmap() != null) {
                     String msg = new String(message.getPayload());
@@ -674,7 +675,7 @@ public enum MQTTClient {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 Log.i("drawing", "dialog onclick");
-                                logger.info("button", "timer dialog ok button click"); // fixme nayeon
+                                Log.i("button", "timer dialog ok button click"); // fixme nayeon
                                 doInBack();
                                 //dialog.cancel();
                                 dialog.dismiss();
@@ -710,7 +711,7 @@ public enum MQTTClient {
                     }
                 });
                 dialog.show();
-                logger.info("mqtt", "timer dialog show"); // fixme nayeon
+                Log.i("mqtt", "timer dialog show"); // fixme nayeon
             }
         });
     }
@@ -728,7 +729,7 @@ public enum MQTTClient {
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                logger.info("button", "exit dialog ok button click"); // fixme nayeon
+                                Log.i("button", "exit dialog ok button click"); // fixme nayeon
 
                                 exitTask();
                                 if (progressDialog.isShowing())
@@ -748,7 +749,7 @@ public enum MQTTClient {
                         })
                         .create();
                 dialog.show();
-                logger.info("mqtt", "exit dialog show"); // fixme nayeon
+                Log.i("mqtt", "exit dialog show"); // fixme nayeon
             }
         });
     }

@@ -1,6 +1,5 @@
 package com.hansung.drawingtogether.view;
 
-import android.util.Log;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
@@ -9,6 +8,9 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+
 
 public class SingleLiveEvent<T> extends MutableLiveData<T> {
 

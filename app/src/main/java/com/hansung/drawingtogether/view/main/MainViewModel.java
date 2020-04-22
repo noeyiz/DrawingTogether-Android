@@ -2,7 +2,6 @@
 package com.hansung.drawingtogether.view.main;
 
 import android.app.ProgressDialog;
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -18,9 +17,9 @@ import com.google.firebase.database.Transaction;
 
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 import com.hansung.drawingtogether.view.BaseViewModel;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
 
 import lombok.Setter;
 

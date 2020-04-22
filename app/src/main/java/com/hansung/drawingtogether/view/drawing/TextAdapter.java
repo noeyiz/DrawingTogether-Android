@@ -1,6 +1,5 @@
 package com.hansung.drawingtogether.view.drawing;
 
-import android.util.Log;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -12,6 +11,8 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
+
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 // Parse Only TextAttribute
 // Text 객체 파싱은 사실상 TextAttribute 객체 파싱

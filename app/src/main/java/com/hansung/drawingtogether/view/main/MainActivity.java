@@ -7,19 +7,21 @@ import android.content.Intent;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.hansung.drawingtogether.BuildConfig;
 import com.hansung.drawingtogether.R;
 
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -58,6 +60,11 @@ public class MainActivity extends AppCompatActivity {
         Log.e("activity", "onCreate()");
         setContentView(R.layout.activity_main);
         Log.i("lifeCycle", "MainActivity onCreate()");
+
+
+        Log.e("build", BuildConfig.DEBUG + " ");
+        Log.i("debug", BuildConfig.DEBUG + " ");
+
 
         context = this; // fixme nayeon
 
@@ -99,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            logger.info("button", "back press ok button click"); // fixme nayeon
+                            Log.i("button", "back press ok button click"); // fixme nayeon
 
                             MainActivity.super.onBackPressed();
                             return;
@@ -115,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                     .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            logger.info("button", "back press cancel button click"); // fixme nayeon
+                            Log.i("button", "back press cancel button click"); // fixme nayeon
 
                             return;
                         }
@@ -136,6 +143,14 @@ public class MainActivity extends AppCompatActivity {
     public void setToolbarTitle(String title) {
         this.title.setText(title);
     }
+
+    // fixme nayeon - ToolBar Menu Item Visibility
+    public void setVisibilityToolbarMenus(boolean visibility) {
+        for( int i=0; i<toolbar.getMenu().size(); i++ ) {
+            toolbar.getMenu().getItem(i).setVisible(visibility);
+        }
+    }
+
 
     public String getTopicPassword() {
         return topicPassword;

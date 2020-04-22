@@ -2,27 +2,17 @@ package com.hansung.drawingtogether.view.search;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.ObservableField;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.MutableLiveData;
 
 import com.hansung.drawingtogether.R;
-import com.hansung.drawingtogether.data.remote.model.ImageComponent;
-import com.hansung.drawingtogether.data.remote.model.ImageSearchVO;
 import com.hansung.drawingtogether.view.BaseViewModel;
-import com.hansung.drawingtogether.view.RetrofitConnection;
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
-
-import java.util.ArrayList;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class SearchViewModel extends BaseViewModel {
     private ObservableField<String> keyword;

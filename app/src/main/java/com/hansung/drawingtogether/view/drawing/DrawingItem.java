@@ -1,11 +1,12 @@
 package com.hansung.drawingtogether.view.drawing;
 
-import android.util.Log;
 
 import java.util.Vector;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 @Getter
 @Setter

@@ -2,12 +2,14 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+
 
 public class DrawingViewController extends FrameLayout {
 

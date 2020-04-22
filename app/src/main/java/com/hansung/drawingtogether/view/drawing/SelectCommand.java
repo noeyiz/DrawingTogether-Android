@@ -1,9 +1,10 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Point;
-import android.util.Log;
 
 import java.util.Vector;
+
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 public class SelectCommand implements Command {
     private Selector selector = new Selector();

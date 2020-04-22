@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Looper;
-import android.util.Log;
 
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -20,6 +19,8 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import lombok.Getter;
 
@@ -44,11 +45,15 @@ public enum Logger {
 
     public static Logger getInstance() { return INSTANCE; }
 
-    public void info(String tag, String message) { log += "[ INFO " + tag  + " ] : " + new LogContent(message).toString() + "\n"; }
+    public void info(String tag, String msg) { log += "[ INFO " + tag  + " ] : " + getLogContent(msg) + "\n"; }
 
-    public void warn(String tag, String message) { log += "[ WARN " + tag + " ] : " + new LogContent(message).toString() + "\n"; }
+    public void warn(String tag, String msg) { log += "[ WARN " + tag + " ] : " + getLogContent(msg) + "\n"; }
 
-    public void error(String tag, String message) { log += "[ ERROR " + tag + " ] : " + new LogContent(message).toString() + "\n"; }
+    public void error(String tag, String msg) { log += "[ ERROR " + tag + " ] : " + getLogContent(msg) + "\n"; }
+
+    public void verbose(String tag, String msg) { log += "[ ERROR " + tag + " ] : " + getLogContent(msg) + "\n"; }
+
+    public void debug(String tag, String msg) { log += "[ ERROR " + tag + " ] : " + getLogContent(msg) + "\n"; }
 
     public void loggingUncaughtException(Thread thread, StackTraceElement[] ste) {
 
@@ -185,7 +190,7 @@ public enum Logger {
             builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    logger.info("button", "error dialog ok button click"); // fixme nayeon
+                    Log.i("button", "error dialog ok button click"); // fixme nayeon
 
                     android.os.Process.killProcess(android.os.Process.myPid());
                     System.exit(10);
@@ -194,10 +199,24 @@ public enum Logger {
 
             AlertDialog alertDialog = builder.create();
             alertDialog.show();
-            logger.info("uncaught exception", "error dialog show"); // fixme nayeon
+            Log.i("uncaught exception", "error dialog show"); // fixme nayeon
 
             Looper.loop();
         }
+    }
+
+
+    private String getLogContent(String msg) {
+        return "( " + getTime(System.currentTimeMillis()) + " ) " + de.getMyUsername() + " : " + msg;
+    }
+
+
+    public String getTime(long time) {
+        Date date = new Date(time);
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+
+        return formatter.format(date);
     }
 
 }

@@ -10,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.util.SparseArray;
 import android.widget.EditText;
 
@@ -19,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 import lombok.Getter;
+
+import com.hansung.drawingtogether.data.remote.model.Log;
 
 @Getter
 public enum DrawingEditor {
@@ -749,7 +750,7 @@ public enum DrawingEditor {
         erasedComponentIds.add(-1);
         try {
             for (DrawingComponent component : drawingComponents) {
-                switch (component.getType()) {
+                switch (component.getType()) { // todo nayeon [ int com.hansung.drawingtogether.view.drawing.ComponentType.ordinal() ]
                     case STROKE:
                         break;
 
