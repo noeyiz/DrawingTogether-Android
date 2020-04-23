@@ -4,12 +4,9 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-
 import android.net.Uri;
 import android.os.Bundle;
-
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,14 +15,12 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.hansung.drawingtogether.BuildConfig;
 import com.hansung.drawingtogether.R;
-
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
-
 
 public class MainActivity extends AppCompatActivity {
     private String topicPassword="";

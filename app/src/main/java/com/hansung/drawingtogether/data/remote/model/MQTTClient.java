@@ -17,7 +17,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.WarpingControlView;
-import com.hansung.drawingtogether.view.audio.AudioPlayThread;
+
+import com.hansung.drawingtogether.view.drawing.AudioPlayThread;
 import com.hansung.drawingtogether.view.drawing.ComponentType;
 import com.hansung.drawingtogether.view.drawing.DrawingComponent;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;

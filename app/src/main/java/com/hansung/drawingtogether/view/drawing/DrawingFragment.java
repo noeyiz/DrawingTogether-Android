@@ -27,7 +27,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -83,6 +82,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     private FragmentDrawingBinding binding;
     private DrawingViewModel drawingViewModel;
     private InputMethodManager inputMethodManager;
+
+    private Menu menu; // fixme jiyeon
 
     // fixme hyeyeon[2]
     private DatabaseReference databaseReference;
@@ -521,20 +522,35 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.application_menu, menu);
+
+        this.menu = menu;
     }
 
     // fixme jiyeon
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
+            // fixme jiyeon
             case R.id.drawing_voice:
-                boolean click = drawingViewModel.clickVoice(DrawingFragment.this);
+                boolean click = drawingViewModel.clickVoice();
                 if (click) {
                     item.setIcon(R.drawable.voice);
+                    menu.findItem(R.id.drawing_speaker).setVisible(true);
                 } else {
                     item.setIcon(R.drawable.voiceno);
+                    menu.findItem(R.id.drawing_speaker).setVisible(false);
+                    menu.findItem(R.id.drawing_speaker).setIcon(R.drawable.speaker);
                 }
                 break;
+            case R.id.drawing_speaker:
+                boolean mode = drawingViewModel.changeSpeakerMode();
+                if (mode) {
+                    item.setIcon(R.drawable.speaker_loud);
+                } else {
+                    item.setIcon(R.drawable.speaker);
+                }
+                break;
+            //
             case R.id.gallery:
                 drawingViewModel.getImageFromGallery(DrawingFragment.this);
                 break;

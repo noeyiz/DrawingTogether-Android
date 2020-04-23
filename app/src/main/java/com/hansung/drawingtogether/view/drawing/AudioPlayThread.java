@@ -1,7 +1,7 @@
-package com.hansung.drawingtogether.view.audio;
+package com.hansung.drawingtogether.view.drawing;
 
+import android.media.AudioAttributes;
 import android.media.AudioFormat;
-import android.media.AudioManager;
 import android.media.AudioTrack;
 
 import com.hansung.drawingtogether.data.remote.model.MyLog;
@@ -32,7 +32,19 @@ public class AudioPlayThread implements Runnable {
 
     @Override
     public void run() {
-        audioTrack = new AudioTrack(AudioManager.STREAM_VOICE_CALL, sampleRate, channelCount, audioFormat, bufferSize, AudioTrack.MODE_STREAM);
+//        audioTrack = new AudioTrack(AudioManager.STREAM_VOICE_CALL, sampleRate, channelCount, audioFormat, bufferSize, AudioTrack.MODE_STREAM);
+        audioTrack = new AudioTrack.Builder() // fixme jiyeon
+                .setAudioAttributes(new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .build())
+                .setAudioFormat(new AudioFormat.Builder()
+                        .setEncoding(audioFormat)
+                        .setSampleRate(sampleRate)
+                        .setChannelMask(channelCount)
+                        .build())
+                .setBufferSizeInBytes(bufferSize)
+                .build();
         audioTrack.play();
 
         while(flag) {

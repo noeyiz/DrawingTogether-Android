@@ -1,12 +1,13 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.Manifest;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.media.AudioManager;
 import android.net.Uri;
-import android.opengl.Visibility;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.Gravity;
@@ -19,20 +20,15 @@ import android.widget.Toast;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
-import lombok.Getter;
-import lombok.Setter;
 
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
-import com.hansung.drawingtogether.view.audio.AudioPlayThread;
-import com.hansung.drawingtogether.view.audio.RecordThread;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
@@ -43,7 +39,6 @@ import com.kakao.message.template.TextTemplate;
 import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
 
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -51,6 +46,10 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
+import lombok.Getter;
+import lombok.Setter;
+
 
 @Getter
 @Setter
@@ -82,6 +81,7 @@ public class DrawingViewModel extends BaseViewModel {
     // fixme jiyeon
     private boolean audioFlag = false;
     private RecordThread recThread;
+    private AudioManager audioManager = (AudioManager) ((MainActivity)MainActivity.context).getSystemService(Service.AUDIO_SERVICE); // fixme jiyeon
 
     private Button preMenuButton;
 
@@ -102,6 +102,8 @@ public class DrawingViewModel extends BaseViewModel {
                 for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
                     audioPlayThread.getBuffer().clear();
                 }
+                // fixme jiyeon
+                audioManager.setSpeakerphoneOn(false);
 
                 ExitMessage exitMessage = new ExitMessage(client.getMyName());
                 MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
@@ -347,11 +349,10 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     //fixme jiyeon
-    public boolean clickVoice(Fragment fragment) {
+    public boolean clickVoice() {
         if (!audioFlag) { // RECORD 시작
             audioFlag = true;
             client.subscribe(client.getTopic() + "_audio");
-            Toast.makeText(fragment.getContext(), "RECORD START", Toast.LENGTH_SHORT).show();
             recThread = new RecordThread();
             recThread.setFlag(audioFlag);
             recThread.setBufferUnitSize(2);
@@ -361,12 +362,27 @@ public class DrawingViewModel extends BaseViewModel {
         } else {
             try {
                 audioFlag = false;
-                Toast.makeText(fragment.getContext(), "RECORD STOP", Toast.LENGTH_SHORT).show();
                 recThread.setFlag(audioFlag);
+                audioManager.setSpeakerphoneOn(false);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return false;
+        }
+    }
+
+    // fixme jiyeon
+    public boolean changeSpeakerMode() {
+        if (audioManager.isSpeakerphoneOn()) {
+            audioManager.setSpeakerphoneOn(false);
+            MyLog.e("audio", "SPEAKER : " + audioManager.isSpeakerphoneOn());
+
+            return false;
+        } else {
+            audioManager.setSpeakerphoneOn(true);
+            MyLog.e("audio", "SPEAKER : " + audioManager.isSpeakerphoneOn());
+
+            return true;
         }
     }
 
