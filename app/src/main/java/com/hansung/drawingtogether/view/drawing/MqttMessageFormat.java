@@ -6,6 +6,7 @@ import com.hansung.drawingtogether.view.main.AudioMessage;
 import com.hansung.drawingtogether.view.main.DeleteMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
+import com.hansung.drawingtogether.view.main.WarpingMessage;
 
 import java.util.ArrayList;
 
@@ -40,6 +41,8 @@ public class MqttMessageFormat {
 
     // fixme jiyeon
     private AudioMessage audioMessage;
+
+    private WarpingMessage warpingMessage;
 
     // fixme nayeon 중간자 처리 시 필요한 변수 추가
     private ArrayList<DrawingComponent> drawingComponents;
@@ -109,6 +112,14 @@ public class MqttMessageFormat {
         this.maxComponentId = maxComponentId;
         this.maxTextId = maxTextId;
         this.bitmapByteArray = bitmapByteArray;
+    }
+
+    public MqttMessageFormat(String username, Mode mode, ComponentType type, int action, WarpingMessage warpingMessage) {
+        this.username = username;
+        this.mode = mode;
+        this.type = type;
+        this.action  = action;
+        this.warpingMessage = warpingMessage;
     }
 
     public MqttMessageFormat(JoinMessage joinMessage) {
