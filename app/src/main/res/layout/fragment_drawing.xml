@@ -98,6 +98,15 @@
                 android:onClick="@{vm::clickSelector}"
                 android:text="셀렉터" />
 
+            <Button
+                android:id="@+id/warpingBtn"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:onClick="@{vm::clickWarp}"
+                android:text="와핑" />
+
             <!--<Button
                 android:id="@+id/groupBtn"
                 android:layout_width="0dp"

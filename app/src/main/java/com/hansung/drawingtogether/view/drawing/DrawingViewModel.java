@@ -318,6 +318,11 @@ public class DrawingViewModel extends BaseViewModel {
         navigate(R.id.action_drawingFragment_to_searchFragment);
     }
 
+    public void clickWarp(View view) {
+        changeClickedButtonBackground(view);
+        de.setCurrentMode(Mode.WARP);
+    }
+
     public void changeClickedButtonBackground(View view) {
         LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
 

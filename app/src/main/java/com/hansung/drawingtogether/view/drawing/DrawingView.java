@@ -120,6 +120,8 @@ public class DrawingView extends View {
 
             case GROUP:
                 break;
+            case WARP:
+                return onTouchWarpMode(event);
         }
         return super.onTouchEvent(event);
     }
@@ -456,6 +458,10 @@ public class DrawingView extends View {
             }
             return true;
         }
+    }
+
+    public boolean onTouchWarpMode(MotionEvent event) {
+        return false;
     }
 
     public void clear() {

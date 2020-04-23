@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
+import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.audio.AudioPlayThread;
 import com.hansung.drawingtogether.view.drawing.ComponentType;
 import com.hansung.drawingtogether.view.drawing.DrawingComponent;
@@ -37,6 +38,7 @@ import com.hansung.drawingtogether.view.main.DeleteMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 import com.hansung.drawingtogether.view.main.MainActivity;
+import com.hansung.drawingtogether.view.main.WarpingMessage;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -799,6 +801,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
     private DrawingEditor de = DrawingEditor.getInstance();
     private float myCanvasWidth = client.getDrawingView().getCanvasWidth();
     private float myCanvasHeight = client.getDrawingView().getCanvasHeight();
+    private WarpingMessage warpingMessage;
 
         /*DrawingTask(DrawingFragment drawingFragment) {
             weakReferencedFragment = new WeakReference<>(drawingFragment);
@@ -889,11 +892,11 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
         switch(mode) {
             case DRAW:
                 try{
-                    MyLog.i("mqtt", "MESSAGE ARRIVED message: username=" + dComponent.getUsername() + ", mode=" + mode.toString() + ", id=" + dComponent.getId());
-                    draw(message);
-                } catch(NullPointerException e) {
-                    e.printStackTrace();
-                }
+                MyLog.i("mqtt", "MESSAGE ARRIVED message: username=" + dComponent.getUsername() + ", mode=" + mode.toString() + ", id=" + dComponent.getId());
+                draw(message);
+            } catch(NullPointerException e) {
+                e.printStackTrace();
+            }
                 return null;
             case ERASE:
                 MyLog.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString() + ", id=" + message.getComponentIds().toString());
@@ -922,6 +925,9 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 MyLog.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString());
                 publishProgress(message);
                 return null;
+            case WARP:
+                this.warpingMessage = message.getWarpingMessage();
+                publishProgress(message);
         }
         return null;
     }
@@ -936,9 +942,9 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 if(de.getBackgroundImage() != null) {
                     client.getBinding().backgroundView.removeAllViews();    //fixme minj - 우선 배경 이미지는 하나만
                 }
-                ImageView imageView = new ImageView(client.getDrawingFragment().getContext());
+                WarpingControlView imageView = new WarpingControlView(client.getDrawingFragment().getContext());
                 imageView.setLayoutParams(new LinearLayout.LayoutParams(client.getDrawingFragment().getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
-                imageView.setImageBitmap(de.getBackgroundImage());
+                imageView.setImage(de.getBackgroundImage());
                 client.getBinding().backgroundView.addView(imageView);
                 break;
             case DRAW:
@@ -981,6 +987,10 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 if(de.getUndoArray().size() == 0)
                     client.getBinding().redoBtn.setEnabled(false);
                 MyLog.i("drawing", "history.size()=" + de.getHistory().size());
+                break;
+            case WARP:
+                MotionEvent event = warpingMessage.getEvent();
+                ((WarpingControlView)client.getBinding().backgroundView.getChildAt(0)).dispatchEvent(event);
                 break;
         }
     }
@@ -1132,9 +1142,9 @@ class MidTask extends AsyncTask<Void, Void, Void> {
     protected void onProgressUpdate(Void... values) {
         super.onProgressUpdate(values);
         MyLog.i("mqtt", "mid onProgressUpdate()");
-        ImageView imageView = new ImageView(client.getDrawingFragment().getContext());
+        WarpingControlView imageView = new WarpingControlView(client.getDrawingFragment().getContext());
         imageView.setLayoutParams(new LinearLayout.LayoutParams(client.getDrawingFragment().getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
-        imageView.setImageBitmap(de.getBackgroundImage());
+        imageView.setImage(de.getBackgroundImage());
         client.getBinding().backgroundView.addView(imageView);
     }
 

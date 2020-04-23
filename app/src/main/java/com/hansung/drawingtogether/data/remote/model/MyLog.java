@@ -17,7 +17,7 @@ public final class MyLog {
         // if(BuildConfig.DEBUG)
         if(DEBUG)
             android.util.Log.d(tag, msg);
-        // logger.debug(tag, msg);
+        logger.debug(tag, msg);
     }
 
     public static void e(String tag, String msg) {
@@ -40,7 +40,7 @@ public final class MyLog {
         if(DEBUG)
             android.util.Log.w(tag, msg);
 
-        // logger.warn(tag, msg);
+        logger.warn(tag, msg);
     }
 
 }
