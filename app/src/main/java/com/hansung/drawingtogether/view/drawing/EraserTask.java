@@ -1,9 +1,11 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import java.util.Vector;
+
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+
 
 public class EraserTask extends AsyncTask<Void, Void, Void> {
     private DrawingEditor de = DrawingEditor.getInstance();

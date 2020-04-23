@@ -1,6 +1,5 @@
 package com.hansung.drawingtogether.view.history;
 
-import android.util.Log;
 import android.view.View;
 
 import androidx.lifecycle.LiveData;
@@ -8,6 +7,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.view.BaseViewModel;
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 import java.util.ArrayList;
 

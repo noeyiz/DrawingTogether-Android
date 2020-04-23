@@ -1,7 +1,6 @@
 package com.hansung.drawingtogether.view.search;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.hansung.drawingtogether.data.remote.model.LocationComponent;
 import com.hansung.drawingtogether.data.remote.model.LocationVO;
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 import com.hansung.drawingtogether.databinding.FragmentSearchMapBinding;
 import com.hansung.drawingtogether.view.RetrofitConnection;
 

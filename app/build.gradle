@@ -18,8 +18,16 @@ android {
         }
     }
     buildTypes {
+        debug {
+            minifyEnabled false // minifyEnabled : 코드 축소
+            shrinkResources false // shrinkResources : 리소스 축소
+        }
+
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
+
+
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

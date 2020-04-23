@@ -3,12 +3,13 @@ package com.hansung.drawingtogether.view.audio;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
-import android.util.Log;
 
 import java.util.ArrayList;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 // fixme jiyeon
 @Getter

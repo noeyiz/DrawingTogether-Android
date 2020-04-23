@@ -1,6 +1,5 @@
 package com.hansung.drawingtogether.view.search;
 
-import android.util.Log;
 import android.widget.GridView;
 
 import androidx.databinding.BindingAdapter;

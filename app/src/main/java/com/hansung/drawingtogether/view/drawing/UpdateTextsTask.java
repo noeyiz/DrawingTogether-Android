@@ -1,7 +1,8 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.os.AsyncTask;
-import android.util.Log;
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+
 
 public class UpdateTextsTask extends AsyncTask<DrawingItem, Void, DrawingItem> {
     private DrawingEditor de = DrawingEditor.getInstance();

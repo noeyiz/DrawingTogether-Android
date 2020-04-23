@@ -6,14 +6,13 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.opengl.Visibility;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -28,15 +27,15 @@ import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
-import com.hansung.drawingtogether.data.remote.model.User;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
 import com.hansung.drawingtogether.view.audio.AudioPlayThread;
 import com.hansung.drawingtogether.view.audio.RecordThread;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
+import com.hansung.drawingtogether.view.main.MainActivity;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
 import com.kakao.message.template.LinkObject;
@@ -44,7 +43,6 @@ import com.kakao.message.template.TextTemplate;
 import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -155,13 +153,13 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickUndo(View view) {
-        logger.info("button", "undo button click");
+        Log.i("button", "undo button click");
 
         de.getDrawingFragment().getBinding().drawingView.undo();
     }
 
     public void clickRedo(View view) {
-        logger.info("button", "redo button click");
+        Log.i("button", "redo button click");
 
         de.getDrawingFragment().getBinding().drawingView.redo();
     }
@@ -191,11 +189,11 @@ public class DrawingViewModel extends BaseViewModel {
 
         try {
             fos = new FileOutputStream(fileCacheItem);
-            captureContainer.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            captureContainer.compress(Bitmap.CompressFormat.JPEG, 100, fos); // quality
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
-            fragment.getContext().sendBroadcast(new Intent( Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(fileCacheItem)));
+            fragment.getContext().sendBroadcast(new Intent( Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(fileCacheItem)));             // 갤러리 데이터 갱신
             Log.e("export", "capture path == " + filePath);
         }
 
@@ -205,7 +203,7 @@ public class DrawingViewModel extends BaseViewModel {
 
 
     public void clickPen(View view) { // drawBtn1, drawBtn2, drawBtn3
-        logger.info("button", "pen button click");
+        Log.i("button", "pen button click");
 
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
@@ -219,7 +217,7 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickEraser(View view) {
-        logger.info("button", "eraser button click");
+        Log.i("button", "eraser button click");
 
         changeClickedButtonBackground(view);
         if(de.getCurrentMode() == Mode.ERASE)
@@ -229,7 +227,7 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickText(View view) {
-        logger.info("button", "text button click");
+        Log.i("button", "text button click");
 
         // 사용자가 처음 텍스트 편집창에서 텍스트 생성중인 경우
         // 텍스트 정보들을 모든 사용자가 갖고 있지 않음 ( 편집중인 사람만 갖고 있음 )
@@ -248,6 +246,9 @@ public class DrawingViewModel extends BaseViewModel {
         Log.i("drawing", "mode = " + de.getCurrentMode().toString());
         FrameLayout frameLayout = de.getDrawingFragment().getBinding().drawingViewContainer;
 
+
+        ((MainActivity)de.getDrawingFragment().getActivity()).setVisibilityToolbarMenus(false); // fixme nayeon
+
         // 텍스트 속성 설정 ( 기본 도구에서 설정할 것인지 텍스트 도구에서 설정할 것인지? )
         TextAttribute textAttribute = new TextAttribute(de.setTextStringId(), de.getMyUsername(),
                 de.getTextSize(), de.getTextColor(), de.getTextBackground(),
@@ -264,7 +265,7 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickDone(View view) {
-        logger.info("button", "done button click");
+        Log.i("button", "done button click");
 
         // 텍스트 모드가 끝나면 다른 버튼들 활성화
         enableDrawingMenuButton(true);
@@ -273,10 +274,13 @@ public class DrawingViewModel extends BaseViewModel {
 
         Text text = de.getCurrentText();
         text.changeEditTextToTextView();
+
+        ((MainActivity)de.getDrawingFragment().getActivity()).setVisibilityToolbarMenus(true); // fixme nayeon
+
     }
 
     public void clickShape(View view) {
-        logger.info("button", "shape button click");
+        Log.i("button", "shape button click");
 
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
@@ -288,7 +292,7 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickSelector(View view) {
-        logger.info("button", "selector button click");
+        Log.i("button", "selector button click");
 
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.SELECT);
@@ -303,13 +307,13 @@ public class DrawingViewModel extends BaseViewModel {
 
     // fixme nayeon
     public void clickTextColor(View view) {
-        logger.info("button", "text color button click");
+        Log.i("button", "text color button click");
 
         de.getCurrentText().finishTextColorChange();
     }
 
     public void clickSearch(View view) {
-        logger.info("button", "search button click");
+        Log.i("button", "search button click");
 
         navigate(R.id.action_drawingFragment_to_searchFragment);
     }

@@ -1,11 +1,13 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Color;
-import android.util.Log;
 import android.view.DragEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+
 
 // 프레임레이아웃에 붙어있는 텍스트뷰를 드래깅 하기 위한 이벤트 리스너 클래스
 class FrameLayoutDragListener implements View.OnDragListener {

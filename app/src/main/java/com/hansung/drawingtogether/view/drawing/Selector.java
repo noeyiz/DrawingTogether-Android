@@ -1,11 +1,9 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Point;
-import android.util.Log;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-
-import java.util.Vector;
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 import lombok.Getter;
 

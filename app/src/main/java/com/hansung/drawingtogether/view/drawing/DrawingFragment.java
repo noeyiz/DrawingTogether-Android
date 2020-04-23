@@ -14,7 +14,6 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -55,6 +54,7 @@ import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.main.DeleteMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
+import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
@@ -62,6 +62,8 @@ import com.hansung.drawingtogether.view.main.MainActivity;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+
+
 
 @Getter
 public class DrawingFragment extends Fragment implements MainActivity.onKeyBackPressedListener{  // fixme hyeyeon
@@ -233,7 +235,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         binding.userInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                logger.info("button", "user info"); // fixme nayeon
+                Log.i("button", "user info"); // fixme nayeon
 
                 if (binding.userPrint.getVisibility() == View.VISIBLE)
                     binding.userPrint.setVisibility(View.INVISIBLE);
@@ -282,7 +284,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             backgroundEraserBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    logger.info("button", "background eraser button click"); // fixme nayeon
+                    Log.i("button", "background eraser button click"); // fixme nayeon
 
                     binding.drawingView.clearBackgroundImage();
                     popupWindow.dismiss();
@@ -298,7 +300,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             clearBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    logger.info("button", "drawing clear button click"); // fixme nayeon
+                    Log.i("button", "drawing clear button click"); // fixme nayeon
 
                     binding.drawingView.clear();
                     popupWindow.dismiss();
@@ -315,7 +317,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         rectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                logger.info("button", "rect shape button click"); // fixme nayeon
+                Log.i("button", "rect shape button click"); // fixme nayeon
 
                 de.setCurrentMode(Mode.DRAW);
                 de.setCurrentType(ComponentType.RECT);
@@ -328,7 +330,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         ovalBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                logger.info("button", "oval shape button click"); // fixme nayeon
+                Log.i("button", "oval shape button click"); // fixme nayeon
 
                 de.setCurrentMode(Mode.DRAW);
                 de.setCurrentType(ComponentType.OVAL);
@@ -359,7 +361,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                logger.info("button", "exit dialog cancel button click"); // fixme nayeon
+                Log.i("button", "exit dialog cancel button click"); // fixme nayeon
 
                 return;
             }

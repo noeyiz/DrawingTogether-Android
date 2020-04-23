@@ -1,6 +1,5 @@
 package com.hansung.drawingtogether.data.remote.model;
 
-import android.util.Log;
 
 import com.hansung.drawingtogether.view.drawing.DrawingViewModel;
 import com.hansung.drawingtogether.view.drawing.JSONParser;
