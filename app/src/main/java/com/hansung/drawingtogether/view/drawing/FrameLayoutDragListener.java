@@ -21,8 +21,6 @@ class FrameLayoutDragListener implements View.OnDragListener {
         TextView textView;
         ViewGroup viewGroup;
 
-        MyLog.e("Drag Event", Integer.toString(event.getAction()));
-
         View draggedView = (View) event.getLocalState();
         if(draggedView instanceof TextView) {
             textView = (TextView) draggedView;

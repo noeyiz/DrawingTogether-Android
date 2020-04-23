@@ -51,9 +51,9 @@ public enum Logger {
 
     public void error(String tag, String msg) { log += "[ ERROR " + tag + " ] : " + getLogContent(msg) + "\n"; }
 
-    public void verbose(String tag, String msg) { log += "[ ERROR " + tag + " ] : " + getLogContent(msg) + "\n"; }
+    public void verbose(String tag, String msg) { log += "[ VERBOSE " + tag + " ] : " + getLogContent(msg) + "\n"; }
 
-    public void debug(String tag, String msg) { log += "[ ERROR " + tag + " ] : " + getLogContent(msg) + "\n"; }
+    public void debug(String tag, String msg) { log += "[ DEBUG " + tag + " ] : " + getLogContent(msg) + "\n"; }
 
     public void loggingUncaughtException(Thread thread, StackTraceElement[] ste) {
 

@@ -174,6 +174,11 @@ public class Text { // EditTextView
                     showToastMsg("편집 중에는 다른 텍스트를 사용할 수 없습니다");
                     return true;
                 }
+                // 텍스트 컬러 변경중일 때 텍스트 움직이지 못하도록
+                else if(textAttribute.isTextChangedColor()) {
+                    showToastMsg("텍스트 색상 변경중에는 움직일 수 없습니다");
+                    return true;
+                }
 
                 // else { textAttribute.setUsername(de.getMyUsername()); } // 텍스트 사용이 가능하다면 텍스트에 자신의 이름을 지정하고 사용 시작
 
@@ -384,7 +389,7 @@ public class Text { // EditTextView
     private void startTextColorChange() {
         de.setCurrentText(this); // 현재 텍스트 지정
         setTextAttribute(); // 텍스트 편집 전 사용자 이름 지정
-        textAttribute.setTextChangedColor(true); // 텍스트 컬러 변경중임을 나타내는 플래그 (중간자 처리 위해)
+        textAttribute.setTextChangedColor(true); // 텍스트 컬러 변경중임을 나타내는 플래그 (중간자 처리 위해) todo nayeon 필요?
 
         sendMqttMessage(TextMode.START_COLOR_CHANGE); // 다른 사용자의 텍스트 동시 처리 막기 위해 ( 이름, 테두리 설정 )
 
@@ -484,8 +489,8 @@ public class Text { // EditTextView
         try {
             frameLayout.addView(textView);
 
-            MyLog.e("text", "frameLayout in adding view " + frameLayout.toString());
-            MyLog.e("text", "text view size in adding view " + textView.getWidth() + ", " + textView.getHeight());
+            MyLog.i("text", "frameLayout in adding view " + frameLayout.toString());
+            MyLog.i("text", "text view size in adding view " + textView.getWidth() + ", " + textView.getHeight());
 
         }
         catch(IllegalStateException ie) {
