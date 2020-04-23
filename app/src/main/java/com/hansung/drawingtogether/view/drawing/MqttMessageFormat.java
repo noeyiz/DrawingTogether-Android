@@ -1,5 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
+import android.graphics.Point;
+
 import com.hansung.drawingtogether.data.remote.model.User;
 import com.hansung.drawingtogether.view.main.AliveMessage;
 import com.hansung.drawingtogether.view.main.DeleteMessage;
@@ -20,6 +22,9 @@ public class MqttMessageFormat {
     private ComponentType type;
     private DrawingComponent component;
     private int action;
+    private Integer id;
+    private String usersComponentId;
+    private Point point;
 
     private String username;
     private Vector<Integer> componentIds; //findComponentsToErase, findSelectedComponent
@@ -48,11 +53,22 @@ public class MqttMessageFormat {
     private Integer maxTextId;
     private byte[] bitmapByteArray;
 
-    public MqttMessageFormat(String username, Mode mode, ComponentType type, DrawingComponent component, int action) {
+    public MqttMessageFormat(String username, String usersComponentId, Mode mode, ComponentType type, DrawingComponent component, int action) {
         this.username = username;
+        this.usersComponentId = usersComponentId;
         this.mode = mode;
         this.type = type;
         this.component = component;
+        this.action  = action;
+    }
+
+    public MqttMessageFormat(String username, Integer id, String usersComponentId, Mode mode, ComponentType type, Point point, int action) {
+        this.username = username;
+        this.id = id;
+        this.usersComponentId = usersComponentId;
+        this.mode = mode;
+        this.type = type;
+        this.point = point;
         this.action  = action;
     }
 

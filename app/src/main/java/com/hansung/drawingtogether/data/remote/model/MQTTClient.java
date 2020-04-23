@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.graphics.Canvas;
 
+import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -57,19 +58,13 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-import java.net.UnknownServiceException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Vector;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Getter
@@ -95,7 +90,6 @@ public enum MQTTClient {
     private String topic_delete;
     private String topic_data;
     private String topic_mid;
-
     private String topic_alive; // fixme hyeyeon-토픽 추가
     // private String topic_load;
 
@@ -109,7 +103,7 @@ public enum MQTTClient {
     private DrawingTask drawingTask;
     private DrawingView drawingView;
     private boolean isMid = true;
-    private Map<String, Integer> usersActionMap;
+    private DrawingComponent drawingComponent;
 
     private ProgressDialog progressDialog;
 
@@ -135,7 +129,7 @@ public enum MQTTClient {
         this.topic = topic;
         this.myName = name;
 
-        User user = new User(myName, 0);  // fixme hyeyeon
+        User user = new User(myName, 0, MotionEvent.ACTION_UP, false);  // fixme hyeyeon
         userList.add(user); // 생성자에서 사용자 리스트에 내 이름 추가
 
         topic_join = this.topic + "_join";
@@ -149,7 +143,7 @@ public enum MQTTClient {
         this.drawingViewModel.setUserNum(userList.size());
         this.drawingViewModel.setUserPrint(userPrint());
 
-        this.usersActionMap = new HashMap<>();
+        //this.usersActionMap = new HashMap<>();
         de.setMyUsername(name);
 
         this.backPressed = false; // fixme hyeyeon
@@ -203,7 +197,7 @@ public enum MQTTClient {
         try {
             MqttMessage message = new MqttMessage(payload.getBytes());
             client.publish(newTopic, payload.getBytes(), this.qos, false);
-            //Log.i("mqtt", "PUBLISH topic: " + newTopic + ", msg: " + message); // fixme nayeon
+            Log.i("mqtt", "PUBLISH topic: " + newTopic + ", msg: " + message);
             // Log.e("mqtt payload size", Integer.toString(message.getPayload().length)); // fixme nayeon
         } catch(MqttException e) {
             e.printStackTrace();
@@ -327,7 +321,7 @@ public enum MQTTClient {
                     } else {  // other or self // 메시지 형식이 "name":"이름"  일 경우
                         if (!myName.equals(name)) {  // other // 한 사람이 "name":"이름" 메시지 보냈을 경우 다른 사람들이 받아서 처리하는 부분 - '나'는 처리 안하는 부분
                             if (!isContainsUserList(name)) {
-                                User user = new User(name, 0);  // fixme hyeyeon
+                                User user = new User(name, 0, MotionEvent.ACTION_UP, false);  // fixme hyeyeon
                                 userList.add(user); // 들어온 사람의 이름을 추가
 
                                 if (de.getCurrentMode() == Mode.DRAW) {  // current mode 가 DRAW 이면, 그리기 중이던 component 까지만 그리고 touch intercept   // todo 다른 모드에서도 intercept 하도록 추가
@@ -339,7 +333,7 @@ public enum MQTTClient {
 
                             // 마스터이고, 모든 username 의 마지막 draw action 이 ACTION_UP 이면, 자신의 드로잉 구조체들 전송
                             if (isMaster()) {
-                                if (isUsersActionUp()) {
+                                if (isUsersActionUp(userList.get(userList.size() - 1).getName())) {
                                     JoinMessage joinMsg = new JoinMessage(userList.get(0).getName(), userList.get(userList.size() - 1).getName(), userList);  // fixme hyeyeon
 
                                     MqttMessageFormat messageFormat;
@@ -409,8 +403,6 @@ public enum MQTTClient {
                                     unsubscribeAllTopics();
                                     isMid = true;
                                     de.removeAllDrawingData();
-                                    usersActionMap.clear();
-                                    Log.i("drawing", "userActionMap = " + usersActionMap.toString());
                                     //de.printDrawingData();
                                     //userList.clear();
 
@@ -428,8 +420,6 @@ public enum MQTTClient {
                             unsubscribeAllTopics();
                             isMid = true;
                             de.removeAllDrawingData();
-                            usersActionMap.clear();
-                            Log.i("drawing", "userActionMap = " + usersActionMap.toString());
                             //de.printDrawingData();
                             //userList.clear();
 
@@ -444,8 +434,6 @@ public enum MQTTClient {
                     } else {  // 다른 사람이 exit 하는 경우
                         for (User user: userList) {
                             if (user.getName().equals(name)) {
-                                usersActionMap.remove(user.getName());
-                                Log.i("drawing", "userActionMap = " + usersActionMap.toString());
                                 userList.remove(user); break;
                             }
                         }
@@ -473,8 +461,6 @@ public enum MQTTClient {
                         unsubscribeAllTopics();
                         isMid = true;
                         de.removeAllDrawingData();
-                        usersActionMap.clear();
-                        Log.i("drawing", "userActionMap = " + usersActionMap.toString());
                         //de.printDrawingData();
 
                         //userList.clear();
@@ -508,8 +494,7 @@ public enum MQTTClient {
 
                                 isMid = true;
                                 de.removeAllDrawingData();
-                                usersActionMap.clear();
-                                Log.i("drawing", "userActionMap = " + usersActionMap.toString());
+                                Log.i("drawing", "userActionMap = " + userList.toString());
 
                                 //userList.clear();
                                 ((MainActivity)drawingFragment.getActivity()).setOnKeyBackPressedListener(null);  // fixme hyeyeon
@@ -620,7 +605,7 @@ public enum MQTTClient {
                 //drawing
                 if (newTopic.equals(topic_data) && de.getDrawingBitmap() != null) {
                     String msg = new String(message.getPayload());
-                    MqttMessageFormat messageFormat = (MqttMessageFormat)parser.jsonReader(msg);
+                    MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
                     if(messageFormat.getMode() == Mode.TEXT) {  //TEXT 모드일 경우, username 이 다른 경우만 task 생성
                         if(!messageFormat.getUsername().equals(de.getMyUsername())) {
@@ -733,26 +718,37 @@ public enum MQTTClient {
         return false;
     }
 
-    public void putUsersActionMap(String username, int action) {
-        usersActionMap.put(username, action);
+    public void updateUsersAction(String username, int action) {
+        for(User user : userList) {
+            if(user.getName().equals(username)) {
+                user.setAction(action);
+            }
+        }
     }
 
-    public boolean isUsersActionUp() {
+    public boolean isUsersActionUp(String username) {
         /*if(!usersActionMap.containsValue(MotionEvent.ACTION_DOWN) && !usersActionMap.containsValue(MotionEvent.ACTION_MOVE))
             return true;
         else
             return false;*/
 
-        for (String s : usersActionMap.keySet()) {
+        for (User user : userList) {
             try {
-                if (usersActionMap.get(s) != MotionEvent.ACTION_UP)
+                if (!user.getName().equals(username) && user.getAction() != MotionEvent.ACTION_UP)
                     return false;
             } catch (NullPointerException e) {
                 e.printStackTrace();
                 return false;
             }
         }
-        Log.i("drawing", "userActionMap = " + usersActionMap.toString());
+
+        String str = "";
+        for(User user : userList) {
+            if (!user.getName().equals(username)) {
+                str += "[" + user.getName() + ", " + MotionEvent.actionToString(user.getAction()) + "] ";
+            }
+        }
+        Log.i("drawing", "users action = " + str);
         return true;
     }
 
@@ -767,8 +763,6 @@ public enum MQTTClient {
         //
         isMid = true;
         de.removeAllDrawingData();
-        usersActionMap.clear();
-        Log.i("drawing", "userActionMap = " + usersActionMap.toString());
         drawingViewModel.back();
     }
 
@@ -834,6 +828,16 @@ public enum MQTTClient {
     public void setThread(Thread th) {  // fixme hyeyeon
         this.th = th;
     }
+
+    //
+    private int cnt = 0;
+    public void setCnt(int cnt) {
+        this.cnt = cnt;
+    }
+
+    public void setDrawingComponent(DrawingComponent drawingComponent) {
+        this.drawingComponent = drawingComponent;
+    }
 }
 
 
@@ -842,6 +846,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
     private String username;
     private int action;
     private DrawingComponent dComponent;
+    private Point point;
     private MQTTClient client = MQTTClient.getInstance();
     private DrawingEditor de = DrawingEditor.getInstance();
     private float myCanvasWidth = client.getDrawingView().getCanvasWidth();
@@ -852,7 +857,11 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
         }*/
 
     private void draw(MqttMessageFormat message) {
+
         if(action == MotionEvent.ACTION_DOWN) {
+            dComponent = message.getComponent();
+            Log.i("sendThread", "all down " + dComponent.getUsername() + ", " + dComponent.getId() + ", " + dComponent.getPoints().size());
+
             if (de.isContainsCurrentComponents(dComponent.getId())) {
                 if(de.getUsername().equals(username)) {
                     dComponent.setId(de.getComponentId());
@@ -868,27 +877,94 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 Log.i("drawing", "first id (other) = " + dComponent.getId());
             }
             de.addCurrentComponents(dComponent);
+           /* if(dComponent.getType() != ComponentType.STROKE)
+                de.addCurrentShapes(dComponent);*/
             Log.i("drawing", "currentComponents.size() = " + de.getCurrentComponents().size());
+            //Log.i("drawing", "currentShapes.size() = " + de.getCurrentShapes().size());
         }
 
-        client.putUsersActionMap(username, action);
+        client.updateUsersAction(username, action);
 
         if(de.getMyUsername().equals(username)) return;
+
+        if(message.getComponent() == null) {
+            //dComponent = de.getCurrentComponent(message.getId());
+            dComponent = de.getCurrentComponent(message.getUsersComponentId());
+        }
 
         if(de.findCurrentComponent(dComponent.getUsersComponentId()) == null) return;   //중간자가 MidTask 수행 전에 그려진 component 는 return
 
         dComponent.calculateRatio(myCanvasWidth, myCanvasHeight);
+
+        client.setCnt(client.getCnt() + 1);
+        Log.i("minj", "message arrived " + client.getCnt());
+
         switch(action) {
             case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_MOVE:
+                Point p = dComponent.getPoints().get(0);
+                dComponent.clearPoints();   //fixme reference
+                client.getDrawingView().addPointAndDraw(dComponent, p);
+                Log.i("sendThread", "down " + dComponent.getUsername() + ", " + dComponent.getId() + ", " + dComponent.getPoints().size());
+                break;
+            case MotionEvent.ACTION_MOVE:   //DrawingView addPointAndDraw(DrawingComponent, Point)
+                //Log.i("sendThread", "move " + dComponent.getUsername() + ", " + dComponent.getId());
+                client.getDrawingView().addPointAndDraw(dComponent, point);
+                return;
+            case MotionEvent.ACTION_UP:
+                Log.i("sendThread", "up " + dComponent.getUsername() + ", " + dComponent.getId());
+                client.getDrawingView().addPointAndDraw(dComponent, point);
+
+                Log.i("drawing", "dComponent: id=" + dComponent.getId() + ", endPoint=" + dComponent.getEndPoint().toString());
+                try {   // todo 중간자 들어올 때, 2명 이상이 그리는 경우 테스트 (2명 이상이 동시에 그리는 경우 테스트)
+                    DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
+                    Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
+                    dComponent.setId(upComponent.getId());
+                } catch (NullPointerException e) {
+                    //dComponent.setId(dComponent.getId());
+                    //dComponent.drawComponent(de.getBackCanvas());
+                    e.printStackTrace();
+                }
+
+                //de.removeCurrentComponents(dComponent.getId());
+                de.removeCurrentComponents(dComponent.getUsersComponentId());
+                de.removeCurrentShapes(dComponent.getUsersComponentId());
+                de.splitPoints(dComponent, myCanvasWidth, myCanvasHeight);
+                de.addDrawingComponents(dComponent);
+                Log.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
+                de.addHistory(new DrawingItem(Mode.DRAW, dComponent));
+                Log.i("drawing", "history.size()=" + de.getHistory().size() + ", id=" + dComponent.getId());
+
+                /*if(dComponent.getType() == ComponentType.STROKE) {
+                    Canvas canvas = new Canvas(de.getLastDrawingBitmap());
+                    dComponent.draw(canvas);
+                } else {
+                    //de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+                }*/
+                publishProgress(message);
+        }
+
+        /*switch(action) {
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_MOVE:   //DrawingView addPointAndDraw(DrawingComponent, Point)
                 dComponent.draw(de.getBackCanvas());
                 if(dComponent.getType() == ComponentType.STROKE) {
                     Canvas canvas = new Canvas(de.getLastDrawingBitmap());
                     dComponent.draw(canvas);
-                }
+                } *//*else if(!de.isDrawingShape()) {
+                    dComponent.draw(de.getBackCanvas());
+                    de.updateCurrentShapes(dComponent);
+                } else {
+                    de.updateCurrentShapes(dComponent);
+                }*//*
                 return;
             case MotionEvent.ACTION_UP:
-                dComponent.draw(de.getBackCanvas());
+                if(dComponent.getType() == ComponentType.STROKE) {
+                    dComponent.draw(de.getBackCanvas());
+                } *//*else if(!de.isDrawingShape()) {
+                    dComponent.draw(de.getBackCanvas());
+                    de.updateCurrentShapes(dComponent);
+                    de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+                }*//*
 
                 Log.i("drawing", "dComponent: id=" + dComponent.getId() + ", endPoint=" + dComponent.getEndPoint().toString());
                 try {   // todo 중간자 들어올 때, 2명 이상이 그리는 경우 테스트 (2명 이상이 동시에 그리는 경우 테스트)
@@ -902,6 +978,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 }
 
                 de.removeCurrentComponents(dComponent.getId());
+                de.removeCurrentShapes(dComponent.getUsersComponentId());
                 de.splitPoints(dComponent, myCanvasWidth, myCanvasHeight);
                 de.addDrawingComponents(dComponent);
                 Log.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
@@ -912,10 +989,10 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                     Canvas canvas = new Canvas(de.getLastDrawingBitmap());
                     dComponent.draw(canvas);
                 } else {
-                    de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+                    //de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
                 }
                 publishProgress(message);
-        }
+        }*/
     }
 
     @Override
@@ -923,19 +1000,30 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
         MqttMessageFormat message = messages[0];
         this.username = message.getUsername();
         this.action = message.getAction();
-        this.dComponent = message.getComponent();
+        //this.dComponent = message.getComponent();
+        this.point = message.getPoint();
         Mode mode = message.getMode();
 
         de.setMyCanvasWidth(myCanvasWidth);
         de.setMyCanvasHeight(myCanvasHeight);
+
+        /*if(message.getComponent() != null) {
+            client.setDrawingComponent(message.getComponent());
+            this.dComponent = client.getDrawingComponent();
+            Log.i("sendThread", "action down " + dComponent.getUsername() + " " + dComponent.getId());
+        } else {
+            this.dComponent = client.getDrawingComponent();
+            Log.i("sendThread", "action move, up " + dComponent.getUsername() + " " + dComponent.getId());
+        }*/
 
         if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW)) { return null; }
 
         switch(mode) {
             case DRAW:
                 try{
-                    Log.i("mqtt", "MESSAGE ARRIVED message: username=" + dComponent.getUsername() + ", mode=" + mode.toString() + ", id=" + dComponent.getId());
+                    //Log.i("mqtt", "MESSAGE ARRIVED message: username=" + dComponent.getUsername() + ", mode=" + mode.toString() + ", id=" + dComponent.getId());
                     draw(message);
+                    //client.setDrawingComponent(dComponent); //갱신된 dComponent로 client의 component 바꿔줌 (id, ratio 등)
                 } catch(NullPointerException e) {
                     e.printStackTrace();
                 }

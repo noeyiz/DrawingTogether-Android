@@ -93,6 +93,9 @@ public class DrawingViewModel extends BaseViewModel {
         client.subscribe(topic + "_data");
         client.subscribe(topic + "_mid");
         client.subscribe(topic + "_alive"); // fixme hyeyeon
+
+        de.setCurrentType(ComponentType.STROKE);    //fixme minj
+        de.setCurrentMode(Mode.DRAW);
     }
 
     public void clickUndo(View view) {

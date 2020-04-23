@@ -11,7 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class DrawingComponent {
-    protected ArrayList<Point> points = new ArrayList<>();
+    protected ArrayList<Point> points = new ArrayList<>();  //100
     protected int id;
     protected String username = null;
     protected String usersComponentId = null;
@@ -21,7 +21,7 @@ public abstract class DrawingComponent {
     protected int strokeAlpha;
     protected int fillAlpha;
     protected int strokeWidth;
-    protected int preSize;              //addPoint() 전에 points 의 이전 크기를 저장
+    protected int preSize = 0;          //addPoint() 전에 points 의 이전 크기를 저장
     protected float drawnCanvasWidth;   //draw 되는 canvas width (비율 계산)
     protected float drawnCanvasHeight;  //draw 되는 canvas height (비율 계산)
     protected float xRatio = 1;
@@ -42,6 +42,7 @@ public abstract class DrawingComponent {
 
     public void clearPoints() {
         this.points.clear();
+        preSize = 0;
     }
 
     public int getPointsSize() { return points.size(); }

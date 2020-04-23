@@ -143,6 +143,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             client.setThread(th);
         }
 
+        SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
+        sendMqttMessage.startThread();
+
 
         /*ip = getArguments().getString("ip");
         port = getArguments().getString("port");

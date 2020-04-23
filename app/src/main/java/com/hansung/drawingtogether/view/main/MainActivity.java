@@ -17,8 +17,6 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
-import com.hansung.drawingtogether.view.drawing.Mode;
-
 
 public class MainActivity extends AppCompatActivity {
 

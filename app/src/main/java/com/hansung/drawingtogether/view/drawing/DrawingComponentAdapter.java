@@ -19,10 +19,11 @@ public class DrawingComponentAdapter
     private final String OBJECT = "OBJECT";
 
     @Override
-    public JsonElement serialize(DrawingComponent src, Type typeOfSrc, JsonSerializationContext context) {
+    public /*synchronized*/ JsonElement serialize(DrawingComponent src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject result = new JsonObject();
         result.add(CLASSNAME, new JsonPrimitive(src.getClass().getSimpleName()));
-        result.add(OBJECT, context.serialize(src, src.getClass()));
+        JsonElement je = context.serialize(src, src.getClass());    //****
+        result.add(OBJECT, je);      //fixme min
 
         return result;
     }

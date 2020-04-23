@@ -33,6 +33,8 @@ public enum DrawingEditor {
 
     /* 드로잉 컴포넌트에 필요한 객체 */
     private boolean isIntercept = false;
+    //private int currentDrawAction = MotionEvent.ACTION_UP;
+    private boolean isDrawingShape = false;
     private int componentId = -1;
     private int maxComponentId = -1;
     private Vector<Integer> removedComponentId = new Vector<>();
@@ -41,6 +43,7 @@ public enum DrawingEditor {
 
     private ArrayList<DrawingComponent> drawingComponents = new ArrayList<>();  //현재 그려져있는 모든 drawing component 배열
     private ArrayList<DrawingComponent> currentComponents = new ArrayList<>();  //현재 그리기중인 drawing component 배열
+    private ArrayList<DrawingComponent> currentShapes = new ArrayList<>();      //현재 그리기중인 shape drawing component 배열
 
     /* selector 에 필요한 객체 */
     private DrawingComponent selectedComponent;
@@ -65,8 +68,8 @@ public enum DrawingEditor {
     private ArrayList<DrawingItem> undoArray = new ArrayList<>();   //undo 배열
 
     /* 드로잉 컴포넌트 속성 */
-    private Mode currentMode = Mode.DRAW;
-    private ComponentType currentType = ComponentType.STROKE;
+    private Mode currentMode/* = Mode.DRAW*/;
+    private ComponentType currentType/* = ComponentType.STROKE*/;
     private String myUsername;
     private String username;
     private float drawnCanvasWidth;
@@ -166,13 +169,23 @@ public enum DrawingEditor {
         this.currentComponents.add(component);
     }
 
-    public void removeCurrentComponents(int id) {
+    public void removeCurrentComponents(String id) {
         for(DrawingComponent component: currentComponents) {
-            if(component.getId() == id) {
+            //if(component.getId() == id) {
+            if(component.getUsersComponentId().equals(id)) {
                 currentComponents.remove(component);
                 break;
             }
         }
+    }
+
+    public DrawingComponent getCurrentComponent(String id) {
+        for(DrawingComponent component: currentComponents) {
+            //if(component.getId() == id)
+            if(component.getUsersComponentId().equals(id))
+                return component;
+        }
+        return null;
     }
 
     public boolean isContainsCurrentComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우
@@ -240,6 +253,26 @@ public enum DrawingEditor {
         int index = removeDrawingComponents(newComponent.getId());
         drawingComponents.add(index, newComponent);
         //addDrawingComponents(newComponent);
+    }
+
+    public void addCurrentShapes(DrawingComponent component) {
+        this.currentShapes.add(component);
+    }
+
+    public int removeCurrentShapes(String usersComponentId) {
+        for(int i=0; i<currentShapes.size(); i++) {
+            if(currentShapes.get(i).getUsersComponentId().equals(usersComponentId)) {
+                currentShapes.remove(i);
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public void updateCurrentShapes(DrawingComponent newComponent) {
+        int index = removeCurrentShapes(newComponent.getUsersComponentId());
+        if(index == -1) return;
+        currentShapes.add(index, newComponent);
     }
 
     public void setPreSelectedComponents(int id) {
@@ -794,7 +827,7 @@ public enum DrawingEditor {
         }
     }
 
-    public void redraw() {
+    public void redraw(String usersComponentId) {
         if(lastDrawingBitmap == null) {
             drawingBitmap.eraseColor(Color.TRANSPARENT);
             return;
@@ -803,6 +836,16 @@ public enum DrawingEditor {
         drawingBitmap = lastDrawingBitmap.copy(lastDrawingBitmap.getConfig(), true);
         backCanvas.setBitmap(drawingBitmap);
 
+        /*if(isDrawingShape) {
+            for (DrawingComponent component : currentShapes) {
+                try {
+                    if (!component.getUsersComponentId().equals(usersComponentId))
+                        component.drawComponent(backCanvas);
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                }
+            }
+        }*/
         /*Bitmap bitmap = history.get(history.size() - 1).getBitmap();
         //drawingBitmap = Bitmap.createBitmap(bitmap);
         drawingBitmap = bitmap.copy(bitmap.getConfig(), true);
@@ -988,5 +1031,13 @@ public enum DrawingEditor {
 
     public void setPostSelectedComponentsBitmap(Bitmap postSelectedComponentsBitmap) {
         this.postSelectedComponentsBitmap = postSelectedComponentsBitmap;
+    }
+
+    /*public void setCurrentDrawAction(int currentDrawAction) {
+        this.currentDrawAction = currentDrawAction;
+    }*/
+
+    public void setDrawingShape(boolean drawingShape) {
+        isDrawingShape = drawingShape;
     }
 }
