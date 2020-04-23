@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.hansung.drawingtogether.data.remote.model.LocationComponent;
 import com.hansung.drawingtogether.data.remote.model.LocationVO;
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentSearchMapBinding;
 import com.hansung.drawingtogether.view.RetrofitConnection;
 
@@ -63,7 +63,7 @@ public class SearchMapFragment extends Fragment {
                     searchMapAdapter.setData(locationList);
                 }
                 else{
-                    Log.e("fail", response.toString());
+                    MyLog.e("fail", response.toString());
                 }
             }
 

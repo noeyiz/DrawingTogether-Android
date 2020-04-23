@@ -6,8 +6,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.BaseViewModel;
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 import java.util.ArrayList;
 
@@ -35,7 +35,7 @@ public class HistoryViewModel extends BaseViewModel {
     }
 
     public void exit() {
-        Log.e("kkankkan", "clicked");
+        MyLog.e("kkankkan", "clicked");
         back();
     }
 }

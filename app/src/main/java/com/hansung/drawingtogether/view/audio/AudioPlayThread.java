@@ -4,12 +4,13 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 
+import com.hansung.drawingtogether.data.remote.model.MyLog;
+
 import java.util.ArrayList;
 
 import lombok.Getter;
 import lombok.Setter;
 
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 // fixme jiyeon
 @Getter
@@ -37,11 +38,11 @@ public class AudioPlayThread implements Runnable {
         while(flag) {
             synchronized (buffer) {
                 if (buffer.size() == 2) {
-                    Log.e("2yeonz", buffer.size() + " : 1" + name);
+                    MyLog.e("2yeonz", buffer.size() + " : 1" + name);
                     audioTrack.write(buffer.get(0), 0, bufferSize);
-                    Log.e("2yeonz", buffer.size() + " : 2" + name);
+                    MyLog.e("2yeonz", buffer.size() + " : 2" + name);
                     buffer.remove(0);
-                    Log.e("2yeonz", buffer.size() + " : 3" + name);
+                    MyLog.e("2yeonz", buffer.size() + " : 3" + name);
                 }
             }
         }

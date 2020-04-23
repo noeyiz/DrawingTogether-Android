@@ -17,7 +17,7 @@ import com.google.firebase.database.Transaction;
 
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.BaseViewModel;
 
 
@@ -56,7 +56,7 @@ public class MainViewModel extends BaseViewModel {
     @Override
     public void onCleared() {  // todo
         super.onCleared();
-        Log.i("lifeCycle", "MainViewModel onCleared()");
+        MyLog.i("lifeCycle", "MainViewModel onCleared()");
 
         if (database != null) {
             database = null;
@@ -73,7 +73,7 @@ public class MainViewModel extends BaseViewModel {
 
     public MainViewModel() {
 
-        Log.e("kkankkan", "메인뷰모델 생성자");
+        MyLog.e("kkankkan", "메인뷰모델 생성자");
 
         ip.setValue("54.180.154.63");
         port.postValue("1883");
@@ -86,7 +86,7 @@ public class MainViewModel extends BaseViewModel {
         setPasswordError("");
         setNameError("");
 
-        Log.e("kkankkan", "메인뷰모델 초기화 완료");
+        MyLog.e("kkankkan", "메인뷰모델 초기화 완료");
 
         hasSpecialCharacterAndBlank = false;
 
@@ -172,7 +172,7 @@ public class MainViewModel extends BaseViewModel {
 
         hasSpecialCharacterAndBlank();
 
-        Log.e("kkankkan", topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
+        MyLog.e("kkankkan", topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
 
         if (!hasSpecialCharacterAndBlank) {
             progressDialog = new ProgressDialog(view.getContext());
@@ -208,7 +208,7 @@ public class MainViewModel extends BaseViewModel {
             pwdErrorMsg = "";
             nameErrorMsg = "";
             if (mutableData.getValue() != null) {
-                Log.e("transaction", "exist topic " + mutableData.getValue());
+                MyLog.e("transaction", "exist topic " + mutableData.getValue());
                 switch (mode) {
                     case "masterMode":
                         topicErrorMsg = "이미 존재하는 토픽입니다";
@@ -225,35 +225,35 @@ public class MainViewModel extends BaseViewModel {
                         else {
                             mutableData.child("username").child(name.getValue()).setValue(name.getValue());
                             masterName = mutableData.child("master").getValue().toString();  // fixme hyeyeon
-                            Log.i("login", "masterName: " + masterName);
+                            MyLog.i("login", "masterName: " + masterName);
                             break;
                         }
                 }
-                Log.e("transaction", "transaction success");
+                MyLog.e("transaction", "transaction success");
                 return Transaction.success(mutableData);
             }
-            Log.e("transaction", "new topic " + mutableData.getChildrenCount());
+            MyLog.e("transaction", "new topic " + mutableData.getChildrenCount());
             switch (mode) {
                 case "masterMode":
                     mutableData.child("password").setValue(password.getValue());
                     mutableData.child("username").child(name.getValue()).setValue(name.getValue());
                     mutableData.child("master").setValue(name.getValue());
                     masterName = name.getValue();  // fixme hyeyeon
-                    Log.i("login", "masterName: " + masterName);
+                    MyLog.i("login", "masterName: " + masterName);
                     break;
                 case "joinMode":
                     topicErrorMsg = "존재하지 않는 토픽입니다";
                     break;
             }
-            Log.e("transaction", "transaction success");
+            MyLog.e("transaction", "transaction success");
             return Transaction.success(mutableData);
         }
 
         @Override
         public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-            Log.e("transaction", "transaction complete");
+            MyLog.e("transaction", "transaction complete");
             if (databaseError != null) {
-                Log.e("transaction", databaseError.getDetails());
+                MyLog.e("transaction", databaseError.getDetails());
                 progressDialog.dismiss();
                 return;
             }

@@ -11,7 +11,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 
 import androidx.annotation.Nullable;
@@ -53,7 +53,7 @@ public class DrawingView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        Log.e("DrawingView", "call onSizeChanged");
+        MyLog.e("DrawingView", "call onSizeChanged");
 
         canvasWidth = w;
         canvasHeight = h;
@@ -72,7 +72,7 @@ public class DrawingView extends View {
             de.initDrawingBoardArray(w, h);
         }
         if(client.isMaster()) {
-            Log.i("mqtt", "progressDialog dismiss");
+            MyLog.i("mqtt", "progressDialog dismiss");
             client.getProgressDialog().dismiss();
         }
     }
@@ -89,14 +89,14 @@ public class DrawingView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.i("drawing", "drawing view isIntercept = " + isIntercept + ", de isIntercept = " + de.isIntercept());
+        MyLog.i("drawing", "drawing view isIntercept = " + isIntercept + ", de isIntercept = " + de.isIntercept());
 
         if(!de.isIntercept()) this.isIntercept = false;
 
         if(!isIntercept) {
             this.getParent().requestDisallowInterceptTouchEvent(true); // 부모뷰에게 터치 이벤트 뺏기지 않도록
         } else {
-            Log.i("drawing", "intercept drawing view touch");
+            MyLog.i("drawing", "intercept drawing view touch");
             return false; // 부모뷰에게 터치 이벤트가 넘어가도록 [ intercept = true, set MQTTClient.java ]
         }
         //this.getParent().requestDisallowInterceptTouchEvent(true);
@@ -210,7 +210,7 @@ public class DrawingView extends View {
     public void updateDrawingComponentId(DrawingComponent dComponent) {
         try {
             DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
-            Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
+            MyLog.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
             dComponent.setId(upComponent.getId());
         } catch(NullPointerException e) {
             e.printStackTrace();
@@ -223,14 +223,14 @@ public class DrawingView extends View {
         de.splitPoints(dComponent, de.getMyCanvasWidth(), de.getMyCanvasHeight());
         de.removeCurrentComponents(dComponent.getId());
         de.addDrawingComponents(dComponent);
-        Log.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
+        MyLog.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
 
         de.addHistory(new DrawingItem(de.getCurrentMode(), dComponent/*, de.getDrawingBitmap()*/)); // 드로잉 컴포넌트가 생성되면 History 에 저장
 
         if(de.getHistory().size() == 1)
             de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
 
-        Log.i("drawing", "history.size()=" + de.getHistory().size() + ", id=" + dComponent.getId());
+        MyLog.i("drawing", "history.size()=" + de.getHistory().size() + ", id=" + dComponent.getId());
         if(dComponent.getType() != ComponentType.STROKE) // 도형이 그려졌다면 lastDrawingBitmap 에 drawingBitmap 내용 복사
             de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
         de.clearUndoArray();
@@ -259,15 +259,15 @@ public class DrawingView extends View {
         currentDrawAction = event.getAction();
 
         if(isExit && event.getAction() != MotionEvent.ACTION_DOWN) {
-            Log.i("mqtt", "isExit1 = " + isExit);
+            MyLog.i("mqtt", "isExit1 = " + isExit);
             return true;
         }
 
         // 터치가 DrawingView 밖으로 나갔을 때
         if(event.getX()-5 < 0 || event.getY()-5 < 0 || de.getDrawnCanvasWidth()-5 < event.getX() || de.getDrawnCanvasHeight()-5 < event.getY()) {   //fixme 반응이 느려서 임시로 -5
             currentDrawAction = MotionEvent.ACTION_UP;
-            Log.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
-            Log.i("drawing", "exit");
+            MyLog.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
+            MyLog.i("drawing", "exit");
 
             point = dComponent.getEndPoint();
             addPointAndDraw(dComponent, point);
@@ -278,14 +278,14 @@ public class DrawingView extends View {
             doInDrawActionUp(dComponent);
 
             isExit = true;
-            Log.i("mqtt", "isExit2 = " + isExit);
+            MyLog.i("mqtt", "isExit2 = " + isExit);
             return true;
         }
 
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 isExit = false;
-                Log.i("mqtt", "isExit3 = " + isExit);
+                MyLog.i("mqtt", "isExit3 = " + isExit);
 
                 /*de.addCurrentComponents(dComponent);
                 Log.i("drawing", "currentComponents.size() = " + de.getCurrentComponents().size());
@@ -310,7 +310,7 @@ public class DrawingView extends View {
             case MotionEvent.ACTION_UP:
                 point = new Point((int)event.getX(), (int)event.getY());
                 addPointAndDraw(dComponent, point);
-                Log.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
+                MyLog.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
 
                 //publish
                 sendDrawMqttMessage(event.getAction());
@@ -318,7 +318,7 @@ public class DrawingView extends View {
                 doInDrawActionUp(dComponent);
                 return true;
             default:
-                Log.i("drawing", "action = " + MotionEvent.actionToString(event.getAction()));
+                MyLog.i("drawing", "action = " + MotionEvent.actionToString(event.getAction()));
         }
         return true;
     }
@@ -354,7 +354,7 @@ public class DrawingView extends View {
                     selectPostPoint = new Point((int) event.getX(), (int) event.getY());
                     if (!selectPrePoint.equals(selectPostPoint)) {
                         moveCount++;
-                        Log.i("drawing", "move pre=" + selectPrePoint.toString() + ", post=" + selectPostPoint.toString() + ", " + moveCount);
+                        MyLog.i("drawing", "move pre=" + selectPrePoint.toString() + ", post=" + selectPostPoint.toString() + ", " + moveCount);
                         selectPrePoint = selectPostPoint;
                     }
                     return true;
@@ -374,14 +374,14 @@ public class DrawingView extends View {
                         invalidate();
 
                         //todo publish - 다른 사람들 셀렉트 못하게
-                        Log.i("drawing", "selected id=" + selectedComponentId);
+                        MyLog.i("drawing", "selected id=" + selectedComponentId);
                     } else {
                         isSelected = false;
                         de.clearSelectedBitmap();
                         invalidate();
 
                         //todo publish - 다른 사람들 셀렉트 가능 --> 모드 바뀔 때 추가로 메시지 전송 필요
-                        Log.i("drawing", "not selected=" + selectedComponentId);
+                        MyLog.i("drawing", "not selected=" + selectedComponentId);
                     }
                     moveCount = 0;
                     return true;
@@ -392,11 +392,11 @@ public class DrawingView extends View {
 
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    Log.i("drawing", "selected down");
+                    MyLog.i("drawing", "selected down");
                     selectDownPoint = new Point((int)event.getX(), (int)event.getY());
                     if(!de.isContainsSelectedComponent(selectDownPoint)) {
                         isSelected = false;
-                        Log.i("drawing", "selected false");
+                        MyLog.i("drawing", "selected false");
                         return true;
                     }
 
@@ -408,11 +408,11 @@ public class DrawingView extends View {
                     invalidate();
 
                     //todo publish - selected down
-                    Log.i("drawing", "selected true");
+                    MyLog.i("drawing", "selected true");
                     return true;
 
                 case MotionEvent.ACTION_MOVE:
-                    Log.i("drawing", "selected move");
+                    MyLog.i("drawing", "selected move");
                     moveX = (int)event.getX() - selectDownPoint.x;
                     moveY = (int)event.getY() - selectDownPoint.y;
 
@@ -435,12 +435,12 @@ public class DrawingView extends View {
                     return true;
 
                 case MotionEvent.ACTION_UP:
-                    Log.i("drawing", "selected up");
+                    MyLog.i("drawing", "selected up");
 
                     de.updateDrawingBitmap();
                     de.updateSelectedComponent(de.getSelectedComponent(), de.getMyCanvasWidth(), de.getMyCanvasHeight());
                     de.updateDrawingComponents(de.getSelectedComponent());
-                    Log.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
+                    MyLog.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
 
                     //de.addHistory(new DrawingItem(de.getCurrentMode(), de.getSelectedComponent())); //todo
                     //Log.i("drawing", "history.size()=" + de.getHistory().size() + ", id=" + de.getSelectedComponent().getId());
@@ -473,15 +473,15 @@ public class DrawingView extends View {
                 de.getDrawingFragment().getBinding().undoBtn.setEnabled(false);
                 invalidate();
 
-                Log.i("drawing", "history.size()=" + de.getHistory().size());
-                Log.i("drawing", "clear");
+                MyLog.i("drawing", "history.size()=" + de.getHistory().size());
+                MyLog.i("drawing", "clear");
             }
         });
 
         builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Log.i("drawing", "canceled");
+                MyLog.i("drawing", "canceled");
             }
         });
 
@@ -501,14 +501,14 @@ public class DrawingView extends View {
                 de.setBackgroundImage(null);
                 de.clearBackgroundImage();
 
-                Log.i("drawing", "clear background image");
+                MyLog.i("drawing", "clear background image");
             }
         });
 
         builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Log.i("drawing", "canceled");
+                MyLog.i("drawing", "canceled");
             }
         });
 

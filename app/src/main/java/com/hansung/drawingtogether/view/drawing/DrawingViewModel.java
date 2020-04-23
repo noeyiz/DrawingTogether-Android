@@ -27,8 +27,8 @@ import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
 import com.hansung.drawingtogether.view.audio.AudioPlayThread;
@@ -89,7 +89,7 @@ public class DrawingViewModel extends BaseViewModel {
     @Override
     public void onCleared() {  // todo
         super.onCleared();
-        Log.i("lifeCycle", "DrawingViewModel onCleared()");
+        MyLog.i("lifeCycle", "DrawingViewModel onCleared()");
 
         if (client != null && client.getClient().isConnected()) {
             // 꼭 여기서 처리 해줘야 하는 부분
@@ -138,7 +138,7 @@ public class DrawingViewModel extends BaseViewModel {
         master = data.isMaster();
         masterName = data.getMasterName();  // fixme hyeyeon
 
-        Log.e("kkankkan", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master + "/" + masterName);
+        MyLog.e("kkankkan", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master + "/" + masterName);
 
         client.init(topic, name, master, this, ip, port, masterName);
         client.setAliveCount(3);
@@ -153,13 +153,13 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickUndo(View view) {
-        Log.i("button", "undo button click");
+        MyLog.d("button", "undo button click");
 
         de.getDrawingFragment().getBinding().drawingView.undo();
     }
 
     public void clickRedo(View view) {
-        Log.i("button", "redo button click");
+        MyLog.d("button", "redo button click");
 
         de.getDrawingFragment().getBinding().drawingView.redo();
     }
@@ -194,7 +194,7 @@ public class DrawingViewModel extends BaseViewModel {
             e.printStackTrace();
         } finally {
             fragment.getContext().sendBroadcast(new Intent( Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(fileCacheItem)));             // 갤러리 데이터 갱신
-            Log.e("export", "capture path == " + filePath);
+            MyLog.e("export", "capture path == " + filePath);
         }
 
         dvc.setDrawingCacheEnabled(false);
@@ -203,7 +203,7 @@ public class DrawingViewModel extends BaseViewModel {
 
 
     public void clickPen(View view) { // drawBtn1, drawBtn2, drawBtn3
-        Log.i("button", "pen button click");
+        MyLog.d("button", "pen button click");
 
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
@@ -211,23 +211,23 @@ public class DrawingViewModel extends BaseViewModel {
 
         de.setStrokeWidth(Integer.parseInt(view.getContentDescription().toString())); // fixme nayeon
 
-        Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
+        MyLog.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
         //drawingCommands.postValue(new DrawingCommand.PenMode(view));      //fixme nayeon color picker [ View Model 과 Navigator 관계, 이벤트 처리 방식 ]
         preMenuButton = (Button)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
     }
 
     public void clickEraser(View view) {
-        Log.i("button", "eraser button click");
+        MyLog.d("button", "eraser button click");
 
         changeClickedButtonBackground(view);
         if(de.getCurrentMode() == Mode.ERASE)
             drawingCommands.postValue(new DrawingCommand.EraserMode(view));     //fixme minj add pixel eraser
         de.setCurrentMode(Mode.ERASE);
-        Log.i("drawing", "mode = " + de.getCurrentMode().toString());
+        MyLog.i("drawing", "mode = " + de.getCurrentMode().toString());
     }
 
     public void clickText(View view) {
-        Log.i("button", "text button click");
+        MyLog.d("button", "text button click");
 
         // 사용자가 처음 텍스트 편집창에서 텍스트 생성중인 경우
         // 텍스트 정보들을 모든 사용자가 갖고 있지 않음 ( 편집중인 사람만 갖고 있음 )
@@ -243,7 +243,7 @@ public class DrawingViewModel extends BaseViewModel {
 
 
         de.setCurrentMode(Mode.TEXT);
-        Log.i("drawing", "mode = " + de.getCurrentMode().toString());
+        MyLog.i("drawing", "mode = " + de.getCurrentMode().toString());
         FrameLayout frameLayout = de.getDrawingFragment().getBinding().drawingViewContainer;
 
 
@@ -257,7 +257,7 @@ public class DrawingViewModel extends BaseViewModel {
                 frameLayout.getWidth(), frameLayout.getHeight());
 
         Text text = new Text(de.getDrawingFragment(), textAttribute);
-        text.createGestureDetecter(); // Set Gesture ( Single Tap Up )
+        text.createGestureDetector(); // Set Gesture ( Single Tap Up )
 
         text.changeTextViewToEditText(); // EditText 커서와 키보드 활성화, 텍스트 편집 시작 처리
 
@@ -265,7 +265,7 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickDone(View view) {
-        Log.i("button", "done button click");
+        MyLog.d("button", "done button click");
 
         // 텍스트 모드가 끝나면 다른 버튼들 활성화
         enableDrawingMenuButton(true);
@@ -280,7 +280,7 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickShape(View view) {
-        Log.i("button", "shape button click");
+        MyLog.d("button", "shape button click");
 
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
@@ -292,28 +292,28 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickSelector(View view) {
-        Log.i("button", "selector button click");
+        MyLog.d("button", "selector button click");
 
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.SELECT);
-        Log.i("drawing", "mode = " + de.getCurrentMode().toString());
+        MyLog.i("drawing", "mode = " + de.getCurrentMode().toString());
     }
 
     public void clickGroup(View view) {
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.GROUP);
-        Log.i("drawing", "mode = " + de.getCurrentMode().toString());
+        MyLog.i("drawing", "mode = " + de.getCurrentMode().toString());
     }
 
     // fixme nayeon
     public void clickTextColor(View view) {
-        Log.i("button", "text color button click");
+        MyLog.d("button", "text color button click");
 
         de.getCurrentText().finishTextColorChange();
     }
 
     public void clickSearch(View view) {
-        Log.i("button", "search button click");
+        MyLog.d("button", "search button click");
 
         navigate(R.id.action_drawingFragment_to_searchFragment);
     }
@@ -413,7 +413,7 @@ public class DrawingViewModel extends BaseViewModel {
         if (!storageDir.exists()) storageDir.mkdirs();
         File  image = File.createTempFile(imageFileName, ".jpg", storageDir);
         photoPath = image.getAbsolutePath();
-        Log.e("kkankkan", photoPath);
+        MyLog.e("kkankkan", photoPath);
         return image;
     }
 
