@@ -1,7 +1,9 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.os.AsyncTask;
-import android.util.Log;
+
+import com.hansung.drawingtogether.data.remote.model.MyLog;
+
 
 public class UpdateTextsTask extends AsyncTask<DrawingItem, Void, DrawingItem> {
     private DrawingEditor de = DrawingEditor.getInstance();
@@ -17,7 +19,7 @@ public class UpdateTextsTask extends AsyncTask<DrawingItem, Void, DrawingItem> {
         if (lastItem.getTextAttribute() == null)
             return null;
 
-        Log.i("drawing", "text mode = " + lastItem.getTextMode().toString());
+        MyLog.i("drawing", "text mode = " + lastItem.getTextMode().toString());
 
         return lastItem;
     }
@@ -36,26 +38,27 @@ public class UpdateTextsTask extends AsyncTask<DrawingItem, Void, DrawingItem> {
                     text.setTextAttribute(textAttr);
                     text.removeTextViewToFrameLayout();
                     de.removeTexts(text);
-                    Log.i("drawing", "texts erase");
+                    MyLog.i("drawing", "texts erase");
                 } else {
                     Text newText = new Text(de.getDrawingFragment(), textAttr); //create
                     newText.getTextAttribute().setTextInited(true);
+                    newText.setTextViewProperties(); // fixme nayeon
                     newText.addTextViewToFrameLayout();
                     de.addTexts(newText);
-                    newText.createGestureDetecter();
-                    Log.i("drawing", "texts create");
+                    newText.createGestureDetector();
+                    MyLog.i("drawing", "texts create");
                 }
                 break;
 
             case MODIFY:
                 if (isUndo) {
-                    Log.i("drawing", "preText=" + textAttr.getPreText() + ", text=" + textAttr.getText());
-                    Log.i("drawing", "texts modify undo");
+                    MyLog.i("drawing", "preText=" + textAttr.getPreText() + ", text=" + textAttr.getText());
+                    MyLog.i("drawing", "texts modify undo");
                     textAttr.setPostText(textAttr.getText());
                     textAttr.setText(textAttr.getPreText());
                 } else {
-                    Log.i("drawing", "text=" + textAttr.getText() + ", postText=" + textAttr.getPostText());
-                    Log.i("drawing", "texts modify redo");
+                    MyLog.i("drawing", "text=" + textAttr.getText() + ", postText=" + textAttr.getPostText());
+                    MyLog.i("drawing", "texts modify redo");
                     textAttr.setPreText(textAttr.getText());
                     textAttr.setText(textAttr.getPostText());
                 }
@@ -66,15 +69,15 @@ public class UpdateTextsTask extends AsyncTask<DrawingItem, Void, DrawingItem> {
 
             case DROP:
                 if (isUndo) {
-                    Log.i("drawing", "preX=" + textAttr.getPreX() + ", x=" + textAttr.getX());
-                    Log.i("drawing", "texts drop undo");
+                    MyLog.i("drawing", "preX=" + textAttr.getPreX() + ", x=" + textAttr.getX());
+                    MyLog.i("drawing", "texts drop undo");
                     textAttr.setPostX(textAttr.getX());
                     textAttr.setPostY(textAttr.getY());
                     textAttr.setX(textAttr.getPreX());
                     textAttr.setY(textAttr.getPreY());
                 } else {
-                    Log.i("drawing", "x=" + textAttr.getX() + ", postX=" + textAttr.getPostX());
-                    Log.i("drawing", "texts drop redo");
+                    MyLog.i("drawing", "x=" + textAttr.getX() + ", postX=" + textAttr.getPostX());
+                    MyLog.i("drawing", "texts drop redo");
                     textAttr.setPreX(textAttr.getX());
                     textAttr.setPreY(textAttr.getY());
                     textAttr.setX(textAttr.getPostX());

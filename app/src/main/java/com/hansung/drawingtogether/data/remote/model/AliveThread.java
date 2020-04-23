@@ -1,17 +1,10 @@
 package com.hansung.drawingtogether.data.remote.model;
 
-import android.util.Log;
 
-import com.hansung.drawingtogether.view.drawing.DrawingViewModel;
 import com.hansung.drawingtogether.view.drawing.JSONParser;
 import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
 import com.hansung.drawingtogether.view.main.AliveMessage;
 
-import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.Getter;
 
@@ -22,7 +15,6 @@ public enum AliveThread implements Runnable {
 
     private MQTTClient client = MQTTClient.getInstance();  // 참조
     private int second = 2000;
-
     public static AliveThread getInstance() {
         return INSTANCE;
     }
@@ -70,7 +62,7 @@ public enum AliveThread implements Runnable {
                     Log.e("kkankkan", key + " " + aliveCheckMap.get(key));
                 }*/
             } catch (InterruptedException e) {
-                Log.e("kkankkan", "alive thread is dead");
+                MyLog.e("kkankkan", "alive thread is dead");
                 break;
             }
 

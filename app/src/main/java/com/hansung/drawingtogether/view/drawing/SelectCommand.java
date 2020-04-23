@@ -1,9 +1,10 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Point;
-import android.util.Log;
 
 import java.util.Vector;
+
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 public class SelectCommand implements Command {
     private Selector selector = new Selector();
@@ -18,7 +19,7 @@ public class SelectCommand implements Command {
     public Vector<Integer> getIds() {
         ids.clear();
         ids.add(selector.getSelectedComponentId());
-        Log.i("drawing", "ids[] = " + ids.toString());
+        MyLog.i("drawing", "ids[] = " + ids.toString());
         return ids;
     }
 }

@@ -9,8 +9,6 @@
     <string name="kakao_scheme">kakaoa26222c31c460b54c2181b75b15af5af</string>
     <string name="kakaolink_host">kakaolink</string>
 
-    <string-array name="exit">
-        <item>"나가기"</item>
-        <item>"topic 삭제 후 나가기"</item>
-    </string-array>
+    <string name="master_exit">종료하시겠습니까?</string>
+    <string name="joiner_exit">나가시겠습니까?</string>
 </resources>

@@ -17,8 +17,10 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentMainBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
+
 
 import java.util.Objects;
 
@@ -40,7 +42,8 @@ public class MainFragment extends Fragment {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if(i == EditorInfo.IME_ACTION_DONE) {
-                    binding.login.performClick();
+                    binding.masterLogin.performClick();
+                    binding.join.performClick();
                     inputMethodManager.hideSoftInputFromWindow(binding.name.getWindowToken(), 0);
                 }
 
@@ -83,5 +86,18 @@ public class MainFragment extends Fragment {
         super.onResume();
         ((MainActivity)getActivity()).setToolbarTitle("Drawing Together");
         ((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+    }
+
+    // fixme hyeyeon[1]
+    @Override
+    public void onPause() {  // todo
+        super.onPause();
+        MyLog.i("lifeCycle", "MainFragment onPause()");
+    }
+
+    @Override
+    public void onDestroyView() {  // todo
+        super.onDestroyView();
+        MyLog.i("lifeCycle", "MainFragment onDestroyView()");
     }
 }

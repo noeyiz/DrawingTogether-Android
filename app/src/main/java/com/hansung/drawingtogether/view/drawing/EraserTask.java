@@ -1,9 +1,11 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.os.AsyncTask;
-import android.util.Log;
+
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 import java.util.Vector;
+
 
 public class EraserTask extends AsyncTask<Void, Void, Void> {
     private DrawingEditor de = DrawingEditor.getInstance();
@@ -50,7 +52,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
         super.onPostExecute(aVoid);
 
         de.addHistory(new DrawingItem(de.getCurrentMode(), components/*, de.getDrawingBitmap()*/));    //fixme
-        Log.i("drawing", "history.size()=" + de.getHistory().size());
+        MyLog.i("drawing", "history.size()=" + de.getHistory().size());
         de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
 
         //de.clearUndoArray();

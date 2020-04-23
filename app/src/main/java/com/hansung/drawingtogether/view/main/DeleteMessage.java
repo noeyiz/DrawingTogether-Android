@@ -6,14 +6,9 @@ import lombok.Getter;
 @Getter
 public class DeleteMessage {
     String name;
-    String message;
 
     public DeleteMessage(String name) {
         this.name = name;
     }
 
-    public DeleteMessage(String name, String message) {
-        this.name = name;
-        this.message = message;
-    }
 }

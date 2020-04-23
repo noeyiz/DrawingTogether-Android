@@ -18,6 +18,7 @@ public class DrawingComponentAdapter
     private final String CLASSNAME = "CLASSNAME";
     private final String OBJECT = "OBJECT";
 
+
     @Override
     public /*synchronized*/ JsonElement serialize(DrawingComponent src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject result = new JsonObject();

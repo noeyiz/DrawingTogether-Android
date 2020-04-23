@@ -1,12 +1,15 @@
 package com.hansung.drawingtogether.view.drawing;
 
+
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 import java.lang.reflect.Type;
 
@@ -24,8 +27,11 @@ public class TextAdapter implements JsonSerializer<Text>, JsonDeserializer<Text>
         TextAttribute textAttribute = src.getTextAttribute();
 
         JsonObject result = new JsonObject();
-        result.add(TEXT_ATTRIBUTE, context.serialize(textAttribute, textAttribute.getClass()));
-
+        try {
+            result.add(TEXT_ATTRIBUTE, context.serialize(textAttribute, textAttribute.getClass()));
+        }catch (JsonIOException jioe) {
+            MyLog.e("json", "SERIALIZE ERROR " + jioe.getCause().toString());
+        }
         return result;
     }
 

@@ -1,11 +1,12 @@
 package com.hansung.drawingtogether.view.drawing;
 
-import android.graphics.Color;
-import android.util.Log;
 import android.view.DragEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.hansung.drawingtogether.data.remote.model.MyLog;
+
 
 // 프레임레이아웃에 붙어있는 텍스트뷰를 드래깅 하기 위한 이벤트 리스너 클래스
 class FrameLayoutDragListener implements View.OnDragListener {
@@ -20,13 +21,10 @@ class FrameLayoutDragListener implements View.OnDragListener {
         TextView textView;
         ViewGroup viewGroup;
 
-        Log.e("Drag Event", Integer.toString(event.getAction()));
-
         View draggedView = (View) event.getLocalState();
         if(draggedView instanceof TextView) {
-
-
             textView = (TextView) draggedView;
+            viewGroup = (ViewGroup) textView.getParent();
         }
         else { return true; }
 
@@ -36,9 +34,13 @@ class FrameLayoutDragListener implements View.OnDragListener {
         int x = (int)event.getX();
         int y = (int)event.getY();
 
-
         // todo nayeon 텍스트 뷰 화면 넘어갈 때 처리
-        // if( (x + (textView.getWidth()/2)) > frameLayout.getWidth()) { x = frameLayout.getWidth() - textView.getWidth()/2; }
+        if( (x + (textView.getWidth()/2)) > viewGroup.getWidth() ) { // 좌측으로 넘어갈 경우
+            x = viewGroup.getWidth() - textView.getWidth()/2;
+        }
+        else if( (x - (textView.getWidth()/2)) < 0 ) {
+            x = 0 + textView.getWidth()/2; // 우측으로 넘어갈 경우
+        }
 
 
         switch (event.getAction()) {
@@ -64,9 +66,9 @@ class FrameLayoutDragListener implements View.OnDragListener {
                 viewGroup.addView(textView);
 
                 text.sendMqttMessage(TextMode.DROP);
-                Log.i("drawing", "text drop");
+                MyLog.i("drawing", "text drop");
                 de.addHistory(new DrawingItem(TextMode.DROP, textAttribute)); //fixme minj - addHistory
-                Log.i("drawing", "history.size()=" + de.getHistory().size());
+                MyLog.i("drawing", "history.size()=" + de.getHistory().size());
                 de.clearUndoArray();
 
                 break;
@@ -84,7 +86,6 @@ class FrameLayoutDragListener implements View.OnDragListener {
 
                 break;
             case DragEvent.ACTION_DRAG_EXITED:
-                viewGroup = (ViewGroup) textView.getParent(); // ViewGroup = FrameLayout
                 viewGroup.removeView(textView);
 
                 textAttribute.setCoordinates(preX, preY); // TextAttribute 에 좌푯값 저장

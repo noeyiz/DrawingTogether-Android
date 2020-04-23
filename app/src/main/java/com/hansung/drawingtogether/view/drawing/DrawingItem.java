@@ -1,6 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
-import android.util.Log;
+
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 import java.util.Vector;
 
@@ -37,7 +38,7 @@ public class DrawingItem {
     public DrawingItem(TextMode textMode, TextAttribute textAttribute) {
         this.textMode = textMode;
         this.textAttribute = new TextAttribute(textAttribute);
-        Log.i("drawing", "preText=" + textAttribute.getPreText() + ", text=" + textAttribute.getText());
+        MyLog.i("drawing", "preText=" + textAttribute.getPreText() + ", text=" + textAttribute.getText());
     }
 
 }

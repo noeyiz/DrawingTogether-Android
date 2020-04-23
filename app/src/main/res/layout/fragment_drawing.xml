@@ -30,6 +30,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="@id/bottom_menu_guideline">
 
+
             <Button
                 android:id="@+id/drawBtn1"
                 android:layout_width="0dp"
@@ -88,14 +89,23 @@
                 android:onClick="@{vm::clickEraser}"
                 android:text="지우개" />
 
-            <Button
+            <!--<Button
                 android:id="@+id/selectBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@null"
                 android:onClick="@{vm::clickSelector}"
-                android:text="셀렉터" />
+                android:text="셀렉터" />-->
+
+            <Button
+                android:id="@+id/warpingBtn"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:onClick="@{vm::clickWarp}"
+                android:text="와핑" />
 
             <!--<Button
                 android:id="@+id/groupBtn"
@@ -106,6 +116,25 @@
                 android:onClick="@{vm::clickGroup}"
                 android:text="group" />-->
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/textColorButtonLayout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="@+id/drawingMenuLayout"
+            app:layout_constraintTop_toTopOf="@+id/bottom_menu_guideline">
+
+            <Button
+                android:id="@+id/textColorChangeButton"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:onClick="@{vm::clickTextColor}"
+                android:text="text color change"
+                android:visibility="invisible" />
         </LinearLayout>
 
         <androidx.constraintlayout.widget.Guideline
@@ -327,18 +356,22 @@
                 <com.hansung.drawingtogether.view.drawing.DrawingViewController
                     android:id="@+id/drawingViewContainer"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:background="#FFFFFF">
 
                     <LinearLayout
                         android:id="@+id/background_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:background="@null"
                         android:orientation="horizontal">
+
                     </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent">
+                        android:layout_height="match_parent"
+                        android:background="@null">
 
                         <com.hansung.drawingtogether.view.drawing.DrawingView
                             android:id="@+id/drawing_view"
@@ -355,9 +388,37 @@
                         android:background="@android:color/transparent"
                         android:orientation="horizontal">
 
+                        <SeekBar
+                            android:id="@+id/sizeBar"
+                            android:layout_width="200dp"
+                            android:layout_height="200dp"
+                            android:layout_gravity="left|center_vertical"
+                            android:layout_marginLeft="-80dp"
+                            android:max="50"
+                            android:min="10"
+                            android:progress="0"
+                            android:rotation="-90"
+                            android:visibility="invisible" />
+
+
+                        <EditText
+                            android:id="@+id/editText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:background="@null"
+                            android:ems="10"
+                            android:enabled="false"
+                            android:hint="텍스트를 입력해주세요"
+                            android:inputType="textMultiLine"
+                            android:maxLength="40"
+                            android:padding="20dp"
+                            android:textAlignment="center"
+                            android:visibility="invisible" /> <!-- android:scrollbars="vertical" -->
+
+
                         <Button
                             android:id="@+id/doneBtn"
-                            android:visibility="invisible"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="right"
@@ -366,7 +427,8 @@
                             android:layout_marginEnd="5dp"
                             android:background="@null"
                             android:onClick="@{vm::clickDone}"
-                            android:text="done" />
+                            android:text="done"
+                            android:visibility="invisible" />
 
                     </FrameLayout>
 
