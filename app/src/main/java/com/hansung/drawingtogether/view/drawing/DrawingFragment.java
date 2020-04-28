@@ -638,7 +638,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         final int height = options.outHeight;
         final int width = options.outWidth;
 
-        final int reqWidth = 1000;
+        final int reqWidth = 800;
         final int reqHeight = 1000;
 
         MyLog.e("image", "option width = " + width + ", option height = " + height);
@@ -667,11 +667,11 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
-        // options.inJustDecodeBounds = true;
-        // BitmapFactory.decodeByteArray(bitmapArray, 0, bitmapArray.length, options);
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(bitmapArray, 0, bitmapArray.length, options);
 
-        // options.inSampleSize = calculateInSampleSize(options);
-        options.inSampleSize = 2;
+        options.inSampleSize = calculateInSampleSize(options);
+        // options.inSampleSize = 2;
 
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
