@@ -170,9 +170,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             client.setThread(th);
         }
 
-        SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
-        sendMqttMessage.startThread();
-
         // 디바이스 화면 size 구하기
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         size = new Point();

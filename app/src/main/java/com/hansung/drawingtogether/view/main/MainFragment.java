@@ -42,8 +42,8 @@ public class MainFragment extends Fragment {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if(i == EditorInfo.IME_ACTION_DONE) {
-                    binding.masterLogin.performClick();
-                    binding.join.performClick();
+                    //binding.masterLogin.performClick();
+                    //binding.join.performClick();
                     inputMethodManager.hideSoftInputFromWindow(binding.name.getWindowToken(), 0);
                 }
 

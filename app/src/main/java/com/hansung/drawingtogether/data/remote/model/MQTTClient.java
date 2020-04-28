@@ -855,7 +855,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
             dComponent = de.getCurrentComponent(message.getUsersComponentId());
         }
 
-        if(de.findCurrentComponent(dComponent.getUsersComponentId()) == null) return;   //중간자가 MidTask 수행 전에 그려진 component 는 return
+        if (dComponent != null && de.findCurrentComponent(dComponent.getUsersComponentId()) == null) return;   //중간자가 MidTask 수행 전에 그려진 component 는 return
 
         dComponent.calculateRatio(myCanvasWidth, myCanvasHeight);
 

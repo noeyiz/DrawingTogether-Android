@@ -19,6 +19,8 @@ import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
+import com.hansung.drawingtogether.view.drawing.SendMqttMessage;
+
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 public class MainActivity extends AppCompatActivity {
@@ -59,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
         MyLog.e("build", BuildConfig.DEBUG + " ");
         MyLog.i("debug", BuildConfig.DEBUG + " ");
 
+        SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
+        sendMqttMessage.startThread();
 
         context = this; // fixme nayeon
 
