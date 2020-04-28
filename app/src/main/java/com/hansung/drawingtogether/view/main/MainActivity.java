@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -51,14 +52,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MyLog.e("activity", "onCreate()");
-        setContentView(R.layout.activity_main);
         MyLog.i("lifeCycle", "MainActivity onCreate()");
 
+        setContentView(R.layout.activity_main);
 
-        MyLog.e("build", BuildConfig.DEBUG + " ");
-        MyLog.i("debug", BuildConfig.DEBUG + " ");
-
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // 앱 실행 중 화면 사라지지 않도록
 
         context = this; // fixme nayeon
 

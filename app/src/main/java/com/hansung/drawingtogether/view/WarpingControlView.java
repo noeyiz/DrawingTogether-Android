@@ -3,13 +3,10 @@ package com.hansung.drawingtogether.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
 
 import androidx.appcompat.widget.AppCompatImageView;
 
@@ -63,7 +60,7 @@ public class WarpingControlView extends AppCompatImageView {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		this.setImageBitmap(image);
-		de.setBackgroundImage(image);
+		// de.setBackgroundImage(image); // todo nayeon
 	}
 
 	public Bitmap getImage(){
