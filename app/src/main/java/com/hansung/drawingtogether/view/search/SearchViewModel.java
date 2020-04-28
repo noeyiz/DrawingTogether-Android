@@ -10,8 +10,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.hansung.drawingtogether.R;
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.BaseViewModel;
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 
 public class SearchViewModel extends BaseViewModel {
@@ -21,7 +21,7 @@ public class SearchViewModel extends BaseViewModel {
     @Override
     public void onCleared() {  // todo
         super.onCleared();
-        Log.i("lifeCycle", "SearchViewModel onCleared()");
+        MyLog.i("lifeCycle", "SearchViewModel onCleared()");
     }
 
     public SearchViewModel() {

@@ -11,4 +11,6 @@ import lombok.Setter;
 public class User {
     private String name;
     private int count;
+    private int action;
+    private boolean isInitialized;
 }

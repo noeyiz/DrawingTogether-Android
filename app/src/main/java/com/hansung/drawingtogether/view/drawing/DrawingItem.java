@@ -1,12 +1,12 @@
 package com.hansung.drawingtogether.view.drawing;
 
 
+import com.hansung.drawingtogether.data.remote.model.MyLog;
+
 import java.util.Vector;
 
 import lombok.Getter;
 import lombok.Setter;
-
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 @Getter
 @Setter
@@ -38,7 +38,7 @@ public class DrawingItem {
     public DrawingItem(TextMode textMode, TextAttribute textAttribute) {
         this.textMode = textMode;
         this.textAttribute = new TextAttribute(textAttribute);
-        Log.i("drawing", "preText=" + textAttribute.getPreText() + ", text=" + textAttribute.getText());
+        MyLog.i("drawing", "preText=" + textAttribute.getPreText() + ", text=" + textAttribute.getText());
     }
 
 }

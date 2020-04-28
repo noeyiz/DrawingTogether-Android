@@ -1,11 +1,6 @@
 package com.hansung.drawingtogether.data.remote.model;
 
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.net.Uri;
-import android.os.Looper;
-
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,18 +13,11 @@ import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
-
 import com.hansung.drawingtogether.view.drawing.JSONParser;
 import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
 import com.hansung.drawingtogether.view.main.DeleteMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
-import com.hansung.drawingtogether.view.main.MainActivity;
-
-import org.eclipse.paho.client.mqttv3.MqttException;
-
-import java.io.File;
 
 // 비 정상 종료 시 실행될 핸들러
 public class AbnormalTerminationHandler
@@ -49,7 +37,7 @@ public class AbnormalTerminationHandler
 
     @Override
     public void uncaughtException(Thread thread, Throwable e) {
-        Log.e("exception", "UncaughtException");
+        MyLog.e("exception", "UncaughtException");
 
         if (databaseRef != null && client.getClient().isConnected()) {
             databaseRef.child(client.getTopic()).runTransaction(new Transaction.Handler() {
@@ -62,16 +50,16 @@ public class AbnormalTerminationHandler
                     if (mutableData.getValue() != null && !client.isMaster()) {
                         mutableData.child("username").child(client.getMyName()).setValue(null);
                     }
-                    Log.e("transaction", "transaction success");
+                    MyLog.e("transaction", "transaction success");
                     return Transaction.success(mutableData);
 
                 }
 
                 @Override
                 public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                    Log.e("transaction", "transaction complete");
+                    MyLog.e("transaction", "transaction complete");
                     if (databaseError != null) {
-                        Log.e("transaction", databaseError.getDetails());
+                        MyLog.e("transaction", databaseError.getDetails());
                         return;
                     }
                     if (client.isMaster()) {

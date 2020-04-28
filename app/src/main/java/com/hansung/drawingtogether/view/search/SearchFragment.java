@@ -16,7 +16,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.hansung.drawingtogether.R;
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentSearchBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.main.MainActivity;
@@ -73,12 +73,12 @@ public class SearchFragment extends Fragment{
     @Override
     public void onPause() {  // todo
         super.onPause();
-        Log.i("lifeCycle", "SearchFragment onPause()");
+        MyLog.i("lifeCycle", "SearchFragment onPause()");
     }
 
     @Override
     public void onDestroyView() {  // todo
         super.onDestroyView();
-        Log.i("lifeCycle", "SearchFragment onDestroyView()");
+        MyLog.i("lifeCycle", "SearchFragment onDestroyView()");
     }
 }

@@ -22,8 +22,17 @@ public class Stroke extends DrawingComponent {
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);
 
+        //fixme minj
         Point from = (this.preSize == 0) ? this.points.get(preSize) : this.points.get(preSize-1);
         Point to = this.points.get(preSize);
+        /*Point from, to;
+        if(this.points.size() == 1) {
+            from = this.points.get(0);
+            to = this.points.get(0);
+        } else {
+            from = this.points.get(this.points.size()-2);
+            to = this.points.get(this.points.size()-1);
+        }*/
 
         try {
             canvas.drawLine(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);

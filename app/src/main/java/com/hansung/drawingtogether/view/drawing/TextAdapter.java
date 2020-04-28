@@ -9,10 +9,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 import java.lang.reflect.Type;
-
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 // Parse Only TextAttribute
 // Text 객체 파싱은 사실상 TextAttribute 객체 파싱
@@ -31,7 +30,7 @@ public class TextAdapter implements JsonSerializer<Text>, JsonDeserializer<Text>
         try {
             result.add(TEXT_ATTRIBUTE, context.serialize(textAttribute, textAttribute.getClass()));
         }catch (JsonIOException jioe) {
-            Log.e("json", "SERIALIZE ERROR " + jioe.getCause().toString());
+            MyLog.e("json", "SERIALIZE ERROR " + jioe.getCause().toString());
         }
         return result;
     }

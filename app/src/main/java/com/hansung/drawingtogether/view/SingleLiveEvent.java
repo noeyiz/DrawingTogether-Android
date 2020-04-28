@@ -7,9 +7,10 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
+import com.hansung.drawingtogether.data.remote.model.MyLog;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 
 public class SingleLiveEvent<T> extends MutableLiveData<T> {
@@ -22,7 +23,7 @@ public class SingleLiveEvent<T> extends MutableLiveData<T> {
     public void observe(LifecycleOwner owner, final Observer<? super T> observer) {
 
         if (hasActiveObservers()) {
-            Log.w(TAG, "Multiple observers registered but only one will be notified of changes.");
+            MyLog.w(TAG, "Multiple observers registered but only one will be notified of changes.");
         }
 
         // Observe the internal MutableLiveData

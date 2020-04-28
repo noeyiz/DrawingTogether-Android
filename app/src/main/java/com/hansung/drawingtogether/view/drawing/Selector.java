@@ -3,7 +3,7 @@ package com.hansung.drawingtogether.view.drawing;
 import android.graphics.Point;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 import lombok.Getter;
 
@@ -24,13 +24,13 @@ public class Selector {
         //Vector<Integer>[][] dbArray = de.getDrawingBoardArray();
 
         if(y-squareScope<0 || x-squareScope<0 || y+squareScope>de.getMyCanvasHeight() || x+squareScope>de.getMyCanvasWidth()) {
-            Log.i("drawing", "selector exit");
+            MyLog.i("drawing", "selector exit");
             return;
         }
 
         if(de.findEnclosingDrawingComponents(selectorPoint).size() != 1 && !de.isContainsRemovedComponentIds(de.findEnclosingDrawingComponents(selectorPoint))) {
             selectedComponentId = de.findEnclosingDrawingComponents(selectorPoint).lastElement();
-            Log.i("drawing", "selected shape ids = " + selectedComponentId);
+            MyLog.i("drawing", "selected shape ids = " + selectedComponentId);
         }
 
         /*for(int i=y-squareScope; i<y+squareScope; i++) {    //맨 위에 그려진 선 or 도형 id --> 선과 도형이 동시에 잡힌경우 도형 id

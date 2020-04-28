@@ -19,8 +19,8 @@ import android.widget.Toast;
 
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 
 import lombok.Getter;
@@ -135,7 +135,7 @@ public class Text { // EditTextView
     public void setTextViewInitialPlace(TextAttribute textAttribute) {
         // TextView 가 초기에 놓일 자리
         if(textAttribute.isTextInited() && textAttribute.isTextMoved()) {
-            Log.e("text", "SET TEXT VIEW LOCATION IN CONSTRUCTOR()");
+            MyLog.e("text", "SET TEXT VIEW LOCATION IN CONSTRUCTOR()");
             setTextViewLocationInConstructor();
         } // 텍스트가 초기화 되어있을 경우 (이미 누군가에 의해 생성된 텍스트) - for middleman
         else {
@@ -172,6 +172,11 @@ public class Text { // EditTextView
                 // 현재 사용중인(조작중인) 텍스트가 있다면 다른 텍스트에 터치 못하도록
                 else if(de.isTextBeingEdited()) {
                     showToastMsg("편집 중에는 다른 텍스트를 사용할 수 없습니다");
+                    return true;
+                }
+                // 텍스트 컬러 변경중일 때 텍스트 움직이지 못하도록
+                else if(textAttribute.isTextChangedColor()) {
+                    showToastMsg("텍스트 색상 변경중에는 움직일 수 없습니다");
                     return true;
                 }
 
@@ -233,8 +238,8 @@ public class Text { // EditTextView
         this.xRatio = myLayoutWidth / this.textAttribute.getGeneratedLayoutWidth();
         this.yRatio = myLayoutHeight / this.textAttribute.getGeneratedLayoutHeight();
 
-        Log.e("text", "my layout location = " + myLayoutWidth + ", " + myLayoutHeight);
-        Log.e("text", "attached layout location = " + textAttribute.getGeneratedLayoutWidth() + ", " + textAttribute.getGeneratedLayoutHeight());
+        MyLog.e("text", "my layout location = " + myLayoutWidth + ", " + myLayoutHeight);
+        MyLog.e("text", "attached layout location = " + textAttribute.getGeneratedLayoutWidth() + ", " + textAttribute.getGeneratedLayoutHeight());
     }
 
 
@@ -287,11 +292,11 @@ public class Text { // EditTextView
             addTextViewToFrameLayout(); // TextView 를 레이아웃에 추가 // fixme nayeon ☆ 텍스트 처음 생성 시에만 TEXT VIEW 붙이기
 
 
-            Log.i("drawing", "text create");
+            MyLog.i("drawing", "text create");
             de.addHistory(new DrawingItem(TextMode.CREATE, getTextAttribute())); //fixme minj - addHistory
             if(de.getHistory().size() == 1)
                 de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
-            Log.i("drawing", "history.size()=" + de.getHistory().size());
+            MyLog.i("drawing", "history.size()=" + de.getHistory().size());
             de.clearUndoArray();
 
             de.setCurrentMode(Mode.DRAW); // 텍스트 편집이 완료 되면 현재 모드는 기본 드로잉 모드로
@@ -321,9 +326,9 @@ public class Text { // EditTextView
         String preText = textAttribute.getPreText();
         if(preText != null && !preText.equals(textAttribute.getText())) {   //modify 이전과 text 가 달라졌을 때만 history 에 저장
             textAttribute.setModified(true);
-            Log.i("drawing", "text modify");
+            MyLog.i("drawing", "text modify");
             de.addHistory(new DrawingItem(TextMode.MODIFY, getTextAttribute()));   //fixme minj - addHistory
-            Log.i("drawing", "history.size()=" + de.getHistory().size());
+            MyLog.i("drawing", "history.size()=" + de.getHistory().size());
             de.clearUndoArray();
         }
 
@@ -384,7 +389,7 @@ public class Text { // EditTextView
     private void startTextColorChange() {
         de.setCurrentText(this); // 현재 텍스트 지정
         setTextAttribute(); // 텍스트 편집 전 사용자 이름 지정
-        textAttribute.setTextChangedColor(true); // 텍스트 컬러 변경중임을 나타내는 플래그 (중간자 처리 위해)
+        textAttribute.setTextChangedColor(true); // 텍스트 컬러 변경중임을 나타내는 플래그 (중간자 처리 위해) todo nayeon 필요?
 
         sendMqttMessage(TextMode.START_COLOR_CHANGE); // 다른 사용자의 텍스트 동시 처리 막기 위해 ( 이름, 테두리 설정 )
 
@@ -484,8 +489,8 @@ public class Text { // EditTextView
         try {
             frameLayout.addView(textView);
 
-            Log.e("text", "frameLayout in adding view " + frameLayout.toString());
-            Log.e("text", "text view size in adding view " + textView.getWidth() + ", " + textView.getHeight());
+            MyLog.i("text", "frameLayout in adding view " + frameLayout.toString());
+            MyLog.i("text", "text view size in adding view " + textView.getWidth() + ", " + textView.getHeight());
 
         }
         catch(IllegalStateException ie) {
@@ -494,11 +499,11 @@ public class Text { // EditTextView
 
             for(Text text: de.getTexts()) {  } // 모든 텍스트 아이디 출력
 
-            Log.e("error", "☆ ☆ ☆  frameLayout.addView ☆ ☆ ☆");
-            Log.e("drawing editor text size", Integer.toString(de.getTexts().size()));
-            Log.e("frame layout children count", Integer.toString(frameLayout.getChildCount()));
+            MyLog.e("error", "☆ ☆ ☆  frameLayout.addView ☆ ☆ ☆");
+            MyLog.e("drawing editor text size", Integer.toString(de.getTexts().size()));
+            MyLog.e("frame layout children count", Integer.toString(frameLayout.getChildCount()));
 
-            for(Text text: de.getTexts()) { Log.e("text id", text.getTextAttribute().getId()); } // 모든 텍스트 아이디 출력
+            for(Text text: de.getTexts()) { MyLog.e("text id", text.getTextAttribute().getId()); } // 모든 텍스트 아이디 출력
         }
     }
 
@@ -511,7 +516,7 @@ public class Text { // EditTextView
 
     public void modifyTextViewContent(String text) { textView.setText(text); }
 
-    public void createGestureDetecter() { gestureDetector = new GestureDetector(drawingFragment.getActivity(), new GestureConfirm()); }
+    public void createGestureDetector() { gestureDetector = new GestureDetector(drawingFragment.getActivity(), new GestureConfirm()); }
 
 
     /*
@@ -531,9 +536,9 @@ public class Text { // EditTextView
             if(de.getCurrentMode().equals(Mode.ERASE)) {
                 eraseText();
                 sendMqttMessage(TextMode.ERASE);
-                Log.i("drawing", "text erase");
+                MyLog.i("drawing", "text erase");
                 de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme minj - addHistory
-                Log.i("drawing", "history.size()=" + de.getHistory().size());
+                MyLog.i("drawing", "history.size()=" + de.getHistory().size());
                 de.clearUndoArray();
             } else {
                 //textView.setBackground(de.getTextMoveBorderDrawable());

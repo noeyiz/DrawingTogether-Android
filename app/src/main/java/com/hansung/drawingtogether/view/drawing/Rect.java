@@ -31,7 +31,7 @@ public class Rect extends DrawingComponent {
             this.drawComponent(canvas);
         }*/
 
-        de.redraw();
+        de.redraw(this.usersComponentId);
         drawComponent(canvas);
     }
 

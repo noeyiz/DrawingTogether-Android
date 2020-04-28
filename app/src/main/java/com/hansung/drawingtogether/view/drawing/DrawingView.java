@@ -10,9 +10,15 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 
+import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import androidx.annotation.Nullable;
 import lombok.Getter;
@@ -23,14 +29,17 @@ import lombok.Setter;
 public class DrawingView extends View {
     private DrawingEditor de = DrawingEditor.getInstance();
     private MQTTClient client = MQTTClient.getInstance();
-    private JSONParser parser = JSONParser.getInstance();
+    private final JSONParser parser = JSONParser.getInstance();
+    private SendMqttMessage sendThread = SendMqttMessage.getInstance();
+
+    private String topicData;
 
     private DrawingTool dTool = new DrawingTool();
     private Command eraserCommand = new EraseCommand();
     private Command selectCommand = new SelectCommand();
 
     private boolean isIntercept = false;
-    private int currentDrawAction = MotionEvent.ACTION_UP;
+    //private int currentDrawAction = MotionEvent.ACTION_UP;
     private float canvasWidth;
     private float canvasHeight;
     private DrawingComponent dComponent;
@@ -53,8 +62,9 @@ public class DrawingView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        Log.e("DrawingView", "call onSizeChanged");
+        MyLog.e("DrawingView", "call onSizeChanged");
 
+        topicData = client.getTopic_data();
         canvasWidth = w;
         canvasHeight = h;
 
@@ -67,12 +77,14 @@ public class DrawingView extends View {
             de.setSelectedComponentBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
 
             de.setBackCanvas(new Canvas(de.getDrawingBitmap()));
+
+            //sendMqttMessageThread.start();
         }
         if(de.getDrawingBoardArray() == null) {
             de.initDrawingBoardArray(w, h);
         }
         if(client.isMaster()) {
-            Log.i("mqtt", "progressDialog dismiss");
+            MyLog.i("mqtt", "progressDialog dismiss");
             client.getProgressDialog().dismiss();
         }
     }
@@ -87,17 +99,18 @@ public class DrawingView extends View {
         //this.invalidate();
     }
 
+    long drawCnt = 0;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.i("drawing", "drawing view isIntercept = " + isIntercept + ", de isIntercept = " + de.isIntercept());
+        //MyLog.i("drawing", "drawing view isIntercept = " + isIntercept + ", de isIntercept = " + de.isIntercept());
 
         if(!de.isIntercept()) this.isIntercept = false;
 
-        if(!isIntercept) {
-            this.getParent().requestDisallowInterceptTouchEvent(true); // 부모뷰에게 터치 이벤트 뺏기지 않도록
-        } else {
-            Log.i("drawing", "intercept drawing view touch");
+        if(isIntercept || event.getAction() == MotionEvent.ACTION_DOWN && de.isIntercept()) {
+            MyLog.i("drawing", "intercept drawing view touch");
             return false; // 부모뷰에게 터치 이벤트가 넘어가도록 [ intercept = true, set MQTTClient.java ]
+        } else {
+            this.getParent().requestDisallowInterceptTouchEvent(true); // 부모뷰에게 터치 이벤트 뺏기지 않도록
         }
         //this.getParent().requestDisallowInterceptTouchEvent(true);
 
@@ -110,6 +123,8 @@ public class DrawingView extends View {
         switch (de.getCurrentMode()) {
             case DRAW:
                 setDrawingComponentType();
+                moveCnt++;
+                drawCnt++;
                 return onTouchDrawMode(event);
 
             case ERASE:
@@ -149,9 +164,11 @@ public class DrawingView extends View {
                 break;
             case RECT:
                 dComponent = rect;
+                de.setDrawingShape(true);
                 break;
             case OVAL:
                 dComponent = oval;
+                de.setDrawingShape(true);
                 break;
         }
     }
@@ -182,7 +199,9 @@ public class DrawingView extends View {
         if(dComponent.getType() == ComponentType.STROKE) {
             Canvas canvas = new Canvas(de.getLastDrawingBitmap());
             dComponent.draw(canvas);
-        }
+        } /*else {
+            de.updateCurrentShapes(dComponent);
+        }*/
     }
 
     public void initDrawingComponent() {
@@ -201,21 +220,72 @@ public class DrawingView extends View {
 
     public void sendModeMqttMessage() {
         MqttMessageFormat messageFormat = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode());
-        client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
+        client.publish(topicData, parser.jsonWrite(messageFormat));
     }
 
-    public void sendDrawMqttMessage(int action) {
+    /*public void sendDrawMqttMessage(final int action) {
         MqttMessageFormat messageFormat = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), de.getCurrentType(), dComponent, action);
-        client.publish(client.getTopic_data(),  parser.jsonWrite(messageFormat));
-    }
+        client.publish(topicData,  parser.jsonWrite(messageFormat));
+    }*/
 
-    public void updateDrawingComponentId(DrawingComponent dComponent) {
+    /*private BlockingQueue<MqttMessageFormat> queue = new ArrayBlockingQueue<>(1000);    //Linked, Array 두개의 차이 알아보기
+    private final Object lock = new Object();
+    private SendMqttMessageThread sendMqttMessageThread = new SendMqttMessageThread();
+    private boolean isWait = false;
+    private int cnt = 0;
+    private int putCnt = 0;
+    private ArrayList<MqttMessageFormat> messages = new ArrayList<>();
+
+    public void putMqttMessage(MqttMessageFormat messageFormat) {    //producer  //queue 가 꽉차있으면 wait, 아니면 put 하는 thread
+        try {
+            queue.put(messageFormat);
+            putCnt++;
+            Log.i("sendThread", "offer success " + putCnt + ", size() = " + queue.size());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }*/
+
+    /*class SendMqttMessageThread extends Thread {    //consumer  //queue 가 비어있을때까지 publish 하는 thread
+        @Override
+        public void run() {
+            try {
+                while(true) {
+                    Log.i("sendThread", "draw touch count = " + drawCnt);
+                    try {
+                        Log.i("sendThread", "before publish");
+                        MqttMessageFormat messageFormat = queue.take();
+                        Log.i("sendThread", Thread.activeCount() + ", ");
+                        client.publish(topicData, parser.jsonWrite(*//*queue.take()*//*messageFormat));
+                        //Thread.sleep(10);
+
+                        cnt++;
+                        Log.i("sendThread", "poll success " + cnt + ", size() = " + queue.size());
+
+                    } catch (ConcurrentModificationException e) {
+                        Log.i("sendThread", "*** ConcurrentModificationException ***");
+                        e.printStackTrace();
+                    }
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }*/
+
+    public Integer updateDrawingComponentId(DrawingComponent dComponent) {
         try {
             DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
-            Log.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
+
+            //MyLog.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
+
             dComponent.setId(upComponent.getId());
+            return dComponent.getId();
         } catch(NullPointerException e) {
             e.printStackTrace();
+            return null;
         }
     }
 
@@ -223,21 +293,32 @@ public class DrawingView extends View {
         initDrawingComponent(); // 드로잉 컴포넌트 객체 생성
 
         de.splitPoints(dComponent, de.getMyCanvasWidth(), de.getMyCanvasHeight());
-        de.removeCurrentComponents(dComponent.getId());
+        //de.removeCurrentComponents(dComponent.getId());
+        de.removeCurrentComponents(dComponent.getUsersComponentId());
+        de.removeCurrentShapes(dComponent.getUsersComponentId());
         de.addDrawingComponents(dComponent);
-        Log.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
+        MyLog.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
 
         de.addHistory(new DrawingItem(de.getCurrentMode(), dComponent/*, de.getDrawingBitmap()*/)); // 드로잉 컴포넌트가 생성되면 History 에 저장
 
         if(de.getHistory().size() == 1)
             de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
 
-        Log.i("drawing", "history.size()=" + de.getHistory().size() + ", id=" + dComponent.getId());
-        if(dComponent.getType() != ComponentType.STROKE) // 도형이 그려졌다면 lastDrawingBitmap 에 drawingBitmap 내용 복사
-            de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+        MyLog.i("drawing", "history.size()=" + de.getHistory().size() + ", id=" + dComponent.getId());
+        if(dComponent.getType() != ComponentType.STROKE) { // 도형이 그려졌다면 lastDrawingBitmap 에 drawingBitmap 내용 복사
+            if(de.getCurrentShapes().size() == 0)
+                de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+            else {
+                Canvas canvas = new Canvas(de.getLastDrawingBitmap());
+                dComponent.draw(canvas);
+            }
+        }
+
         de.clearUndoArray();
 
         if(de.isIntercept()) this.isIntercept = true;
+
+        de.setDrawingShape(false);
     }
 
     /*public void InterceptTouchEventAndDoActionUp() {
@@ -256,49 +337,64 @@ public class DrawingView extends View {
     }*/
 
     boolean isExit = false;
+    int moveCnt = 0;
     public boolean onTouchDrawMode(MotionEvent event/*, DrawingComponent dComponent*/) {
         Point point;
-        currentDrawAction = event.getAction();
+        //currentDrawAction = event.getAction();
+        //de.setCurrentDrawAction(event.getAction());
 
         if(isExit && event.getAction() != MotionEvent.ACTION_DOWN) {
-            Log.i("mqtt", "isExit1 = " + isExit);
+            MyLog.i("mqtt", "isExit1 = " + isExit);
             return true;
         }
 
         // 터치가 DrawingView 밖으로 나갔을 때
         if(event.getX()-5 < 0 || event.getY()-5 < 0 || de.getDrawnCanvasWidth()-5 < event.getX() || de.getDrawnCanvasHeight()-5 < event.getY()) {   //fixme 반응이 느려서 임시로 -5
-            currentDrawAction = MotionEvent.ACTION_UP;
-            Log.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
-            Log.i("drawing", "exit");
+            //currentDrawAction = MotionEvent.ACTION_UP;
+            //de.setCurrentDrawAction(MotionEvent.ACTION_UP);
+
+            MyLog.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
+            MyLog.i("drawing", "exit");
 
             point = dComponent.getEndPoint();
             addPointAndDraw(dComponent, point);
 
             //publish
-            sendDrawMqttMessage(MotionEvent.ACTION_UP);
+            //sendDrawMqttMessage(MotionEvent.ACTION_UP);
+
+            sendThread.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), updateDrawingComponentId(dComponent), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, MotionEvent.ACTION_UP));
+            //putMqttMessage(MotionEvent.ACTION_UP);
+
             updateDrawingComponentId(dComponent);
             doInDrawActionUp(dComponent);
 
             isExit = true;
-            Log.i("mqtt", "isExit2 = " + isExit);
+            MyLog.i("mqtt", "isExit2 = " + isExit);
             return true;
         }
 
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 isExit = false;
-                Log.i("mqtt", "isExit3 = " + isExit);
+                MyLog.i("mqtt", "isExit3 = " + isExit);
 
                 /*de.addCurrentComponents(dComponent);
                 Log.i("drawing", "currentComponents.size() = " + de.getCurrentComponents().size());
                 */
-                setComponentAttribute(dComponent);
+                //de.addCurrentShapes(dComponent);
 
+                setComponentAttribute(dComponent);
                 point = new Point((int)event.getX(), (int)event.getY());
                 addPointAndDraw(dComponent, point);
 
                 //publish
-                sendDrawMqttMessage(event.getAction());
+                //sendDrawMqttMessage(event.getAction());
+
+                //down에서는 DrawingComponent 자체를 보내고, move, up에서는 추가된 점에 관한 정보만 보낸다. fixme minj
+
+                sendThread.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), dComponent, event.getAction()));
+                //putMqttMessage(event.getAction());
+
                 return true;
 
             case MotionEvent.ACTION_MOVE:
@@ -306,21 +402,35 @@ public class DrawingView extends View {
                 addPointAndDraw(dComponent, point);
 
                 //publish
-                sendDrawMqttMessage(event.getAction());
+                //sendDrawMqttMessage(event.getAction());
+
+                //if(moveCnt == 5) {
+                    sendThread.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), updateDrawingComponentId(dComponent), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, event.getAction()));
+                    //moveCnt = -1;
+                //}
+
+                //putMqttMessage(event.getAction());
+
                 return true;
 
             case MotionEvent.ACTION_UP:
                 point = new Point((int)event.getX(), (int)event.getY());
                 addPointAndDraw(dComponent, point);
-                Log.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
+                MyLog.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
 
-                //publish
-                sendDrawMqttMessage(event.getAction());
+
                 updateDrawingComponentId(dComponent);
                 doInDrawActionUp(dComponent);
+
+                //publish
+                //sendDrawMqttMessage(event.getAction());
+
+                //putMqttMessage(event.getAction());
+                sendThread.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), updateDrawingComponentId(dComponent), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, event.getAction()));
+
                 return true;
             default:
-                Log.i("drawing", "action = " + MotionEvent.actionToString(event.getAction()));
+                MyLog.i("drawing", "action = " + MotionEvent.actionToString(event.getAction()));
         }
         return true;
     }
@@ -343,7 +453,7 @@ public class DrawingView extends View {
     Point selectPrePoint;
     Point selectPostPoint;
     boolean isSelected = false;
-    int moveCount = 0;
+    int selectMoveCount = 0;
     Point selectDownPoint;
     public boolean onTouchSelectMode(MotionEvent event) {
         dTool.setCommand(selectCommand);
@@ -355,8 +465,9 @@ public class DrawingView extends View {
                 case MotionEvent.ACTION_MOVE:
                     selectPostPoint = new Point((int) event.getX(), (int) event.getY());
                     if (!selectPrePoint.equals(selectPostPoint)) {
-                        moveCount++;
-                        Log.i("drawing", "move pre=" + selectPrePoint.toString() + ", post=" + selectPostPoint.toString() + ", " + moveCount);
+                        selectMoveCount++;
+                        MyLog.i("drawing", "move pre=" + selectPrePoint.toString() + ", post=" + selectPostPoint.toString() + ", " + selectMoveCount);
+
                         selectPrePoint = selectPostPoint;
                     }
                     return true;
@@ -364,7 +475,7 @@ public class DrawingView extends View {
                 case MotionEvent.ACTION_UP:
                     dTool.doCommand(selectPostPoint);
                     int selectedComponentId = dTool.getIds().get(0);
-                    if (selectedComponentId != -1 && moveCount <= 7) {    // 제스처로 할 지 고민
+                    if (selectedComponentId != -1 && selectMoveCount <= 7) {    // 제스처로 할 지 고민
                         isSelected = true;
 
                         de.setSelectedComponent(de.findDrawingComponentById(selectedComponentId));
@@ -376,16 +487,16 @@ public class DrawingView extends View {
                         invalidate();
 
                         //todo publish - 다른 사람들 셀렉트 못하게
-                        Log.i("drawing", "selected id=" + selectedComponentId);
+                        MyLog.i("drawing", "selected id=" + selectedComponentId);
                     } else {
                         isSelected = false;
                         de.clearSelectedBitmap();
                         invalidate();
 
                         //todo publish - 다른 사람들 셀렉트 가능 --> 모드 바뀔 때 추가로 메시지 전송 필요
-                        Log.i("drawing", "not selected=" + selectedComponentId);
+                        MyLog.i("drawing", "not selected=" + selectedComponentId);
                     }
-                    moveCount = 0;
+                    selectMoveCount = 0;
                     return true;
             }
             return true;
@@ -394,11 +505,11 @@ public class DrawingView extends View {
 
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    Log.i("drawing", "selected down");
+                    MyLog.i("drawing", "selected down");
                     selectDownPoint = new Point((int)event.getX(), (int)event.getY());
                     if(!de.isContainsSelectedComponent(selectDownPoint)) {
                         isSelected = false;
-                        Log.i("drawing", "selected false");
+                        MyLog.i("drawing", "selected false");
                         return true;
                     }
 
@@ -410,11 +521,11 @@ public class DrawingView extends View {
                     invalidate();
 
                     //todo publish - selected down
-                    Log.i("drawing", "selected true");
+                    MyLog.i("drawing", "selected true");
                     return true;
 
                 case MotionEvent.ACTION_MOVE:
-                    Log.i("drawing", "selected move");
+                    MyLog.i("drawing", "selected move");
                     moveX = (int)event.getX() - selectDownPoint.x;
                     moveY = (int)event.getY() - selectDownPoint.y;
 
@@ -437,12 +548,12 @@ public class DrawingView extends View {
                     return true;
 
                 case MotionEvent.ACTION_UP:
-                    Log.i("drawing", "selected up");
+                    MyLog.i("drawing", "selected up");
 
                     de.updateDrawingBitmap();
                     de.updateSelectedComponent(de.getSelectedComponent(), de.getMyCanvasWidth(), de.getMyCanvasHeight());
                     de.updateDrawingComponents(de.getSelectedComponent());
-                    Log.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
+                    MyLog.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
 
                     //de.addHistory(new DrawingItem(de.getCurrentMode(), de.getSelectedComponent())); //todo
                     //Log.i("drawing", "history.size()=" + de.getHistory().size() + ", id=" + de.getSelectedComponent().getId());
@@ -479,15 +590,15 @@ public class DrawingView extends View {
                 de.getDrawingFragment().getBinding().undoBtn.setEnabled(false);
                 invalidate();
 
-                Log.i("drawing", "history.size()=" + de.getHistory().size());
-                Log.i("drawing", "clear");
+                MyLog.i("drawing", "history.size()=" + de.getHistory().size());
+                MyLog.i("drawing", "clear");
             }
         });
 
         builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Log.i("drawing", "canceled");
+                MyLog.i("drawing", "canceled");
             }
         });
 
@@ -507,14 +618,14 @@ public class DrawingView extends View {
                 de.setBackgroundImage(null);
                 de.clearBackgroundImage();
 
-                Log.i("drawing", "clear background image");
+                MyLog.i("drawing", "clear background image");
             }
         });
 
         builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Log.i("drawing", "canceled");
+                MyLog.i("drawing", "canceled");
             }
         });
 

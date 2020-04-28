@@ -6,8 +6,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
-import com.hansung.drawingtogether.data.remote.model.Log;
 import com.hansung.drawingtogether.data.remote.model.Logger;
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 
 public enum AttributeManager {
@@ -26,7 +26,7 @@ public enum AttributeManager {
         colorButtonClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i("button", "color button click"); // fixme nayeon
+                MyLog.d("button", "color button click"); // fixme nayeon
 
                 String hexColor = ((Button)view).getText().toString();
                 int color = Color.parseColor(hexColor);

@@ -106,5 +106,4 @@ dependencies {
     implementation 'com.google.firebase:firebase-database:19.1.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation project(path: ':opencv')
-
 }

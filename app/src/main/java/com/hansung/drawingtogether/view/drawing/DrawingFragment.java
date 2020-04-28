@@ -27,7 +27,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -49,12 +48,12 @@ import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.ExitType;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.main.DeleteMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
 
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
@@ -84,6 +83,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     private DrawingViewModel drawingViewModel;
     private InputMethodManager inputMethodManager;
 
+    private Menu menu; // fixme jiyeon
+
     // fixme hyeyeon[2]
     private DatabaseReference databaseReference;
     private ExitOnClickListener exitOnClickListener;
@@ -106,7 +107,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.e("DrawingFragment", "onCreateView");
+        MyLog.e("DrawingFragment", "onCreateView");
 
         databaseReference = FirebaseDatabase.getInstance().getReference();
         exitOnClickListener = new ExitOnClickListener();
@@ -235,7 +236,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         binding.userInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i("button", "user info"); // fixme nayeon
+                MyLog.i("button", "user info"); // fixme nayeon
 
                 if (binding.userPrint.getVisibility() == View.VISIBLE)
                     binding.userPrint.setVisibility(View.INVISIBLE);
@@ -284,7 +285,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             backgroundEraserBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Log.i("button", "background eraser button click"); // fixme nayeon
+                    MyLog.d("button", "background eraser button click"); // fixme nayeon
 
                     binding.drawingView.clearBackgroundImage();
                     popupWindow.dismiss();
@@ -300,7 +301,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             clearBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Log.i("button", "drawing clear button click"); // fixme nayeon
+                    MyLog.d("button", "drawing clear button click"); // fixme nayeon
 
                     binding.drawingView.clear();
                     popupWindow.dismiss();
@@ -317,11 +318,11 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         rectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i("button", "rect shape button click"); // fixme nayeon
+                MyLog.d("button", "rect shape button click"); // fixme nayeon
 
                 de.setCurrentMode(Mode.DRAW);
                 de.setCurrentType(ComponentType.RECT);
-                Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
+                MyLog.d("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
                 popupWindow.dismiss();
             }
         });
@@ -330,11 +331,11 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         ovalBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i("button", "oval shape button click"); // fixme nayeon
+                MyLog.d("button", "oval shape button click"); // fixme nayeon
 
                 de.setCurrentMode(Mode.DRAW);
                 de.setCurrentType(ComponentType.OVAL);
-                Log.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
+                MyLog.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
                 popupWindow.dismiss();
             }
         });
@@ -342,7 +343,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
     // fixme hyeyeon[2]-messageArrived 콜백에서 처리 -> 나가기 버튼 누른 후 바로 처리하도록 변경
     public void exit() { // 우측 상단 뒤로가기 버튼
-        Log.e("why", "exit");
+        MyLog.e("why", "exit");
         exitOnClickListener.setBackKeyPressed(false);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         if (client.isMaster()) {
@@ -361,7 +362,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Log.i("button", "exit dialog cancel button click"); // fixme nayeon
+                MyLog.d("button", "exit dialog cancel button click"); // fixme nayeon
 
                 return;
             }
@@ -379,9 +380,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
     @Override
     public void onBackKey() { // 디바이스 자체 뒤로가기 버튼
-        Log.e("why", "onBackKey");
+        MyLog.e("why", "onBackKey");
         exitOnClickListener.setBackKeyPressed(true);
-        Log.e("kkankkan", "드로잉프레그먼트 onbackpressed");
+        MyLog.e("kkankkan", "드로잉프레그먼트 onbackpressed");
         AlertDialog dialog = new AlertDialog.Builder(getContext())
                 .setMessage("앱을 종료하시겠습니까?")
                 .setPositiveButton(android.R.string.ok, exitOnClickListener)
@@ -410,7 +411,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         public void onClick(DialogInterface dialog, int which) {
             logger.uploadLogFile(ExitType.NORMAL); // fixme nayeon
 
-            Log.e("why", "exitOnClickListener : " + backKeyPressed);
+            MyLog.e("why", "exitOnClickListener : " + backKeyPressed);
 
             databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
                 @NonNull
@@ -422,17 +423,17 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                     if (mutableData.getValue() != null && !client.isMaster()) {
                         mutableData.child("username").child(client.getMyName()).setValue(null);
                     }
-                    Log.e("transaction", "transaction success");
+                    MyLog.e("transaction", "transaction success");
                     return Transaction.success(mutableData);
                 }
 
                 @Override
                 public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                    Log.e("transaction", "transaction complete");
+                    MyLog.e("transaction", "transaction complete");
 
 
                     if (databaseError != null) {
-                        Log.e("transaction", databaseError.getDetails());
+                        MyLog.e("transaction", databaseError.getDetails());
                         return;
                     }
                     if (client.isMaster()) {
@@ -521,20 +522,35 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.application_menu, menu);
+
+        this.menu = menu;
     }
 
     // fixme jiyeon
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
+            // fixme jiyeon
             case R.id.drawing_voice:
-                boolean click = drawingViewModel.clickVoice(DrawingFragment.this);
+                boolean click = drawingViewModel.clickVoice();
                 if (click) {
                     item.setIcon(R.drawable.voice);
+                    menu.findItem(R.id.drawing_speaker).setVisible(true);
                 } else {
                     item.setIcon(R.drawable.voiceno);
+                    menu.findItem(R.id.drawing_speaker).setVisible(false);
+                    menu.findItem(R.id.drawing_speaker).setIcon(R.drawable.speaker);
                 }
                 break;
+            case R.id.drawing_speaker:
+                boolean mode = drawingViewModel.changeSpeakerMode();
+                if (mode) {
+                    item.setIcon(R.drawable.speaker_loud);
+                } else {
+                    item.setIcon(R.drawable.speaker);
+                }
+                break;
+            //
             case R.id.gallery:
                 drawingViewModel.getImageFromGallery(DrawingFragment.this);
                 break;
@@ -619,13 +635,13 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     @Override
     public void onPause() {  // todo
         super.onPause();
-        Log.i("lifeCycle", "DrawingFragment onPause()");
+        MyLog.i("lifeCycle", "DrawingFragment onPause()");
     }
 
     @Override
     public void onDestroyView() {  // todo
         super.onDestroyView();
-        Log.i("lifeCycle", "DrawingFragment onDestroyView()");
+        MyLog.i("lifeCycle", "DrawingFragment onDestroyView()");
         if (exitOnClickListener != null) {
             exitOnClickListener = null;
         }
@@ -634,13 +650,13 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.i("lifeCycle", "DrawingFragment onDestroy()");
+        MyLog.i("lifeCycle", "DrawingFragment onDestroy()");
     }
 
     @Override
     public void onDetach() {  // todo
         super.onDetach();
-        Log.i("lifeCycle", "DrawingFragment onDetach()");
+        MyLog.i("lifeCycle", "DrawingFragment onDetach()");
         ((MainActivity)getContext()).setOnKeyBackPressedListener(null);
     }
 }

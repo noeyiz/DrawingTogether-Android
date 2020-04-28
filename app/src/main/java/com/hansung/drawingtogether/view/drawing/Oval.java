@@ -13,7 +13,7 @@ public class Oval  extends DrawingComponent {
 
     @Override
     public void draw(Canvas canvas) {
-        de.redraw();
+        de.redraw(this.usersComponentId);
         this.drawComponent(canvas);
     }
 

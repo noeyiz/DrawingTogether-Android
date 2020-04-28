@@ -4,12 +4,9 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-
 import android.net.Uri;
 import android.os.Bundle;
-
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,14 +15,13 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.hansung.drawingtogether.BuildConfig;
 import com.hansung.drawingtogether.R;
-
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.data.remote.model.Log; // fixme nayeon
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
+import com.hansung.drawingtogether.view.drawing.SendMqttMessage;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
-
 
 public class MainActivity extends AppCompatActivity {
     private String topicPassword="";
@@ -57,14 +53,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.e("activity", "onCreate()");
+        MyLog.e("activity", "onCreate()");
         setContentView(R.layout.activity_main);
-        Log.i("lifeCycle", "MainActivity onCreate()");
+        MyLog.i("lifeCycle", "MainActivity onCreate()");
 
 
-        Log.e("build", BuildConfig.DEBUG + " ");
-        Log.i("debug", BuildConfig.DEBUG + " ");
+        MyLog.e("build", BuildConfig.DEBUG + " ");
+        MyLog.i("debug", BuildConfig.DEBUG + " ");
 
+        SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
+        sendMqttMessage.startThread();
 
         context = this; // fixme nayeon
 
@@ -85,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         String topic = uri.getQueryParameter("topic");
         String password = uri.getQueryParameter("password");
 
-        Log.e("kkankkan", topic + "/" + password);
+        MyLog.e("kkankkan", topic + "/" + password);
 
         if (!(topic == null) && !(password == null)) {
             topicPassword = topic;
@@ -100,13 +98,13 @@ public class MainActivity extends AppCompatActivity {
             mOnKeyBackPressedListener.onBackKey();
         }
         else {
-            Log.e("kkankkan", "메인엑티비티 onbackpressed");
+            MyLog.e("kkankkan", "메인엑티비티 onbackpressed");
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setMessage("앱을 종료하시겠습니까?")
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Log.i("button", "back press ok button click"); // fixme nayeon
+                            MyLog.d("button", "back press ok button click"); // fixme nayeon
 
                             MainActivity.super.onBackPressed();
                             return;
@@ -122,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                     .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Log.i("button", "back press cancel button click"); // fixme nayeon
+                            MyLog.d("button", "back press cancel button click"); // fixme nayeon
 
                             return;
                         }
@@ -176,39 +174,39 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        Log.i("lifeCycle", "MainActivity onRestart()");
+        MyLog.i("lifeCycle", "MainActivity onRestart()");
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.i("lifeCycle", "MainActivity onStart()");
+        MyLog.i("lifeCycle", "MainActivity onStart()");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i("lifeCycle", "MainActivity onResume()");
+        MyLog.i("lifeCycle", "MainActivity onResume()");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.i("lifeCycle", "MainActivity onPause()");
+        MyLog.i("lifeCycle", "MainActivity onPause()");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.i("lifeCycle", "MainActivity onStop()");
+        MyLog.i("lifeCycle", "MainActivity onStop()");
     }
 
     @Override
     protected void onDestroy() {  // todo
         super.onDestroy();
-        Log.i("lifeCycle", "MainActivity onDestroy()");
+        MyLog.i("lifeCycle", "MainActivity onDestroy()");
         if (isFinishing()) {  // 앱 종료 시
-            Log.i("lifeCycle", "isFinishing() " + isFinishing());
+            MyLog.i("lifeCycle", "isFinishing() " + isFinishing());
 
             // todo database 접근하는 코드 추가할지 말지 고민중
             MQTTClient client = MQTTClient.getInstance();
@@ -216,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     client.getClient().disconnect();
                     client.getClient().close();
-                    Log.i("lifeCycle", "mqttClient closed");
+                    MyLog.i("lifeCycle", "mqttClient closed");
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
@@ -224,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else {  // 화면 회전 시
-            Log.i("lifeCycle", "isFinishing() " + isFinishing());
+            MyLog.i("lifeCycle", "isFinishing() " + isFinishing());
         }
     }
 }

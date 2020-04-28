@@ -51,9 +51,9 @@ public enum Logger {
 
     public void error(String tag, String msg) { log += "[ ERROR " + tag + " ] : " + getLogContent(msg) + "\n"; }
 
-    public void verbose(String tag, String msg) { log += "[ ERROR " + tag + " ] : " + getLogContent(msg) + "\n"; }
+    public void verbose(String tag, String msg) { log += "[ VERBOSE " + tag + " ] : " + getLogContent(msg) + "\n"; }
 
-    public void debug(String tag, String msg) { log += "[ ERROR " + tag + " ] : " + getLogContent(msg) + "\n"; }
+    public void debug(String tag, String msg) { log += "[ DEBUG " + tag + " ] : " + getLogContent(msg) + "\n"; }
 
     public void loggingUncaughtException(Thread thread, StackTraceElement[] ste) {
 
@@ -69,7 +69,7 @@ public enum Logger {
     public File createLogFile() {
 
         File logFile = new File(Environment.getExternalStorageDirectory() + File.separator + de.getMyUsername() + ".log");
-        Log.e("file", Environment.getExternalStorageDirectory() + File.separator + de.getMyUsername() + ".log");
+        MyLog.e("file", Environment.getExternalStorageDirectory() + File.separator + de.getMyUsername() + ".log");
 
         try {
            FileWriter fw = new FileWriter(logFile);
@@ -103,7 +103,7 @@ public enum Logger {
         Uri fileUri = Uri.fromFile(logFile); // File to Uri
         StorageReference logRef = storageRef.child("log/" + filename); // 스토리지 업로드 경로 지정
 
-        Log.e("storage", "file path = " + "log/" + filename);
+        MyLog.e("storage", "file path = " + "log/" + filename);
 
         UploadTask uploadTask = logRef.putFile(fileUri); // 파이어베이스 스토리지에 파일 업로드
 
@@ -125,7 +125,7 @@ public enum Logger {
             new ErrorAlertDialogThread().start(); // 오류 메시지를 보여주는 알림창 띄우기
         }
 
-        Log.e("logger", "***********************************");
+        MyLog.e("logger", "***********************************");
     }
 
     private void setProgressDialog() {
@@ -190,7 +190,7 @@ public enum Logger {
             builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    Log.i("button", "error dialog ok button click"); // fixme nayeon
+                    MyLog.d("button", "error dialog ok button click"); // fixme nayeon
 
                     android.os.Process.killProcess(android.os.Process.myPid());
                     System.exit(10);
@@ -199,7 +199,7 @@ public enum Logger {
 
             AlertDialog alertDialog = builder.create();
             alertDialog.show();
-            Log.i("uncaught exception", "error dialog show"); // fixme nayeon
+            MyLog.i("uncaught exception", "error dialog show"); // fixme nayeon
 
             Looper.loop();
         }
