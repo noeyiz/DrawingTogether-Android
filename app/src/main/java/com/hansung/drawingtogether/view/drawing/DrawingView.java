@@ -102,15 +102,15 @@ public class DrawingView extends View {
     long drawCnt = 0;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        MyLog.i("drawing", "drawing view isIntercept = " + isIntercept + ", de isIntercept = " + de.isIntercept());
+        //MyLog.i("drawing", "drawing view isIntercept = " + isIntercept + ", de isIntercept = " + de.isIntercept());
 
         if(!de.isIntercept()) this.isIntercept = false;
 
-        if(!isIntercept) {
-            this.getParent().requestDisallowInterceptTouchEvent(true); // 부모뷰에게 터치 이벤트 뺏기지 않도록
-        } else {
+        if(isIntercept || event.getAction() == MotionEvent.ACTION_DOWN && de.isIntercept()) {
             MyLog.i("drawing", "intercept drawing view touch");
             return false; // 부모뷰에게 터치 이벤트가 넘어가도록 [ intercept = true, set MQTTClient.java ]
+        } else {
+            this.getParent().requestDisallowInterceptTouchEvent(true); // 부모뷰에게 터치 이벤트 뺏기지 않도록
         }
         //this.getParent().requestDisallowInterceptTouchEvent(true);
 

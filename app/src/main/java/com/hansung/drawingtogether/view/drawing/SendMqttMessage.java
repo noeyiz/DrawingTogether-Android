@@ -14,7 +14,7 @@ import lombok.Getter;
 @Getter
 public class SendMqttMessage {    //consumer  //queue 가 비어있을때까지 publish 하는 thread
     private MQTTClient client = MQTTClient.getInstance();
-    private String topicData;
+    //private String topicData;
     private final JSONParser parser = JSONParser.getInstance();
 
     private BlockingQueue<MqttMessageFormat> queue = new ArrayBlockingQueue<>(10000);    //Linked, Array 두개의 차이 알아보기
@@ -52,10 +52,10 @@ public class SendMqttMessage {    //consumer  //queue 가 비어있을때까지 
 
         if(sendMqttMessageThread.isAlive()) {
             Log.i("sendThread", "isAlive");
-            sendMqttMessageThread.interrupt();
-            sendMqttMessageThread.start();
+            //sendMqttMessageThread.interrupt();
+            //sendMqttMessageThread.start();
         } else {
-            Log.i("sendThread", "isNotAlive");
+            Log.i("sendThread", "isNotAlive | thread start");
             sendMqttMessageThread.start();
         }
     }
@@ -63,16 +63,16 @@ public class SendMqttMessage {    //consumer  //queue 가 비어있을때까지 
     class SendMqttMessageThread extends Thread {
         @Override
         public void run() {
-            topicData = client.getTopic_data();
+            //topicData = client.getTopic_data();
             try {
                 while (true) {
-                    Log.i("sendThread", "topic data = " + topicData);
+                    Log.i("sendThread", "topic data = " + client.getTopic_data());
                     //Log.i("sendThread", "draw touch count = " + drawCnt);
                     try {
                         Log.i("sendThread", "before publish");
                         MqttMessageFormat messageFormat = queue.take();
                         Log.i("sendThread", Thread.activeCount() + ", ");
-                        client.publish(topicData, parser.jsonWrite(messageFormat));
+                        client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
                         //Thread.sleep(10);
                         cnt++;
                         Log.i("sendThread", messageFormat.getUsersComponentId() + ", poll success " + cnt + ", size() = " + queue.size());

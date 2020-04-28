@@ -59,6 +59,7 @@ import com.hansung.drawingtogether.view.main.JoinMessage;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
@@ -170,9 +171,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             th.start();
             client.setThread(th);
         }
-
-        SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
-        sendMqttMessage.startThread();
 
         // 디바이스 화면 size 구하기
         Display display = getActivity().getWindowManager().getDefaultDisplay();

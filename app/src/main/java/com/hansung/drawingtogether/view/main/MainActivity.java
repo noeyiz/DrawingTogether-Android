@@ -14,12 +14,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.hansung.drawingtogether.BuildConfig;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
+import com.hansung.drawingtogether.view.drawing.SendMqttMessage;
+
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 public class MainActivity extends AppCompatActivity {
@@ -57,6 +58,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // 앱 실행 중 화면 사라지지 않도록
+
+        SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
+        sendMqttMessage.startThread();
 
         context = this; // fixme nayeon
 
