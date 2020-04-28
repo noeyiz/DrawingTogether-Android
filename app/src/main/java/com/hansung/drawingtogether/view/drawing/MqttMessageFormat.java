@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Point;
 
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.data.remote.model.User;
 import com.hansung.drawingtogether.view.main.AliveMessage;
 import com.hansung.drawingtogether.view.main.AudioMessage;

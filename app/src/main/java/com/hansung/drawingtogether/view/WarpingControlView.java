@@ -3,13 +3,10 @@ package com.hansung.drawingtogether.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
 
 import androidx.appcompat.widget.AppCompatImageView;
 

@@ -438,6 +438,7 @@ public class DrawingViewModel extends BaseViewModel {
         File  image = File.createTempFile(imageFileName, ".jpg", storageDir);
         photoPath = image.getAbsolutePath();
         MyLog.e("kkankkan", photoPath);
+
         return image;
     }
 

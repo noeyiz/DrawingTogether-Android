@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
@@ -57,6 +58,7 @@ import com.hansung.drawingtogether.view.main.JoinMessage;
 
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -214,7 +216,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
 /*  // fixme hyeyeon
         JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
-
         client.init(topic, name, master, drawingViewModel, ip, port);
         client.setDrawingFragment(this);
         client.setCallback();
@@ -223,9 +224,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         client.subscribe(topic + "_delete");
         client.subscribe(topic + "_data");
         client.subscribe(topic + "_mid");
-
         // client.publish(topic_data ~~);
-
         // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)
         JoinMessage joinMessage = new JoinMessage(name);
         MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
@@ -473,9 +472,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         MqttMessageFormat messageFormat;
-        if(de.getBackgroundImage() != null) { //fixme minj - 우선 배경 이미지는 하나만
+        /*if(de.getBackgroundImage() != null) { //fixme minj - 우선 배경 이미지는 하나만
             binding.backgroundView.removeAllViews();
-        }
+        }*/ // fixme nayeon MQTT CALLBACK
 
         switch (requestCode) {
             case PICK_FROM_GALLERY:
@@ -487,7 +486,15 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                     Uri uri = data.getData();
                     Bitmap galleryBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
                     String filePath = getRealPathFromURI(uri);
+
+                    galleryBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(galleryBitmap));
+
                     galleryBitmap = rotateBitmap(galleryBitmap, filePath);
+
+
+                    // todo nayeon : check image file size
+                    MyLog.e("gallery", "Gallery Image File Size = " + new File(getRealPathFromURI(uri)).length() + " Bytes");
+                    MyLog.e("gallery", "Gallery Bitmap Byte Count = " + galleryBitmap.getRowBytes() * galleryBitmap.getHeight());
 
                     messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(galleryBitmap));
                     client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
@@ -499,7 +506,13 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 try {
                     // fixme jiyeon
                     File file = new File(drawingViewModel.getPhotoPath());
+
+                    // todo nayeon : check image file size
+                    if(file.exists()) { MyLog.e("camera", "Camera File Size = " + file.length() + " Bytes"); }
+
                     Bitmap cameraBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file));
+
+                    cameraBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(cameraBitmap));
                     cameraBitmap = rotateBitmap(cameraBitmap, drawingViewModel.getPhotoPath());
 
                     messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(cameraBitmap));
@@ -617,6 +630,53 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             result = cursor.getString(idx); cursor.close();
         }
         return result;
+    }
+
+    // fixme nayeon
+    public static int calculateInSampleSize(BitmapFactory.Options options) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+
+        final int reqWidth = 800;
+        final int reqHeight = 1000;
+
+        MyLog.e("image", "option width = " + width + ", option height = " + height);
+
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) >= reqHeight
+                    && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        MyLog.e("image", "inSampleSize = " + inSampleSize);
+
+        return inSampleSize;
+    }
+
+    public Bitmap decodeSampledBitmapFromBitmap(byte[] bitmapArray/*, int reqWidth, int reqHeight*/) {
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(bitmapArray, 0, bitmapArray.length, options);
+
+        options.inSampleSize = calculateInSampleSize(options);
+        // options.inSampleSize = 2;
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+
+        return BitmapFactory.decodeByteArray(bitmapArray, 0, bitmapArray.length, options);
     }
 
 //    private Bitmap resizeBitmap(Bitmap bitmap) {

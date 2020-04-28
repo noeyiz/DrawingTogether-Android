@@ -7,13 +7,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.hansung.drawingtogether.BuildConfig;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
@@ -53,13 +53,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MyLog.e("activity", "onCreate()");
-        setContentView(R.layout.activity_main);
         MyLog.i("lifeCycle", "MainActivity onCreate()");
 
+        setContentView(R.layout.activity_main);
 
-        MyLog.e("build", BuildConfig.DEBUG + " ");
-        MyLog.i("debug", BuildConfig.DEBUG + " ");
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // 앱 실행 중 화면 사라지지 않도록
 
         SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
         sendMqttMessage.startThread();

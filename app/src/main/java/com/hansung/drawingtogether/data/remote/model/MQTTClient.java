@@ -9,11 +9,14 @@ import android.os.CountDownTimer;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.drawing.AudioPlayThread;
@@ -107,6 +110,8 @@ public enum MQTTClient {
     private int savedFileCount = 0; // fixme nayeon
     private boolean exitCompleteFlag = false; // fixme nayeon
 
+    int i=1;
+
     public static MQTTClient getInstance() {
         return INSTANCE;
     }
@@ -188,7 +193,7 @@ public enum MQTTClient {
         try {
             MqttMessage message = new MqttMessage(payload.getBytes());
             client.publish(newTopic, payload.getBytes(), this.qos, false);
-            MyLog.i("mqtt", "PUBLISH topic: " + newTopic + ", msg: " + message);
+            // MyLog.i("mqtt", "PUBLISH topic: " + newTopic + ", msg: " + message);
             // Log.e("mqtt payload size", Integer.toString(message.getPayload().length)); // fixme nayeon
         } catch (MqttException e) {
             e.printStackTrace();
@@ -512,6 +517,8 @@ public enum MQTTClient {
 
                 //drawing
                 if (newTopic.equals(topic_data) && de.getDrawingBitmap() != null) {
+                    i++;
+
                     String msg = new String(message.getPayload());
                     MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
@@ -928,7 +935,6 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                     de.updateCurrentShapes(dComponent);
                     de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
                 }*//*
-
                 MyLog.i("drawing", "dComponent: id=" + dComponent.getId() + ", endPoint=" + dComponent.getEndPoint().toString());
                 try {   // todo 중간자 들어올 때, 2명 이상이 그리는 경우 테스트 (2명 이상이 동시에 그리는 경우 테스트)
                     DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
@@ -939,7 +945,6 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                     //dComponent.drawComponent(de.getBackCanvas());
                     e.printStackTrace();
                 }
-
                 de.removeCurrentComponents(dComponent.getId());
                 de.removeCurrentShapes(dComponent.getUsersComponentId());
                 de.splitPoints(dComponent, myCanvasWidth, myCanvasHeight);
@@ -947,7 +952,6 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 MyLog.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
                 de.addHistory(new DrawingItem(Mode.DRAW, dComponent));
                 MyLog.i("drawing", "history.size()=" + de.getHistory().size() + ", id=" + dComponent.getId());
-
                 if(dComponent.getType() == ComponentType.STROKE) {
                     Canvas canvas = new Canvas(de.getLastDrawingBitmap());
                     dComponent.draw(canvas);
@@ -1003,6 +1007,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
             case GROUP:
                 return null;
             case BACKGROUND_IMAGE:
+                MyLog.e("image", "Set Drawing Editor Background Image");
                 de.setBackgroundImage(de.byteArrayToBitmap(message.getBitmapByteArray()));
                 publishProgress(message);
                 return null;
@@ -1035,12 +1040,20 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
         switch(mode) {
             case BACKGROUND_IMAGE:
                 if(de.getBackgroundImage() != null) {
-                    client.getBinding().backgroundView.removeAllViews();    //fixme minj - 우선 배경 이미지는 하나만
-                }
+                    de.clearBackgroundImage();    //fixme minj - 우선 배경 이미지는 하나만
+               }
+
                 WarpingControlView imageView = new WarpingControlView(client.getDrawingFragment().getContext());
-                imageView.setLayoutParams(new LinearLayout.LayoutParams(client.getDrawingFragment().getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
-                imageView.setImage(de.getBackgroundImage());
+                imageView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                imageView.setImage(de.getBackgroundImage()); // invalidate
                 client.getBinding().backgroundView.addView(imageView);
+
+
+                for(int i=0; i < client.getBinding().backgroundView.getChildCount(); i++) {
+                    MyLog.e("image", client.getBinding().backgroundView.getChildAt(i).toString());
+                }
+
+
                 break;
             case DRAW:
                 if(action == MotionEvent.ACTION_UP) {
@@ -1228,6 +1241,7 @@ class MidTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... values) {
         if(de.getBackgroundImage() != null) {
+            //de.setBackgroundImage(de.byteArrayToBitmap());
             publishProgress();
         }
         return null;
@@ -1237,9 +1251,11 @@ class MidTask extends AsyncTask<Void, Void, Void> {
     protected void onProgressUpdate(Void... values) {
         super.onProgressUpdate(values);
         MyLog.i("mqtt", "mid onProgressUpdate()");
+
         WarpingControlView imageView = new WarpingControlView(client.getDrawingFragment().getContext());
         imageView.setLayoutParams(new LinearLayout.LayoutParams(client.getDrawingFragment().getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
         imageView.setImage(de.getBackgroundImage());
+
         client.getBinding().backgroundView.addView(imageView);
     }
 
