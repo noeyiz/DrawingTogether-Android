@@ -20,7 +20,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
-        android:name=".data.remote.model.DrawingTogetherApplication"> <!-- fixme nayeon [ android:name="" ] Registration LogApplication Class -->
+        android:name=".data.remote.model.DrawingTogetherApplication"
+        android:requestLegacyExternalStorage="true"> <!-- fixme nayeon [ android:name="" ] Registration LogApplication Class -->
         <activity android:name=".view.splash.SplashActivity"
             android:theme="@style/SplashTheme">
             <intent-filter>

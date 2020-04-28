@@ -63,7 +63,6 @@ public class WarpingControlView extends AppCompatImageView {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		this.setImageBitmap(image);
-		de.setBackgroundImage(image);
 	}
 
 	public Bitmap getImage(){
@@ -105,13 +104,15 @@ public class WarpingControlView extends AppCompatImageView {
 			case MotionEvent.ACTION_DOWN:
 				touchX[0] = (int)event.getX();
 				touchY[0] = (int)event.getY();
+				flag = false;
+				flag2 = false;
 				break;
 			case MotionEvent.ACTION_POINTER_DOWN:
-				Log.e("count", pointer_count + "");
+				flag = false;
+				flag2 = false;
 				for (int i = 0; i < pointer_count; i++) {
 					touchX[i] = (int)event.getX(i);
 					touchY[i] = (int)event.getY(i);
-					Log.e("x, y", touchX[i] + ", " + touchY[i]);
 				}
 				flag2 = Math.abs(touchX[0] - touchX[1]) > Math.abs(touchY[0] - touchY[1]);
 				if (Math.abs(touchX[0] - touchX[1]) > Math.abs(touchY[0] - touchY[1]))
@@ -135,22 +136,18 @@ public class WarpingControlView extends AppCompatImageView {
 						flag = true;
 					}
 				}
-//				int touch[] = new int[2];
-				if (flag2) {
-//					touch[0] = touchUpX[0] < touchUpX[1] ? touchUpX[0] : touchUpX[1];
-//					touch[1] = touchUpX[0] < touchUpX[1] ? touchUpX[1] : touchUpX[0];
-					if (touchX[0] < touchX[1])
-						flag = !(limit < touchUpX[0] || limit > touchUpX[1]);
-					else
-						flag = !(limit > touchUpX[0] || limit < touchUpX[1]);
-				}
-				else {
-//					touch[0] = touchUpY[0] < touchUpY[1] ? touchUpY[0] : touchUpY[1];
-//					touch[1] = touchUpY[0] < touchUpY[1] ? touchUpY[1] : touchUpY[0];
-					if (touchY[0] < touchY[1])
-						flag = !(limit < touchUpY[0] || limit > touchUpY[1]);
-					else
-						flag = !(limit > touchUpY[0] || limit < touchUpY[1]);
+				if (pointer_count > 1) {
+					if (flag2) {
+						if (touchX[0] < touchX[1])
+							flag = !(limit < touchUpX[0] || limit > touchUpX[1]);
+						else
+							flag = !(limit > touchUpX[0] || limit < touchUpX[1]);
+					} else {
+						if (touchY[0] < touchY[1])
+							flag = !(limit < touchUpY[0] || limit > touchUpY[1]);
+						else
+							flag = !(limit > touchUpY[0] || limit < touchUpY[1]);
+					}
 				}
 				if (flag) {
 					pointerCount = 1;
