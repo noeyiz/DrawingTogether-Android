@@ -30,8 +30,6 @@ public class MainActivity extends AppCompatActivity {
 
     public static Context context; // fixme nayeon
 
-    private Logger logger = Logger.getInstance(); // fixme nayeon ☆☆☆☆☆ 1. Log 기록에 사용할 클래스 참조
-
     private DrawingEditor de = DrawingEditor.getInstance();
     private long lastTimeBackPressed;  // fixme hyeyon[3]
 

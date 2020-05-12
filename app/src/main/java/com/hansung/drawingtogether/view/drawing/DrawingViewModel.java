@@ -204,6 +204,8 @@ public class DrawingViewModel extends BaseViewModel {
 
         dvc.setDrawingCacheEnabled(false);
 
+        Toast.makeText(fragment.getContext(), R.string.success_save, Toast.LENGTH_SHORT).show();
+
     }
 
 

@@ -632,6 +632,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         return result;
     }
 
+
     // fixme nayeon
     public static int calculateInSampleSize(BitmapFactory.Options options) {
         // Raw height and width of image

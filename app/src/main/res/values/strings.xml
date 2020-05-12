@@ -11,4 +11,6 @@
 
     <string name="master_exit">종료하시겠습니까?</string>
     <string name="joiner_exit">나가시겠습니까?</string>
+
+    <string name="success_save">갤러리에 대화 이미지를 저장 완료했습니다</string>
 </resources>

@@ -224,6 +224,7 @@ public class MainViewModel extends BaseViewModel {
                         }
                         else {
                             mutableData.child("username").child(name.getValue()).setValue(name.getValue());
+                            mutableData.child("access time").setValue(System.currentTimeMillis()); // fixme nayeon
                             masterName = mutableData.child("master").getValue().toString();  // fixme hyeyeon
                             MyLog.i("login", "masterName: " + masterName);
                             break;
@@ -238,6 +239,7 @@ public class MainViewModel extends BaseViewModel {
                     mutableData.child("password").setValue(password.getValue());
                     mutableData.child("username").child(name.getValue()).setValue(name.getValue());
                     mutableData.child("master").setValue(name.getValue());
+                    mutableData.child("access time").setValue(System.currentTimeMillis()); // fixme nayeon
                     masterName = name.getValue();  // fixme hyeyeon
                     MyLog.i("login", "masterName: " + masterName);
                     break;
