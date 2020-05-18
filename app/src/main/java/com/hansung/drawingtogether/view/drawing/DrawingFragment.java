@@ -62,6 +62,8 @@ import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 
 
+import org.eclipse.paho.client.mqttv3.MqttException;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
@@ -456,7 +458,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                         MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
                         client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
                         keyPressed = true; // fixme hyeyeon
-                        client.setExitPublish(true);
                         client.exitTask();
                         if (backKeyPressed) {
                             getActivity().finish();
@@ -471,7 +472,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                         MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
                         client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
                         keyPressed = true; // fixme hyeyeon
-                        client.setExitPublish(true);
                         client.exitTask();
                         if (backKeyPressed) {
                             getActivity().finish();
@@ -727,16 +727,23 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                     DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
                     MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
                     client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-                    client.setExitPublish(true);
                     client.exitTask();
                 } else {
                     ExitMessage exitMessage = new ExitMessage(client.getMyName());
                     MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
                     client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
-                    client.setExitPublish(true);
                     client.exitTask();
                 }
             }
+            // fixme jiyeon[0510]
+            try { // Mqtt Client 처리
+                client.unsubscribeAllTopics();
+                client.getClient().disconnect();
+                client = null;
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+            //
 //            if (databaseReference != null) {  // todo hyeyeon - code 정리
 //                // 비정상 종료 대비 ( task 날리기 ,,, )
 //                databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {

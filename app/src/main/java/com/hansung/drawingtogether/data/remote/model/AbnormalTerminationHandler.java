@@ -70,13 +70,11 @@ public class AbnormalTerminationHandler
                         DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
                         MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
                         client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-                        client.setExitPublish(true);
                         client.exitTask();
                     } else {
                         ExitMessage exitMessage = new ExitMessage(client.getMyName());
                         MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
                         client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
-                        client.setExitPublish(true);
                         client.exitTask();
                     }
                 }
