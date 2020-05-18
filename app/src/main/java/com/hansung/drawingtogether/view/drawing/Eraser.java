@@ -1,22 +1,25 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Point;
-import android.util.Log;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 import java.util.TreeSet;
 import java.util.Vector;
 
+import lombok.Getter;
 
+@Getter
 public class Eraser {
     private DrawingEditor de = DrawingEditor.getInstance();
     private MQTTClient client = MQTTClient.getInstance();
     private JSONParser parser = JSONParser.getInstance();
     private int squareScope = 20;//(int) (((de.getMyCanvasWidth() * de.getMyCanvasHeight()) * 0.0014556040756914) / 100);
+    private Vector<Integer> erasedComponentIds;
 
     public void findComponentsToErase(Point eraserPoint) {
-        Vector<Integer> erasedComponentIds = new Vector<>();
+        erasedComponentIds = new Vector<>();
         erasedComponentIds.add(-1);
 
         int x = eraserPoint.x;
@@ -25,7 +28,7 @@ public class Eraser {
         Vector<Integer>[][] dbArray = de.getDrawingBoardArray();
 
         if(y-squareScope<0 || x-squareScope<0 || y+squareScope>de.getMyCanvasHeight() || x+squareScope>de.getMyCanvasWidth()) {
-            Log.i("drawing", "eraser exit");
+            MyLog.i("drawing", "eraser exit");
             return;
         }
 
@@ -34,7 +37,7 @@ public class Eraser {
                 if(de.findEnclosingDrawingComponents(eraserPoint).size() != 1 && !de.isContainsRemovedComponentIds(de.findEnclosingDrawingComponents(eraserPoint))) {
                     erasedComponentIds.addAll(de.findEnclosingDrawingComponents(eraserPoint));
                     de.addRemovedComponentIds(de.findEnclosingDrawingComponents(eraserPoint));
-                    Log.i("drawing", "erased shape ids = " + erasedComponentIds.toString());
+                    MyLog.i("drawing", "erased shape ids = " + erasedComponentIds.toString());
                     //erase(erasedComponentIds);
                 }
 
@@ -42,7 +45,7 @@ public class Eraser {
                     //erasedComponentIds = (dbArray[i][j]);
                     erasedComponentIds.addAll(de.getNotRemovedComponentIds(dbArray[i][j]));
                     de.addRemovedComponentIds(de.getNotRemovedComponentIds(dbArray[i][j]));
-                    Log.i("drawing", "erased stroke ids = " + erasedComponentIds.toString());
+                    MyLog.i("drawing", "erased stroke ids = " + erasedComponentIds.toString());
 
                     /*if(de.findEnclosingDrawingComponents(eraserPoint).size() != 1) {
                         erasedComponentIds.addAll(de.findEnclosingDrawingComponents(eraserPoint));
@@ -59,7 +62,7 @@ public class Eraser {
     }
 
     public void erase(Vector<Integer> erasedComponentIds) {
-        Log.i("drawing", "erasedIds = " + erasedComponentIds.toString());
+        MyLog.i("drawing", "erasedIds = " + erasedComponentIds.toString());
 
         //publish
         MqttMessageFormat messageFormat = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), erasedComponentIds);
@@ -68,5 +71,6 @@ public class Eraser {
         //de.eraseDrawingComponents(erasedComponentIds);
         new EraserTask(erasedComponentIds).execute();
         erasedComponentIds.clear();
+        de.clearUndoArray();
     }
 }

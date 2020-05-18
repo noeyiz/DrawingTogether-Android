@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
 
     <application
         android:allowBackup="true"
@@ -18,7 +20,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:name=".data.remote.model.DrawingTogetherApplication"
+        android:requestLegacyExternalStorage="true"> <!-- fixme nayeon [ android:name="" ] Registration LogApplication Class -->
+
         <activity android:name=".view.splash.SplashActivity"
             android:theme="@style/SplashTheme">
             <intent-filter>
@@ -27,7 +32,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".view.main.MainActivity">
+        <activity
+            android:name=".view.main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -53,6 +59,12 @@
             android:value="@string/kakao_app_key"/>
 
         <service android:name="org.eclipse.paho.android.service.MqttService" />
+        <service
+            android:name=".data.remote.model.TaskService"
+            android:stopWithTask="false" />
+        <service
+            android:name=".data.remote.model.AliveBackgroundService"
+            android:stopWithTask="false" />
     </application>
 
 </manifest>

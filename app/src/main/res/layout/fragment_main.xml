@@ -81,6 +81,7 @@
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/port"
             app:layout_constraintBottom_toTopOf="@id/topic"
+            android:layout_marginBottom="15dp"
             android:text="@={vm.portError}"
             android:textSize="12dp"
             android:textColor="@color/colorAccent"/>
@@ -89,10 +90,12 @@
             android:id="@+id/topic"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:imeOptions="actionNext"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/port"
-            app:layout_constraintBottom_toTopOf="@id/password"
+            app:layout_constraintTop_toBottomOf="@id/port_error"
+            app:layout_constraintBottom_toTopOf="@id/topic_error"
             android:hint="topic"
             android:text="@={vm.topic}"/>
 
@@ -112,6 +115,8 @@
             android:id="@+id/password"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:imeOptions="actionNext"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/topic_error"
@@ -135,6 +140,8 @@
             android:id="@+id/name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:imeOptions="actionDone"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/password_error"
@@ -149,33 +156,34 @@
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/name"
-            app:layout_constraintBottom_toTopOf="@id/mastercheck"
+            app:layout_constraintBottom_toTopOf="@id/master_login"
+            android:layout_marginBottom="15dp"
             android:text="@={vm.nameError}"
             android:textSize="12dp"
             android:textColor="@color/colorAccent"/>
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/mastercheck"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@+id/view_start_guide"
-            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/name"
-            app:layout_constraintBottom_toTopOf="@id/login"
-            android:layout_margin="10dp"
-            android:text="마스터"
-            android:checked="@={vm.masterCheck}"/>
-
         <Button
-            android:id="@+id/login"
+            android:id="@+id/master_login"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/mastercheck"
+            app:layout_constraintTop_toBottomOf="@id/name_error"
+            app:layout_constraintBottom_toTopOf="@id/join"
+            android:layout_marginHorizontal="10dp"
+            android:text="Master Login"
+            android:onClick="@{vm::startDrawing}"/>
+
+        <Button
+            android:id="@+id/join"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toBottomOf="@id/master_login"
             app:layout_constraintBottom_toTopOf="@id/local"
-            android:layout_margin="10dp"
-            android:text="start"
+            android:layout_marginHorizontal="10dp"
+            android:text="Join"
             android:onClick="@{vm::startDrawing}"/>
 
         <Button
@@ -184,11 +192,38 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/login"
-            app:layout_constraintBottom_toBottomOf="@id/view_bottom_guide"
-            android:layout_margin="10dp"
-            android:text="local"
+            app:layout_constraintTop_toBottomOf="@id/join"
+            app:layout_constraintBottom_toTopOf="@id/aliveMode"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginBottom="15dp"
+            android:text="Local Start"
             android:onClick="@{vm::showLocalHistory}"/>
+
+        <CheckBox
+            android:id="@+id/aliveMode"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toBottomOf="@id/local"
+            app:layout_constraintBottom_toTopOf="@id/aliveBackground"
+            android:layout_marginHorizontal="10dp"
+            android:text="Alive Publish Mode"
+            android:textSize="10dp"
+            android:checked="@={vm.aliveMode}" />
+
+        <CheckBox
+            android:id="@+id/aliveBackground"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toBottomOf="@id/aliveMode"
+            app:layout_constraintBottom_toBottomOf="@id/view_bottom_guide"
+            android:layout_marginHorizontal="10dp"
+            android:text="Alive Background Service"
+            android:textSize="10dp"
+            android:checked="@={vm.aliveBackground}" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

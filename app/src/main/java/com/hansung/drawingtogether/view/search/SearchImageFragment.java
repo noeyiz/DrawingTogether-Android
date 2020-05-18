@@ -1,7 +1,6 @@
 package com.hansung.drawingtogether.view.search;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +12,7 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.hansung.drawingtogether.data.remote.model.ImageComponent;
 import com.hansung.drawingtogether.data.remote.model.ImageSearchVO;
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentSearchImageBinding;
 import com.hansung.drawingtogether.view.RetrofitConnection;
 
@@ -84,7 +84,7 @@ public class SearchImageFragment extends Fragment {
                     searchImageAdapter.setData(imageList);
                 }
                 else{
-                    Log.e("fail", response.toString());
+                    MyLog.e("fail", response.toString());
                 }
             }
 
