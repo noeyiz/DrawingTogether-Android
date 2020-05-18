@@ -7,13 +7,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.hansung.drawingtogether.BuildConfig;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
@@ -30,10 +30,10 @@ public class MainActivity extends AppCompatActivity {
 
     public static Context context; // fixme nayeon
 
-    private Logger logger = Logger.getInstance(); // fixme nayeon ☆☆☆☆☆ 1. Log 기록에 사용할 클래스 참조
-
     private DrawingEditor de = DrawingEditor.getInstance();
     private long lastTimeBackPressed;  // fixme hyeyon[3]
+    private Logger logger = Logger.getInstance(); // fixme nayeon ☆☆☆☆☆ 1. Log 기록에 사용할 클래스 참조
+
 
     public interface OnBackListener {
         public void onBack();
@@ -53,19 +53,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MyLog.e("activity", "onCreate()");
-        setContentView(R.layout.activity_main);
         MyLog.i("lifeCycle", "MainActivity onCreate()");
 
+        setContentView(R.layout.activity_main);
 
-        MyLog.e("build", BuildConfig.DEBUG + " ");
-        MyLog.i("debug", BuildConfig.DEBUG + " ");
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // 앱 실행 중 화면 사라지지 않도록
 
         SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
         sendMqttMessage.startThread();
 
         context = this; // fixme nayeon
-
 
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         title = (TextView)findViewById(R.id.toolbar_title);
@@ -208,18 +205,18 @@ public class MainActivity extends AppCompatActivity {
         if (isFinishing()) {  // 앱 종료 시
             MyLog.i("lifeCycle", "isFinishing() " + isFinishing());
 
-            // todo database 접근하는 코드 추가할지 말지 고민중
-            MQTTClient client = MQTTClient.getInstance();
-            if (client != null && client.getClient().isConnected()) {
-                try {
-                    client.getClient().disconnect();
-                    client.getClient().close();
-                    MyLog.i("lifeCycle", "mqttClient closed");
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
-                client = null;
-            }
+//            // todo database 접근하는 코드 추가할지 말지 고민중
+//            MQTTClient client = MQTTClient.getInstance();
+//            if (client != null && client.getClient().isConnected()) {
+//                try {
+//                    client.getClient().disconnect();
+//                    client.getClient().close();
+//                    MyLog.i("lifeCycle", "mqttClient closed");
+//                } catch (MqttException e) {
+//                    e.printStackTrace();
+//                }
+//                client = null;
+//            }
         }
         else {  // 화면 회전 시
             MyLog.i("lifeCycle", "isFinishing() " + isFinishing());

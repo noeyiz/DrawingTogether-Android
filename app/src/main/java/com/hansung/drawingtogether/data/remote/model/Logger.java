@@ -112,7 +112,7 @@ public enum Logger {
         // progressDialog.show();
 
 
-        while(!uploadTask.isSuccessful()) { System.out.println("."); } // 파이어베이스에 업로드 될 때까지 기다림
+        while(!uploadTask.isSuccessful()); // 파이어베이스에 업로드 될 때까지 기다림
 
         deleteLogFile(logFile); // 스토리지 업로드 위해 파일 Uri 생성 후 외부 저장소에 저장된 파일 삭제하기
 
@@ -124,8 +124,6 @@ public enum Logger {
         if(exitType == ExitType.ABNORMAL) {
             new ErrorAlertDialogThread().start(); // 오류 메시지를 보여주는 알림창 띄우기
         }
-
-        MyLog.e("logger", "***********************************");
     }
 
     private void setProgressDialog() {
@@ -136,43 +134,6 @@ public enum Logger {
         progressDialog.setCancelable(false);
     }
 
-
-    class UploadProgressDialogShowThread extends Thread {
-
-        private ProgressDialog progressDialog;
-
-        public UploadProgressDialogShowThread(ProgressDialog progressDialog) {
-            this.progressDialog = progressDialog;
-        }
-
-        @Override
-        public void run() {
-            Looper.prepare();
-
-            progressDialog.show();
-
-            Looper.loop();
-        }
-    }
-
-    class UploadProgressDialogDismissThread extends Thread {
-
-        private ProgressDialog progressDialog;
-
-        public UploadProgressDialogDismissThread(ProgressDialog progressDialog) {
-            this.progressDialog = progressDialog;
-        }
-
-        @Override
-        public void run() {
-            Looper.prepare();
-
-            progressDialog.dismiss();
-
-            Looper.loop();
-        }
-
-    }
 
     class ErrorAlertDialogThread extends Thread {
 
@@ -192,6 +153,10 @@ public enum Logger {
                 public void onClick(DialogInterface dialog, int which) {
                     MyLog.d("button", "error dialog ok button click"); // fixme nayeon
 
+                    //fixme hy [0511]
+                    MainActivity mainActivity = (MainActivity) MainActivity.context;
+                    mainActivity.finish();
+                    //
                     android.os.Process.killProcess(android.os.Process.myPid());
                     System.exit(10);
                 }

@@ -16,6 +16,9 @@ public class MQTTSettingData {
     private boolean master;
     private String masterName;  // fixme hyeyeon
 
+    private boolean aliveMode;
+    private boolean aliveBackground;
+
     public static MQTTSettingData getInstance() {
         return data;
     }
