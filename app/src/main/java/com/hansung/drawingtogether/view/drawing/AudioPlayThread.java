@@ -3,14 +3,12 @@ package com.hansung.drawingtogether.view.drawing;
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioTrack;
-
-import com.hansung.drawingtogether.data.remote.model.MyLog;
+import android.util.Log;
 
 import java.util.ArrayList;
 
 import lombok.Getter;
 import lombok.Setter;
-
 
 // fixme jiyeon
 @Getter
@@ -21,7 +19,8 @@ public class AudioPlayThread implements Runnable {
     private int channelCount = AudioFormat.CHANNEL_IN_STEREO;
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
     private int bufferUnit = 2500; // 기본 단위 (0.25초마다)
-    private int bufferSize = 5000;
+
+    private int bufferSize; // fixme jiyeon[0428]
 
     private AudioTrack audioTrack;
 
@@ -29,6 +28,8 @@ public class AudioPlayThread implements Runnable {
     private String name;
 
     private boolean flag = false;
+
+    private boolean start = false;
 
     @Override
     public void run() {
@@ -47,14 +48,27 @@ public class AudioPlayThread implements Runnable {
                 .build();
         audioTrack.play();
 
+
+
         while(flag) {
-            synchronized (buffer) {
-                if (buffer.size() == 2) {
-                    MyLog.e("2yeonz", buffer.size() + " : 1" + name);
-                    audioTrack.write(buffer.get(0), 0, bufferSize);
-                    MyLog.e("2yeonz", buffer.size() + " : 2" + name);
-                    buffer.remove(0);
-                    MyLog.e("2yeonz", buffer.size() + " : 3" + name);
+            if (!start) { // fixme jiyeon[0428] - 처음에만 기다림
+                synchronized (buffer) {
+                    if (buffer.size() == 2) {
+                        audioTrack.write(buffer.get(0), 0, bufferSize);
+                        buffer.remove(0);
+                        start = true;
+                        Log.e("2yeonz", "2라서 출력함");
+                    }
+                }
+            } else {
+                synchronized (buffer) {
+                    if (buffer.size() > 0) { // fixme jiyeon[0428] - 기다리지 않고 바로 출력
+                        Log.e("2yeonz", buffer.size() + " : 1 " + name);
+                        audioTrack.write(buffer.get(0), 0, bufferSize);
+                        Log.e("2yeonz", buffer.size() + " : 2 " + name);
+                        buffer.remove(0);
+                        Log.e("2yeonz", buffer.size() + " : 3 " + name);
+                    }
                 }
             }
         }
@@ -62,6 +76,8 @@ public class AudioPlayThread implements Runnable {
         audioTrack.stop();
         audioTrack.release();
         audioTrack = null;
+
+        start = false;
     }
 
     public void setBufferUnitSize(int n) {

@@ -2,6 +2,8 @@
 package com.hansung.drawingtogether.view.main;
 
 import android.app.ProgressDialog;
+import android.util.Log;
+
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -29,6 +31,10 @@ public class MainViewModel extends BaseViewModel {
     private MutableLiveData<String> password = new MutableLiveData<>();
     private MutableLiveData<String> name = new MutableLiveData<>();
 
+    private MutableLiveData<Boolean> aliveMode = new MutableLiveData<>();
+    private MutableLiveData<Boolean> aliveBackground = new MutableLiveData<>();
+
+
     private MutableLiveData<String> ipError = new MutableLiveData<>();
     private MutableLiveData<String> portError = new MutableLiveData<>();
     private MutableLiveData<String> topicError = new MutableLiveData<>();
@@ -52,25 +58,6 @@ public class MainViewModel extends BaseViewModel {
 
     private String masterName;  // fixme hyeyeon
 
-    // fixme hyeyeon[1]
-    @Override
-    public void onCleared() {  // todo
-        super.onCleared();
-        MyLog.i("lifeCycle", "MainViewModel onCleared()");
-
-        if (database != null) {
-            database = null;
-        }
-        if (databaseReference != null) {
-            databaseReference = null;
-        }
-        if (data != null) {
-            data = null;
-        }
-
-    }
-    //
-
     public MainViewModel() {
 
         MyLog.e("kkankkan", "메인뷰모델 생성자");
@@ -80,6 +67,9 @@ public class MainViewModel extends BaseViewModel {
         setTopic("");
         setPassword("");
         setName("");
+
+        setAliveMode(false);
+        setAliveBackground(false);
 
         setIpError("");
         setTopicError("");
@@ -225,6 +215,7 @@ public class MainViewModel extends BaseViewModel {
                         else {
                             mutableData.child("username").child(name.getValue()).setValue(name.getValue());
                             mutableData.child("access time").setValue(System.currentTimeMillis()); // fixme nayeon
+
                             masterName = mutableData.child("master").getValue().toString();  // fixme hyeyeon
                             MyLog.i("login", "masterName: " + masterName);
                             break;
@@ -240,6 +231,7 @@ public class MainViewModel extends BaseViewModel {
                     mutableData.child("username").child(name.getValue()).setValue(name.getValue());
                     mutableData.child("master").setValue(name.getValue());
                     mutableData.child("access time").setValue(System.currentTimeMillis()); // fixme nayeon
+
                     masterName = name.getValue();  // fixme hyeyeon
                     MyLog.i("login", "masterName: " + masterName);
                     break;
@@ -292,6 +284,8 @@ public class MainViewModel extends BaseViewModel {
             data.setPassword(password.getValue());
             data.setName(name.getValue());
             data.setMasterName(masterName);  // fixme hyeyeon
+            data.setAliveMode(getAliveMode().getValue());
+            data.setAliveBackground(getAliveBackground().getValue());
 
             switch (mode) {
                 case "masterMode":
@@ -305,6 +299,8 @@ public class MainViewModel extends BaseViewModel {
             setTopic("");
             setPassword("");
             setName("");
+            setAliveMode(false);
+            setAliveBackground(false);
 
             setIpError("");
             setTopicError("");
@@ -351,6 +347,10 @@ public class MainViewModel extends BaseViewModel {
         return nameError;
     }
 
+    public MutableLiveData<Boolean> getAliveMode() { return aliveMode; }
+
+    public MutableLiveData<Boolean> getAliveBackground() { return aliveBackground; }
+
     public void setTopic(String text) {
         this.topic.postValue(text);
     }
@@ -383,4 +383,25 @@ public class MainViewModel extends BaseViewModel {
         this.nameError.postValue(text);
     }
 
+    public void setAliveMode(boolean mode) { this.aliveMode.postValue(mode); }
+
+    public void setAliveBackground(boolean mode) { this.aliveBackground.postValue(mode); }
+
+    // fixme hyeyeon[1]
+    @Override
+    public void onCleared() {  // todo
+        super.onCleared();
+        Log.i("lifeCycle", "MainViewModel onCleared()");
+
+       /* if (database != null) {
+            database = null;
+        }
+        if (databaseReference != null) {
+            databaseReference = null;
+        }
+        if (data != null) {
+            data = null;
+        }*/
+
+    }
 }

@@ -81,6 +81,7 @@
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/port"
             app:layout_constraintBottom_toTopOf="@id/topic"
+            android:layout_marginBottom="15dp"
             android:text="@={vm.portError}"
             android:textSize="12dp"
             android:textColor="@color/colorAccent"/>
@@ -156,6 +157,7 @@
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/name"
             app:layout_constraintBottom_toTopOf="@id/master_login"
+            android:layout_marginBottom="15dp"
             android:text="@={vm.nameError}"
             android:textSize="12dp"
             android:textColor="@color/colorAccent"/>
@@ -168,7 +170,7 @@
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/name_error"
             app:layout_constraintBottom_toTopOf="@id/join"
-            android:layout_margin="10dp"
+            android:layout_marginHorizontal="10dp"
             android:text="Master Login"
             android:onClick="@{vm::startDrawing}"/>
 
@@ -180,7 +182,7 @@
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/master_login"
             app:layout_constraintBottom_toTopOf="@id/local"
-            android:layout_margin="10dp"
+            android:layout_marginHorizontal="10dp"
             android:text="Join"
             android:onClick="@{vm::startDrawing}"/>
 
@@ -191,10 +193,37 @@
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/join"
-            app:layout_constraintBottom_toBottomOf="@id/view_bottom_guide"
-            android:layout_margin="10dp"
+            app:layout_constraintBottom_toTopOf="@id/aliveMode"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginBottom="15dp"
             android:text="Local Start"
             android:onClick="@{vm::showLocalHistory}"/>
+
+        <CheckBox
+            android:id="@+id/aliveMode"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toBottomOf="@id/local"
+            app:layout_constraintBottom_toTopOf="@id/aliveBackground"
+            android:layout_marginHorizontal="10dp"
+            android:text="Alive Publish Mode"
+            android:textSize="10dp"
+            android:checked="@={vm.aliveMode}" />
+
+        <CheckBox
+            android:id="@+id/aliveBackground"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/view_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintTop_toBottomOf="@id/aliveMode"
+            app:layout_constraintBottom_toBottomOf="@id/view_bottom_guide"
+            android:layout_marginHorizontal="10dp"
+            android:text="Alive Background Service"
+            android:textSize="10dp"
+            android:checked="@={vm.aliveBackground}" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

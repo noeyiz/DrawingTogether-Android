@@ -32,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
 
     private DrawingEditor de = DrawingEditor.getInstance();
     private long lastTimeBackPressed;  // fixme hyeyon[3]
+    private Logger logger = Logger.getInstance(); // fixme nayeon ☆☆☆☆☆ 1. Log 기록에 사용할 클래스 참조
+
 
     public interface OnBackListener {
         public void onBack();
@@ -61,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
         sendMqttMessage.startThread();
 
         context = this; // fixme nayeon
-
 
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         title = (TextView)findViewById(R.id.toolbar_title);
@@ -204,18 +205,18 @@ public class MainActivity extends AppCompatActivity {
         if (isFinishing()) {  // 앱 종료 시
             MyLog.i("lifeCycle", "isFinishing() " + isFinishing());
 
-            // todo database 접근하는 코드 추가할지 말지 고민중
-            MQTTClient client = MQTTClient.getInstance();
-            if (client != null && client.getClient().isConnected()) {
-                try {
-                    client.getClient().disconnect();
-                    client.getClient().close();
-                    MyLog.i("lifeCycle", "mqttClient closed");
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
-                client = null;
-            }
+//            // todo database 접근하는 코드 추가할지 말지 고민중
+//            MQTTClient client = MQTTClient.getInstance();
+//            if (client != null && client.getClient().isConnected()) {
+//                try {
+//                    client.getClient().disconnect();
+//                    client.getClient().close();
+//                    MyLog.i("lifeCycle", "mqttClient closed");
+//                } catch (MqttException e) {
+//                    e.printStackTrace();
+//                }
+//                client = null;
+//            }
         }
         else {  // 화면 회전 시
             MyLog.i("lifeCycle", "isFinishing() " + isFinishing());

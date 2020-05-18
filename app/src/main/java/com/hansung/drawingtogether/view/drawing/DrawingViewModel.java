@@ -10,6 +10,9 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+
+import android.util.Log;
+
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -58,6 +61,9 @@ public class DrawingViewModel extends BaseViewModel {
     private MutableLiveData<String> userNum = new MutableLiveData<>();
     private MutableLiveData<String> userPrint = new MutableLiveData<>();  // fixme hyeyeon
 
+    private MutableLiveData<String> aliveCount = new MutableLiveData<>();
+    private MutableLiveData<String> userAliveCount = new MutableLiveData<>();
+
     private Logger logger = Logger.getInstance();
 
     private final int PICK_FROM_GALLERY = 0;
@@ -78,53 +84,18 @@ public class DrawingViewModel extends BaseViewModel {
     private MQTTClient client = MQTTClient.getInstance();
     private MQTTSettingData data = MQTTSettingData.getInstance();
 
-    // fixme jiyeon
-    private boolean audioFlag = false;
+
+    // fixme jiyeon[0428]
+    private boolean micFlag = false;
+    private boolean speakerFlag = false;
+    private int speakerMode = 0; // 0: mute, 1: speaker on, 2: speaker loud
+
     private RecordThread recThread;
-    private AudioManager audioManager = (AudioManager) ((MainActivity)MainActivity.context).getSystemService(Service.AUDIO_SERVICE); // fixme jiyeon
+    private AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
+    //
 
     private Button preMenuButton;
 
-    // fixme hyeyeon[1]
-    @Override
-    public void onCleared() {  // todo
-        super.onCleared();
-        MyLog.i("lifeCycle", "DrawingViewModel onCleared()");
-
-        if (client != null && client.getClient().isConnected()) {
-            // 꼭 여기서 처리 해줘야 하는 부분
-            client.getDe().removeAllDrawingData();
-            client.getUserList().clear();
-
-            // fixme hyeyeon[4] 강제 종료 시 불릴 경우 검사 후 해제, exit publish
-            if (!client.isExitPublish()) {
-                // fixme jiyeon
-                for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
-                    audioPlayThread.getBuffer().clear();
-                }
-                // fixme jiyeon
-                audioManager.setSpeakerphoneOn(false);
-
-                ExitMessage exitMessage = new ExitMessage(client.getMyName());
-                MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-                client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
-                client.setExitPublish(true);
-            }
-            if (!(client.getTh().getState() == Thread.State.TERMINATED)) {  // todo isInterruped() false 문제 해결 -> Thead의 state 검사
-                client.getTh().interrupt();
-                client.unsubscribeAllTopics();
-            }
-
-            // todo isMid = true;
-            //
-        }
-
-        /*th.interrupt();
-        unsubscribeAllTopics();
-        isMid = true;
-        usersActionMap.clear();;*/
-
-    }
     public DrawingViewModel() {
         setUserNum(0);
         setUserPrint("");  // fixme hyeyeon
@@ -141,14 +112,22 @@ public class DrawingViewModel extends BaseViewModel {
         MyLog.e("kkankkan", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master + "/" + masterName);
 
         client.init(topic, name, master, this, ip, port, masterName);
-        client.setAliveCount(3);
+
+        client.setAliveCount(5);
         client.setCallback();
-        client.subscribe(topic + "_join");
+        /*client.subscribe(topic + "_join");
         client.subscribe(topic + "_exit");
         client.subscribe(topic + "_delete");
         client.subscribe(topic + "_data");
         client.subscribe(topic + "_mid");
-        client.subscribe(topic + "_alive"); // fixme hyeyeon
+
+        if (data.isAliveMode()) {
+            client.subscribe(topic + "_alive"); // fixme hyeyeon
+        }*/
+        // fixme jiyeon[0510]
+        client.subscribeAllTopics();
+        Log.e("alive", "DrawingViewModel aliveMode: " + data.isAliveMode());
+        Log.e("alive", "DrawingViewModel aliveBackground: " + data.isAliveBackground());
 
         de.setCurrentType(ComponentType.STROKE);    //fixme minj
         de.setCurrentMode(Mode.DRAW);
@@ -190,7 +169,6 @@ public class DrawingViewModel extends BaseViewModel {
 
 
         File fileCacheItem = new File(filePath);
-
 
         try {
             fos = new FileOutputStream(fileCacheItem);
@@ -333,6 +311,7 @@ public class DrawingViewModel extends BaseViewModel {
     public void changeClickedButtonBackground(View view) {
         LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
 
+
         // fixme nayeon
         // preMenuButton -> 아무것도 누르지 않은 상태에서 텍스트 버튼 클릭했을 때 NULL
         // 제일 첫 번째 버튼 (얇은 펜(그리기)) 로 지정
@@ -353,43 +332,45 @@ public class DrawingViewModel extends BaseViewModel {
         }
     }
 
-    //fixme jiyeon
+    //fixme jiyeon[0428]
     public boolean clickVoice() {
-        if (!audioFlag) { // RECORD 시작
-            audioFlag = true;
-            client.subscribe(client.getTopic() + "_audio");
+        if (!micFlag) { // RECORD 시작
+            micFlag = true;
             recThread = new RecordThread();
-            recThread.setFlag(audioFlag);
+            recThread.setFlag(micFlag);
             recThread.setBufferUnitSize(2);
             new Thread(recThread).start();
 
             return true;
         } else {
             try {
-                audioFlag = false;
-                recThread.setFlag(audioFlag);
-                audioManager.setSpeakerphoneOn(false);
+                micFlag = false;
+                recThread.setFlag(micFlag);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
             return false;
         }
     }
 
-    // fixme jiyeon
-    public boolean changeSpeakerMode() {
-        if (audioManager.isSpeakerphoneOn()) {
+
+    public int clickSpeaker() {
+        speakerMode = (speakerMode + 1) % 3; // 0, 1, 2, 0, 1, 2, ...
+
+        if (speakerMode == 0) { // SPEAKER MUTE
             audioManager.setSpeakerphoneOn(false);
-            MyLog.e("audio", "SPEAKER : " + audioManager.isSpeakerphoneOn());
-
-            return false;
-        } else {
+            speakerFlag = false;
+        } else if (speakerMode == 1) { // SPEAKER ON
+            speakerFlag = true;
+            client.subscribe(client.getTopic() + "_audio");
+        } else if (speakerMode == 2) { // SPEAKER LOUD
             audioManager.setSpeakerphoneOn(true);
-            MyLog.e("audio", "SPEAKER : " + audioManager.isSpeakerphoneOn());
-
-            return true;
         }
+
+        return speakerMode;
     }
+    //
 
     public void getImageFromGallery(Fragment fragment) {
         Intent galleryIntent = new Intent(Intent.ACTION_PICK);
@@ -480,5 +461,48 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void setUserPrint(String user) { userPrint.postValue(user); }  // fixme hyeyoen
+
+    public MutableLiveData<String> getAliveCount() { return aliveCount; }
+
+    public MutableLiveData<String> getUserAliveCount() { return userAliveCount; }
+
+    public void setAliveCount(String count) { aliveCount.postValue(count); }
+
+    public void setUserAliveCount(String count) { userAliveCount.postValue(count); }
+
+    // fixme hyeyeon[1]
+    @Override
+    public void onCleared() {  // todo
+        super.onCleared();
+        Log.i("lifeCycle", "DrawingViewModel onCleared()");
+
+       /* if (client != null && client.getClient().isConnected()) {
+            // 꼭 여기서 처리 해줘야 하는 부분
+            client.getDe().removeAllDrawingData();
+            client.getUserList().clear();
+
+            // fixme hyeyeon[4] 강제 종료 시 불릴 경우 검사 후 해제, exit publish
+            if (!client.isExitPublish()) {
+                // fixme jiyeon
+                for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+                    audioPlayThread.getBuffer().clear();
+                }
+
+                ExitMessage exitMessage = new ExitMessage(client.getMyName());
+                MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
+            }
+            if (client.getTh() != null) {
+                if (!(client.getTh().getState() == Thread.State.TERMINATED)) {  // todo isInterruped() false 문제 해결 -> Thead의 state 검사
+                    client.getTh().interrupt();
+                    client.unsubscribeAllTopics();
+                }
+            }
+            if (client.getUsersActionMap().size() != 0) {
+                client.getUsersActionMap().clear();
+            }
+        }*/
+
+    }
 
 }
