@@ -47,14 +47,14 @@ public class Stroke extends DrawingComponent {
     public void drawComponent(Canvas canvas) {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-        if(isErased) {
+        /*if(isErased) {
             Xfermode xmode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR);
             paint.setXfermode(xmode);
             paint.setStrokeWidth(this.strokeWidth + 1);
         } else {
             paint.setStrokeWidth(this.strokeWidth);
-        }
-
+        }*/
+        paint.setStrokeWidth(this.strokeWidth);
         paint.setColor(this.strokeColor);
         paint.setAlpha(this.strokeAlpha);
         paint.setStrokeCap(Paint.Cap.ROUND);

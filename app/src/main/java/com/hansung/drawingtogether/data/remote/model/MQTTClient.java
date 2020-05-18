@@ -3,6 +3,7 @@ package com.hansung.drawingtogether.data.remote.model;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.graphics.Canvas;
 import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
@@ -17,6 +18,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.drawing.AudioPlayThread;
+import com.hansung.drawingtogether.view.drawing.ComponentType;
 import com.hansung.drawingtogether.view.drawing.DrawingComponent;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 import com.hansung.drawingtogether.view.drawing.DrawingFragment;
@@ -94,7 +96,6 @@ public enum MQTTClient {
     private Logger logger = Logger.getInstance(); // fixme nayeon
     private DrawingFragment drawingFragment;
     private FragmentDrawingBinding binding;
-    private DrawingTask drawingTask;
     private DrawingView drawingView;
     private boolean isMid = true;
     private DrawingComponent drawingComponent;
@@ -309,8 +310,7 @@ public enum MQTTClient {
                     List<User> users = joinMessage.getUserList(); // null or not-null
 
                     if (master != null) { // 메시지 형식이 "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..."  일 경우
-                        //binding.drawingView.setIntercept(false);
-                        de.setIntercept(false); // 중간에 누가 들어왔을 때 선을 그리는 중이 아닌 다른 사용자들 터치 이벤트 부모뷰에서 가로채도록 (모두가 처리하는 부분)
+                        //de.setIntercept(false);
 
                         MyLog.i("drawing", "isMid = " + isMid());
 
@@ -414,6 +414,7 @@ public enum MQTTClient {
                                     //binding.drawingView.setIntercept(false);
 
                                     setToastMsg("[ " + userList.get(userList.size() - 1).getName() + " ] 님에게 데이터 전송을 완료했습니다");
+
                                     MyLog.e("kkankkan", "master data -> " + parser.jsonWrite(messageFormat));
                                     MyLog.e("kkankkan", name + " join 후 : " + userList.toString());
                                     MyLog.i("drawing", "payload size (bytes) = " + parser.jsonWrite(messageFormat).getBytes().length);
@@ -515,14 +516,18 @@ public enum MQTTClient {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
+                    if(de.isMidEntered() && messageFormat.getAction() != MotionEvent.ACTION_UP) {
+                        MyLog.i("drawing", "mid entering");
+                        return;
+                    }
+
                     if (messageFormat.getMode() == Mode.TEXT) {  //TEXT 모드일 경우, username 이 다른 경우만 task 생성
                         if (!messageFormat.getUsername().equals(de.getMyUsername())) {
                             MyLog.i("drawing", "username = " + messageFormat.getUsername() + ", text id = " + messageFormat.getTextAttr().getId() + ", mode = " + messageFormat.getMode() + ", text mode = " + messageFormat.getTextMode());
                             new TextTask().execute(messageFormat);
                         }
                     } else {  // todo - background image 도 따로 task 만들어 관리
-                        drawingTask = new DrawingTask();
-                        drawingTask.execute(messageFormat);
+                        new DrawingTask().execute(messageFormat);
                     }
                 }
 
@@ -531,17 +536,19 @@ public enum MQTTClient {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
-                    // fixme nayeon
-                    // 모든 사용자가 topic_mid 로 메시지 전송받음
-                    // 이 시점 중간자에게는 모든 데이터 저장 완료 후
-                    de.setMidEntered(false);
-
-                    MyLog.i("mqtt", "isMid=" + isMid());
+                    MyLog.i("mqtt", "isMid=" + isMid() + ", " + de.getMyUsername());
                     if (isMid && messageFormat.getUsername().equals(de.getMyUsername())) {
                         isMid = false;
                         MyLog.i("mqtt", "mid username=" + messageFormat.getUsername());
                         new MidTask().execute();
                     }
+
+                    de.setIntercept(false);
+
+                    // fixme nayeon
+                    // 모든 사용자가 topic_mid 로 메시지 전송받음
+                    // 이 시점 중간자에게는 모든 데이터 저장 완료 후
+                    de.setMidEntered(false);
                 }
 
                 // fixme jiyeon
@@ -814,9 +821,9 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
     private float myCanvasHeight = client.getDrawingView().getCanvasHeight();
     private WarpingMessage warpingMessage;
 
-        /*DrawingTask(DrawingFragment drawingFragment) {
-            weakReferencedFragment = new WeakReference<>(drawingFragment);
-        }*/
+    /*DrawingTask(DrawingFragment drawingFragment) {
+        weakReferencedFragment = new WeakReference<>(drawingFragment);
+    }*/
 
     private void draw(MqttMessageFormat message) {
 
@@ -824,7 +831,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
             dComponent = message.getComponent();
             MyLog.i("sendThread", "all down " + dComponent.getUsername() + ", " + dComponent.getId() + ", " + dComponent.getPoints().size());
 
-            if (de.isContainsCurrentComponents(dComponent.getId())) {
+            if (de.isContainsCurrentComponents(dComponent.getId()) || de.isContainsDrawingComponents(dComponent.getId())) {
                 if(de.getUsername().equals(username)) {
                     dComponent.setId(de.getComponentId());
                     MyLog.i("drawing", "second id (self) = " + dComponent.getId());
@@ -855,7 +862,12 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
             dComponent = de.getCurrentComponent(message.getUsersComponentId());
         }
 
-        if (dComponent != null && de.findCurrentComponent(dComponent.getUsersComponentId()) == null) return;   //중간자가 MidTask 수행 전에 그려진 component 는 return
+        try {
+            if (de.findCurrentComponent(dComponent.getUsersComponentId()) == null) return;   //중간자가 MidTask 수행 전에 그려진 component 는 return
+        } catch (NullPointerException e) {
+            //e.printStackTrace();
+            return;
+        }
 
         dComponent.calculateRatio(myCanvasWidth, myCanvasHeight);
 
@@ -864,9 +876,9 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
 
         switch(action) {
             case MotionEvent.ACTION_DOWN:
-                Point p = dComponent.getPoints().get(0);
+                //Point p = dComponent.getPoints().get(0);
                 dComponent.clearPoints();   //fixme reference
-                client.getDrawingView().addPointAndDraw(dComponent, p);
+                //client.getDrawingView().addPointAndDraw(dComponent, p);
                 MyLog.i("sendThread", "down " + dComponent.getUsername() + ", " + dComponent.getId() + ", " + dComponent.getPoints().size());
                 break;
             case MotionEvent.ACTION_MOVE:   //DrawingView addPointAndDraw(DrawingComponent, Point)
@@ -878,7 +890,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 client.getDrawingView().addPointAndDraw(dComponent, point);
 
                 MyLog.i("drawing", "dComponent: id=" + dComponent.getId() + ", endPoint=" + dComponent.getEndPoint().toString());
-                try {   // todo 중간자 들어올 때, 2명 이상이 그리는 경우 테스트 (2명 이상이 동시에 그리는 경우 테스트)
+                /*try {   // todo 중간자 들어올 때, 2명 이상이 그리는 경우 테스트 (2명 이상이 동시에 그리는 경우 테스트)
                     DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
                     MyLog.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
                     dComponent.setId(upComponent.getId());
@@ -886,23 +898,24 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                     //dComponent.setId(dComponent.getId());
                     //dComponent.drawComponent(de.getBackCanvas());
                     e.printStackTrace();
-                }
+                }*/
+                de.getUpdatedDrawingComponentId(dComponent);
 
                 //de.removeCurrentComponents(dComponent.getId());
                 de.removeCurrentComponents(dComponent.getUsersComponentId());
-                de.removeCurrentShapes(dComponent.getUsersComponentId());
+                //de.removeCurrentShapes(dComponent.getUsersComponentId());
                 de.splitPoints(dComponent, myCanvasWidth, myCanvasHeight);
                 de.addDrawingComponents(dComponent);
                 MyLog.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
                 de.addHistory(new DrawingItem(Mode.DRAW, dComponent));
                 MyLog.i("drawing", "history.size()=" + de.getHistory().size() + ", id=" + dComponent.getId());
 
-                /*if(dComponent.getType() == ComponentType.STROKE) {
+                if(dComponent.getType() == ComponentType.STROKE) {
                     Canvas canvas = new Canvas(de.getLastDrawingBitmap());
                     dComponent.draw(canvas);
                 } else {
                     //de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
-                }*/
+                }
                 publishProgress(message);
         }
 
@@ -977,6 +990,11 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
         } else {
             this.dComponent = client.getDrawingComponent();
             Log.i("sendThread", "action move, up " + dComponent.getUsername() + " " + dComponent.getId());
+        }*/
+
+        /*if(de.isMidEntered()) {
+            MyLog.i("drawing", "mid entering");
+            return null;
         }*/
 
         // fixme jiyeon - 자기 자신의 background image도 콜백에서 처리

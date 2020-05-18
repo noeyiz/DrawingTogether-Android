@@ -93,8 +93,12 @@ public class DrawingView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        canvas.drawBitmap(de.getDrawingBitmap(), 0, 0, null);
-        canvas.drawBitmap(de.getSelectedComponentBitmap(), 0, 0, null);
+        try {   //중간자 들어오다가 브로커 연결 유실되면 NullPointerException 발생
+            canvas.drawBitmap(de.getDrawingBitmap(), 0, 0, null);
+            canvas.drawBitmap(de.getSelectedComponentBitmap(), 0, 0, null);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
         //Log.i("drawing", "onDraw");
         //this.invalidate();
     }
@@ -275,19 +279,17 @@ public class DrawingView extends View {
         }
     }*/
 
-    public Integer updateDrawingComponentId(DrawingComponent dComponent) {
+    /*public Integer updateDrawingComponentId(DrawingComponent dComponent) {
         try {
             DrawingComponent upComponent = de.findCurrentComponent(dComponent.getUsersComponentId());
-
             //MyLog.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
-
             dComponent.setId(upComponent.getId());
             return dComponent.getId();
         } catch(NullPointerException e) {
             e.printStackTrace();
             return null;
         }
-    }
+    }*/
 
     public void doInDrawActionUp(DrawingComponent dComponent) {
         initDrawingComponent(); // 드로잉 컴포넌트 객체 생성
@@ -318,7 +320,10 @@ public class DrawingView extends View {
 
         if(de.isIntercept()) this.isIntercept = true;
 
-        de.setDrawingShape(false);
+        //de.setDrawingShape(false);
+
+        de.printCurrentComponents("up");
+        de.printDrawingComponents("up");
     }
 
     /*public void InterceptTouchEventAndDoActionUp() {
@@ -332,7 +337,7 @@ public class DrawingView extends View {
         sendDrawMqttMessage(MotionEvent.ACTION_UP);
 
         addPointAndDraw(dComponent, dComponent.getEndPoint());
-        updateDrawingComponentId(dComponent);
+        //de.updateDrawingComponentId(dComponent);
         doInDrawActionUp(dComponent);
     }*/
 
@@ -362,10 +367,10 @@ public class DrawingView extends View {
             //publish
             //sendDrawMqttMessage(MotionEvent.ACTION_UP);
 
-            sendThread.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), updateDrawingComponentId(dComponent), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, MotionEvent.ACTION_UP));
+            sendThread.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), de.getUpdatedDrawingComponentId(dComponent), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, MotionEvent.ACTION_UP));
             //putMqttMessage(MotionEvent.ACTION_UP);
 
-            updateDrawingComponentId(dComponent);
+            de.getUpdatedDrawingComponentId(dComponent);
             doInDrawActionUp(dComponent);
 
             isExit = true;
@@ -384,8 +389,8 @@ public class DrawingView extends View {
                 //de.addCurrentShapes(dComponent);
 
                 setComponentAttribute(dComponent);
-                point = new Point((int)event.getX(), (int)event.getY());
-                addPointAndDraw(dComponent, point);
+                //point = new Point((int)event.getX(), (int)event.getY());
+                //addPointAndDraw(dComponent, point);
 
                 //publish
                 //sendDrawMqttMessage(event.getAction());
@@ -405,7 +410,7 @@ public class DrawingView extends View {
                 //sendDrawMqttMessage(event.getAction());
 
                 //if(moveCnt == 5) {
-                    sendThread.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), updateDrawingComponentId(dComponent), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, event.getAction()));
+                    sendThread.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), de.getUpdatedDrawingComponentId(dComponent), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, event.getAction()));
                     //moveCnt = -1;
                 //}
 
@@ -419,14 +424,14 @@ public class DrawingView extends View {
                 MyLog.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
 
 
-                updateDrawingComponentId(dComponent);
+                int newId = de.getUpdatedDrawingComponentId(dComponent);
                 doInDrawActionUp(dComponent);
 
                 //publish
                 //sendDrawMqttMessage(event.getAction());
 
                 //putMqttMessage(event.getAction());
-                sendThread.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), updateDrawingComponentId(dComponent), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, event.getAction()));
+                sendThread.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), newId, dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, event.getAction()));
 
                 return true;
             default:

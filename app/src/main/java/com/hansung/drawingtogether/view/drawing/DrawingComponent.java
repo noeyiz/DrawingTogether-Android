@@ -1,6 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Point;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class DrawingComponent {
+    //protected Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);;
     protected ArrayList<Point> points = new ArrayList<>();  //100
     protected int id;
     protected String username = null;
@@ -56,5 +58,6 @@ public abstract class DrawingComponent {
     public abstract void drawComponent(Canvas canvas);
 
     public abstract String toString();
+
 
 }

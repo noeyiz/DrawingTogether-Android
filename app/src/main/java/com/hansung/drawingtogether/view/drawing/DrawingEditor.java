@@ -146,16 +146,15 @@ public enum DrawingEditor {
     }
 
     public static DrawingEditor getInstance() { return INSTANCE; }
-    /*public DrawingEditor() {  }
-    public static DrawingEditor getInstance() { return LazyHolder.INSTANCE; }
-    private static class LazyHolder {
-        private static final DrawingEditor INSTANCE = new DrawingEditor();
-    }*/
 
     public void drawAllDrawingComponents() {   //drawingComponents draw
         for (DrawingComponent drawingComponent : drawingComponents) {
             drawingComponent.drawComponent(getBackCanvas());
         }
+        /*for (DrawingComponent currentComponent : currentComponents) {
+            MyLog.i("drawing", "cc.size() = " + currentComponents.size());
+            currentComponent.drawComponent(getBackCanvas());
+        }*/
     }
 
     public void drawAllDrawingComponentsForMid() {   //drawingComponents draw
@@ -194,12 +193,16 @@ public enum DrawingEditor {
         return null;
     }
 
-    public boolean isContainsCurrentComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우
-        String str = "cc = ";
-        for(DrawingComponent component: getCurrentComponents()) {
-            str += component.getId() + " ";
+    public void printCurrentComponents(String status) {
+        String str = "cc(" + status + ") = ";
+        for(DrawingComponent dc: getCurrentComponents()) {
+            str += dc.getId() + "(" + dc.getUsersComponentId() + ")" + " ";
         }
         MyLog.i("drawing", str);
+    }
+
+    public boolean isContainsCurrentComponents(int id) {    //다른 디바이스에서 동시에 그렸을 경우
+        printCurrentComponents("contains");
 
         for(DrawingComponent component: currentComponents) {
             if(component.getId() == id)
@@ -214,6 +217,29 @@ public enum DrawingEditor {
                 return component;
         }
         return null;
+    }
+
+    public Integer getUpdatedDrawingComponentId(DrawingComponent dComponent) {
+        DrawingComponent upComponent = findCurrentComponent(dComponent.getUsersComponentId());
+        if(upComponent != null) {
+            if(upComponent.getId() != dComponent.getId()) {
+                MyLog.i("drawing", "* update id " + dComponent.getId() + " --> " + upComponent.getId());
+                dComponent.setId(upComponent.getId());
+            }
+        } /*else {
+            MyLog.i("drawing", "* id " + dComponent.getId());
+        }*/
+        return dComponent.getId();
+
+        /*try {
+            DrawingComponent upComponent = findCurrentComponent(dComponent.getUsersComponentId());
+            //MyLog.i("drawing", "upComponent: id=" + upComponent.getId() + ", endPoint=" + upComponent.getEndPoint().toString());
+            dComponent.setId(upComponent.getId());
+            return dComponent.getId();
+        } catch(NullPointerException e) {
+            e.printStackTrace();
+            return dComponent.getId();
+        }*/
     }
 
     public void addDrawingComponents(DrawingComponent component) {
@@ -239,6 +265,14 @@ public enum DrawingEditor {
         return -1;
     }
 
+    public void printDrawingComponents(String status) {
+        String str = "dc(" + status + ") = ";
+        for(DrawingComponent dc: getDrawingComponents()) {
+            str += dc.getId() + "(" + dc.getUsersComponentId() + ")" + " ";
+        }
+        MyLog.i("drawing", str);
+    }
+
     public boolean isContainsAllDrawingComponents(Vector<Integer> ids) {
         for(int i: ids) {
             if(!isContainsDrawingComponents(i))
@@ -248,6 +282,8 @@ public enum DrawingEditor {
     }
 
     public boolean isContainsDrawingComponents(int id) {
+        printDrawingComponents("contains");
+
         for(DrawingComponent component: drawingComponents) {
             if(component.getId() == id)
                 return true;
@@ -560,6 +596,7 @@ public enum DrawingEditor {
                         component.calculateRatio(myCanvasWidth, myCanvasHeight);
                         component.drawComponent(getBackCanvas());
                         splitPoints(component, myCanvasWidth, myCanvasHeight);
+                        //todo minj - item 이후 그려진 것들 다시 그리기
                         //component.setIsErased(false);
                     }
                     removeRemovedComponentIds(ids);
