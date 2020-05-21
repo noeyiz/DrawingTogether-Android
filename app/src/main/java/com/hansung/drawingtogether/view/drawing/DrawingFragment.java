@@ -739,7 +739,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             try { // Mqtt Client 처리
                 client.unsubscribeAllTopics();
                 client.getClient().disconnect();
-                client = null;
             } catch (MqttException e) {
                 e.printStackTrace();
             }

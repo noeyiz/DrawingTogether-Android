@@ -1,0 +1,21 @@
+{
+  "buildFiles": [
+    "C:\\Users\\hansung\\Desktop\\DrawingTogetherBackup\\DrawingTogether0510\\app\\src\\main\\cpp\\CMakeLists.txt"
+  ],
+  "cleanCommands": [
+    "C:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build C:\\Users\\hansung\\Desktop\\DrawingTogetherBackup\\DrawingTogether0510\\app\\.cxx\\cmake\\release\\arm64-v8a --target clean"
+  ],
+  "libraries": {
+    "native-lib-Release-arm64-v8a": {
+      "artifactName": "native-lib",
+      "buildCommand": "C:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build C:\\Users\\hansung\\Desktop\\DrawingTogetherBackup\\DrawingTogether0510\\app\\.cxx\\cmake\\release\\arm64-v8a --target native-lib",
+      "abi": "arm64-v8a",
+      "output": "C:\\Users\\hansung\\Desktop\\DrawingTogetherBackup\\DrawingTogether0510\\app\\build\\intermediates\\cmake\\release\\obj\\arm64-v8a\\libnative-lib.so"
+    },
+    "lib_opencv-Release-arm64-v8a": {
+      "artifactName": "lib_opencv",
+      "abi": "arm64-v8a",
+      "output": "C:\\Users\\hansung\\Desktop\\DrawingTogetherBackup\\DrawingTogether0510\\opencv\\native\\libs\\arm64-v8a\\libopencv_java3.so"
+    }
+  }
+}
