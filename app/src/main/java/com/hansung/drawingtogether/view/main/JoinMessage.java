@@ -22,11 +22,6 @@ public class JoinMessage {
         //this.loadingData = loadingData;
     }
 
-    public JoinMessage(String master, String to) { // "master":"이름"/"to":"이름"/"loadingData":"..."
-        this.master = master;
-        this.to = to;
-    }
-
     public JoinMessage(String name) {
         this.name = name;
     } // "name":"이름"

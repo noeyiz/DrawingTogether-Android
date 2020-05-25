@@ -62,8 +62,6 @@ import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 
 
-import org.eclipse.paho.client.mqttv3.MqttException;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
@@ -169,6 +167,14 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             JoinMessage joinMessage = new JoinMessage(drawingViewModel.getName());
             MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
             client.publish(drawingViewModel.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
+            MyLog.e("login", drawingViewModel.getName() + " join pub");
+
+//            for (int i=0; i<5; i++) {
+//                joinMessage = new JoinMessage(drawingViewModel.getName() + i);
+//                messageFormat = new MqttMessageFormat(joinMessage);
+//                client.publish(drawingViewModel.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
+//                MyLog.e("login", drawingViewModel.getName() + i + " join pub");;
+//            }
 
             if (data.isAliveMode() && !data.isAliveBackground()) {
                 Log.e("alive", "DrawingFragment: " + data.isAliveMode());
@@ -735,14 +741,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                     client.exitTask();
                 }
             }
-            // fixme jiyeon[0510]
-            try { // Mqtt Client 처리
-                client.unsubscribeAllTopics();
-                client.getClient().disconnect();
-            } catch (MqttException e) {
-                e.printStackTrace();
-            }
-            //
 //            if (databaseReference != null) {  // todo hyeyeon - code 정리
 //                // 비정상 종료 대비 ( task 날리기 ,,, )
 //                databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {

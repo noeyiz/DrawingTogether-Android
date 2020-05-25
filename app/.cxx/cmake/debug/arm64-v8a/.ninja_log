@@ -1,3 +1,5 @@
 # ninja log v5
-2	5353	0	CMakeFiles/native-lib.dir/native-lib.cpp.o	7cda360ccb873284
-5355	5659	0	C:/Users/hansung/Desktop/DrawingTogetherBackup/DrawingTogether0510/app/build/intermediates/cmake/debug/obj/arm64-v8a/libnative-lib.so	d83856060381a622
+1	5219	0	CMakeFiles/native-lib.dir/native-lib.cpp.o	954f4dd7fa97e34
+5222	5633	0	C:/Users/hansung/Downloads/DrawingTogether-merge/DrawingTogether-merge/app/build/intermediates/cmake/debug/obj/arm64-v8a/libnative-lib.so	710f7c22a75f02c7
+0	5717	0	CMakeFiles/native-lib.dir/C_/Users/hansung/Downloads/DrawingTogether-test/app/src/main/cpp/native-lib.cpp.o	b95ed6c92a89c699
+5719	6424	0	C:/Users/hansung/Downloads/DrawingTogether-merge/DrawingTogether-merge/app/build/intermediates/cmake/debug/obj/arm64-v8a/libnative-lib.so	249d46a510ec1b5c
