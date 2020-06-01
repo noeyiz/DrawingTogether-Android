@@ -15,7 +15,7 @@
     "lib_opencv-Release-armeabi-v7a": {
       "artifactName": "lib_opencv",
       "abi": "armeabi-v7a",
-      "output": "C:\\Users\\hansung\\Downloads\\DrawingTogether-merge\\DrawingTogether-merge\\opencv\\native\\libs\\armeabi-v7a\\libopencv_java3.so"
+      "output": "C:\\Users\\hansung\\Downloads\\DrawingTogether-test\\opencv\\native\\libs\\armeabi-v7a\\libopencv_java3.so"
     }
   }
 }

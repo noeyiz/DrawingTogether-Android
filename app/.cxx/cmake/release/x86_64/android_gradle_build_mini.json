@@ -9,7 +9,7 @@
     "lib_opencv-Release-x86_64": {
       "artifactName": "lib_opencv",
       "abi": "x86_64",
-      "output": "C:\\Users\\hansung\\Downloads\\DrawingTogether-merge\\DrawingTogether-merge\\opencv\\native\\libs\\x86_64\\libopencv_java3.so"
+      "output": "C:\\Users\\hansung\\Downloads\\DrawingTogether-test\\opencv\\native\\libs\\x86_64\\libopencv_java3.so"
     },
     "native-lib-Release-x86_64": {
       "artifactName": "native-lib",

@@ -90,7 +90,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     // fixme hyeyeon[2]
     private DatabaseReference databaseReference;
     private ExitOnClickListener exitOnClickListener;
-    private boolean keyPressed; // fixme hyeyeon
     //
 
     private AliveThread aliveTh = AliveThread.getInstance();
@@ -116,8 +115,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         databaseReference = FirebaseDatabase.getInstance().getReference();
         exitOnClickListener = new ExitOnClickListener();
         exitOnClickListener.setBackKeyPressed(false);
-
-        keyPressed = false;
 
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
@@ -365,7 +362,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     }
 
     // fixme hyeyeon[2]-messageArrived 콜백에서 처리 -> 나가기 버튼 누른 후 바로 처리하도록 변경
-    public void exit() { // 우측 상단 뒤로가기 버튼
+    public void exit() { // 좌측 상단 뒤로가기 버튼
         MyLog.e("why", "exit");
         exitOnClickListener.setBackKeyPressed(false);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -436,34 +433,41 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
             MyLog.e("why", "exitOnClickListener : " + backKeyPressed);
 
-            databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
-                @NonNull
-                @Override
-                public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                    if (mutableData.getValue() != null && client.isMaster()) {
-                        mutableData.setValue(null);
-                    }
-                    if (mutableData.getValue() != null && !client.isMaster()) {
-                        mutableData.child("username").child(client.getMyName()).setValue(null);
-                    }
-                    MyLog.e("transaction", "transaction success");
-                    return Transaction.success(mutableData);
+            if (client.isMaster()) {
+                client.exitTask();
+                if (backKeyPressed) {
+                    getActivity().finish();
+                    return;
                 }
-
-                @Override
-                public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                    MyLog.e("transaction", "transaction complete");
-
-
-                    if (databaseError != null) {
-                        MyLog.e("transaction", databaseError.getDetails());
-                        return;
+                else {
+                    drawingViewModel.back();
+                    return;
+                }
+            }
+            else {
+                databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
+                    @NonNull
+                    @Override
+                    public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+                        if (mutableData.getValue() != null && client.isMaster()) {
+                            mutableData.setValue(null);
+                        }
+                        if (mutableData.getValue() != null && !client.isMaster()) {
+                            mutableData.child("username").child(client.getMyName()).setValue(null);
+                        }
+                        MyLog.e("transaction", "transaction success");
+                        return Transaction.success(mutableData);
                     }
-                    if (client.isMaster()) {
-                        DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
-                        MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
-                        client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-                        keyPressed = true; // fixme hyeyeon
+
+                    @Override
+                    public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                        MyLog.e("transaction", "transaction complete");
+
+                        if (databaseError != null) {
+                            MyLog.e("transaction", databaseError.getDetails());
+                            return;
+                        }
+
                         client.exitTask();
                         if (backKeyPressed) {
                             getActivity().finish();
@@ -473,23 +477,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                             drawingViewModel.back();
                             return;
                         }
-                    } else {
-                        ExitMessage exitMessage = new ExitMessage(client.getMyName());
-                        MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-                        client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
-                        keyPressed = true; // fixme hyeyeon
-                        client.exitTask();
-                        if (backKeyPressed) {
-                            getActivity().finish();
-                            return;
-                        }
-                        else {
-                            drawingViewModel.back();
-                            return;
-                        }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
@@ -727,19 +717,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             client.getDe().removeAllDrawingData();
             client.getUserList().clear();
 
-            if (!keyPressed) {
+            if (!client.isExitCompleteFlag()) {
                 Log.e("exit", "비정상 종료");
-                if (client.isMaster()) {
-                    DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
-                    MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
-                    client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-                    client.exitTask();
-                } else {
-                    ExitMessage exitMessage = new ExitMessage(client.getMyName());
-                    MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-                    client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
-                    client.exitTask();
-                }
+                client.exitTask();
             }
 //            if (databaseReference != null) {  // todo hyeyeon - code 정리
 //                // 비정상 종료 대비 ( task 날리기 ,,, )

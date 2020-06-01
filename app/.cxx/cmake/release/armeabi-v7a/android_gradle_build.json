@@ -16,7 +16,7 @@
 			"abi" : "armeabi-v7a",
 			"artifactName" : "lib_opencv",
 			"buildType" : "release",
-			"output" : "C:/Users/hansung/Downloads/DrawingTogether-merge/DrawingTogether-merge/opencv/native/libs/armeabi-v7a/libopencv_java3.so",
+			"output" : "C:/Users/hansung/Downloads/DrawingTogether-test/opencv/native/libs/armeabi-v7a/libopencv_java3.so",
 			"toolchain" : "3177728637"
 		},
 		"native-lib-Release-armeabi-v7a" : 
@@ -29,8 +29,8 @@
 			[
 				
 				{
-					"flags" : "  --target=armv7-none-linux-androideabi26 --gcc-toolchain=C:/Users/hansung/AppData/Local/Android/Sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/windows-x86_64 --sysroot=C:/Users/hansung/AppData/Local/Android/Sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/windows-x86_64/sysroot  -Dnative_lib_EXPORTS -IC:\\Users\\hansung\\Downloads\\DrawingTogether-merge\\DrawingTogether-merge\\opencv\\native\\jni\\include  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security   -std=gnu++11 -Oz -DNDEBUG  -fPIC    -c ",
-					"src" : "C:/Users/hansung/Downloads/DrawingTogether-merge/DrawingTogether-merge/app/src/main/cpp/native-lib.cpp",
+					"flags" : "  --target=armv7-none-linux-androideabi26 --gcc-toolchain=C:/Users/hansung/AppData/Local/Android/Sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/windows-x86_64 --sysroot=C:/Users/hansung/AppData/Local/Android/Sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/windows-x86_64/sysroot  -Dnative_lib_EXPORTS -IC:\\Users\\hansung\\Downloads\\DrawingTogether-test\\opencv\\native\\jni\\include  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security   -std=gnu++11 -Oz -DNDEBUG  -fPIC    -c ",
+					"src" : "C:/Users/hansung/Downloads/DrawingTogether-test/app/src/main/cpp/native-lib.cpp",
 					"workingDirectory" : "C:/Users/hansung/Downloads/DrawingTogether-merge/DrawingTogether-merge/app/.cxx/cmake/release/armeabi-v7a"
 				}
 			],
