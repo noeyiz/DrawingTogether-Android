@@ -153,10 +153,6 @@ public enum Logger {
                 public void onClick(DialogInterface dialog, int which) {
                     MyLog.d("button", "error dialog ok button click"); // fixme nayeon
 
-                    //fixme hy [0511]
-                    MainActivity mainActivity = (MainActivity) MainActivity.context;
-                    mainActivity.finish();
-                    //
                     android.os.Process.killProcess(android.os.Process.myPid());
                     System.exit(10);
                 }

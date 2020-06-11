@@ -115,16 +115,17 @@ public class DrawingViewModel extends BaseViewModel {
 
         client.setAliveCount(5);
         client.setCallback();
-        /*client.subscribe(topic + "_join");
-        client.subscribe(topic + "_exit");
-        client.subscribe(topic + "_delete");
-        client.subscribe(topic + "_data");
-        client.subscribe(topic + "_mid");
 
-        if (data.isAliveMode()) {
-            client.subscribe(topic + "_alive"); // fixme hyeyeon
-        }*/
-        // fixme jiyeon[0510]
+//        client.subscribe(topic + "_join");
+//        client.subscribe(topic + "_noti");
+//        client.subscribe(topic + "_exit");
+//        client.subscribe(topic + "_delete");
+//        client.subscribe(topic + "_data");
+//        client.subscribe(topic + "_mid");
+//        if (data.isAliveMode()) {
+//            client.subscribe(topic + "_alive"); // fixme hyeyeon
+//        }
+        // fixme jiyeon[0525]
         client.subscribeAllTopics();
         Log.e("alive", "DrawingViewModel aliveMode: " + data.isAliveMode());
         Log.e("alive", "DrawingViewModel aliveBackground: " + data.isAliveBackground());
@@ -491,6 +492,7 @@ public class DrawingViewModel extends BaseViewModel {
                 ExitMessage exitMessage = new ExitMessage(client.getMyName());
                 MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
                 client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
+                client.setExitPublish(true);
             }
             if (client.getTh() != null) {
                 if (!(client.getTh().getState() == Thread.State.TERMINATED)) {  // todo isInterruped() false 문제 해결 -> Thead의 state 검사
