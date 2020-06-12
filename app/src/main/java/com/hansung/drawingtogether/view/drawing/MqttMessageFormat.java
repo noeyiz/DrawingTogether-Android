@@ -24,10 +24,12 @@ public class MqttMessageFormat {
     private Mode mode;
     private ComponentType type;
     private DrawingComponent component;
-    private int action;
+    private Integer action;
     private Integer id;
     private String usersComponentId;
     private Point point;
+    private ArrayList<Point> movePoints;
+    private Boolean isSelected;
 
     private String username;
     private Vector<Integer> componentIds; //findComponentsToErase, findSelectedComponent
@@ -35,10 +37,9 @@ public class MqttMessageFormat {
     private TextAttribute textAttr; // text
     private TextMode textMode;
 
-    private int myTextArrayIndex;
+    private Integer myTextArrayIndex;
 
     private JoinMessage joinMessage;
-
 
     // fixme hyeyeon
     private ExitMessage exitMessage;
@@ -60,6 +61,7 @@ public class MqttMessageFormat {
     private Integer maxTextId;
     private byte[] bitmapByteArray;
 
+    //draw - action down
     public MqttMessageFormat(String username, String usersComponentId, Mode mode, ComponentType type, DrawingComponent component, int action) {
         this.username = username;
         this.usersComponentId = usersComponentId;
@@ -69,7 +71,8 @@ public class MqttMessageFormat {
         this.action  = action;
     }
 
-    public MqttMessageFormat(String username, Integer id, String usersComponentId, Mode mode, ComponentType type, Point point, int action) {
+    //draw - action up
+    public MqttMessageFormat(String username, /*Integer id, */String usersComponentId, Mode mode, ComponentType type, Point point, int action) {
         this.username = username;
         this.id = id;
         this.usersComponentId = usersComponentId;
@@ -79,10 +82,42 @@ public class MqttMessageFormat {
         this.action  = action;
     }
 
+    //erase
     public MqttMessageFormat(String username, Mode mode, Vector<Integer> componentIds) {
         this.username = username;
         this.mode = mode;
         this.componentIds = componentIds;
+    }
+
+    //draw - move chunk
+    public MqttMessageFormat(String username, /*Integer id, */String usersComponentId, Mode mode, ComponentType type, ArrayList<Point> movePoints, int action) {
+        this.username = username;
+        //this.id = id;
+        this.usersComponentId = usersComponentId;
+        this.mode = mode;
+        this.type = type;
+        this.movePoints = movePoints;
+        this.action  = action;
+    }
+
+    //select, deselect
+    public MqttMessageFormat(String username, String usersComponentId, Mode mode, boolean isSelected) {
+        this.username = username;
+        this.usersComponentId = usersComponentId;
+        this.mode = mode;
+        this.isSelected = isSelected;
+    }
+
+    //select - down, move, up
+    Integer moveX;
+    Integer moveY;
+    public MqttMessageFormat(String username, String usersComponentId, Mode mode, int action, int moveX, int moveY) {
+        this.username = username;
+        this.usersComponentId = usersComponentId;
+        this.mode = mode;
+        this.action = action;
+        this.moveX = moveX;
+        this.moveY = moveY;
     }
 
     // fixme nayeon - 텍스트 동시성 처리
@@ -95,6 +130,7 @@ public class MqttMessageFormat {
         this.myTextArrayIndex = myTextArrayIndex;
     }
 
+    //mode change
     public MqttMessageFormat(String username, Mode mode) {
         this.username = username;
         this.mode = mode;
