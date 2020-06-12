@@ -1112,7 +1112,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
             this.dComponent = client.getDrawingComponent();
             Log.i("sendThread", "action move, up " + dComponent.getUsername() + " " + dComponent.getId());
         }*/
-        
+
         // fixme jiyeon - 자기 자신의 background image도 콜백에서 처리
         if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW) /*&& !mode.equals(Mode.BACKGROUND_IMAGE)*/) { return null; }
 //            if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW)) { return null; }
