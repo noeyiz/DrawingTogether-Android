@@ -43,6 +43,7 @@ import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
+import com.hansung.drawingtogether.view.main.NotiMessage;
 import com.hansung.drawingtogether.view.main.WarpingMessage;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -53,6 +54,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -69,6 +71,7 @@ public enum MQTTClient {
     INSTANCE;
 
     private MqttClient client;
+    private MqttClient client2;
     private String BROKER_ADDRESS;
 
     private FirebaseDatabase database;
@@ -77,13 +80,13 @@ public enum MQTTClient {
     private boolean master;
     private String masterName;  // fixme hyeyeon
 
-    private List<User> userList = new ArrayList<>(100);
+    private List<User> userList = new ArrayList<>(100);  // fixme hyeyeon-User객제 arrayList로 변경
     private List<AudioPlayThread> audioPlayThreadList = new ArrayList<>(100); // fixme jiyeon
     private String myName;
-    private List<String> midNameList = new ArrayList<>(50);  // fixme hy [0511]
 
     private String topic;
     private String topic_join;
+    private String topic_noti;
     private String topic_exit;
     private String topic_delete;
     private String topic_data;
@@ -91,8 +94,7 @@ public enum MQTTClient {
     private String topic_audio; // fixme jiyeon
     private String topic_alive;
 
-
-    private int aliveCount = 5;
+    private int aliveCount = 5;  // fixme hyeyeon
 
     private DrawingViewModel drawingViewModel;
     private boolean audioPlaying = false; // fixme jiyeon
@@ -134,23 +136,17 @@ public enum MQTTClient {
         this.myName = name;
         this.masterName = masterName;  // fixme hyeyeon
 
-
-        // fixme hy [0511]
         userList.clear();
         audioPlayThreadList.clear();
-        midNameList.clear();
-        //
 
         if (!isMaster()) {  // fixme hyeyeon-마스터가 토픽을 삭제하지 못하고 종료해서 마스터 없는 토픽방이 되었을 때 join한 유저들을 토픽방에서 나가게 하기 위해
             User mUser = new User(masterName, 0, MotionEvent.ACTION_UP, false);
             userList.add(mUser);
 
-            // fixme hy [0511]
             AudioPlayThread audioPlayThread = new AudioPlayThread();
             audioPlayThread.setName(masterName);
             audioPlayThread.setBufferUnitSize(2);
             audioPlayThreadList.add(audioPlayThread);
-            //
         }
         User user = new User(myName, 0, MotionEvent.ACTION_UP, false);
         userList.add(user); // 생성자에서 사용자 리스트에 내 이름 추가
@@ -161,6 +157,7 @@ public enum MQTTClient {
         audioPlayThreadList.add(audioPlayThread);
 
         topic_join = this.topic + "_join";
+        topic_noti = this.topic + "_noti";
         topic_exit = this.topic + "_exit";
         topic_delete = this.topic + "_delete";
         topic_data = this.topic + "_data";
@@ -180,18 +177,19 @@ public enum MQTTClient {
         try {
             BROKER_ADDRESS = "tcp://" + ip + ":" + port;
             client = new MqttClient(BROKER_ADDRESS, MqttClient.generateClientId(), new MemoryPersistence());
+            client2 = new MqttClient(BROKER_ADDRESS, MqttClient.generateClientId(), new MemoryPersistence());
 
             MqttConnectOptions connOpts = new MqttConnectOptions();
-            //connOpts.setCleanSession(true);
-            connOpts.setKeepAliveInterval(10000);
+
+            connOpts.setCleanSession(true);
+            connOpts.setKeepAliveInterval(1000);
             connOpts.setMaxInflight(5000);   //?
 
-            // fixme jiyeon[0510]
+            // fixme jiyeon[0525] - 자동으로 재연결 되도록 설정
             connOpts.setAutomaticReconnect(true);
-            connOpts.setCleanSession(true);
-            //
 
             client.connect(connOpts);
+            client2.connect(connOpts);
 
             MyLog.e("kkankkan", "mqtt connect success");
             MyLog.i("mqtt", "CONNECT");
@@ -216,8 +214,10 @@ public enum MQTTClient {
 
     public void publish(String newTopic, String payload) {
         try {
-            MqttMessage message = new MqttMessage(payload.getBytes());
-            client.publish(newTopic, payload.getBytes(), this.qos, false);
+//            MyLog.e("login", "pub 1 " + payload);
+            client.publish(newTopic, new MqttMessage(payload.getBytes()));
+//            MyLog.e("login", "pub 2");
+
             // MyLog.i("mqtt", "PUBLISH topic: " + newTopic + ", msg: " + message);
             // Log.e("mqtt payload size", Integer.toString(message.getPayload().length)); // fixme nayeon
         } catch (MqttException e) {
@@ -226,11 +226,12 @@ public enum MQTTClient {
         }
     }
 
-    // fixme jiyeon[0510]
-    public void subscribeAllTopics() { // todo audio 생각해줘야 함
+    // fixme jiyeon[0525]
+    public void subscribeAllTopics() {
         MQTTSettingData data = MQTTSettingData.getInstance();
 
         subscribe(topic_join);
+        subscribe(topic_noti);
         subscribe(topic_exit);
         subscribe(topic_delete);
         subscribe(topic_data);
@@ -243,12 +244,12 @@ public enum MQTTClient {
     public void unsubscribeAllTopics() {    //fixme minj - unsubscribe 할 topic 이 추가되어 따로 함수 생성
         try {
             client.unsubscribe(topic_join);
+            client.unsubscribe(topic_noti);
             client.unsubscribe(topic_exit);
             client.unsubscribe(topic_delete);
             client.unsubscribe(topic_data);
             client.unsubscribe(topic_mid);
             client.unsubscribe(topic_alive);
-//            client.unsubscribe(topic_audio);
 
             MyLog.e("kkankkan", "unsubscribe 완료");
 
@@ -262,18 +263,35 @@ public enum MQTTClient {
             MyLog.e("kkankkan", "exitTask 시작");
 
             if (data.isAliveMode() && !data.isAliveBackground()) {
-                MyLog.e("alive", "MQTTClient exitTask(): " + data.isAliveMode());
+                Log.e("alive", "MQTTClient exitTask(): " + data.isAliveMode());
                 th.interrupt();
             }
+
+            if (isMaster()) {
+                DeleteMessage deleteMessage = new DeleteMessage(myName);
+                MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
+                publish(topic_delete, JSONParser.getInstance().jsonWrite(messageFormat));
+                MyLog.e("exittask", "master delete pub");
+            } else {
+                ExitMessage exitMessage = new ExitMessage(myName);
+                MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                publish(topic_exit, JSONParser.getInstance().jsonWrite(messageFormat));
+                MyLog.e("exittask", "exit pub");
+            }
+
             client.unsubscribe(topic_join);
+            client.unsubscribe(topic_noti);
             client.unsubscribe(topic_exit);
             client.unsubscribe(topic_delete);
             client.unsubscribe(topic_data);
             client.unsubscribe(topic_mid);
 
-            if (data.isAliveMode() || data.isAliveBackground()) {  // fixme hy [0511]
-                client.unsubscribe(topic_alive);
-            }
+//            if (data.isAliveMode() || data.isAliveBackground()) {  // fixme hy [0511]
+//                client.unsubscribe(topic_alive);
+//            }
+
+            client.unsubscribe(topic_alive);
+
             // fixme jiyeon - 오디오 처리[0428]
             if (drawingViewModel.isMicFlag()) {
                 drawingViewModel.getRecThread().setFlag(false);
@@ -300,13 +318,14 @@ public enum MQTTClient {
             //
 
             isMid = true;
-            MyLog.e("kkankkan", "exitTask 완료");
-            exitCompleteFlag = true; // todo nayeon
-
             /*
             fixme hyeyeon - drawingFragment의 onDestroy()에서 처리하도록 변경
             de.removeAllDrawingData();
             */
+
+            MyLog.e("exittask", "exitTask 완료");
+
+            exitCompleteFlag = true; // todo nayeon
 
         } catch (MqttException e) {
             e.printStackTrace();
@@ -347,34 +366,31 @@ public enum MQTTClient {
                 MyLog.i("mqtt", "CONNECTION LOST");
             }*/
 
-        // fixme jiyeon[0510]
+        // fixme jiyeon[0525]
         client.setCallback(new MqttCallbackExtended() {
 
             @Override
             public void connectComplete(boolean reconnect, String serverURI) {
                 if (reconnect) {
-                    Log.e("modifiedmqtt", "RECONNECT");
+                    MyLog.e("modified mqtt", "RECONNECT");
                     setToastMsg("RECONNECT");
                     subscribeAllTopics();
+                    if (audioPlaying) // 오디오 sub 중이었다면 다시 sub
+                        subscribe(topic_audio);
                 } else {
-                    Log.e("modifiedmqtt", "CONNECT");
+                    MyLog.e("modified mqtt", "CONNECT");
                 }
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-                MyLog.e("mqtt", curMqttMsg);
                 MyLog.e("modified mqtt", "CONNECTION LOST");
-                MyLog.e("kkankkan", cause.toString());
-                MyLog.i("mqtt", cause.getCause().toString());
-                MyLog.i("mqtt", "CONNECTION LOST");
             }
-            //
+        //
 
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
                 // Log.e("kkankkan", "message Arrived");
-                curMqttMsg = new String(message.getPayload());
 
                 // [ 중간자 ]
                 if (newTopic.equals(topic_join)) {
@@ -386,8 +402,6 @@ public enum MQTTClient {
                     String name = joinMessage.getName(); // null or not-null ( "name":"이름" )
                     List<User> users = joinMessage.getUserList(); // null or not-null
 
-                    MyLog.e("kkankkan", "received " + name);  // fixme hyeoen [0511]
-
                     if (master != null) { // 메시지 형식이 "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..."  일 경우
                         //de.setIntercept(false);
 
@@ -397,39 +411,25 @@ public enum MQTTClient {
                         MyLog.i("mqtt", "to = " + to + ", myname = " + myName);
                         if (to.equals(myName)) { // 마스터가 중간자(to:" ") 에게 보낸 메시지 처리
 
-                            /* 중간자만 처리하는 부분 */
-
-                            /* fixme hyeyeon [0511] - master가 중간자에게 userList 보내지 않음 */
-
-                            /*
-                            if (userList.size() > 2) {  // fixme hyeyeon-중간자가 마스터로부터 데이터를 받기 전, 다른 사람의 join 메시지를 받을 수 있음
-                                userList.remove(0); // 마스터
-                                userList.remove(1);  // 나
-                                for (User user : userList) { // 내 이름 다음의 이름들을 마스터로부터 전송받은 사용자 리스트에 추가
-                                    users.add(user);
-                                }
-                            }
-                            userList.clear(); // 중간자는 마스터에게 사용자 리스트를 받기 전에 userList.add() 했음 따라서 자신의 리스트를 지우고 마스터가 보내준 배열 저장
-                            audioPlayThreadList.clear(); // fixme hyeyeon
-*/
-                            if (users != null) {
-                                MyLog.e("kkankkan", "master가 userList 보냄");
-                                for (User user : users) {  // 메시지로 전송받은 리스트 배열 세팅
-                                    if (!isContainsUserList(user.getName())) {
-                                        user.setCount(0);
-                                        userList.add(user);
-
-                                        // fixme jiyeon
-                                        AudioPlayThread audioPlayThread = new AudioPlayThread();
-                                        audioPlayThread.setName(user.getName());
-                                        audioPlayThread.setBufferUnitSize(2);
-                                        audioPlayThreadList.add(audioPlayThread);
-                                    }
-
-                                }
-                            }
-
-                            MyLog.e("kkankkan", "master가 userList 안보냄");
+//                            if (userList.size() > 2) {  // fixme hyeyeon-중간자가 마스터로부터 데이터를 받기 전, 다른 사람의 join 메시지를 받을 수 있음
+//                                userList.remove(0); // 마스터
+//                                userList.remove(1);  // 나
+//                                for (User user : userList) { // 내 이름 다음의 이름들을 마스터로부터 전송받은 사용자 리스트에 추가
+//                                    users.add(user);
+//                                }
+//                            }
+//                            userList.clear(); // 중간자는 마스터에게 사용자 리스트를 받기 전에 userList.add() 했음 따라서 자신의 리스트를 지우고 마스터가 보내준 배열 저장
+//                            audioPlayThreadList.clear(); // fixme hyeyeon
+//
+//                            for (User user : users) {  // 메시지로 전송받은 리스트 배열 세팅
+//                                user.setCount(0);
+//                                userList.add(user);
+//                                // fixme jiyeon
+//                                AudioPlayThread audioPlayThread = new AudioPlayThread();
+//                                audioPlayThread.setName(user.getName());
+//                                audioPlayThread.setBufferUnitSize(2);
+//                                audioPlayThreadList.add(audioPlayThread);
+//                            }
 
                             MyLog.e("who I am", to);
                             MyLog.e("received message", "mid data -> " + msg);
@@ -455,7 +455,7 @@ public enum MQTTClient {
                                 de.setBackgroundImage(de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()));
                             }
 
-                            publish(topic_mid, JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)));
+                            client2.publish(topic_mid, new MqttMessage(JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)).getBytes()));
                             //publish(topic_data, JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)));
                         }
                     } else {  // other or self // 메시지 형식이 "name":"이름"  일 경우
@@ -464,15 +464,15 @@ public enum MQTTClient {
                                 User user = new User(name, 0, MotionEvent.ACTION_UP, false);  // fixme hyeyeon
                                 userList.add(user); // 들어온 사람의 이름을 추가
 
-                                // fixme hyeyeon [0511]-중간자가 join하면 자신의 이름 pub
-                                if (isMaster()) {
-                                    midNameList.add(name);
-                                    MyLog.e("kkankkan", name + " mid list에 추가, 아직 못받은 사람 수: " + midNameList.size());
-                                }
-                                JoinMessage jMsg = new JoinMessage(myName);
-                                MqttMessageFormat mformater = new MqttMessageFormat(jMsg);
-                                publish(topic + "_join", JSONParser.getInstance().jsonWrite(mformater));
-                                //
+                                MyLog.e("login", "------------------------------------");
+                                MyLog.e("login", name + " [by join]");  // fixme hyeoen [0521]
+
+                                NotiMessage notiMessage = new NotiMessage(myName);
+                                MqttMessageFormat msgFormat = new MqttMessageFormat(notiMessage);
+
+                                client2.publish(topic + "_noti", new MqttMessage(parser.jsonWrite(msgFormat).getBytes()));
+                                MyLog.e("login", name + "에게 noti pub");
+                                MyLog.e("login", "------------------------------------");
 
                                 // fixme jiyeon
                                 AudioPlayThread audioPlayThread = new AudioPlayThread();
@@ -495,48 +495,89 @@ public enum MQTTClient {
                                     //binding.drawingView.InterceptTouchEventAndDoActionUp();
                                 }
 
-                                setToastMsg("[ " + name + " ] 님이 접속하셨습니다");  // fixme hyeyeon [0511]
+                                setToastMsg("[ " + name + " ] 님이 접속하셨습니다");
+
+                                drawingViewModel.setUserNum(userList.size());
+//                                MyLog.e("login", "user num set complete");
+                                drawingViewModel.setUserPrint(userPrint());
+//                                MyLog.e("login", "user print set compete");
                             }
 
+//                            NotiMessage notiMessage = new NotiMessage(myName);
+//                            MqttMessageFormat msgFormat = new MqttMessageFormat(notiMessage);
+//
+//                            MyLog.e("login", "json return complete: " + parser.jsonWrite(msgFormat));
+//                            client2.publish(topic + "_noti", new MqttMessage(parser.jsonWrite(msgFormat).getBytes()));
+//                            MyLog.e("login", name + "에게 noti pub");
+
                             // 마스터이고, 모든 username 의 마지막 draw action 이 ACTION_UP 이면, 자신의 드로잉 구조체들 전송
-                            if (isMaster() && isContainsMidNameList(name)) {  // fixme hyeyeon [0511]
-                                /* fixme hyeyeon [0511]- userList.get(userList.size() - 1).getName() -> name */
+                            if (isMaster()) {
+
                                 if (isUsersActionUp(name) && isTextInUse()) { // fixme nayeon
                                     JoinMessage joinMsg = new JoinMessage(userList.get(0).getName(), name, userList);
-                                    //JoinMessage joinMsg = new JoinMessage(userList.get(0).getName(), userList.get(userList.size() - 1).getName(), userList);  // fixme hyeyeon
+//                                    MyLog.e("login", "1");
+
                                     MqttMessageFormat messageFormat;
                                     if (de.getBackgroundImage() == null) {
                                         messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId(), de.getMaxComponentId(), de.getMaxTextId());
+//                                        MyLog.e("login", "2");
                                     } else {
                                         messageFormat = new MqttMessageFormat(joinMsg, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId(), de.getMaxComponentId(), de.getMaxTextId(), de.bitmapToByteArray(de.getBackgroundImage()));
+//                                        MyLog.e("login", "3");
                                     }
-                                    publish(topic_join, parser.jsonWrite(messageFormat));
 
-                                    // fixme hyeyeon [0511]
-                                    midNameList.remove(name);
-                                    Log.e("kkankkan", name + " mid list에서 삭제, 아직 못받은 사람 수: " + midNameList.size());
-                                    //
+                                    String json = parser.jsonWrite(messageFormat);
+//                                    MyLog.e("login", "json return complete: " + json);
+                                    client2.publish(topic_join, new MqttMessage(json.getBytes()));
+//                                    Log.e("login", "data publish complete -> " + name);
+                                    //binding.drawingView.setIntercept(false);
 
                                     setToastMsg("[ " + name + " ] 님에게 데이터 전송을 완료했습니다");
-                                    MyLog.e("kkankkan", "master data -> " + parser.jsonWrite(messageFormat));
-                                    MyLog.e("kkankkan", name + " join 후 : " + userList.toString());
-                                    MyLog.i("drawing", "payload size (bytes) = " + parser.jsonWrite(messageFormat).getBytes().length);
+//                                    MyLog.e("kkankkan", "master data -> " + parser.jsonWrite(messageFormat));
+//                                    MyLog.e("kkankkan", name + " join 후 : " + userList.toString());
+//                                    MyLog.i("drawing", "payload size (bytes) = " + parser.jsonWrite(messageFormat).getBytes().length);
                                 } else {
 
                                     MqttMessageFormat messageFormat = new MqttMessageFormat(new JoinMessage(name));
-                                    publish(topic_join, parser.jsonWrite(messageFormat));
-
+                                    client2.publish(topic_join, new MqttMessage(parser.jsonWrite(messageFormat).getBytes()));
                                     MyLog.e("master republish name", topic_join);
-                                    MyLog.e("kkankkan", "republish " + name);  // fixme hyeyeon [0511]
                                 }
-                                //
                             }
-                            //drawingViewModel.setUserNumTv(userList.size());
                         }
                     }
-                    drawingViewModel.setUserNum(userList.size());
-                    drawingViewModel.setUserPrint(userPrint());
+
                     //Log.e("after topic_join process", Arrays.toString(userList.toArray()));
+                }
+
+                if (newTopic.equals(topic_noti) && !master) {
+                    String msg = new String(message.getPayload());
+                    MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
+                    NotiMessage notiMessage = mqttMessageFormat.getNotiMessage();
+                    String name = notiMessage.getName();
+
+                    if (!isContainsUserList(name)) {
+                        MyLog.e("login", "------------------------------------");
+                        MyLog.e("login", name + " [by noti]");
+
+                        User user = new User(name, 0, MotionEvent.ACTION_UP, false);
+                        userList.add(user);
+
+                        MyLog.e("login", name + " 추가");
+                        MyLog.e("login", "------------------------------------");
+
+                        AudioPlayThread audioPlayThread = new AudioPlayThread();
+                        audioPlayThread.setName(name);
+                        audioPlayThread.setBufferUnitSize(2);
+                        audioPlayThreadList.add(audioPlayThread);
+                        MyLog.e("2yeonz", audioPlayThreadList.size() + " : add 후");
+                        if (drawingViewModel.isSpeakerFlag()) {
+                            audioPlayThread.setFlag(true);
+                            new Thread(audioPlayThread).start();
+                        }
+
+                        drawingViewModel.setUserNum(userList.size());
+                        drawingViewModel.setUserPrint(userPrint());
+                    }
                 }
 
                 if (newTopic.equals(topic_exit)) {
@@ -550,21 +591,24 @@ public enum MQTTClient {
                         for (int i=0; i<userList.size(); i++) {
                             if (userList.get(i).getName().equals(name)) {
                                 userList.remove(i);
+
                                 // fixme jiyeon
                                 MyLog.e("2yeonz", audioPlayThreadList.size() + " : remove 전");
                                 audioPlayThreadList.get(i).setFlag(false);
                                 audioPlayThreadList.get(i).getBuffer().clear();
                                 audioPlayThreadList.remove(i);
                                 MyLog.e("2yeonz", audioPlayThreadList.size() + " : remove 후");
+
+                                drawingViewModel.setUserNum(userList.size());
+                                drawingViewModel.setUserPrint(userPrint());
+
+                                setToastMsg("[ " + name + " ] 님이 나가셨습니다");
+                                MyLog.e("kkankkan", name + " exit 후 " + userPrintForLog());
+
                                 break;
                             }
                         }
-                        drawingViewModel.setUserNum(userList.size());
-                        drawingViewModel.setUserPrint(userPrint());
 
-
-                        setToastMsg("[ " + name + " ] 님이 나가셨습니다");
-                        MyLog.e("kkankkan", name + " exit 후 " + userPrintForLog());
                     }
                 }
 
@@ -611,6 +655,7 @@ public enum MQTTClient {
                             }
                         }
 
+//                        Log.e("kkankkan", "COUNT PLUS AFTER" + userPrintForLog());
                     } else {
                         for (User user : userList) {
                             if (user.getName().equals(name)) {
@@ -731,16 +776,6 @@ public enum MQTTClient {
         }
         return false;
     }
-
-    // fixme hyeyeon [0511]
-    public boolean isContainsMidNameList(String name) {
-        for (int i=0; i< midNameList.size(); i++) {
-            if (midNameList.get(i).equals(name))
-                return true;
-        }
-        return false;
-    }
-    //
 
     public void updateUsersAction(String username, int action) {
         for(User user : userList) {
@@ -864,7 +899,6 @@ public enum MQTTClient {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 MyLog.d("button", "exit dialog ok button click"); // fixme nayeon
-
                                 exitTask();
                                 if (progressDialog.isShowing())
                                     progressDialog.dismiss();  // todo 로딩하는 동안 터치 안먹히도록 수정해야함
@@ -917,6 +951,7 @@ public enum MQTTClient {
     }
 
 
+    //
     private int cnt = 0;
     public void setCnt(int cnt) {
         this.cnt = cnt;

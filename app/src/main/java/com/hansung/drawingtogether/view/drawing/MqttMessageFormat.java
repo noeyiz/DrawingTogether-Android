@@ -9,6 +9,7 @@ import com.hansung.drawingtogether.view.main.AudioMessage;
 import com.hansung.drawingtogether.view.main.DeleteMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
+import com.hansung.drawingtogether.view.main.NotiMessage;
 import com.hansung.drawingtogether.view.main.WarpingMessage;
 
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ public class MqttMessageFormat {
     private ExitMessage exitMessage;
     private DeleteMessage deleteMessage;
     private AliveMessage aliveMessage;
+    private NotiMessage notiMessage;
 
     // fixme jiyeon
     private AudioMessage audioMessage;
@@ -190,6 +192,10 @@ public class MqttMessageFormat {
 
     public MqttMessageFormat(AliveMessage aliveMessage) {
         this.aliveMessage = aliveMessage;
+    }
+
+    public MqttMessageFormat(NotiMessage notiMessage) {
+        this.notiMessage = notiMessage;
     }
 
     // fixme jiyeon
