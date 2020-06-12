@@ -32,7 +32,6 @@ import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
-import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
@@ -321,6 +320,9 @@ public class DrawingViewModel extends BaseViewModel {
             drawingMenuLayout.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
         }
         view.setBackgroundColor(Color.rgb(233, 233, 233));
+
+        de.initSelectedBitmap();
+
     }
 
     // fixme nayeon - 텍스트 편집 시 키보드가 내려가면 하단 메뉴 보임, 이들을 비활성화 : 추후에 키보드 내려가는 이벤트 처리로 바꿀 예정

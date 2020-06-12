@@ -33,7 +33,8 @@ public abstract class DrawingComponent {
     protected Point datumPoint = null;  //사각형의 왼쪽 위 꼭짓점
     protected int width;
     protected int height;
-    protected Boolean isErased = false;
+    protected boolean isErased = false;
+    protected boolean isSelected = false;
     //protected byte[] byteArray;
     //protected Canvas myCanvas;
     //protected Bitmap bitmap;
@@ -56,8 +57,5 @@ public abstract class DrawingComponent {
 
     public abstract void draw(Canvas canvas);
     public abstract void drawComponent(Canvas canvas);
-
-    public abstract String toString();
-
 
 }

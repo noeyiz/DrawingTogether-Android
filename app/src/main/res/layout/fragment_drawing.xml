@@ -89,14 +89,14 @@
                 android:onClick="@{vm::clickEraser}"
                 android:text="지우개" />
 
-            <!--<Button
+            <Button
                 android:id="@+id/selectBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@null"
                 android:onClick="@{vm::clickSelector}"
-                android:text="셀렉터" />-->
+                android:text="셀렉터" />
 
             <Button
                 android:id="@+id/warpingBtn"
