@@ -1,9 +1,9 @@
 
 {
-	"buildFiles" : [ "C:/AndroidProjects/DrawingTogether/app/src/main/cpp/CMakeLists.txt" ],
+	"buildFiles" : [ "/Users/kkankkan/DrawingTogether/app/src/main/cpp/CMakeLists.txt" ],
 	"cleanCommands" : 
 	[
-		"C:\\Users\\KwonNaYeon\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build C:\\AndroidProjects\\DrawingTogether\\app\\.cxx\\cmake\\release\\arm64-v8a --target clean"
+		"/Users/kkankkan/Library/Android/sdk/cmake/3.6.4111459/bin/cmake --build /Users/kkankkan/DrawingTogether/app/.cxx/cmake/release/arm64-v8a --target clean"
 	],
 	"cppFileExtensions" : [ "cpp" ],
 	"libraries" : 
@@ -13,34 +13,34 @@
 			"abi" : "arm64-v8a",
 			"artifactName" : "lib_opencv",
 			"buildType" : "release",
-			"output" : "C:/AndroidProjects/DrawingTogether/opencv/native/libs/arm64-v8a/libopencv_java3.so",
-			"toolchain" : "666885291"
+			"output" : "/Users/kkankkan/DrawingTogether/opencv/native/libs/arm64-v8a/libopencv_java3.so",
+			"toolchain" : "15412325606726653419"
 		},
 		"native-lib-Release-arm64-v8a" : 
 		{
 			"abi" : "arm64-v8a",
 			"artifactName" : "native-lib",
-			"buildCommand" : "C:\\Users\\KwonNaYeon\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build C:\\AndroidProjects\\DrawingTogether\\app\\.cxx\\cmake\\release\\arm64-v8a --target native-lib",
+			"buildCommand" : "/Users/kkankkan/Library/Android/sdk/cmake/3.6.4111459/bin/cmake --build /Users/kkankkan/DrawingTogether/app/.cxx/cmake/release/arm64-v8a --target native-lib",
 			"buildType" : "release",
 			"files" : 
 			[
 				
 				{
-					"flags" : "  --target=aarch64-none-linux-android26 --gcc-toolchain=C:/Users/KwonNaYeon/AppData/Local/Android/Sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/windows-x86_64 --sysroot=C:/Users/KwonNaYeon/AppData/Local/Android/Sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/windows-x86_64/sysroot  -Dnative_lib_EXPORTS -IC:\\AndroidProjects\\DrawingTogether\\opencv\\native\\jni\\include  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -std=gnu++11 -O2 -DNDEBUG  -fPIC    -c ",
-					"src" : "C:/AndroidProjects/DrawingTogether/app/src/main/cpp/native-lib.cpp",
-					"workingDirectory" : "C:/AndroidProjects/DrawingTogether/app/.cxx/cmake/release/arm64-v8a"
+					"flags" : "  --target=aarch64-none-linux-android26 --gcc-toolchain=/Users/kkankkan/Library/Android/sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/darwin-x86_64 --sysroot=/Users/kkankkan/Library/Android/sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/darwin-x86_64/sysroot  -Dnative_lib_EXPORTS -I/Users/kkankkan/DrawingTogether/opencv/native/jni/include  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -std=gnu++11 -O2 -DNDEBUG  -fPIC    -c ",
+					"src" : "/Users/kkankkan/DrawingTogether/app/src/main/cpp/native-lib.cpp",
+					"workingDirectory" : "/Users/kkankkan/DrawingTogether/app/.cxx/cmake/release/arm64-v8a"
 				}
 			],
-			"output" : "C:/AndroidProjects/DrawingTogether/app/build/intermediates/cmake/release/obj/arm64-v8a/libnative-lib.so",
-			"toolchain" : "666885291"
+			"output" : "/Users/kkankkan/DrawingTogether/app/build/intermediates/cmake/release/obj/arm64-v8a/libnative-lib.so",
+			"toolchain" : "15412325606726653419"
 		}
 	},
 	"toolchains" : 
 	{
-		"666885291" : 
+		"15412325606726653419" : 
 		{
-			"cCompilerExecutable" : "C:/Users/KwonNaYeon/AppData/Local/Android/Sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/windows-x86_64/bin/clang.exe",
-			"cppCompilerExecutable" : "C:/Users/KwonNaYeon/AppData/Local/Android/Sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++.exe"
+			"cCompilerExecutable" : "/Users/kkankkan/Library/Android/sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang",
+			"cppCompilerExecutable" : "/Users/kkankkan/Library/Android/sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++"
 		}
 	}
 }

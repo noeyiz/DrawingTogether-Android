@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -133,6 +134,14 @@ public class MainActivity extends AppCompatActivity {
         this.mOnKeyBackPressedListener = listener;
     }
     //
+
+    public void setToolbarVisible() {
+        toolbar.setVisibility(View.VISIBLE);
+    }
+
+    public void setToolbarInvisible() {
+        toolbar.setVisibility(View.GONE);
+    }
 
     // title 설정
     public void setToolbarTitle(String title) {

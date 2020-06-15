@@ -17,6 +17,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.google.android.material.textfield.TextInputLayout;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentMainBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
@@ -38,7 +39,7 @@ public class MainFragment extends Fragment {
 
         inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
         binding.topic.requestFocus();
-        binding.name.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        binding.name.getEditText().setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if(i == EditorInfo.IME_ACTION_DONE) {
@@ -78,14 +79,14 @@ public class MainFragment extends Fragment {
             ((MainActivity) getActivity()).setTopicPassword("");
         }
 
+        ((MainActivity)getActivity()).setToolbarInvisible();
+
         return binding.getRoot();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        ((MainActivity)getActivity()).setToolbarTitle("Drawing Together");
-        ((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     }
 
     // fixme hyeyeon[1]

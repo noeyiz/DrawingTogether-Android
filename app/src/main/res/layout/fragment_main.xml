@@ -9,6 +9,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#FFFFFF"
         xmlns:app="http://schemas.android.com/apk/res-auto">
 
         <androidx.constraintlayout.widget.Guideline
@@ -39,65 +40,88 @@
             android:orientation="horizontal"
             app:layout_constraintGuide_percent="0.8"/>
 
-        <EditText
-            android:id="@+id/ip"
+<!--        <EditText-->
+<!--            android:id="@+id/ip"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
+<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
+<!--            app:layout_constraintTop_toTopOf="@id/view_top_guide"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/ip_error"-->
+<!--            app:layout_constraintVertical_chainStyle="packed"-->
+<!--            android:hint="ip"-->
+<!--            android:text="@={vm.ip}"/>-->
+
+<!--        <TextView-->
+<!--            android:id="@+id/ip_error"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
+<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/ip"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/port"-->
+<!--            android:text="@={vm.ipError}"-->
+<!--            android:textSize="12dp"-->
+<!--            android:textColor="@color/colorAccent"/>-->
+
+<!--        <EditText-->
+<!--            android:id="@+id/port"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
+<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/ip_error"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/port_error"-->
+<!--            android:text="@={vm.port}"/>-->
+
+<!--        <TextView-->
+<!--            android:id="@+id/port_error"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
+<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/port"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/topic"-->
+<!--            android:layout_marginBottom="15dp"-->
+<!--            android:text="@={vm.portError}"-->
+<!--            android:textSize="12dp"-->
+<!--            android:textColor="@color/colorAccent"/>-->
+
+        <ImageView
+            android:id="@+id/logo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toTopOf="@id/view_top_guide"
-            app:layout_constraintBottom_toTopOf="@id/ip_error"
-            app:layout_constraintVertical_chainStyle="packed"
-            android:hint="ip"
-            android:text="@={vm.ip}"/>
-
-        <TextView
-            android:id="@+id/ip_error"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@id/view_start_guide"
-            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/ip"
-            app:layout_constraintBottom_toTopOf="@id/port"
-            android:text="@={vm.ipError}"
-            android:textSize="12dp"
-            android:textColor="@color/colorAccent"/>
-
-        <EditText
-            android:id="@+id/port"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@id/view_start_guide"
-            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/ip_error"
-            app:layout_constraintBottom_toTopOf="@id/port_error"
-            android:text="@={vm.port}"/>
-
-        <TextView
-            android:id="@+id/port_error"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@id/view_start_guide"
-            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/port"
             app:layout_constraintBottom_toTopOf="@id/topic"
-            android:layout_marginBottom="15dp"
-            android:text="@={vm.portError}"
-            android:textSize="12dp"
-            android:textColor="@color/colorAccent"/>
+            android:src="@drawable/banana_logo"/>
 
-        <EditText
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/topic"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:imeOptions="actionNext"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            app:hintEnabled="false"
+            app:boxStrokeColor="#00000000"
+            app:errorEnabled="false"
+            app:helperTextEnabled="false"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/port_error"
-            app:layout_constraintBottom_toTopOf="@id/topic_error"
-            android:hint="topic"
-            android:text="@={vm.topic}"/>
+            app:layout_constraintTop_toBottomOf="@id/logo"
+            app:layout_constraintBottom_toTopOf="@id/topic_error">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:singleLine="true"
+                android:imeOptions="actionNext"
+                android:hint="Topic"
+                android:text="@={vm.topic}"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:id="@+id/topic_error"
@@ -111,18 +135,31 @@
             android:textSize="12dp"
             android:textColor="@color/colorAccent"/>
 
-        <EditText
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/password"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:imeOptions="actionNext"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            app:hintEnabled="false"
+            app:boxStrokeColor="#00000000"
+            app:errorEnabled="false"
+            app:helperTextEnabled="false"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/topic_error"
-            app:layout_constraintBottom_toTopOf="@id/password_error"
-            android:hint="password"
-            android:text="@={vm.password}"/>
+            app:layout_constraintBottom_toTopOf="@id/password_error">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:singleLine="true"
+                android:imeOptions="actionNext"
+                android:hint="Password"
+                android:text="@={vm.password}"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:id="@+id/password_error"
@@ -136,18 +173,31 @@
             android:textSize="12dp"
             android:textColor="@color/colorAccent"/>
 
-        <EditText
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:imeOptions="actionDone"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            app:hintEnabled="false"
+            app:boxStrokeColor="#00000000"
+            app:errorEnabled="false"
+            app:helperTextEnabled="false"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/password_error"
-            app:layout_constraintBottom_toTopOf="@id/name_error"
-            android:hint="name"
-            android:text="@={vm.name}"/>
+            app:layout_constraintBottom_toTopOf="@id/name_error">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:singleLine="true"
+                android:imeOptions="actionNext"
+                android:hint="Name"
+                android:text="@={vm.name}"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:id="@+id/name_error"
@@ -162,68 +212,71 @@
             android:textSize="12dp"
             android:textColor="@color/colorAccent"/>
 
-        <Button
+        <ImageButton
             android:id="@+id/master_login"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/name_error"
             app:layout_constraintBottom_toTopOf="@id/join"
-            android:layout_marginHorizontal="10dp"
-            android:text="Master Login"
+            android:src="@drawable/master_login"
+            android:scaleType="centerCrop"
+            android:background="@android:color/transparent"
             android:onClick="@{vm::startDrawing}"/>
 
-        <Button
+        <ImageButton
             android:id="@+id/join"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/master_login"
-            app:layout_constraintBottom_toTopOf="@id/local"
-            android:layout_marginHorizontal="10dp"
-            android:text="Join"
+            app:layout_constraintBottom_toBottomOf="@id/view_bottom_guide"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/join"
+            android:scaleType="centerCrop"
+            android:background="@android:color/transparent"
             android:onClick="@{vm::startDrawing}"/>
 
-        <Button
-            android:id="@+id/local"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@id/view_start_guide"
-            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/join"
-            app:layout_constraintBottom_toTopOf="@id/aliveMode"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginBottom="15dp"
-            android:text="Local Start"
-            android:onClick="@{vm::showLocalHistory}"/>
+<!--        <Button-->
+<!--            android:id="@+id/local"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
+<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/join"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/aliveMode"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:layout_marginBottom="15dp"-->
+<!--            android:text="Local Start"-->
+<!--            android:onClick="@{vm::showLocalHistory}"/>-->
 
-        <CheckBox
-            android:id="@+id/aliveMode"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@id/view_start_guide"
-            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/local"
-            app:layout_constraintBottom_toTopOf="@id/aliveBackground"
-            android:layout_marginHorizontal="10dp"
-            android:text="Alive Publish Mode"
-            android:textSize="10dp"
-            android:checked="@={vm.aliveMode}" />
+<!--        <CheckBox-->
+<!--            android:id="@+id/aliveMode"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
+<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/local"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/aliveBackground"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:text="Alive Publish Mode"-->
+<!--            android:textSize="10dp"-->
+<!--            android:checked="@={vm.aliveMode}" />-->
 
-        <CheckBox
-            android:id="@+id/aliveBackground"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@id/view_start_guide"
-            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/aliveMode"
-            app:layout_constraintBottom_toBottomOf="@id/view_bottom_guide"
-            android:layout_marginHorizontal="10dp"
-            android:text="Alive Background Service"
-            android:textSize="10dp"
-            android:checked="@={vm.aliveBackground}" />
+<!--        <CheckBox-->
+<!--            android:id="@+id/aliveBackground"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
+<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/aliveMode"-->
+<!--            app:layout_constraintBottom_toBottomOf="@id/view_bottom_guide"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:text="Alive Background Service"-->
+<!--            android:textSize="10dp"-->
+<!--            android:checked="@={vm.aliveBackground}" />-->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

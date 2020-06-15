@@ -17,6 +17,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -93,7 +94,7 @@ public class DrawingViewModel extends BaseViewModel {
     private AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
     //
 
-    private Button preMenuButton;
+    private ImageButton preMenuButton;
 
     public DrawingViewModel() {
         setUserNum(0);
@@ -198,7 +199,7 @@ public class DrawingViewModel extends BaseViewModel {
 
         MyLog.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
         //drawingCommands.postValue(new DrawingCommand.PenMode(view));      //fixme nayeon color picker [ View Model 과 Navigator 관계, 이벤트 처리 방식 ]
-        preMenuButton = (Button)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
+        preMenuButton = (ImageButton)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
     }
 
     public void clickEraser(View view) {
@@ -271,7 +272,7 @@ public class DrawingViewModel extends BaseViewModel {
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.RECT);
 
-        preMenuButton = (Button)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
+        preMenuButton = (ImageButton)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
 
         drawingCommands.postValue(new DrawingCommand.ShapeMode(view));
     }

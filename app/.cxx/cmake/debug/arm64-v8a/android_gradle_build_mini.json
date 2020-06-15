@@ -1,21 +1,21 @@
 {
   "buildFiles": [
-    "C:\\AndroidProjects\\DrawingTogether\\app\\src\\main\\cpp\\CMakeLists.txt"
+    "/Users/kkankkan/DrawingTogether/app/src/main/cpp/CMakeLists.txt"
   ],
   "cleanCommands": [
-    "C:\\Users\\KwonNaYeon\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build C:\\AndroidProjects\\DrawingTogether\\app\\.cxx\\cmake\\debug\\arm64-v8a --target clean"
+    "/Users/kkankkan/Library/Android/sdk/cmake/3.6.4111459/bin/cmake --build /Users/kkankkan/DrawingTogether/app/.cxx/cmake/debug/arm64-v8a --target clean"
   ],
   "libraries": {
     "native-lib-Debug-arm64-v8a": {
       "artifactName": "native-lib",
-      "buildCommand": "C:\\Users\\KwonNaYeon\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build C:\\AndroidProjects\\DrawingTogether\\app\\.cxx\\cmake\\debug\\arm64-v8a --target native-lib",
+      "buildCommand": "/Users/kkankkan/Library/Android/sdk/cmake/3.6.4111459/bin/cmake --build /Users/kkankkan/DrawingTogether/app/.cxx/cmake/debug/arm64-v8a --target native-lib",
       "abi": "arm64-v8a",
-      "output": "C:\\AndroidProjects\\DrawingTogether\\app\\build\\intermediates\\cmake\\debug\\obj\\arm64-v8a\\libnative-lib.so"
+      "output": "/Users/kkankkan/DrawingTogether/app/build/intermediates/cmake/debug/obj/arm64-v8a/libnative-lib.so"
     },
     "lib_opencv-Debug-arm64-v8a": {
       "artifactName": "lib_opencv",
       "abi": "arm64-v8a",
-      "output": "C:\\AndroidProjects\\DrawingTogether\\opencv\\native\\libs\\arm64-v8a\\libopencv_java3.so"
+      "output": "/Users/kkankkan/DrawingTogether/opencv/native/libs/arm64-v8a/libopencv_java3.so"
     }
   }
 }

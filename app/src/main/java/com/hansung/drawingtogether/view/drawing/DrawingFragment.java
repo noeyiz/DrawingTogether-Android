@@ -28,10 +28,13 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -39,6 +42,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -101,6 +105,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     private Intent intent;
 
     private ProgressDialog progressDialog;
+
+    private Toolbar toolbar;
+    private TextView title;
 
     //private LinearLayout topToolLayout;
     //private Button doneBtn;
@@ -566,7 +573,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     @Override
     public void onResume() {
         super.onResume();
-        ((MainActivity)getActivity()).setToolbarTitle("Drawing");
+        ((MainActivity)getActivity()).setToolbarVisible();
         ((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
@@ -585,20 +592,20 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             case R.id.drawing_voice:
                 boolean click = drawingViewModel.clickVoice();
                 if (click) {
-                    item.setIcon(R.drawable.voice);
+                    item.setIcon(R.drawable.mic);
 
                 } else {
-                    item.setIcon(R.drawable.voiceno);
+                    item.setIcon(R.drawable.mic_slash);
                 }
                 break;
             case R.id.drawing_speaker:
                 int mode = drawingViewModel.clickSpeaker();
                 if (mode == 0) { // speaker off
-                    item.setIcon(R.drawable.mute);
+                    item.setIcon(R.drawable.speakerslash);
                 } else if (mode == 1) { // speaker on
-                    item.setIcon(R.drawable.speaker);
+                    item.setIcon(R.drawable.speaker1);
                 } else if (mode == 2) { // speaker loud
-                    item.setIcon(R.drawable.speaker_loud);
+                    item.setIcon(R.drawable.speaker3);
                 }
                 break;
             //
@@ -608,12 +615,12 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             case R.id.camera:
                 drawingViewModel.getImageFromCamera(DrawingFragment.this);
                 break;
-            case R.id.drawing_search:
-                drawingViewModel.clickSearch(getView());
-                break;
-            case R.id.drawing_plus:
-                drawingViewModel.plusUser(DrawingFragment.this, data.getTopic(), data.getPassword());  // fixme hyeyeon
-                break;
+//            case R.id.drawing_search:
+//                drawingViewModel.clickSearch(getView());
+//                break;
+//            case R.id.drawing_plus:
+//                drawingViewModel.plusUser(DrawingFragment.this, data.getTopic(), data.getPassword());  // fixme hyeyeon
+//                break;
             case R.id.drawing_save:
                 drawingViewModel.clickSave();
 

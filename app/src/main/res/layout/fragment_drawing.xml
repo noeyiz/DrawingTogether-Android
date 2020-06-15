@@ -28,82 +28,105 @@
             android:layout_height="0dp"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="@id/bottom_menu_guideline">
+            app:layout_constraintTop_toBottomOf="@id/bottom_menu_guideline">
 
-
-            <Button
+            <ImageButton
                 android:id="@+id/drawBtn1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@null"
                 android:contentDescription="10"
+                android:src="@drawable/pen1"
+                android:scaleType="centerCrop"
+                android:background="@android:color/transparent"
+                android:padding="20dp"
                 android:onClick="@{vm::clickPen}"
-                android:text="얇은 펜" />
+                android:text="얇은 펜"/>
 
-            <Button
+            <ImageButton
                 android:id="@+id/drawBtn2"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@null"
                 android:contentDescription="20"
+                android:src="@drawable/pen2"
+                android:scaleType="centerCrop"
+                android:background="@android:color/transparent"
+                android:padding="20dp"
                 android:onClick="@{vm::clickPen}"
                 android:text="중간 펜" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/drawBtn3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@null"
                 android:contentDescription="30"
+                android:src="@drawable/pen3"
+                android:scaleType="centerCrop"
+                android:background="@android:color/transparent"
+                android:padding="20dp"
                 android:onClick="@{vm::clickPen}"
                 android:text="굵은 펜" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/shapeBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@null"
+                android:src="@drawable/shape"
+                android:scaleType="centerCrop"
+                android:background="@android:color/transparent"
+                android:padding="20dp"
                 android:onClick="@{vm::clickShape}"
                 android:text="shape" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/textBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@null"
+                android:src="@drawable/text"
+                android:scaleType="centerCrop"
+                android:background="@android:color/transparent"
+                android:padding="20dp"
                 android:onClick="@{vm::clickText}"
                 android:text="text"
                 android:enabled = "true" /> <!-- fixme nayeon 텍스트 수정 전 까지 비활성화 -->
 
-            <Button
+            <ImageButton
                 android:id="@+id/eraseBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@null"
+                android:src="@drawable/eraser"
+                android:scaleType="centerCrop"
+                android:background="@android:color/transparent"
+                android:padding="20dp"
                 android:onClick="@{vm::clickEraser}"
                 android:text="지우개" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/selectBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@null"
+                android:src="@drawable/selector"
+                android:scaleType="centerCrop"
+                android:background="@android:color/transparent"
+                android:padding="20dp"
                 android:onClick="@{vm::clickSelector}"
                 android:text="셀렉터" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/warpingBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@null"
+                android:src="@drawable/warping"
+                android:scaleType="centerCrop"
+                android:background="@android:color/transparent"
+                android:padding="20dp"
                 android:onClick="@{vm::clickWarp}"
                 android:text="와핑" />
 
@@ -153,22 +176,23 @@
             app:layout_constraintBottom_toTopOf="@+id/bottom_menu_guideline"
             app:layout_constraintTop_toTopOf="@+id/palette_menu_guideline">
 
-            <LinearLayout
+            <FrameLayout
                 android:id="@+id/currentColorLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_marginRight="5dp">
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/currentColorBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/current_color_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:enabled="false"
                     android:text="CurrentColor"
-                    android:textSize="0sp" />
-            </LinearLayout>
+                    android:textSize="0sp"/>
+
+            </FrameLayout>
 
             <HorizontalScrollView
                 android:id="@+id/colorScrollView"
@@ -188,7 +212,7 @@
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:background="#FFFFFF"
+                        android:backgroundTint="#FFFFFF"
                         android:text="#FFFFFF"
                         android:textSize="0sp" />
 
@@ -197,7 +221,7 @@
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
                         android:layout_weight="0.3"
-                        android:background="#000000"
+                        android:backgroundTint="#000000"
                         android:text="#000000"
                         android:textSize="0sp" />
 
@@ -205,7 +229,7 @@
                         android:id="@+id/blueColorButton"
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
-                        android:background="#2196F3"
+                        android:backgroundTint="#2196F3"
                         android:text="#2196F3"
                         android:textSize="0sp" />
 
@@ -213,7 +237,7 @@
                         android:id="@+id/greenColorBtn"
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
-                        android:background="#4CAF50"
+                        android:backgroundTint="#4CAF50"
                         android:text="#4CAF50"
                         android:textSize="0sp" />
 
@@ -221,7 +245,7 @@
                         android:id="@+id/yellowColorBtn"
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
-                        android:background="#FFEB3B"
+                        android:backgroundTint="#FFEB3B"
                         android:text="#FFEB3B"
                         android:textSize="0sp" />
 
@@ -229,7 +253,7 @@
                         android:id="@+id/orangeColorBtn"
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
-                        android:background="#FF9800"
+                        android:backgroundTint="#FF9800"
                         android:text="#FF9800"
                         android:textSize="0sp" />
 
@@ -237,7 +261,7 @@
                         android:id="@+id/redColorBtn"
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
-                        android:background="#F44336"
+                        android:backgroundTint="#F44336"
                         android:text="#F44336"
                         android:textSize="0sp" />
 
@@ -245,7 +269,7 @@
                         android:id="@+id/brownColorBtn"
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
-                        android:background="#795548"
+                        android:backgroundTint="#795548"
                         android:text="#795548"
                         android:textSize="0sp" />
 
@@ -253,7 +277,7 @@
                         android:id="@+id/purpleColorBtn"
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
-                        android:background="#9C27B0"
+                        android:backgroundTint="#9C27B0"
                         android:text="#9C27B0"
                         android:textSize="0sp" />
 
@@ -262,7 +286,7 @@
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:background="#999999"
+                        android:backgroundTint="#999999"
                         android:text="#999999"
                         android:textSize="0sp" />
 
@@ -271,7 +295,7 @@
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:background="#AEE4FF"
+                        android:backgroundTint="#AEE4FF"
                         android:text="#AEE4FF"
                         android:textSize="0sp" />
 
@@ -280,7 +304,7 @@
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:background="#CCCCEE"
+                        android:backgroundTint="#CCCCEE"
                         android:text="#CCCCEE"
                         android:textSize="0sp" />
 
@@ -289,7 +313,7 @@
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:background="#BEE9B4"
+                        android:backgroundTint="#BEE9B4"
                         android:text="#BEE9B4"
                         android:textSize="0sp" />
 
@@ -298,7 +322,7 @@
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:background="#FCFFB0"
+                        android:backgroundTint="#FCFFB0"
                         android:text="#FCFFB0"
                         android:textSize="0sp" />
 
@@ -307,7 +331,7 @@
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:background="#F2CFA5"
+                        android:backgroundTint="#F2CFA5"
                         android:text="#F2CFA5"
                         android:textSize="0sp" />
 
@@ -316,7 +340,7 @@
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:background="#FFAFB0"
+                        android:backgroundTint="#FFAFB0"
                         android:text="#FFAFB0"
                         android:textSize="0sp" />
 
@@ -325,7 +349,7 @@
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:background="#BFA380"
+                        android:backgroundTint="#BFA380"
                         android:text="#BFA380"
                         android:textSize="0sp" />
 
@@ -334,7 +358,7 @@
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:background="#CAA6FE"
+                        android:backgroundTint="#CAA6FE"
                         android:text="#CAA6FE"
                         android:textSize="0sp" />
 
@@ -484,21 +508,27 @@
                 android:gravity="right"
                 android:orientation="horizontal">
 
-                <Button
+                <ImageButton
                     android:id="@+id/undoBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:layout_gravity="right"
-                    android:background="@null"
+                    android:src="@drawable/undo"
+                    android:scaleType="centerCrop"
+                    android:layout_marginRight="20dp"
+                    android:background="@android:color/transparent"
                     android:onClick="@{vm::clickUndo}"
                     android:text="undo" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/redoBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:layout_gravity="right"
-                    android:background="@null"
+                    android:src="@drawable/redo"
+                    android:scaleType="centerCrop"
+                    android:layout_marginRight="20dp"
+                    android:background="@android:color/transparent"
                     android:onClick="@{vm::clickRedo}"
                     android:text="redo" />
 

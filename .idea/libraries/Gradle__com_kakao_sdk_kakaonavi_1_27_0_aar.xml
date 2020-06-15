@@ -1,12 +1,12 @@
 <component name="libraryTable">
   <library name="Gradle: com.kakao.sdk:kakaonavi:1.27.0@aar">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/f5810c83533b8c81e20066dd88b88f3b/kakaonavi-1.27.0/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/f5810c83533b8c81e20066dd88b88f3b/kakaonavi-1.27.0/res" />
+      <root url="jar://$PROJECT_DIR$/../.gradle/caches/transforms-2/files-2.1/f5810c83533b8c81e20066dd88b88f3b/kakaonavi-1.27.0/jars/classes.jar!/" />
+      <root url="file://$PROJECT_DIR$/../.gradle/caches/transforms-2/files-2.1/f5810c83533b8c81e20066dd88b88f3b/kakaonavi-1.27.0/res" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.kakao.sdk/kakaonavi/1.27.0/3b879fbc94bea487c8c4b71045ca607162c5ff3d/kakaonavi-1.27.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/com.kakao.sdk/kakaonavi/1.27.0/3b879fbc94bea487c8c4b71045ca607162c5ff3d/kakaonavi-1.27.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>
