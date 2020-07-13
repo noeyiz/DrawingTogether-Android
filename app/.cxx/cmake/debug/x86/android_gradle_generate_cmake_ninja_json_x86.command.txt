@@ -1,10 +1,10 @@
 Executable : C:\Users\hansung\AppData\Local\Android\Sdk\cmake\3.6.4111459\bin\cmake.exe
 arguments : 
--HC:\Users\hansung\Downloads\DrawingTogether-merge\DrawingTogether-merge\app\src\main\cpp
--BC:\Users\hansung\Downloads\DrawingTogether-merge\DrawingTogether-merge\app\.cxx\cmake\debug\x86
+-HD:\DrawingTogether0616\DrawingTogether\app\src\main\cpp
+-BD:\DrawingTogether0616\DrawingTogether\app\.cxx\cmake\debug\x86
 -DANDROID_ABI=x86
 -DANDROID_PLATFORM=android-26
--DCMAKE_LIBRARY_OUTPUT_DIRECTORY=C:\Users\hansung\Downloads\DrawingTogether-merge\DrawingTogether-merge\app\build\intermediates\cmake\debug\obj\x86
+-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=D:\DrawingTogether0616\DrawingTogether\app\build\intermediates\cmake\debug\obj\x86
 -DCMAKE_BUILD_TYPE=Debug
 -DANDROID_NDK=C:\Users\hansung\AppData\Local\Android\Sdk\ndk\21.1.6352462
 -DCMAKE_CXX_FLAGS=

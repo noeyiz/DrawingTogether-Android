@@ -4,15 +4,9 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.media.audiofx.AcousticEchoCanceler;
-import android.util.Log;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.view.drawing.JSONParser;
-import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
 import com.hansung.drawingtogether.view.main.AudioMessage;
-import com.hansung.drawingtogether.view.main.DeleteMessage;
-
-import org.eclipse.paho.client.mqttv3.MqttClient;
 
 import lombok.Setter;
 
@@ -25,6 +19,7 @@ public class RecordThread implements Runnable {
     private int channelCount = AudioFormat.CHANNEL_IN_STEREO;
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
     private int bufferUnit = 2500;
+
     private int bufferSize;
 
     private AudioRecord audioRecord;
@@ -32,6 +27,7 @@ public class RecordThread implements Runnable {
 
     private MQTTClient mqttClient = MQTTClient.getInstance();
     private boolean flag = false;
+
 
     private byte[] readData;
 
@@ -48,6 +44,7 @@ public class RecordThread implements Runnable {
                         .build())
                 .setBufferSizeInBytes(bufferSize)
                 .build();
+
         initEchoCanceler(audioRecord.getAudioSessionId());
         audioRecord.startRecording();
 
@@ -62,12 +59,14 @@ public class RecordThread implements Runnable {
 
         audioRecord.stop();
         audioRecord.release();
+
         releaseEchoCanceler();
     }
 
     public void setBufferUnitSize(int n) {
         bufferSize = bufferUnit * n;
     }
+
 
     // Echo Canceler
     public void initEchoCanceler(int audioSession) {

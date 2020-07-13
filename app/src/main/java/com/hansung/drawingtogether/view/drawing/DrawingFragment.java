@@ -15,7 +15,6 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -29,9 +28,13 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -39,6 +42,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -46,6 +50,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.hansung.drawingtogether.R;
+
 import com.hansung.drawingtogether.data.remote.model.AliveBackgroundService;
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.ExitType;
@@ -54,12 +59,15 @@ import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
+import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.main.DeleteMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
+
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 
 import java.io.File;
@@ -87,6 +95,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     private DrawingViewModel drawingViewModel;
     private InputMethodManager inputMethodManager;
 
+
     // fixme hyeyeon[2]
     private DatabaseReference databaseReference;
     private ExitOnClickListener exitOnClickListener;
@@ -96,6 +105,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     private Intent intent;
 
     private ProgressDialog progressDialog;
+
+    private Toolbar toolbar;
+    private TextView title;
 
     //private LinearLayout topToolLayout;
     //private Button doneBtn;
@@ -174,7 +186,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 //            }
 
             if (data.isAliveMode() && !data.isAliveBackground()) {
-                Log.e("alive", "DrawingFragment: " + data.isAliveMode());
+                MyLog.e("alive", "DrawingFragment: " + data.isAliveMode());
                 // fixme hyeyeon
                 aliveTh.setSecond(2000);
                 aliveTh.setCount(0);
@@ -187,9 +199,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 MainActivity.context.startService(intent);
             }
             else {
-                Log.e("alive", "alive publish 안함");
+                MyLog.e("alive", "alive publish 안함");
             }
-            Log.e("alive", "DrawingFragment aliveBackground: " + data.isAliveBackground());
+            MyLog.e("alive", "DrawingFragment aliveBackground: " + data.isAliveBackground());
 
         }
 
@@ -463,6 +475,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                     public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
                         MyLog.e("transaction", "transaction complete");
 
+
                         if (databaseError != null) {
                             MyLog.e("transaction", databaseError.getDetails());
                             return;
@@ -490,6 +503,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             binding.backgroundView.removeAllViews();
         }*/ // fixme nayeon MQTT CALLBACK
 
+        Bitmap imageBitmap = null;
+
         switch (requestCode) {
             case PICK_FROM_GALLERY:
                 if (data == null) {
@@ -498,20 +513,17 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 // fixme jiyeon
                 try {
                     Uri uri = data.getData();
-                    Bitmap galleryBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
+                    imageBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
                     String filePath = getRealPathFromURI(uri);
 
-                    galleryBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(galleryBitmap));
-
-                    galleryBitmap = rotateBitmap(galleryBitmap, filePath);
-
+                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
+                    imageBitmap = rotateBitmap(imageBitmap, filePath);
+                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
 
                     // todo nayeon : check image file size
                     MyLog.e("gallery", "Gallery Image File Size = " + new File(getRealPathFromURI(uri)).length() + " Bytes");
-                    MyLog.e("gallery", "Gallery Bitmap Byte Count = " + galleryBitmap.getRowBytes() * galleryBitmap.getHeight());
+                    MyLog.e("gallery", "Gallery Bitmap Byte Count = " + imageBitmap.getRowBytes() * imageBitmap.getHeight());
 
-                    messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(galleryBitmap));
-                    client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
                 } catch(IOException e) {
                     e.printStackTrace();
                 }
@@ -524,24 +536,44 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                     // todo nayeon : check image file size
                     if(file.exists()) { MyLog.e("camera", "Camera File Size = " + file.length() + " Bytes"); }
 
-                    Bitmap cameraBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file));
+                    imageBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file));
 
-                    cameraBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(cameraBitmap));
-                    cameraBitmap = rotateBitmap(cameraBitmap, drawingViewModel.getPhotoPath());
+                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
+                    imageBitmap = rotateBitmap(imageBitmap, drawingViewModel.getPhotoPath());
+                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
 
-                    messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(cameraBitmap));
-                    client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 break;
         }
+
+        if(imageBitmap == null) {
+            Toast.makeText(getContext(), "이미지 로딩을 실패했습니다", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        setBackgroundImage(imageBitmap); // fixme nayeon
+
+        messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(imageBitmap));
+        client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
+    }
+
+    private void setBackgroundImage(Bitmap imageBitmap) {
+        binding.backgroundView.removeAllViews(); // fixme nayeon 배경이미지 하나
+
+        de.setBackgroundImage(imageBitmap);
+
+        WarpingControlView imageView = new WarpingControlView(getContext());
+        imageView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        imageView.setImage(de.getBackgroundImage()); // invalidate
+        client.getBinding().backgroundView.addView(imageView);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        ((MainActivity)getActivity()).setToolbarTitle("Drawing");
+        ((MainActivity)getActivity()).setToolbarVisible();
         ((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
@@ -555,23 +587,24 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
+
             // fixme jiyeon[0428]
             case R.id.drawing_voice:
                 boolean click = drawingViewModel.clickVoice();
                 if (click) {
-                    item.setIcon(R.drawable.voice);
+                    item.setIcon(R.drawable.mic);
                 } else {
-                    item.setIcon(R.drawable.voiceno);
+                    item.setIcon(R.drawable.mic_slash);
                 }
                 break;
             case R.id.drawing_speaker:
                 int mode = drawingViewModel.clickSpeaker();
                 if (mode == 0) { // speaker off
-                    item.setIcon(R.drawable.mute);
+                    item.setIcon(R.drawable.speakerslash);
                 } else if (mode == 1) { // speaker on
-                    item.setIcon(R.drawable.speaker);
+                    item.setIcon(R.drawable.speaker1);
                 } else if (mode == 2) { // speaker loud
-                    item.setIcon(R.drawable.speaker_loud);
+                    item.setIcon(R.drawable.speaker3);
                 }
                 break;
             //
@@ -581,11 +614,15 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             case R.id.camera:
                 drawingViewModel.getImageFromCamera(DrawingFragment.this);
                 break;
-            case R.id.drawing_search:
-                drawingViewModel.clickSearch(getView());
+//            case R.id.drawing_search:
+//                drawingViewModel.clickSearch(getView());
+//                break;
+            case R.id.drawing_invite:
+                drawingViewModel.clickInvite();  // fixme hyeyeon
                 break;
-            case R.id.drawing_plus:
-                drawingViewModel.plusUser(DrawingFragment.this, data.getTopic(), data.getPassword());  // fixme hyeyeon
+            case R.id.drawing_save:
+                drawingViewModel.clickSave();
+
                 break;
         }
 
@@ -594,6 +631,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
     // fixme jiyeon
     private Bitmap rotateBitmap(Bitmap bitmap, String path) {
+        MyLog.e("image", "rotate bitmap start");
         ExifInterface exif = null;
         try {
             exif = new ExifInterface(path);
@@ -614,9 +652,11 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 matrix.setRotate(-90);
                 break;
             default:
+                MyLog.e("image", "rotate bitmap end 1");
                 return bitmap;
         }
         try {
+            MyLog.e("image", "rotate bitmap end 2");
             Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             bitmap.recycle();
             return bmRotated;
@@ -640,8 +680,11 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         return result;
     }
 
+
     // fixme nayeon
     public static int calculateInSampleSize(BitmapFactory.Options options) {
+        MyLog.e("image", "calculate image size start");
+
         // Raw height and width of image
         final int height = options.outHeight;
         final int width = options.outWidth;
@@ -668,10 +711,13 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
         MyLog.e("image", "inSampleSize = " + inSampleSize);
 
+        MyLog.e("image", "calculate image size end");
         return inSampleSize;
     }
 
     public Bitmap decodeSampledBitmapFromBitmap(byte[] bitmapArray/*, int reqWidth, int reqHeight*/) {
+
+        MyLog.e("image", "resize bitmap start");
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -684,6 +730,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
 
+        MyLog.e("image", "resize bitmap end");
         return BitmapFactory.decodeByteArray(bitmapArray, 0, bitmapArray.length, options);
     }
 
@@ -706,7 +753,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.i("lifeCycle", "DrawingFragment onDestroy()");
+        MyLog.i("lifeCycle", "DrawingFragment onDestroy()");
 
         if (data.isAliveMode() && data.isAliveBackground()) {
             MainActivity.context.stopService(intent);
@@ -717,8 +764,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             client.getDe().removeAllDrawingData();
             client.getUserList().clear();
 
+
             if (!client.isExitCompleteFlag()) {
-                Log.e("exit", "비정상 종료");
+                MyLog.e("exit", "비정상 종료");
                 client.exitTask();
             }
 //            if (databaseReference != null) {  // todo hyeyeon - code 정리

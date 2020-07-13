@@ -15,6 +15,7 @@ public class MQTTSettingData {
     private String password;
     private boolean master;
     private String masterName;  // fixme hyeyeon
+
     private boolean aliveMode;
     private boolean aliveBackground;
 

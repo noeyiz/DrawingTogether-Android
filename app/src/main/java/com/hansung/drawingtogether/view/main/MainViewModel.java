@@ -3,6 +3,7 @@ package com.hansung.drawingtogether.view.main;
 
 import android.app.ProgressDialog;
 import android.util.Log;
+
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -29,8 +30,10 @@ public class MainViewModel extends BaseViewModel {
     private MutableLiveData<String> topic = new MutableLiveData<>();
     private MutableLiveData<String> password = new MutableLiveData<>();
     private MutableLiveData<String> name = new MutableLiveData<>();
+
     private MutableLiveData<Boolean> aliveMode = new MutableLiveData<>();
     private MutableLiveData<Boolean> aliveBackground = new MutableLiveData<>();
+
 
     private MutableLiveData<String> ipError = new MutableLiveData<>();
     private MutableLiveData<String> portError = new MutableLiveData<>();
@@ -64,6 +67,7 @@ public class MainViewModel extends BaseViewModel {
         setTopic("");
         setPassword("");
         setName("");
+
         setAliveMode(false);
         setAliveBackground(false);
 
@@ -161,8 +165,8 @@ public class MainViewModel extends BaseViewModel {
         MyLog.e("kkankkan", topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
 
         if (!hasSpecialCharacterAndBlank) {
-            progressDialog = new ProgressDialog(view.getContext());
-            progressDialog.setMessage("Loding...");
+            progressDialog = new ProgressDialog(view.getContext(), R.style.MyProgressDialogStyle);
+            progressDialog.setMessage("Loading...");
             progressDialog.setCanceledOnTouchOutside(true);    //fixme minj - master 없는 topic 의 경우 빠져나오지를 못해서 잠시 cancel 가능하게 수정
             client.setProgressDialog(progressDialog);
             progressDialog.show();
@@ -210,6 +214,8 @@ public class MainViewModel extends BaseViewModel {
                         }
                         else {
                             mutableData.child("username").child(name.getValue()).setValue(name.getValue());
+                            mutableData.child("access time").setValue(System.currentTimeMillis()); // fixme nayeon
+
                             masterName = mutableData.child("master").getValue().toString();  // fixme hyeyeon
                             MyLog.i("login", "masterName: " + masterName);
                             break;
@@ -224,6 +230,8 @@ public class MainViewModel extends BaseViewModel {
                     mutableData.child("password").setValue(password.getValue());
                     mutableData.child("username").child(name.getValue()).setValue(name.getValue());
                     mutableData.child("master").setValue(name.getValue());
+                    mutableData.child("access time").setValue(System.currentTimeMillis()); // fixme nayeon
+
                     masterName = name.getValue();  // fixme hyeyeon
                     MyLog.i("login", "masterName: " + masterName);
                     break;
@@ -276,8 +284,10 @@ public class MainViewModel extends BaseViewModel {
             data.setPassword(password.getValue());
             data.setName(name.getValue());
             data.setMasterName(masterName);  // fixme hyeyeon
-            data.setAliveMode(getAliveMode().getValue());
-            data.setAliveBackground(getAliveBackground().getValue());
+            data.setAliveMode(false);
+            data.setAliveBackground(false);
+//            data.setAliveMode(getAliveMode().getValue());
+//            data.setAliveBackground(getAliveBackground().getValue());
 
             switch (mode) {
                 case "masterMode":

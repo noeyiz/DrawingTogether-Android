@@ -5,7 +5,8 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-set(pathPROJECT C:/Users/hansung/Downloads/DrawingTogether-test) # 수정필요
+set(pathPROJECT D:/DrawingTogether0616/DrawingTogether) # 수정필요
+
 set(pathOPENCV ${pathPROJECT}/opencv)
 set(pathLIBOPENCV_JAVA ${pathOPENCV}/native/libs/${ANDROID_ABI}/libopencv_java3.so)
 

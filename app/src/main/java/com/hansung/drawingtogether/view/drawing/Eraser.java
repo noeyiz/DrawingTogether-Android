@@ -13,7 +13,8 @@ import lombok.Getter;
 @Getter
 public class Eraser {
     private DrawingEditor de = DrawingEditor.getInstance();
-    private MQTTClient client = MQTTClient.getInstance();
+    //private MQTTClient client = MQTTClient.getInstance();
+    private SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
     private JSONParser parser = JSONParser.getInstance();
     private int squareScope = 20;//(int) (((de.getMyCanvasWidth() * de.getMyCanvasHeight()) * 0.0014556040756914) / 100);
     private Vector<Integer> erasedComponentIds;
@@ -65,8 +66,9 @@ public class Eraser {
         MyLog.i("drawing", "erasedIds = " + erasedComponentIds.toString());
 
         //publish
-        MqttMessageFormat messageFormat = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), erasedComponentIds);
-        client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
+        MqttMessageFormat messageFormat = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), (Vector<Integer>)erasedComponentIds.clone());
+        sendMqttMessage.putMqttMessage(messageFormat);
+        //client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
 
         //de.eraseDrawingComponents(erasedComponentIds);
         new EraserTask(erasedComponentIds).execute();

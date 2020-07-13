@@ -16,6 +16,9 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
         //de.setDrawingView(((MainActivity) de.getContext()).getDrawingView());
         this.erasedComponentIds = erasedComponentIds;
         this.components = new Vector<>();
+
+        de.printCurrentComponents("erase");
+        de.printDrawingComponents("erase");
     }
 
     @Override
@@ -36,6 +39,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
         }
 
         de.drawAllDrawingComponents();
+        de.drawAllCurrentStrokes();
         //de.getDrawingView().invalidate();
     }
 

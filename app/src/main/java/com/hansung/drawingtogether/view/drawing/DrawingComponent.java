@@ -1,6 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Point;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class DrawingComponent {
+    //protected Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);;
     protected ArrayList<Point> points = new ArrayList<>();  //100
     protected int id;
     protected String username = null;
@@ -31,7 +33,8 @@ public abstract class DrawingComponent {
     protected Point datumPoint = null;  //사각형의 왼쪽 위 꼭짓점
     protected int width;
     protected int height;
-    protected Boolean isErased = false;
+    protected boolean isErased = false;
+    protected boolean isSelected = false;
     //protected byte[] byteArray;
     //protected Canvas myCanvas;
     //protected Bitmap bitmap;
@@ -54,7 +57,5 @@ public abstract class DrawingComponent {
 
     public abstract void draw(Canvas canvas);
     public abstract void drawComponent(Canvas canvas);
-
-    public abstract String toString();
 
 }

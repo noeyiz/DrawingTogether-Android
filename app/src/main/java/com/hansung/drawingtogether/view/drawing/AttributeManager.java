@@ -33,6 +33,9 @@ public enum AttributeManager {
 
                 switch (de.getCurrentMode()) {
                     case DRAW:
+                    case ERASE:
+                    case SELECT:
+                    case WARP:
                         de.setStrokeColor(color);
                         de.setFillColor(color);
                         break;

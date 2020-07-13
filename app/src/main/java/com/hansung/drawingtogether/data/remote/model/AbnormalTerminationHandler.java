@@ -1,9 +1,6 @@
 package com.hansung.drawingtogether.data.remote.model;
 
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,7 +18,6 @@ import com.hansung.drawingtogether.view.drawing.JSONParser;
 import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
 import com.hansung.drawingtogether.view.main.DeleteMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
-import com.hansung.drawingtogether.view.main.MainActivity;
 
 // 비 정상 종료 시 실행될 핸들러
 public class AbnormalTerminationHandler
@@ -99,7 +95,23 @@ public class AbnormalTerminationHandler
                         MyLog.e("transaction", databaseError.getDetails());
                         return;
                     }
+<<<<<<< HEAD
+                    if (client.isMaster()) {
+                        DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
+                        MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
+                        client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
+
+                        client.exitTask();
+                    } else {
+                        ExitMessage exitMessage = new ExitMessage(client.getMyName());
+                        MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
+                        client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
+
+                        client.exitTask();
+                    }
+=======
                     client.exitTask();
+>>>>>>> 629e23433c1324e422dd63e9b82c2ed247f1d687
                 }
             });
         }*/

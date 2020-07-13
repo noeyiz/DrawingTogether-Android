@@ -2,7 +2,6 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
-import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.util.Log;
 
@@ -20,6 +19,7 @@ public class AudioPlayThread implements Runnable {
     private int channelCount = AudioFormat.CHANNEL_IN_STEREO;
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
     private int bufferUnit = 2500; // 기본 단위 (0.25초마다)
+
     private int bufferSize; // fixme jiyeon[0428]
 
     private AudioTrack audioTrack;
@@ -28,6 +28,7 @@ public class AudioPlayThread implements Runnable {
     private String name;
 
     private boolean flag = false;
+
     private boolean start = false;
 
     @Override
@@ -46,6 +47,7 @@ public class AudioPlayThread implements Runnable {
                 .setBufferSizeInBytes(bufferSize)
                 .build();
         audioTrack.play();
+
 
 
         while(flag) {

@@ -10,11 +10,14 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+
 import android.util.Log;
+
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -30,7 +33,6 @@ import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
-import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
@@ -58,6 +60,7 @@ public class DrawingViewModel extends BaseViewModel {
     public final SingleLiveEvent<DrawingCommand> drawingCommands = new SingleLiveEvent<>();
     private MutableLiveData<String> userNum = new MutableLiveData<>();
     private MutableLiveData<String> userPrint = new MutableLiveData<>();  // fixme hyeyeon
+
     private MutableLiveData<String> aliveCount = new MutableLiveData<>();
     private MutableLiveData<String> userAliveCount = new MutableLiveData<>();
 
@@ -81,6 +84,7 @@ public class DrawingViewModel extends BaseViewModel {
     private MQTTClient client = MQTTClient.getInstance();
     private MQTTSettingData data = MQTTSettingData.getInstance();
 
+
     // fixme jiyeon[0428]
     private boolean micFlag = false;
     private boolean speakerFlag = false;
@@ -90,7 +94,7 @@ public class DrawingViewModel extends BaseViewModel {
     private AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
     //
 
-    private Button preMenuButton;
+    private ImageButton preMenuButton;
 
     public DrawingViewModel() {
         setUserNum(0);
@@ -108,8 +112,10 @@ public class DrawingViewModel extends BaseViewModel {
         MyLog.e("kkankkan", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master + "/" + masterName);
 
         client.init(topic, name, master, this, ip, port, masterName);
+
         client.setAliveCount(5);
         client.setCallback();
+
 //        client.subscribe(topic + "_join");
 //        client.subscribe(topic + "_noti");
 //        client.subscribe(topic + "_exit");
@@ -165,7 +171,6 @@ public class DrawingViewModel extends BaseViewModel {
 
         File fileCacheItem = new File(filePath);
 
-
         try {
             fos = new FileOutputStream(fileCacheItem);
             captureContainer.compress(Bitmap.CompressFormat.JPEG, 100, fos); // quality
@@ -177,6 +182,8 @@ public class DrawingViewModel extends BaseViewModel {
         }
 
         dvc.setDrawingCacheEnabled(false);
+
+        Toast.makeText(fragment.getContext(), R.string.success_save, Toast.LENGTH_SHORT).show();
 
     }
 
@@ -192,7 +199,7 @@ public class DrawingViewModel extends BaseViewModel {
 
         MyLog.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
         //drawingCommands.postValue(new DrawingCommand.PenMode(view));      //fixme nayeon color picker [ View Model 과 Navigator 관계, 이벤트 처리 방식 ]
-        preMenuButton = (Button)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
+        preMenuButton = (ImageButton)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
     }
 
     public void clickEraser(View view) {
@@ -265,7 +272,7 @@ public class DrawingViewModel extends BaseViewModel {
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.RECT);
 
-        preMenuButton = (Button)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
+        preMenuButton = (ImageButton)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
 
         drawingCommands.postValue(new DrawingCommand.ShapeMode(view));
     }
@@ -305,6 +312,7 @@ public class DrawingViewModel extends BaseViewModel {
     public void changeClickedButtonBackground(View view) {
         LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
 
+
         // fixme nayeon
         // preMenuButton -> 아무것도 누르지 않은 상태에서 텍스트 버튼 클릭했을 때 NULL
         // 제일 첫 번째 버튼 (얇은 펜(그리기)) 로 지정
@@ -314,6 +322,9 @@ public class DrawingViewModel extends BaseViewModel {
             drawingMenuLayout.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
         }
         view.setBackgroundColor(Color.rgb(233, 233, 233));
+
+        de.initSelectedBitmap();
+
     }
 
     // fixme nayeon - 텍스트 편집 시 키보드가 내려가면 하단 메뉴 보임, 이들을 비활성화 : 추후에 키보드 내려가는 이벤트 처리로 바꿀 예정
@@ -336,6 +347,7 @@ public class DrawingViewModel extends BaseViewModel {
 
             return true;
         } else {
+            micFlag = false;
             try {
                 micFlag = false;
                 recThread.setFlag(micFlag);
@@ -346,6 +358,7 @@ public class DrawingViewModel extends BaseViewModel {
             return false;
         }
     }
+
 
     public int clickSpeaker() {
         speakerMode = (speakerMode + 1) % 3; // 0, 1, 2, 0, 1, 2, ...
@@ -387,23 +400,27 @@ public class DrawingViewModel extends BaseViewModel {
         }
     }
 
-    public void plusUser(Fragment fragment, String topic, String password) {
-        TextTemplate params = TextTemplate.newBuilder("DrawingTogether!",
+    public void clickInvite() {
+        MyLog.e("kakao", "clickInvite");
+        TextTemplate params = TextTemplate.newBuilder("시시콜콜!",
                 LinkObject.newBuilder()
                         .setAndroidExecutionParams("topic=" + topic + "&password=" + password)
                         .build())
                 .setButtonTitle("앱으로 이동").build();
 
-        KakaoLinkService.getInstance().sendDefault(fragment.getContext(), params, new ResponseCallback<KakaoLinkResponse>() {
+        KakaoLinkService.getInstance().sendDefault((MainActivity)MainActivity.context, params, new ResponseCallback<KakaoLinkResponse>() {
             @Override
             public void onFailure(ErrorResult errorResult) {
+                MyLog.e("kakao", "failure " + errorResult.getErrorMessage().toString());
             }
 
             @Override
             public void onSuccess(KakaoLinkResponse result) {
+                MyLog.e("kakao", "success");
             }
         });
     }
+
 
     public File createImageFile(Fragment fragment) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());

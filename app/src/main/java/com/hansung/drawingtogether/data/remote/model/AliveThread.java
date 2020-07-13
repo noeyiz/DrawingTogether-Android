@@ -1,5 +1,6 @@
 package com.hansung.drawingtogether.data.remote.model;
 
+
 import android.util.Log;
 
 import com.hansung.drawingtogether.view.drawing.DrawingViewModel;
@@ -21,6 +22,7 @@ public enum AliveThread implements Runnable {
     INSTANCE;
 
     private MQTTClient client = MQTTClient.getInstance();  // 참조
+
     private DrawingViewModel drawingViewModel;
     private int second = 2000;
     private int count = 0;
@@ -32,11 +34,13 @@ public enum AliveThread implements Runnable {
     public void run() {
         String topic_alive = client.getTopic_alive();  // 복사
         String myName = client.getMyName();  // 복사
+
         drawingViewModel = client.getDrawingViewModel();
         while (true) {
             try {
                 AliveMessage aliveMessage = new AliveMessage(myName);
                 MqttMessageFormat mqttMessageFormat = new MqttMessageFormat(aliveMessage);
+
                 Log.e("alive", "alive publish" + (++count));
                 client.publish(topic_alive, JSONParser.getInstance().jsonWrite(mqttMessageFormat));
                 drawingViewModel.setAliveCount(Integer.toString(count));
@@ -74,6 +78,7 @@ public enum AliveThread implements Runnable {
                     Log.e("kkankkan", key + " " + aliveCheckMap.get(key));
                 }*/
             } catch (InterruptedException e) {
+
                 Log.e("kkankkan", "alive thread is dead");
                 break;
             }
