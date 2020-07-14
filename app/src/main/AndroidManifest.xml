@@ -24,25 +24,22 @@
         android:name=".data.remote.model.DrawingTogetherApplication"
         android:requestLegacyExternalStorage="true"> <!-- fixme nayeon [ android:name="" ] Registration LogApplication Class -->
 
-        <activity android:name=".view.splash.SplashActivity"
-            android:theme="@style/SplashTheme">
+        <activity android:name=".view.splash.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity
-            android:name=".view.main.MainActivity">
+
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
                 <data android:scheme="@string/kakao_scheme"
                     android:host="@string/kakaolink_host" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".view.main.MainActivity"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"

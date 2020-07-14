@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # Install script for directory: /Users/minj/Documents/AndroidProject/DrawingTogether/app/src/main/cpp
+=======
+# Install script for directory: D:/DrawingTogether0616/DrawingTogether/app/src/main/cpp
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -40,5 +44,9 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
+<<<<<<< HEAD
 file(WRITE "/Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cmake/debug/x86_64/${CMAKE_INSTALL_MANIFEST}"
+=======
+file(WRITE "D:/DrawingTogether0616/DrawingTogether/app/.cxx/cmake/debug/x86_64/${CMAKE_INSTALL_MANIFEST}"
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

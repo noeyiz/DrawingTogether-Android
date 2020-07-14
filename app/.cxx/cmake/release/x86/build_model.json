@@ -1,6 +1,7 @@
 {
   "variant": {
     "module": {
+<<<<<<< HEAD
       "rootBuildGradleFolder": "/Users/minj/Documents/AndroidProject/DrawingTogether",
       "sdkFolder": "/Users/minj/Library/Android/sdk",
       "isNativeCompilerSettingsCacheEnabled": false,
@@ -14,6 +15,21 @@
       "compilerSettingsCacheFolder": "/Users/minj/Documents/AndroidProject/DrawingTogether/.cxx",
       "cxxFolder": "/Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx",
       "ndkFolder": "/Users/minj/Library/Android/sdk/ndk/21.1.6352462",
+=======
+      "rootBuildGradleFolder": "D:\\DrawingTogether0616\\DrawingTogether",
+      "sdkFolder": "C:\\Users\\hansung\\AppData\\Local\\Android\\Sdk",
+      "isNativeCompilerSettingsCacheEnabled": false,
+      "isBuildOnlyTargetAbiEnabled": true,
+      "splitsAbiFilterSet": [],
+      "intermediatesFolder": "D:\\DrawingTogether0616\\DrawingTogether\\app\\build\\intermediates",
+      "gradleModulePathName": ":app",
+      "moduleRootFolder": "D:\\DrawingTogether0616\\DrawingTogether\\app",
+      "makeFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\src\\main\\cpp\\CMakeLists.txt",
+      "buildSystem": "CMAKE",
+      "compilerSettingsCacheFolder": "D:\\DrawingTogether0616\\DrawingTogether\\.cxx",
+      "cxxFolder": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx",
+      "ndkFolder": "C:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\ndk\\21.1.6352462",
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19
       "ndkVersion": "21.1.6352462",
       "ndkSupportedAbiList": [
         "ARMEABI_V7A",
@@ -35,10 +51,17 @@
       ""
     ],
     "variantName": "release",
+<<<<<<< HEAD
     "soFolder": "/Users/minj/Documents/AndroidProject/DrawingTogether/app/build/intermediates/cmake/release/lib",
     "objFolder": "/Users/minj/Documents/AndroidProject/DrawingTogether/app/build/intermediates/cmake/release/obj",
     "jsonFolder": "/Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cmake/release",
     "gradleBuildOutputFolder": "/Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cxx/release",
+=======
+    "soFolder": "D:\\DrawingTogether0616\\DrawingTogether\\app\\build\\intermediates\\cmake\\release\\lib",
+    "objFolder": "D:\\DrawingTogether0616\\DrawingTogether\\app\\build\\intermediates\\cmake\\release\\obj",
+    "jsonFolder": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release",
+    "gradleBuildOutputFolder": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cxx\\release",
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19
     "isDebuggableEnabled": false,
     "validAbiList": [
       "ARMEABI_V7A",
@@ -50,6 +73,7 @@
   },
   "abi": "X86",
   "abiPlatformVersion": 26,
+<<<<<<< HEAD
   "cxxBuildFolder": "/Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cmake/release/x86",
   "jsonFile": "/Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cmake/release/x86/android_gradle_build.json",
   "gradleBuildOutputFolder": "/Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cxx/release/x86",
@@ -69,4 +93,25 @@
   },
   "jsonGenerationLoggingRecordFile": "/Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cmake/release/x86/json_generation_record.json",
   "compileCommandsJsonFile": "/Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cmake/release/x86/compile_commands.json"
+=======
+  "cxxBuildFolder": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86",
+  "jsonFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86\\android_gradle_build.json",
+  "gradleBuildOutputFolder": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cxx\\release\\x86",
+  "objFolder": "D:\\DrawingTogether0616\\DrawingTogether\\app\\build\\intermediates\\cmake\\release\\obj\\x86",
+  "buildCommandFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86\\build_command.txt",
+  "buildOutputFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86\\build_output.txt",
+  "modelOutputFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86\\build_model.json",
+  "cmake": {
+    "cmakeListsWrapperFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cxx\\release\\x86\\CMakeLists.txt",
+    "toolchainWrapperFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cxx\\release\\x86\\android_gradle_build.toolchain.cmake",
+    "buildGenerationStateFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cxx\\release\\x86\\build_generation_state.json",
+    "cacheKeyFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cxx\\release\\x86\\compiler_cache_key.json",
+    "compilerCacheUseFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cxx\\release\\x86\\compiler_cache_use.json",
+    "compilerCacheWriteFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cxx\\release\\x86\\compiler_cache_write.json",
+    "toolchainSettingsFromCacheFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cxx\\release\\x86\\compiler_settings_cache.cmake",
+    "cmakeWrappingBaseFolder": "."
+  },
+  "jsonGenerationLoggingRecordFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86\\json_generation_record.json",
+  "compileCommandsJsonFile": "D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86\\compile_commands.json"
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19
 }

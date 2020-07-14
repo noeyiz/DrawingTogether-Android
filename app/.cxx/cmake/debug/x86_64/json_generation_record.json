@@ -5,7 +5,11 @@
   },
   {
     "level": "INFO",
+<<<<<<< HEAD
     "message": "JSON \u0027/Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cmake/debug/x86_64/android_gradle_build.json\u0027 was up-to-date"
+=======
+    "message": "JSON \u0027D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\debug\\x86_64\\android_gradle_build.json\u0027 was up-to-date"
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19
   },
   {
     "level": "INFO",

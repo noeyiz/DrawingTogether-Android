@@ -4,9 +4,13 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -23,8 +27,11 @@ import com.hansung.drawingtogether.view.drawing.SendMqttMessage;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 
+import static com.kakao.util.helper.Utility.getPackageInfo;
+
 public class MainActivity extends AppCompatActivity {
-    private String topicPassword="";
+    private String topic;
+    private String password;
     private Toolbar toolbar;
     private TextView title;
 
@@ -69,23 +76,14 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false); // 기본 title 안 보이게
 
-        Intent kakaoIntent = getIntent();
-        if (kakaoIntent == null)
-            return;
+        String kakaoTopic = getIntent().getStringExtra("kakaoTopic");
+        String kakaoPassword = getIntent().getStringExtra("kakaoPassword");
 
-        Uri uri = kakaoIntent.getData();
-        if (uri == null)
-            return;
-
-        String topic = uri.getQueryParameter("topic");
-        String password = uri.getQueryParameter("password");
-
-        MyLog.e("kkankkan", topic + "/" + password);
-
-        if (!(topic == null) && !(password == null)) {
-            topicPassword = topic;
-            topicPassword += "/" + password;
+        if (!(kakaoTopic == null) && !(kakaoPassword == null)) {
+            topic = kakaoTopic;
+            password = kakaoPassword;
         }
+
     }
 
     @Override
@@ -134,6 +132,14 @@ public class MainActivity extends AppCompatActivity {
     }
     //
 
+    public void setToolbarVisible() {
+        toolbar.setVisibility(View.VISIBLE);
+    }
+
+    public void setToolbarInvisible() {
+        toolbar.setVisibility(View.GONE);
+    }
+
     // title 설정
     public void setToolbarTitle(String title) {
         this.title.setText(title);
@@ -146,13 +152,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    public String getTopicPassword() {
-        return topicPassword;
+    public String getTopic() {
+        return topic;
     }
 
-    public void setTopicPassword(String topicPassword) {
-        this.topicPassword = topicPassword;
+    public String getPassword() {
+        return password;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public void setOnBackListener(OnBackListener onBackListener) {

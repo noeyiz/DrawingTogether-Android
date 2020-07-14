@@ -373,7 +373,7 @@ public enum MQTTClient {
             public void connectComplete(boolean reconnect, String serverURI) {
                 if (reconnect) {
                     MyLog.e("modified mqtt", "RECONNECT");
-                    setToastMsg("RECONNECT");
+//                    setToastMsg("RECONNECT");
                     subscribeAllTopics();
                     if (audioPlaying) // 오디오 sub 중이었다면 다시 sub
                         subscribe(topic_audio);
@@ -673,6 +673,12 @@ public enum MQTTClient {
                     String msg = new String(message.getPayload());
                     MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
                     MyLog.i("message", msg);
+
+                    if(de.isMidEntered() && (messageFormat.getAction() != MotionEvent.ACTION_UP)) {
+                        //MyLog.i("drawing", "mid entering");
+                        if(getDrawingView().isIntercept() || (de.isIntercept() && (de.getCurrentComponent(messageFormat.getUsersComponentId()) == null)))
+                            return;
+                    }
 
                     if(de.isMidEntered() && (messageFormat.getAction() != MotionEvent.ACTION_UP)) {
                         //MyLog.i("drawing", "mid entering");
@@ -1071,10 +1077,14 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 return null;
             case SELECT:
                 if(message.getAction() == null) {
+<<<<<<< HEAD
                     DrawingComponent selectedComponent = de.findDrawingComponentByUsersComponentId(message.getUsersComponentId());
                     if(selectedComponent != null) {
                         selectedComponent.setSelected(message.getIsSelected());
                     }
+=======
+                    Objects.requireNonNull(de.findDrawingComponentByUsersComponentId(message.getUsersComponentId())).setSelected(message.getIsSelected());
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19
                 }
                 publishProgress(message);
 

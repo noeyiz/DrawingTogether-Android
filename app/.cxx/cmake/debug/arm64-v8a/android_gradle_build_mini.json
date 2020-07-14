@@ -1,21 +1,38 @@
 {
   "buildFiles": [
+<<<<<<< HEAD
     "/Users/minj/Documents/AndroidProject/DrawingTogether/app/src/main/cpp/CMakeLists.txt"
   ],
   "cleanCommands": [
     "/Users/minj/Library/Android/sdk/cmake/3.6.4111459/bin/cmake --build /Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cmake/debug/arm64-v8a --target clean"
+=======
+    "D:\\DrawingTogether0616\\DrawingTogether\\app\\src\\main\\cpp\\CMakeLists.txt"
+  ],
+  "cleanCommands": [
+    "C:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\debug\\arm64-v8a --target clean"
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19
   ],
   "libraries": {
     "native-lib-Debug-arm64-v8a": {
       "artifactName": "native-lib",
+<<<<<<< HEAD
       "buildCommand": "/Users/minj/Library/Android/sdk/cmake/3.6.4111459/bin/cmake --build /Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cmake/debug/arm64-v8a --target native-lib",
       "abi": "arm64-v8a",
       "output": "/Users/minj/Documents/AndroidProject/DrawingTogether/app/build/intermediates/cmake/debug/obj/arm64-v8a/libnative-lib.so"
+=======
+      "buildCommand": "C:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\debug\\arm64-v8a --target native-lib",
+      "abi": "arm64-v8a",
+      "output": "D:\\DrawingTogether0616\\DrawingTogether\\app\\build\\intermediates\\cmake\\debug\\obj\\arm64-v8a\\libnative-lib.so"
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19
     },
     "lib_opencv-Debug-arm64-v8a": {
       "artifactName": "lib_opencv",
       "abi": "arm64-v8a",
+<<<<<<< HEAD
       "output": "/Users/minj/Documents/AndroidProject/DrawingTogether/opencv/native/libs/arm64-v8a/libopencv_java3.so"
+=======
+      "output": "D:\\DrawingTogether0616\\DrawingTogether\\opencv\\native\\libs\\arm64-v8a\\libopencv_java3.so"
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19
     }
   }
 }

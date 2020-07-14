@@ -1,5 +1,10 @@
 # ninja log v5
+<<<<<<< HEAD
 0	1691	0	CMakeFiles/native-lib.dir/native-lib.cpp.o	74e567805ba4f6e6
 1692	1820	0	/Users/minj/Documents/AndroidProject/DrawingTogether/app/build/intermediates/cmake/debug/obj/armeabi-v7a/libnative-lib.so	cb128b5fad63272
 0	1941	0	CMakeFiles/native-lib.dir/native-lib.cpp.o	74e567805ba4f6e6
 1941	2116	0	/Users/minj/Documents/AndroidProject/DrawingTogether/app/build/intermediates/cmake/debug/obj/armeabi-v7a/libnative-lib.so	cb128b5fad63272
+=======
+1	2702	0	CMakeFiles/native-lib.dir/native-lib.cpp.o	f6f09859d81d5ab
+2706	3038	0	D:/DrawingTogether0616/DrawingTogether/app/build/intermediates/cmake/debug/obj/armeabi-v7a/libnative-lib.so	810b1f7875c50a8
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19

@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 /Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cmake/release/armeabi-v7a/CMakeFiles/edit_cache.dir
 /Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cmake/release/armeabi-v7a/CMakeFiles/rebuild_cache.dir
 /Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cmake/release/armeabi-v7a/CMakeFiles/native-lib.dir
+=======
+D:/DrawingTogether0616/DrawingTogether/app/.cxx/cmake/release/armeabi-v7a/CMakeFiles/native-lib.dir
+D:/DrawingTogether0616/DrawingTogether/app/.cxx/cmake/release/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/DrawingTogether0616/DrawingTogether/app/.cxx/cmake/release/armeabi-v7a/CMakeFiles/rebuild_cache.dir
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19

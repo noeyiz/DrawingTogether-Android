@@ -5,7 +5,11 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
+<<<<<<< HEAD
 set(pathPROJECT /Users/minj/Documents/AndroidProject/DrawingTogether) # 수정필요
+=======
+set(pathPROJECT D:/DrawingTogether0616/DrawingTogether) # 수정필요
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19
 
 set(pathOPENCV ${pathPROJECT}/opencv)
 set(pathLIBOPENCV_JAVA ${pathOPENCV}/native/libs/${ANDROID_ABI}/libopencv_java3.so)

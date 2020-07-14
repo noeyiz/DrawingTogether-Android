@@ -5,7 +5,51 @@
   },
   {
     "level": "INFO",
+<<<<<<< HEAD
     "message": "JSON \u0027/Users/minj/Documents/AndroidProject/DrawingTogether/app/.cxx/cmake/release/x86_64/android_gradle_build.json\u0027 was up-to-date"
+=======
+    "message": "rebuilding JSON D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86_64\\android_gradle_build.json due to:"
+  },
+  {
+    "level": "INFO",
+    "message": "- command changed from previous, will remove stale json folder"
+  },
+  {
+    "level": "INFO",
+    "message": "- a dependent build file changed"
+  },
+  {
+    "level": "INFO",
+    "message": "  - D:\\Users\\kkankkan\\DrawingTogether\\app\\src\\main\\cpp\\CMakeLists.txt"
+  },
+  {
+    "level": "INFO",
+    "message": "removing stale contents from \u0027D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86_64\u0027"
+  },
+  {
+    "level": "INFO",
+    "message": "created folder \u0027D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86_64\u0027"
+  },
+  {
+    "level": "INFO",
+    "message": "executing cmake Executable : C:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe\narguments : \n-HD:\\DrawingTogether0616\\DrawingTogether\\app\\src\\main\\cpp\n-BD:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86_64\n-DANDROID_ABI\u003dx86_64\n-DANDROID_PLATFORM\u003dandroid-26\n-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003dD:\\DrawingTogether0616\\DrawingTogether\\app\\build\\intermediates\\cmake\\release\\obj\\x86_64\n-DCMAKE_BUILD_TYPE\u003dRelease\n-DANDROID_NDK\u003dC:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\ndk\\21.1.6352462\n-DCMAKE_CXX_FLAGS\u003d\n-DCMAKE_TOOLCHAIN_FILE\u003dC:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\ndk\\21.1.6352462\\build\\cmake\\android.toolchain.cmake\n-DCMAKE_MAKE_PROGRAM\u003dC:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\ninja.exe\n-GAndroid Gradle - Ninja\njvmArgs : \n\n"
+  },
+  {
+    "level": "INFO",
+    "message": "Executable : C:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe\narguments : \n-HD:\\DrawingTogether0616\\DrawingTogether\\app\\src\\main\\cpp\n-BD:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86_64\n-DANDROID_ABI\u003dx86_64\n-DANDROID_PLATFORM\u003dandroid-26\n-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003dD:\\DrawingTogether0616\\DrawingTogether\\app\\build\\intermediates\\cmake\\release\\obj\\x86_64\n-DCMAKE_BUILD_TYPE\u003dRelease\n-DANDROID_NDK\u003dC:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\ndk\\21.1.6352462\n-DCMAKE_CXX_FLAGS\u003d\n-DCMAKE_TOOLCHAIN_FILE\u003dC:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\ndk\\21.1.6352462\\build\\cmake\\android.toolchain.cmake\n-DCMAKE_MAKE_PROGRAM\u003dC:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\ninja.exe\n-GAndroid Gradle - Ninja\njvmArgs : \n\n"
+  },
+  {
+    "level": "INFO",
+    "message": "done executing cmake"
+  },
+  {
+    "level": "INFO",
+    "message": "write build output D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86_64\\build_output.txt"
+  },
+  {
+    "level": "INFO",
+    "message": "write command file D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86_64\\build_command.txt"
+>>>>>>> 3e197793e3f110e598dfb21e492cdc5cb8e3ae19
   },
   {
     "level": "INFO",
