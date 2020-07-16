@@ -1,6 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
@@ -37,12 +38,12 @@ public class Oval  extends DrawingComponent {
             RectF fillOval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);   //fixme alpha 적용되면 strokeWidth/2만큼 작은 사각형
 
             paint.setStyle(Paint.Style.FILL);       //채우기
-            paint.setColor(this.fillColor);
+            paint.setColor(Color.parseColor(this.fillColor));
             paint.setAlpha(this.fillAlpha);
             canvas.drawOval(oval, paint);
 
             paint.setStyle(Paint.Style.STROKE);     //윤곽선
-            paint.setColor(this.strokeColor);
+            paint.setColor(Color.parseColor(this.strokeColor));
             paint.setAlpha(this.strokeAlpha);
             canvas.drawOval(fillOval, paint);
         }catch(NullPointerException e) {

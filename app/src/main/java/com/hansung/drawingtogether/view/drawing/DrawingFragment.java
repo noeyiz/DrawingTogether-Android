@@ -143,7 +143,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
         am.setBinding(binding); // Palette Manager 의 FragmentDrawingBinding 변수 초기화
         am.setListener(); // 리스너 초기화
-        am.showCurrentColor(de.getStrokeColor()); // 현재 색상 보여주기
+        am.showCurrentColor(Color.parseColor(de.getStrokeColor())); // 현재 색상 보여주기
 
         binding.drawBtn1.setBackgroundColor(Color.rgb(233, 233, 233)); // 초기 얇은 펜으로 설정
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
