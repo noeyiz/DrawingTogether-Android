@@ -361,7 +361,7 @@ public class DrawingView extends View {
                 sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), dComponent, event.getAction()));
                 //sendDrawMqttMessage(event.getAction(), point);
 
-                return true;
+                break;
 
             case MotionEvent.ACTION_MOVE:
                 point = new Point((int)event.getX(), (int)event.getY());
@@ -379,7 +379,8 @@ public class DrawingView extends View {
                 //sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), de.getUpdatedDrawingComponentId(dComponent), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, event.getAction()));
                 //sendDrawMqttMessage(event.getAction(), point);
 
-                return true;
+                break;
+
 
             case MotionEvent.ACTION_UP:
                 point = new Point((int)event.getX(), (int)event.getY());
@@ -399,10 +400,12 @@ public class DrawingView extends View {
                 sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, event.getAction()));
                 //sendDrawMqttMessage(event.getAction(), point);
 
-                return true;
+                break;
+
             default:
                 MyLog.i("drawing", "action = " + MotionEvent.actionToString(event.getAction()));
         }
+        invalidate();
         return true;
     }
 

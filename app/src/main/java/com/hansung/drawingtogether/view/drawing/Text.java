@@ -349,7 +349,6 @@ public class Text { // EditTextView
 
         binding.redoBtn.setVisibility(View.INVISIBLE);
         binding.undoBtn.setVisibility(View.INVISIBLE); // 텍스트 편집 시 UNDO, REDO 버튼 안보이도록
-
         textView.setVisibility(View.INVISIBLE);
 
         binding.doneBtn.setVisibility(View.VISIBLE);
@@ -421,6 +420,9 @@ public class Text { // EditTextView
     public void setTextViewLocation() {
         // 텍스트 위치 비율 계산
         calculateRatio(frameLayout.getWidth(), frameLayout.getHeight()); // xRatio, yRatio 설정
+
+        System.out.println("xRatio = " + xRatio + ", yRatio = " + yRatio +
+                " /// x = " + textAttribute.getX() + ", y = " + textAttribute.getY());
 
         textView.setX(textAttribute.getX() * xRatio - (textView.getWidth()/2));
         textView.setY(textAttribute.getY() * yRatio - (textView.getHeight()/2));
