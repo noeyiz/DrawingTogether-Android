@@ -90,18 +90,18 @@ public class Text { // EditTextView
     public void setTextViewAttribute() {
         textView.setText(textAttribute.getText());
         textView.setTextSize(textAttribute.getTextSize());
-        textView.setTextColor(textAttribute.getTextColor());
+        textView.setTextColor(Color.parseColor(textAttribute.getTextColor()));
         //textView.setBackgroundColor(textAttribute.getTextBackgroundColor());
-        textView.setGravity(textAttribute.getTextGravity());
+        textView.setGravity(Gravity.CENTER);
         textView.setTypeface(null, textAttribute.getStyle());
     }
 
     public void setEditTextAttribute() {
         editText.setText(textAttribute.getText());
         editText.setTextSize(textAttribute.getTextSize());
-        editText.setTextColor(textAttribute.getTextColor());
+        editText.setTextColor(Color.parseColor(textAttribute.getTextColor()));
         //editText.setBackgroundColor(textAttribute.getTextBackgroundColor());
-        editText.setGravity(textAttribute.getTextGravity());
+        editText.setGravity(Gravity.CENTER);
         editText.setTypeface(null, textAttribute.getStyle());
 
         editText.setSelection(editText.length()); // fixme nayeon - Edit Text 커서 뒤로
@@ -220,6 +220,7 @@ public class Text { // EditTextView
         // 지우개 모드에서 텍스트가 터치 되었을 시
         // 다음 이벤트가 발생하지 않도록 텍스트뷰 비활성화
         textView.setEnabled(false);
+        // todo 제스쳐 비활성화
 
         removeTextViewToFrameLayout();
         de.removeTexts(this); // 텍스트 리스트에서 텍스트 제거
@@ -394,7 +395,7 @@ public class Text { // EditTextView
 
         textView.setBackground(de.getTextHighlightBorderDrawble());
 
-        binding.currentColorBtn.setBackgroundColor(textAttribute.getTextColor()); // 현재 텍스트 컬러로 현재 색상 버튼 색깔 변경
+        binding.currentColorBtn.setBackgroundColor(Color.parseColor(textAttribute.getTextColor())); // 현재 텍스트 컬러로 현재 색상 버튼 색깔 변경
         visibleDrawingMenuAndTopToolButton(View.INVISIBLE); // 다른 메뉴 버튼들 숨기기
         binding.textColorChangeButton.setVisibility(View.VISIBLE); // 텍스트 컬러 설정 버튼 보이기
     }
@@ -410,7 +411,7 @@ public class Text { // EditTextView
 
         visibleDrawingMenuAndTopToolButton(View.VISIBLE);
         binding.textColorChangeButton.setVisibility(View.INVISIBLE);
-        binding.currentColorBtn.setBackgroundColor(de.getStrokeColor()); // 이전에 선택했던 펜 컬러로 현재 색상 버튼 색깔 변경
+        binding.currentColorBtn.setBackgroundColor(Color.parseColor(de.getStrokeColor())); // 이전에 선택했던 펜 컬러로 현재 색상 버튼 색깔 변경
 
         de.setCurrentMode(Mode.DRAW);
     }
@@ -542,6 +543,9 @@ public class Text { // EditTextView
                 de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme minj - addHistory
                 MyLog.i("drawing", "history.size()=" + de.getHistory().size());
                 de.clearUndoArray();
+
+                return false;
+
             } else {
                 //textView.setBackground(de.getTextMoveBorderDrawable());
                 de.setCurrentMode(Mode.TEXT);
@@ -597,6 +601,7 @@ public class Text { // EditTextView
 
             startTextColorChange();
 
+            return;
         }
 
         @Override

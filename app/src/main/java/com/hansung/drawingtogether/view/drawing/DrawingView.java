@@ -339,6 +339,7 @@ public class DrawingView extends View {
 
             isExit = true;
             MyLog.i("mqtt", "isExit2 = " + isExit);
+            invalidate();
             return true;
         }
 
@@ -371,6 +372,7 @@ public class DrawingView extends View {
                 points.add(point);
                 //MyLog.i("sendThread", points.size() + "");
 
+
                 if(points.size() == msgChunkSize) {
                     MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
                     sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), (ArrayList<Point>) points.clone()/*points.toString()*/, event.getAction()));
@@ -380,7 +382,6 @@ public class DrawingView extends View {
                 //sendDrawMqttMessage(event.getAction(), point);
 
                 break;
-
 
             case MotionEvent.ACTION_UP:
                 point = new Point((int)event.getX(), (int)event.getY());
@@ -401,7 +402,6 @@ public class DrawingView extends View {
                 //sendDrawMqttMessage(event.getAction(), point);
 
                 break;
-
             default:
                 MyLog.i("drawing", "action = " + MotionEvent.actionToString(event.getAction()));
         }

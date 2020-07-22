@@ -165,8 +165,8 @@ public class MainViewModel extends BaseViewModel {
         MyLog.e("kkankkan", topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
 
         if (!hasSpecialCharacterAndBlank) {
-            progressDialog = new ProgressDialog(view.getContext());
-            progressDialog.setMessage("Loding...");
+            progressDialog = new ProgressDialog(view.getContext(), R.style.MyProgressDialogStyle);
+            progressDialog.setMessage("Loading...");
             progressDialog.setCanceledOnTouchOutside(true);    //fixme minj - master 없는 topic 의 경우 빠져나오지를 못해서 잠시 cancel 가능하게 수정
             client.setProgressDialog(progressDialog);
             progressDialog.show();
@@ -284,8 +284,10 @@ public class MainViewModel extends BaseViewModel {
             data.setPassword(password.getValue());
             data.setName(name.getValue());
             data.setMasterName(masterName);  // fixme hyeyeon
-            data.setAliveMode(getAliveMode().getValue());
-            data.setAliveBackground(getAliveBackground().getValue());
+            data.setAliveMode(false);
+            data.setAliveBackground(false);
+//            data.setAliveMode(getAliveMode().getValue());
+//            data.setAliveBackground(getAliveBackground().getValue());
 
             switch (mode) {
                 case "masterMode":

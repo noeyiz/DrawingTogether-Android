@@ -1,62 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
         android:id="@+id/drawing_voice"
         android:title="음성 대화"
         app:showAsAction="always"
-        android:icon="@drawable/voiceno"/>
+        android:icon="@drawable/mic_slash"/>
+
     <item
         android:id="@+id/drawing_speaker"
         android:title="스피커 모드"
         app:showAsAction="always"
-        android:icon="@drawable/mute"/>
-        <!-- android:icon="@drawable/speaker"
-        android:visible="false"/> -->
-
+        android:icon="@drawable/speakerslash"/>
 
     <item
         android:id="@+id/drawing_image"
         android:title="이미지"
-        app:showAsAction="ifRoom"
-        android:icon="@drawable/image">
+        app:showAsAction="always"
+        android:icon="@drawable/photo">
         <menu>
             <item
                 android:id="@+id/gallery"
                 android:title="갤러리"
-                android:icon="@drawable/gallery"/>
+                app:showAsAction="withText"
+                android:icon="@drawable/gallery_img"/>
             <item
                 android:id="@+id/camera"
                 android:title="카메라"
-                android:icon="@drawable/camera" />
+                app:showAsAction="withText"
+                android:icon="@drawable/camera_img"/>
         </menu>
     </item>
 
-    <!-- fixme nayeon -->
     <item
-        android:id="@+id/add_menu"
+        android:id="@+id/drawing_more"
         android:title="더보기"
         app:showAsAction="always"
         android:icon="@drawable/more">
         <menu>
             <item
-                android:id="@+id/drawing_plus"
-                android:title="친구 초대"
-                android:icon="@drawable/plus"/> <!-- android:icon="@drawable/plus" -->
-
-            <item
-                android:id="@+id/drawing_search"
-                android:title="검색"
-                app:showAsAction="ifRoom"
-                android:icon="@drawable/search"/> <!-- android:icon="@drawable/search" -->
-
-            <item
                 android:id="@+id/drawing_save"
                 android:title="저장하기"
-                app:showAsAction="ifRoom"
-                android:icon="@drawable/save"/>
+                app:showAsAction="withText"
+                android:icon="@drawable/save_img"/>
 
+            <item
+                android:id="@+id/drawing_invite"
+                android:title="친구 초대"
+                app:showAsAction="withText"
+                android:icon="@drawable/plus_person"/>
         </menu>
     </item>
+
+
+<!--    &lt;!&ndash; fixme nayeon &ndash;&gt;-->
+<!--    <item-->
+<!--        android:id="@+id/add_menu"-->
+<!--        android:title="더보기"-->
+<!--        app:showAsAction="never"-->
+<!--        android:icon="@drawable/more">-->
+<!--        <menu>-->
+<!--            <item-->
+<!--                android:id="@+id/drawing_plus"-->
+<!--                android:title="친구 초대"-->
+<!--                android:icon="@drawable/plus"/> &lt;!&ndash; android:icon="@drawable/plus" &ndash;&gt;-->
+
+<!--            <item-->
+<!--                android:id="@+id/drawing_search"-->
+<!--                android:title="검색"-->
+<!--                android:icon="@drawable/search"/> &lt;!&ndash; android:icon="@drawable/search" &ndash;&gt;-->
+
+<!--            <item-->
+<!--                android:id="@+id/drawing_save"-->
+<!--                android:title="저장하기"-->
+<!--                android:icon="@drawable/save_img"/>-->
+
+<!--        </menu>-->
+<!--    </item>-->
 
 </menu>

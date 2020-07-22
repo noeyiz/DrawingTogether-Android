@@ -373,7 +373,7 @@ public enum MQTTClient {
             public void connectComplete(boolean reconnect, String serverURI) {
                 if (reconnect) {
                     MyLog.e("modified mqtt", "RECONNECT");
-                    setToastMsg("RECONNECT");
+//                    setToastMsg("RECONNECT");
                     subscribeAllTopics();
                     if (audioPlaying) // 오디오 sub 중이었다면 다시 sub
                         subscribe(topic_audio);

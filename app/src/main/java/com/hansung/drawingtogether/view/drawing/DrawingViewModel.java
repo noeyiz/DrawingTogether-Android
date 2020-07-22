@@ -17,6 +17,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -93,7 +94,7 @@ public class DrawingViewModel extends BaseViewModel {
     private AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
     //
 
-    private Button preMenuButton;
+    private ImageButton preMenuButton;
 
     public DrawingViewModel() {
         setUserNum(0);
@@ -198,7 +199,7 @@ public class DrawingViewModel extends BaseViewModel {
 
         MyLog.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
         //drawingCommands.postValue(new DrawingCommand.PenMode(view));      //fixme nayeon color picker [ View Model 과 Navigator 관계, 이벤트 처리 방식 ]
-        preMenuButton = (Button)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
+        preMenuButton = (ImageButton)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
     }
 
     public void clickEraser(View view) {
@@ -239,7 +240,7 @@ public class DrawingViewModel extends BaseViewModel {
         // 텍스트 속성 설정 ( 기본 도구에서 설정할 것인지 텍스트 도구에서 설정할 것인지? )
         TextAttribute textAttribute = new TextAttribute(de.setTextStringId(), de.getMyUsername(),
                 de.getTextSize(), de.getTextColor(), de.getTextBackground(),
-                Gravity.CENTER, de.getFontStyle(),
+                de.getFontStyle(),
 
                 frameLayout.getWidth(), frameLayout.getHeight());
 
@@ -273,7 +274,7 @@ public class DrawingViewModel extends BaseViewModel {
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.RECT);
 
-        preMenuButton = (Button)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
+        preMenuButton = (ImageButton)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
 
         drawingCommands.postValue(new DrawingCommand.ShapeMode(view));
     }
@@ -348,6 +349,7 @@ public class DrawingViewModel extends BaseViewModel {
 
             return true;
         } else {
+            micFlag = false;
             try {
                 micFlag = false;
                 recThread.setFlag(micFlag);
@@ -400,23 +402,27 @@ public class DrawingViewModel extends BaseViewModel {
         }
     }
 
-    public void plusUser(Fragment fragment, String topic, String password) {
-        TextTemplate params = TextTemplate.newBuilder("DrawingTogether!",
+    public void clickInvite() {
+        MyLog.e("kakao", "clickInvite");
+        TextTemplate params = TextTemplate.newBuilder("시시콜콜!",
                 LinkObject.newBuilder()
                         .setAndroidExecutionParams("topic=" + topic + "&password=" + password)
                         .build())
                 .setButtonTitle("앱으로 이동").build();
 
-        KakaoLinkService.getInstance().sendDefault(fragment.getContext(), params, new ResponseCallback<KakaoLinkResponse>() {
+        KakaoLinkService.getInstance().sendDefault((MainActivity)MainActivity.context, params, new ResponseCallback<KakaoLinkResponse>() {
             @Override
             public void onFailure(ErrorResult errorResult) {
+                MyLog.e("kakao", "failure " + errorResult.getErrorMessage().toString());
             }
 
             @Override
             public void onSuccess(KakaoLinkResponse result) {
+                MyLog.e("kakao", "success");
             }
         });
     }
+
 
     public File createImageFile(Fragment fragment) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());

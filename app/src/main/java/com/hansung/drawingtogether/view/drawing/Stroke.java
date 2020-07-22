@@ -1,6 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
@@ -17,7 +18,7 @@ public class Stroke extends DrawingComponent {
 
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setStrokeWidth(this.strokeWidth);
-        paint.setColor(this.strokeColor);
+        paint.setColor(Color.parseColor(this.strokeColor));
         paint.setAlpha(this.strokeAlpha);
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);
@@ -55,7 +56,7 @@ public class Stroke extends DrawingComponent {
             paint.setStrokeWidth(this.strokeWidth);
         }*/
         paint.setStrokeWidth(this.strokeWidth);
-        paint.setColor(this.strokeColor);
+        paint.setColor(Color.parseColor(this.strokeColor));
         paint.setAlpha(this.strokeAlpha);
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);
