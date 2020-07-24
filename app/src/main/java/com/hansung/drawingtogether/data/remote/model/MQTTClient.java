@@ -1064,8 +1064,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 return null;
             case ERASE:
                 MyLog.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString() + ", id=" + message.getComponentIds().toString());
-                Vector<Integer> erasedComponentIds = message.getComponentIds();
-                new EraserTask(erasedComponentIds).doNotInBackground();
+
                 publishProgress(message);
                 return null;
             case SELECT:
@@ -1141,6 +1140,8 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 }
                 break;
             case ERASE:
+                Vector<Integer> erasedComponentIds = message.getComponentIds();
+                new EraserTask(erasedComponentIds).doNotInBackground();
                 de.clearUndoArray();
                 break;
             case SELECT:
@@ -1215,6 +1216,8 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
+
+
 
         client.getDrawingView().invalidate();
     }

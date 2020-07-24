@@ -83,7 +83,7 @@ public enum DrawingEditor {
     private float myCanvasHeight;
 
     /* 드로잉 펜 속성 */
-    private String fillColor = "#00000000";  // todo nayeon - Default Value
+    private String fillColor = "#000000";  // todo nayeon - Default Value
     private String strokeColor = "#000000";
     private int strokeAlpha = 255;
     private int fillAlpha = 100;
