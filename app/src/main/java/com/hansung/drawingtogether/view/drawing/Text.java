@@ -375,7 +375,6 @@ public class Text { // EditTextView
         binding.redoBtn.setVisibility(View.VISIBLE);
         binding.undoBtn.setVisibility(View.VISIBLE);
 
-        //binding.textEditLayout.removeView(editText);// todo nayeon - Detach EditText
         editText.setVisibility(View.INVISIBLE);
         editText.setEnabled(false);
 
