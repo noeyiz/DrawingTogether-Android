@@ -126,7 +126,7 @@ public enum MQTTClient {
     }
 
     public void init(String topic, String name, boolean master, DrawingViewModel drawingViewModel, String ip, String port, String masterName) {
-        connect(ip, port);
+        connect(ip, port, topic, name);
 
         database = FirebaseDatabase.getInstance();
         databaseReference = database.getReference();
@@ -173,11 +173,15 @@ public enum MQTTClient {
         de.setMyUsername(name);
     }
 
-    public void connect(String ip, String port) {
+    public void connect(String ip, String port, String topic, String name) { // client id = "*name_topic_android"
         try {
             BROKER_ADDRESS = "tcp://" + ip + ":" + port;
-            client = new MqttClient(BROKER_ADDRESS, MqttClient.generateClientId(), new MemoryPersistence());
+
+            // 드로잉 데이터를 전송하는 클라이언트일 경우
+            // 브로커 로그에 표시되는 client id를 지정
+            client = new MqttClient(BROKER_ADDRESS, ("*" + name + "_" + topic + "_Android"), new MemoryPersistence());
             client2 = new MqttClient(BROKER_ADDRESS, MqttClient.generateClientId(), new MemoryPersistence());
+
 
             MqttConnectOptions connOpts = new MqttConnectOptions();
 
