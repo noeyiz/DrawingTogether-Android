@@ -126,7 +126,7 @@ public enum MQTTClient {
     }
 
     public void init(String topic, String name, boolean master, DrawingViewModel drawingViewModel, String ip, String port, String masterName) {
-        connect(ip, port);
+        connect(ip, port, topic, name);
 
         database = FirebaseDatabase.getInstance();
         databaseReference = database.getReference();
@@ -173,10 +173,13 @@ public enum MQTTClient {
         de.setMyUsername(name);
     }
 
-    public void connect(String ip, String port) {
+    public void connect(String ip, String port, String topic, String name) {
         try {
             BROKER_ADDRESS = "tcp://" + ip + ":" + port;
-            client = new MqttClient(BROKER_ADDRESS, MqttClient.generateClientId(), new MemoryPersistence());
+
+            // 드로잉 데이터를 전송하는 클라이언트일 경우
+            // 브로커 로그에 표시되는 client id를 지정
+            client = new MqttClient(BROKER_ADDRESS, ("*" + name + "_" + topic + "_Android"), new MemoryPersistence());
             client2 = new MqttClient(BROKER_ADDRESS, MqttClient.generateClientId(), new MemoryPersistence());
 
             MqttConnectOptions connOpts = new MqttConnectOptions();
@@ -637,7 +640,7 @@ public enum MQTTClient {
                             User user = iterator.next();
 
                             Log.e("alive", userPrintForLog());
-                            drawingViewModel.setUserAliveCount(userPrintForLog());
+//                            drawingViewModel.setUserAliveCount(userPrintForLog());
                             if (!user.getName().equals(myName)) {
                                 user.setCount(user.getCount() + 1);
                                 if (user.getCount() == aliveCount && user.getName().equals(masterName)) {
@@ -1064,8 +1067,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 return null;
             case ERASE:
                 MyLog.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString() + ", id=" + message.getComponentIds().toString());
-                Vector<Integer> erasedComponentIds = message.getComponentIds();
-                new EraserTask(erasedComponentIds).doNotInBackground();
+
                 publishProgress(message);
                 return null;
             case SELECT:
@@ -1141,6 +1143,8 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 }
                 break;
             case ERASE:
+                Vector<Integer> erasedComponentIds = message.getComponentIds();
+                new EraserTask(erasedComponentIds).doNotInBackground();
                 de.clearUndoArray();
                 break;
             case SELECT:
@@ -1215,6 +1219,8 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
+
+
 
         client.getDrawingView().invalidate();
     }

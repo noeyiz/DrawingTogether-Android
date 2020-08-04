@@ -1,21 +1,21 @@
 {
   "buildFiles": [
-    "D:\\DrawingTogether0616\\DrawingTogether\\app\\src\\main\\cpp\\CMakeLists.txt"
+    "D:\\DrawingTogether0730\\app\\src\\main\\cpp\\CMakeLists.txt"
   ],
   "cleanCommands": [
-    "C:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86 --target clean"
+    "C:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build D:\\DrawingTogether0730\\app\\.cxx\\cmake\\release\\x86 --target clean"
   ],
   "libraries": {
     "lib_opencv-Release-x86": {
       "artifactName": "lib_opencv",
       "abi": "x86",
-      "output": "D:\\DrawingTogether0616\\DrawingTogether\\opencv\\native\\libs\\x86\\libopencv_java3.so"
+      "output": "D:\\DrawingTogether0730\\opencv\\native\\libs\\x86\\libopencv_java3.so"
     },
     "native-lib-Release-x86": {
       "artifactName": "native-lib",
-      "buildCommand": "C:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build D:\\DrawingTogether0616\\DrawingTogether\\app\\.cxx\\cmake\\release\\x86 --target native-lib",
+      "buildCommand": "C:\\Users\\hansung\\AppData\\Local\\Android\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build D:\\DrawingTogether0730\\app\\.cxx\\cmake\\release\\x86 --target native-lib",
       "abi": "x86",
-      "output": "D:\\DrawingTogether0616\\DrawingTogether\\app\\build\\intermediates\\cmake\\release\\obj\\x86\\libnative-lib.so"
+      "output": "D:\\DrawingTogether0730\\app\\build\\intermediates\\cmake\\release\\obj\\x86\\libnative-lib.so"
     }
   }
 }

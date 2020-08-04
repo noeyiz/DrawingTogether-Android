@@ -18,8 +18,8 @@ public abstract class DrawingComponent {
     protected String username = null;
     protected String usersComponentId = null;
     protected ComponentType type = null;
-    protected int strokeColor;
-    protected int fillColor;            //도형에서 사용
+    protected String strokeColor;
+    protected String fillColor;            //도형에서 사용
     protected int strokeAlpha;
     protected int fillAlpha;
     protected int strokeWidth;

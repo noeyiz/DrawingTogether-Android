@@ -83,15 +83,15 @@ public enum DrawingEditor {
     private float myCanvasHeight;
 
     /* 드로잉 펜 속성 */
-    private int fillColor = Color.TRANSPARENT;  // todo nayeon - Default Value
-    private int strokeColor = Color.BLACK;
+    private String fillColor = "#000000";  // todo nayeon - Default Value
+    private String strokeColor = "#000000";
     private int strokeAlpha = 255;
     private int fillAlpha = 100;
     private int strokeWidth = 10;
 
     /* 텍스트 속성 */
     private int textSize = 20;
-    private int textColor = Color.BLACK;
+    private String textColor = "#000000";
     private int fontStyle = Typeface.BOLD;
     private int textBackground = Color.TRANSPARENT;
 
@@ -121,7 +121,7 @@ public enum DrawingEditor {
 
         currentMode = Mode.DRAW;
         currentType = ComponentType.STROKE;
-        strokeColor = Color.BLACK;
+        strokeColor = "#000000";
         strokeWidth = 10;
 
         isIntercept = false;
@@ -1073,11 +1073,11 @@ public enum DrawingEditor {
         this.myUsername = myUsername;
     }
 
-    public void setFillColor(int fillColor) {
+    public void setFillColor(String fillColor) {
         this.fillColor = fillColor;
     }
 
-    public void setStrokeColor(int strokeColor) {
+    public void setStrokeColor(String strokeColor) {
         this.strokeColor = strokeColor;
     }
 
@@ -1089,7 +1089,7 @@ public enum DrawingEditor {
         this.textSize = textSize;
     }
 
-    public void setTextColor(int textColor) {
+    public void setTextColor(String textColor) {
         this.textColor = textColor;
     }
 

@@ -29,20 +29,20 @@ public enum AttributeManager {
                 MyLog.d("button", "color button click"); // fixme nayeon
 
                 String hexColor = ((Button)view).getText().toString();
-                int color = Color.parseColor(hexColor);
+                //int color = Color.parseColor(hexColor);
 
                 switch (de.getCurrentMode()) {
                     case DRAW:
                     case ERASE:
                     case SELECT:
                     case WARP:
-                        de.setStrokeColor(color);
-                        de.setFillColor(color);
+                        de.setStrokeColor(hexColor);
+                        de.setFillColor(hexColor);
                         break;
                     case TEXT:
                         if(de.getCurrentText() != null) { // 현재 선택 된 텍스트 색상 편집
                             Text text = de.getCurrentText();
-                            text.getTextAttribute().setTextColor(color);
+                            text.getTextAttribute().setTextColor(hexColor);
                             text.setTextViewAttribute();
                             text.setEditTextAttribute();
                         }

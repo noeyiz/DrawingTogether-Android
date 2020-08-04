@@ -15,6 +15,7 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -60,6 +61,7 @@ import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.WarpingControlView;
+import com.hansung.drawingtogether.view.main.DatabaseTransaction;
 import com.hansung.drawingtogether.view.main.DeleteMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
@@ -122,7 +124,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        MyLog.e("DrawingFragment", "onCreateView");
+        MyLog.i("lifeCycle", "DrawingFragment onCreateView()");
 
         databaseReference = FirebaseDatabase.getInstance().getReference();
         exitOnClickListener = new ExitOnClickListener();
@@ -143,7 +145,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
         am.setBinding(binding); // Palette Manager 의 FragmentDrawingBinding 변수 초기화
         am.setListener(); // 리스너 초기화
-        am.showCurrentColor(de.getStrokeColor()); // 현재 색상 보여주기
+        am.showCurrentColor(Color.parseColor(de.getStrokeColor())); // 현재 색상 보여주기
 
         binding.drawBtn1.setBackgroundColor(Color.rgb(233, 233, 233)); // 초기 얇은 펜으로 설정
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
@@ -445,44 +447,52 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
             MyLog.e("why", "exitOnClickListener : " + backKeyPressed);
 
-            if (client.isMaster()) {
-                client.exitTask();
-                if (backKeyPressed) {
-                    getActivity().finish();
-                    return;
-                }
-                else {
-                    drawingViewModel.back();
-                    return;
-                }
+            String mode = "";
+            if (data.isMaster()) {
+                mode = "masterMode";
             }
             else {
-                databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
-                    @NonNull
-                    @Override
-                    public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                        if (mutableData.getValue() != null && client.isMaster()) {
-                            mutableData.setValue(null);
-                        }
-                        if (mutableData.getValue() != null && !client.isMaster()) {
-                            mutableData.child("username").child(client.getMyName()).setValue(null);
-                        }
-                        MyLog.e("transaction", "transaction success");
-                        return Transaction.success(mutableData);
+                mode = "joinMode";
+            }
+            DatabaseTransaction dt = new DatabaseTransaction() {
+                @Override
+                public void completeLogin(DatabaseError error, String masterName, boolean topicError, boolean passwordError, boolean nameError) {  }
+
+                @Override
+                public void completeExit(DatabaseError error) {
+
+                    if (error != null) {
+                        showDatabaseErrorAlert(MainActivity.context, "데이터베이스 오류 발생", error.getMessage(), backKeyPressed);
+                        MyLog.e("transaction", error.getDetails());
+                        return;
                     }
 
+                    client.exitTask();
+                    if (backKeyPressed) {
+                        getActivity().finish();
+                        return;
+                    }
+                    else {
+                        drawingViewModel.back();
+                        return;
+                    }
+                }
+            };
+            dt.runTransactionExit(data.getTopic(), data.getName(), mode);
+        }
+    }
+
+    public void showDatabaseErrorAlert(Context context, String title, String message, final boolean backPressed) {
+
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setTitle(title)
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                        MyLog.e("transaction", "transaction complete");
-
-
-                        if (databaseError != null) {
-                            MyLog.e("transaction", databaseError.getDetails());
-                            return;
-                        }
-
+                    public void onClick(DialogInterface dialog, int which) {
                         client.exitTask();
-                        if (backKeyPressed) {
+                        if (backPressed) {
                             getActivity().finish();
                             return;
                         }
@@ -491,9 +501,10 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                             return;
                         }
                     }
-                });
-            }
-        }
+                })
+                .create();
+
+        dialog.show();
     }
 
     @Override
@@ -735,6 +746,14 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     }
 
     // fixme hyeyeon[1]
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        MyLog.i("lifeCycle", "DrawingFragment onStart()");
+    }
+
     @Override
     public void onPause() {  // todo
         super.onPause();

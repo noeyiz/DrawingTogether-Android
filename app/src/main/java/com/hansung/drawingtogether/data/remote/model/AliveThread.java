@@ -43,7 +43,7 @@ public enum AliveThread implements Runnable {
 
                 Log.e("alive", "alive publish" + (++count));
                 client.publish(topic_alive, JSONParser.getInstance().jsonWrite(mqttMessageFormat));
-                drawingViewModel.setAliveCount(Integer.toString(count));
+//                drawingViewModel.setAliveCount(Integer.toString(count));
                 Thread.sleep(second);
 
 /*                  synchronized (userList) {

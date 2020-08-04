@@ -90,7 +90,7 @@ public class Text { // EditTextView
     public void setTextViewAttribute() {
         textView.setText(textAttribute.getText());
         textView.setTextSize(textAttribute.getTextSize());
-        textView.setTextColor(textAttribute.getTextColor());
+        textView.setTextColor(Color.parseColor(textAttribute.getTextColor()));
         //textView.setBackgroundColor(textAttribute.getTextBackgroundColor());
         textView.setGravity(textAttribute.getTextGravity());
         textView.setTypeface(null, textAttribute.getStyle());
@@ -99,7 +99,7 @@ public class Text { // EditTextView
     public void setEditTextAttribute() {
         editText.setText(textAttribute.getText());
         editText.setTextSize(textAttribute.getTextSize());
-        editText.setTextColor(textAttribute.getTextColor());
+        editText.setTextColor(Color.parseColor(textAttribute.getTextColor()));
         //editText.setBackgroundColor(textAttribute.getTextBackgroundColor());
         editText.setGravity(textAttribute.getTextGravity());
         editText.setTypeface(null, textAttribute.getStyle());
@@ -395,7 +395,7 @@ public class Text { // EditTextView
 
         textView.setBackground(de.getTextHighlightBorderDrawble());
 
-        binding.currentColorBtn.setBackgroundColor(textAttribute.getTextColor()); // 현재 텍스트 컬러로 현재 색상 버튼 색깔 변경
+        binding.currentColorBtn.setBackgroundColor(Color.parseColor(textAttribute.getTextColor())); // 현재 텍스트 컬러로 현재 색상 버튼 색깔 변경
         visibleDrawingMenuAndTopToolButton(View.INVISIBLE); // 다른 메뉴 버튼들 숨기기
         binding.textColorChangeButton.setVisibility(View.VISIBLE); // 텍스트 컬러 설정 버튼 보이기
     }
@@ -411,7 +411,7 @@ public class Text { // EditTextView
 
         visibleDrawingMenuAndTopToolButton(View.VISIBLE);
         binding.textColorChangeButton.setVisibility(View.INVISIBLE);
-        binding.currentColorBtn.setBackgroundColor(de.getStrokeColor()); // 이전에 선택했던 펜 컬러로 현재 색상 버튼 색깔 변경
+        binding.currentColorBtn.setBackgroundColor(Color.parseColor(de.getStrokeColor())); // 이전에 선택했던 펜 컬러로 현재 색상 버튼 색깔 변경
 
         de.setCurrentMode(Mode.DRAW);
     }

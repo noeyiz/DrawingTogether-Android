@@ -228,7 +228,7 @@
             android:src="@drawable/master_login"
             android:scaleType="centerInside"
             android:background="@android:color/transparent"
-            android:onClick="@{vm::startDrawing}"/>
+            android:onClick="@{vm::masterLoginClicked}"/>
 
         <ImageButton
             android:id="@+id/join"
@@ -242,7 +242,7 @@
             android:src="@drawable/join"
             android:scaleType="centerInside"
             android:background="@android:color/transparent"
-            android:onClick="@{vm::startDrawing}"/>
+            android:onClick="@{vm::joinClicked}"/>
 
 <!--        <Button-->
 <!--            android:id="@+id/local"-->

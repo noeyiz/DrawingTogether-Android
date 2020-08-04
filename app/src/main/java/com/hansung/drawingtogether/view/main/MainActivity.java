@@ -6,9 +6,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -26,6 +28,9 @@ import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 import com.hansung.drawingtogether.view.drawing.SendMqttMessage;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import static com.kakao.util.helper.Utility.getPackageInfo;
 
@@ -71,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
 
         context = this; // fixme nayeon
 
+        Log.i("kakao", "[key hash] " + getKeyHash(context));
+
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         title = (TextView)findViewById(R.id.toolbar_title);
         setSupportActionBar(toolbar);
@@ -84,6 +91,25 @@ public class MainActivity extends AppCompatActivity {
             password = kakaoPassword;
         }
 
+    }
+
+    public String getKeyHash(final Context context) {
+        PackageInfo info = getPackageInfo(context, PackageManager.GET_SIGNATURES);
+        if (info == null) {
+            return null;
+        }
+
+        for (Signature signature: info.signatures) {
+            try {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                return Base64.encodeToString(md.digest(), Base64.NO_WRAP);
+            } catch (NoSuchAlgorithmException e) {
+                Log.e("kkankkan", "Unable to get MessageDigest, sugnature = " + signature);
+            }
+        }
+
+        return null;
     }
 
     @Override

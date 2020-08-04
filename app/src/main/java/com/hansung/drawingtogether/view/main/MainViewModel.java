@@ -1,7 +1,10 @@
 
 package com.hansung.drawingtogether.view.main;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.util.Log;
 
 import android.view.View;
@@ -23,6 +26,7 @@ import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.BaseViewModel;
 
 
+import lombok.Data;
 import lombok.Setter;
 
 public class MainViewModel extends BaseViewModel {
@@ -54,8 +58,6 @@ public class MainViewModel extends BaseViewModel {
     private MQTTClient client = MQTTClient.getInstance();
     private ProgressDialog progressDialog;
 
-    private TranscationHandler transcationHandler;
-
     private String masterName;  // fixme hyeyeon
 
     public MainViewModel() {
@@ -82,8 +84,6 @@ public class MainViewModel extends BaseViewModel {
 
         database = FirebaseDatabase.getInstance();
         databaseReference = database.getReference();
-
-        transcationHandler = new TranscationHandler();
 
         masterName = "";  // fixme hyeyeon
     }
@@ -152,7 +152,7 @@ public class MainViewModel extends BaseViewModel {
         }
     }
 
-    public void startDrawing(View view) {
+    public void masterLoginClicked(View view) {
         setIpError("");
         setPortError("");
         setTopicError("");
@@ -171,146 +171,142 @@ public class MainViewModel extends BaseViewModel {
             client.setProgressDialog(progressDialog);
             progressDialog.show();
 
-            switch (view.getId()) {
-                case R.id.master_login:
-                    transcationHandler.setMode("masterMode");
-                    databaseReference.child(topic.getValue()).runTransaction(transcationHandler);
-                    break;
-                case R.id.join:
-                    transcationHandler.setMode("joinMode");
-                    databaseReference.child(topic.getValue()).runTransaction(transcationHandler);
-                    break;
-            }
+            DatabaseTransaction dt = new DatabaseTransaction() {
+                @Override
+                public void completeExit(DatabaseError error) { }
+
+                @Override
+                public void completeLogin(DatabaseError error, String masterName, boolean topicError, boolean passwordError, boolean nameError) {
+                    progressDialog.dismiss();
+
+                    Log.e("dt", "interface complete");
+
+                    if (error != null) {
+                        Log.e("dt", "error");
+                        MainActivity main = (MainActivity)MainActivity.context;
+                        showDatabaseErrorAlert(main, "데이터베이스 오류 발생", error.getMessage());
+                        return;
+                    }
+
+                    if (topicError) {
+                        setTopicError("이미 존재하는 토픽입니다.");
+                    }
+                    else {
+                        data.setIp(ip.getValue());
+                        data.setPort(port.getValue());
+                        data.setTopic(topic.getValue());
+                        data.setPassword(password.getValue());
+                        data.setName(name.getValue());
+                        data.setMasterName(masterName);  // fixme hyeyeon
+                        data.setAliveMode(true);
+                        data.setAliveBackground(true);
+                        data.setMaster(true);
+
+                        clearData();
+
+                        navigate(R.id.action_mainFragment_to_drawingFragment);
+                    }
+                }
+            };
+            dt.runTransactionLogin(topic.getValue(), password.getValue(), name.getValue(), "masterMode");
         }
     }
 
-    @Setter
-    class TranscationHandler implements Transaction.Handler {
-        private String mode = "";
-        private String topicErrorMsg = "";
-        private String pwdErrorMsg = "";
-        private String nameErrorMsg = "";
+    public void joinClicked(View view) {
+        setIpError("");
+        setPortError("");
+        setTopicError("");
+        setPasswordError("");
+        setNameError("");
+        hasSpecialCharacterAndBlank = false;
 
-        @NonNull
-        @Override
-        public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-            topicErrorMsg = "";
-            pwdErrorMsg = "";
-            nameErrorMsg = "";
-            if (mutableData.getValue() != null) {
-                MyLog.e("transaction", "exist topic " + mutableData.getValue());
-                switch (mode) {
-                    case "masterMode":
-                        topicErrorMsg = "이미 존재하는 토픽입니다";
-                        break;
-                    case "joinMode":
-                        if (!mutableData.child("password").getValue().equals(password.getValue())) {
-                            pwdErrorMsg = "비밀번호가 일치하지 않습니다";
-                            break;
-                        }
-                        if (mutableData.child("username").hasChild(name.getValue())) {
-                            nameErrorMsg = "이미 사용중인 이름입니다";
-                            break;
-                        }
-                        else {
-                            mutableData.child("username").child(name.getValue()).setValue(name.getValue());
-                            mutableData.child("access time").setValue(System.currentTimeMillis()); // fixme nayeon
+        hasSpecialCharacterAndBlank();
 
-                            masterName = mutableData.child("master").getValue().toString();  // fixme hyeyeon
-                            MyLog.i("login", "masterName: " + masterName);
-                            break;
-                        }
+        MyLog.e("kkankkan", topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
+
+        if (!hasSpecialCharacterAndBlank) {
+            progressDialog = new ProgressDialog(view.getContext(), R.style.MyProgressDialogStyle);
+            progressDialog.setMessage("Loading...");
+            progressDialog.setCanceledOnTouchOutside(true);    //fixme minj - master 없는 topic 의 경우 빠져나오지를 못해서 잠시 cancel 가능하게 수정
+            client.setProgressDialog(progressDialog);
+            progressDialog.show();
+
+            DatabaseTransaction dt = new DatabaseTransaction() {
+                @Override
+                public void completeExit(DatabaseError error) { }
+
+                @Override
+                public void completeLogin(DatabaseError error, String masterName, boolean topicError, boolean passwordError, boolean nameError) {
+                    progressDialog.dismiss();
+
+                    Log.e("dt", "interface complete");
+
+                    if (error != null) {
+                        Log.e("dt", "error");
+                        showDatabaseErrorAlert(MainActivity.context, "데이터베이스 오류 발생", error.getMessage());
+                        return;
+                    }
+
+                    if (passwordError) {
+                        setPasswordError("비밀번호가 일치하지 않습니다.");
+                        return;
+                    }
+                    if (nameError) {
+                        setNameError("이미 사용중인 이름입니다.");
+                        return;
+                    }
+                    if (topicError) {
+                        data.setIp(ip.getValue());
+                        data.setPort(port.getValue());
+                        data.setTopic(topic.getValue());
+                        data.setPassword(password.getValue());
+                        data.setName(name.getValue());
+                        data.setMasterName(masterName);  // fixme hyeyeon
+                        data.setAliveMode(true);
+                        data.setAliveBackground(true);
+                        data.setMaster(false);
+
+                        clearData();
+
+                        navigate(R.id.action_mainFragment_to_drawingFragment);
+                    }
+                    else {
+                        setTopicError("존재하지 않는 토픽입니다");
+                    }
                 }
-                MyLog.e("transaction", "transaction success");
-                return Transaction.success(mutableData);
-            }
-            MyLog.e("transaction", "new topic " + mutableData.getChildrenCount());
-            switch (mode) {
-                case "masterMode":
-                    mutableData.child("password").setValue(password.getValue());
-                    mutableData.child("username").child(name.getValue()).setValue(name.getValue());
-                    mutableData.child("master").setValue(name.getValue());
-                    mutableData.child("access time").setValue(System.currentTimeMillis()); // fixme nayeon
-
-                    masterName = name.getValue();  // fixme hyeyeon
-                    MyLog.i("login", "masterName: " + masterName);
-                    break;
-                case "joinMode":
-                    topicErrorMsg = "존재하지 않는 토픽입니다";
-                    break;
-            }
-            MyLog.e("transaction", "transaction success");
-            return Transaction.success(mutableData);
+            };
+            dt.runTransactionLogin(topic.getValue(), password.getValue(), name.getValue(), "joinMode");
         }
+    }
 
-        @Override
-        public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-            MyLog.e("transaction", "transaction complete");
-            if (databaseError != null) {
-                MyLog.e("transaction", databaseError.getDetails());
-                progressDialog.dismiss();
-                return;
-            }
-            switch (mode) {
-                case "masterMode":
-                    if (!topicErrorMsg.equals("")) {
-                        setTopicError(topicErrorMsg);
-                        progressDialog.dismiss();
-                        return;
+    public void clearData() {
+        setTopic("");
+        setPassword("");
+        setName("");
+        setAliveMode(false);
+        setAliveBackground(false);
+
+        setIpError("");
+        setTopicError("");
+        setPasswordError("");
+        setNameError("");
+    }
+
+    public void showDatabaseErrorAlert(Context context, String title, String message) {
+
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setTitle(title)
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
                     }
-                    break;
-                case "joinMode":
-                    if (!topicErrorMsg.equals("")) {
-                        setTopicError(topicErrorMsg);
-                        progressDialog.dismiss();
-                        return;
-                    }
-                    if (!pwdErrorMsg.equals("")) {
-                        setPasswordError(pwdErrorMsg);
-                        progressDialog.dismiss();
-                        return;
-                    }
-                    if (!nameErrorMsg.equals("")) {
-                        setNameError(nameErrorMsg);
-                        progressDialog.dismiss();
-                        return;
-                    }
-                    break;
-            }
+                })
+                .create();
 
-            data.setIp(ip.getValue());
-            data.setPort(port.getValue());
-            data.setTopic(topic.getValue());
-            data.setPassword(password.getValue());
-            data.setName(name.getValue());
-            data.setMasterName(masterName);  // fixme hyeyeon
-            data.setAliveMode(false);
-            data.setAliveBackground(false);
-//            data.setAliveMode(getAliveMode().getValue());
-//            data.setAliveBackground(getAliveBackground().getValue());
-
-            switch (mode) {
-                case "masterMode":
-                    data.setMaster(true);
-                    break;
-                case "joinMode":
-                    data.setMaster(false);
-                    break;
-            }
-
-            setTopic("");
-            setPassword("");
-            setName("");
-            setAliveMode(false);
-            setAliveBackground(false);
-
-            setIpError("");
-            setTopicError("");
-            setPasswordError("");
-            setNameError("");
-
-            navigate(R.id.action_mainFragment_to_drawingFragment);
-        }
+        dialog.show();
     }
 
     public void showLocalHistory(View view) {
