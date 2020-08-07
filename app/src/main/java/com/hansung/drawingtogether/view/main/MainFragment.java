@@ -69,6 +69,7 @@ public class MainFragment extends Fragment {
         binding.setVm(mainViewModel);
         binding.setLifecycleOwner(this);
 
+        // set kakaolink parameter (topic, password)
         MainActivity mainActivity = (MainActivity)getActivity();
         if ((mainActivity.getTopic() != null && mainActivity.getPassword() != null)) {
             MyLog.e("kakao", "메인프레그먼트");

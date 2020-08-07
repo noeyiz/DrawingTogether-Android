@@ -83,6 +83,7 @@ public class TextAttribute {
 
     public TextAttribute(String id, String username, int textSize, String textColor, int textBackgroundColor,
                          int style, int generatedLayoutWidth, int generatedLayoutHeight) {
+
         this.id = id;
         this.username = username;
 

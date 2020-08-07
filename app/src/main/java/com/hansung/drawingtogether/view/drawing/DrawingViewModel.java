@@ -61,8 +61,8 @@ public class DrawingViewModel extends BaseViewModel {
     private MutableLiveData<String> userNum = new MutableLiveData<>();
     private MutableLiveData<String> userPrint = new MutableLiveData<>();  // fixme hyeyeon
 
-    private MutableLiveData<String> aliveCount = new MutableLiveData<>();
-    private MutableLiveData<String> userAliveCount = new MutableLiveData<>();
+//    private MutableLiveData<String> aliveCount = new MutableLiveData<>();
+//    private MutableLiveData<String> userAliveCount = new MutableLiveData<>();
 
     private Logger logger = Logger.getInstance();
 
@@ -407,6 +407,7 @@ public class DrawingViewModel extends BaseViewModel {
         TextTemplate params = TextTemplate.newBuilder("시시콜콜!",
                 LinkObject.newBuilder()
                         .setAndroidExecutionParams("topic=" + topic + "&password=" + password)
+                        .setIosExecutionParams("topic=" + topic + "&password=" + password)
                         .build())
                 .setButtonTitle("앱으로 이동").build();
 
@@ -473,13 +474,13 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void setUserPrint(String user) { userPrint.postValue(user); }  // fixme hyeyoen
 
-    public MutableLiveData<String> getAliveCount() { return aliveCount; }
+//    public MutableLiveData<String> getAliveCount() { return aliveCount; }
 
-    public MutableLiveData<String> getUserAliveCount() { return userAliveCount; }
+//    public MutableLiveData<String> getUserAliveCount() { return userAliveCount; }
 
-    public void setAliveCount(String count) { aliveCount.postValue(count); }
+//    public void setAliveCount(String count) { aliveCount.postValue(count); }
 
-    public void setUserAliveCount(String count) { userAliveCount.postValue(count); }
+//    public void setUserAliveCount(String count) { userAliveCount.postValue(count); }
 
     // fixme hyeyeon[1]
     @Override

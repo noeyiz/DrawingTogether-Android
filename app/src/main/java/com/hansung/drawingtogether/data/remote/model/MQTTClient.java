@@ -174,6 +174,7 @@ public enum MQTTClient {
     }
 
     public void connect(String ip, String port, String topic, String name) { // client id = "*name_topic_android"
+
         try {
             BROKER_ADDRESS = "tcp://" + ip + ":" + port;
 
@@ -641,7 +642,7 @@ public enum MQTTClient {
                             User user = iterator.next();
 
                             Log.e("alive", userPrintForLog());
-                            drawingViewModel.setUserAliveCount(userPrintForLog());
+//                            drawingViewModel.setUserAliveCount(userPrintForLog());
                             if (!user.getName().equals(myName)) {
                                 user.setCount(user.getCount() + 1);
                                 if (user.getCount() == aliveCount && user.getName().equals(masterName)) {
