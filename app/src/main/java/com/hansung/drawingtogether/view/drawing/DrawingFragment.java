@@ -35,7 +35,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -44,13 +43,9 @@ import androidx.navigation.fragment.NavHostFragment;
 import lombok.Getter;
 import lombok.Setter;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.MutableData;
-import com.google.firebase.database.Transaction;
 import com.hansung.drawingtogether.R;
 
 import com.hansung.drawingtogether.data.remote.model.AliveBackgroundService;
@@ -63,15 +58,13 @@ import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.main.DatabaseTransaction;
-import com.hansung.drawingtogether.view.main.DeleteMessage;
-import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.File;
 import java.io.IOException;
@@ -152,6 +145,19 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
         inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
 
+        // 디바이스 화면 size 구하기
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        size = new Point();
+        display.getSize(size);
+
+        // 디바이스 화면 넓이의 3배 = 드로잉뷰 넓이
+        ViewGroup.LayoutParams layoutParams = binding.drawingView.getLayoutParams();
+        //layoutParams.width = size.x*3;
+        layoutParams.width = size.x;
+        binding.drawingView.setLayoutParams(layoutParams);
+
+        Log.e("drawing view size in fragment", size.x + ", " + size.y);
+
         //undo, redo 버튼 초기화
         if(de.getHistory().size() == 0)
             binding.undoBtn.setEnabled(false);
@@ -174,22 +180,26 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             imageView.setImageBitmap(de.getBackgroundImage());
             binding.backgroundView.addView(imageView);
         }
+        Log.e("pre pub join message", this.getSize().x + ", " + this.getSize().y);
 
         if(de.getDrawingBitmap() == null) { // join 메시지 publish
-            JoinMessage joinMessage = new JoinMessage(drawingViewModel.getName());
+
+            JoinMessage joinMessage = new JoinMessage(data.getName(), this.getSize().x, this.getSize().y);
             MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
-            client.publish(drawingViewModel.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
-            MyLog.e("login", drawingViewModel.getName() + " join pub");
+            client.publish(data.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
+            MyLog.e("login", data.getName() + " join pub");
 
-//            for (int i=0; i<5; i++) {
-//                joinMessage = new JoinMessage(drawingViewModel.getName() + i);
-//                messageFormat = new MqttMessageFormat(joinMessage);
-//                client.publish(drawingViewModel.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
-//                MyLog.e("login", drawingViewModel.getName() + i + " join pub");;
-//            }
+            aliveTh.setSecond(10000);
+            aliveTh.setCount(0);
+            Thread th = new Thread(aliveTh);
+            th.start();
+            client.setThread(th);
 
-            if (data.isAliveMode() && !data.isAliveBackground()) {
-                MyLog.e("alive", "DrawingFragment: " + data.isAliveMode());
+//            intent = new Intent(MainActivity.context, AliveBackgroundService.class);
+//            MainActivity.context.startService(intent);
+
+            /*if (data.isAliveThreadMode() && !data.isAliveBackground()) {
+                MyLog.e("alive", "DrawingFragment: " + data.isAliveThreadMode());
                 // fixme hyeyeon
                 aliveTh.setSecond(2000);
                 aliveTh.setCount(0);
@@ -197,27 +207,16 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 th.start();
                 client.setThread(th);
             }
-            else if (data.isAliveMode() && data.isAliveBackground()) {
+            else if (data.isAliveThreadMode() && data.isAliveBackground()) {
                 intent = new Intent(MainActivity.context, AliveBackgroundService.class);
                 MainActivity.context.startService(intent);
             }
             else {
                 MyLog.e("alive", "alive publish 안함");
             }
-            MyLog.e("alive", "DrawingFragment aliveBackground: " + data.isAliveBackground());
+            MyLog.e("alive", "DrawingFragment aliveBackground: " + data.isAliveBackground());*/
 
         }
-
-        // 디바이스 화면 size 구하기
-        Display display = getActivity().getWindowManager().getDefaultDisplay();
-        size = new Point();
-        display.getSize(size);
-
-        // 디바이스 화면 넓이의 3배 = 드로잉뷰 넓이
-        ViewGroup.LayoutParams layoutParams = binding.drawingView.getLayoutParams();
-        //layoutParams.width = size.x*3;
-        layoutParams.width = size.x;
-        binding.drawingView.setLayoutParams(layoutParams);
 
         drawingViewModel.drawingCommands.observe(getViewLifecycleOwner(), new Observer<DrawingCommand>() {
             @Override
@@ -249,24 +248,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 }
             }
         });
-
-/*  // fixme hyeyeon
-        JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
-        client.init(topic, name, master, drawingViewModel, ip, port);
-        client.setDrawingFragment(this);
-        client.setCallback();
-        client.subscribe(topic + "_join");
-        client.subscribe(topic + "_exit");
-        client.subscribe(topic + "_delete");
-        client.subscribe(topic + "_data");
-        client.subscribe(topic + "_mid");
-        // client.publish(topic_data ~~);
-        // fixme nayeon 중간자 join 메시지 보내기 (메시지 형식 변경)
-        JoinMessage joinMessage = new JoinMessage(name);
-        MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
-        client.publish(topic + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
-        //
-*/
 
         binding.userInfo.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -775,20 +756,29 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         super.onDestroy();
         MyLog.i("lifeCycle", "DrawingFragment onDestroy()");
 
-        if (data.isAliveMode() && data.isAliveBackground()) {
-            MainActivity.context.stopService(intent);
-        }
+//        if (data.isAliveThreadMode() && data.isAliveBackground()) {
+//            MainActivity.context.stopService(intent);
+//        }
 
         if (client != null && client.getClient().isConnected()) {
             // 꼭 여기서 처리 해줘야 하는 부분
             client.getDe().removeAllDrawingData();
             client.getUserList().clear();
 
-
             if (!client.isExitCompleteFlag()) {
                 MyLog.e("exit", "비정상 종료");
                 client.exitTask();
             }
+
+            try {
+                client.getClient().disconnect();
+                client.getClient().close();
+                client.getClient2().disconnect();
+                client.getClient2().close();
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+
 //            if (databaseReference != null) {  // todo hyeyeon - code 정리
 //                // 비정상 종료 대비 ( task 날리기 ,,, )
 //                databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
@@ -813,8 +803,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 //                            return;
 //                        }
 //                        if (client.isMaster()) {
-//                            DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
-//                            MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
+//                            CloseMessage closeMessage = new CloseMessage(client.getMyName());
+//                            MqttMessageFormat messageFormat = new MqttMessageFormat(closeMessage);
 //                            client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
 //                            client.setExitPublish(true);
 //                            client.exitTask();

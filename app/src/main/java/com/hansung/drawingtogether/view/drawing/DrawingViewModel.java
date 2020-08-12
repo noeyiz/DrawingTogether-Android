@@ -13,9 +13,7 @@ import android.provider.MediaStore;
 
 import android.util.Log;
 
-import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -115,20 +113,7 @@ public class DrawingViewModel extends BaseViewModel {
 
         client.setAliveCount(5);
         client.setCallback();
-
-//        client.subscribe(topic + "_join");
-//        client.subscribe(topic + "_noti");
-//        client.subscribe(topic + "_exit");
-//        client.subscribe(topic + "_delete");
-//        client.subscribe(topic + "_data");
-//        client.subscribe(topic + "_mid");
-//        if (data.isAliveMode()) {
-//            client.subscribe(topic + "_alive"); // fixme hyeyeon
-//        }
-        // fixme jiyeon[0525]
         client.subscribeAllTopics();
-        Log.e("alive", "DrawingViewModel aliveMode: " + data.isAliveMode());
-        Log.e("alive", "DrawingViewModel aliveBackground: " + data.isAliveBackground());
 
         de.setCurrentType(ComponentType.STROKE);    //fixme minj
         de.setCurrentMode(Mode.DRAW);

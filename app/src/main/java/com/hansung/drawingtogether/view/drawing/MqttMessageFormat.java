@@ -2,12 +2,11 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Point;
 
-import com.hansung.drawingtogether.data.remote.model.MyLog;
-import com.hansung.drawingtogether.data.remote.model.User;
 import com.hansung.drawingtogether.view.main.AliveMessage;
 import com.hansung.drawingtogether.view.main.AudioMessage;
-import com.hansung.drawingtogether.view.main.DeleteMessage;
+import com.hansung.drawingtogether.view.main.CloseMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
+import com.hansung.drawingtogether.view.main.JoinAckMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 import com.hansung.drawingtogether.view.main.NotiMessage;
 import com.hansung.drawingtogether.view.main.WarpingMessage;
@@ -41,10 +40,11 @@ public class MqttMessageFormat {
     private Integer myTextArrayIndex;
 
     private JoinMessage joinMessage;
+    private JoinAckMessage joinAckMessage;
 
     // fixme hyeyeon
     private ExitMessage exitMessage;
-    private DeleteMessage deleteMessage;
+    private CloseMessage closeMessage;
     private AliveMessage aliveMessage;
     private NotiMessage notiMessage;
 
@@ -146,8 +146,8 @@ public class MqttMessageFormat {
 
     //fixme nayeon 중간자 처리 시 필요한 생성자 3개 추가
     //fixme minj - add history for undo, redo
-    public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId, Integer maxComponentId, Integer maxTextId) {
-        this.joinMessage = joinMessage;
+    public MqttMessageFormat(JoinAckMessage joinAckMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId, Integer maxComponentId, Integer maxTextId) {
+        this.joinAckMessage = joinAckMessage;
         this.drawingComponents = drawingComponents;
         this.texts = texts;
         this.history = history;
@@ -157,8 +157,8 @@ public class MqttMessageFormat {
         this.maxTextId = maxTextId;
     }
 
-    public MqttMessageFormat(JoinMessage joinMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray,  Vector<Integer> removedComponentId, Integer maxComponentId, Integer maxTextId, byte[] bitmapByteArray) {
-        this.joinMessage = joinMessage;
+    public MqttMessageFormat(JoinAckMessage joinAckMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId, Integer maxComponentId, Integer maxTextId, byte[] bitmapByteArray) {
+        this.joinAckMessage = joinAckMessage;
         this.drawingComponents = drawingComponents;
         this.texts = texts;
         this.history = history;
@@ -181,13 +181,15 @@ public class MqttMessageFormat {
         this.joinMessage = joinMessage;
     }
 
+    public MqttMessageFormat(JoinAckMessage joinAckMessage) { this.joinAckMessage = joinAckMessage; }
+
     // fixme hyeyeon
     public MqttMessageFormat(ExitMessage exitMessage) {
         this.exitMessage = exitMessage;
     }
 
-    public MqttMessageFormat(DeleteMessage deleteMessage) {
-        this.deleteMessage = deleteMessage;
+    public MqttMessageFormat(CloseMessage closeMessage) {
+        this.closeMessage = closeMessage;
     }
 
     public MqttMessageFormat(AliveMessage aliveMessage) {
