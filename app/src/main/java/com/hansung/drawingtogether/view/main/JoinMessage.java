@@ -15,6 +15,9 @@ public class JoinMessage {
     List<User> userList; // 사용자 리스트  // fixme hyeyeon
     //String loadingData; // 데이터를 받을 토픽 (topic_data)
 
+    float drawnCanvasWidth;
+    float drawnCanvasHeight;
+
     public JoinMessage(String master, String to, List<User> userList) { // "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..."
         this.master = master;
         this.to = to;
@@ -22,7 +25,9 @@ public class JoinMessage {
         //this.loadingData = loadingData;
     }
 
-    public JoinMessage(String name) {
+    public JoinMessage(String name, float drawnCanvasWidth, float drawnCanvasHeight) {
         this.name = name;
+        this.drawnCanvasWidth = drawnCanvasWidth;
+        this.drawnCanvasHeight = drawnCanvasHeight;
     } // "name":"이름"
 }

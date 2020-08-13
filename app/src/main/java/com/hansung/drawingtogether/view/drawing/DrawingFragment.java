@@ -152,6 +152,20 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
         inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
 
+        // 디바이스 화면 size 구하기
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        size = new Point();
+        display.getSize(size);
+
+        // 디바이스 화면 넓이의 3배 = 드로잉뷰 넓이
+        ViewGroup.LayoutParams layoutParams = binding.drawingView.getLayoutParams();
+        //layoutParams.width = size.x*3;
+        layoutParams.width = size.x;
+        layoutParams.height = size.y;
+        binding.drawingView.setLayoutParams(layoutParams);
+
+        Log.e("drawing view size in fragment", size.x + ", " + size.y);
+
         //undo, redo 버튼 초기화
         if(de.getHistory().size() == 0)
             binding.undoBtn.setEnabled(false);
@@ -175,8 +189,10 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             binding.backgroundView.addView(imageView);
         }
 
+        Log.e("pre pub join message", this.getSize().x + ", " + this.getSize().y);
+
         if(de.getDrawingBitmap() == null) { // join 메시지 publish
-            JoinMessage joinMessage = new JoinMessage(drawingViewModel.getName());
+            JoinMessage joinMessage = new JoinMessage(drawingViewModel.getName(), this.getSize().x, this.getSize().y);
             MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
             client.publish(drawingViewModel.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
             MyLog.e("login", drawingViewModel.getName() + " join pub");
@@ -207,17 +223,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             MyLog.e("alive", "DrawingFragment aliveBackground: " + data.isAliveBackground());
 
         }
-
-        // 디바이스 화면 size 구하기
-        Display display = getActivity().getWindowManager().getDefaultDisplay();
-        size = new Point();
-        display.getSize(size);
-
-        // 디바이스 화면 넓이의 3배 = 드로잉뷰 넓이
-        ViewGroup.LayoutParams layoutParams = binding.drawingView.getLayoutParams();
-        //layoutParams.width = size.x*3;
-        layoutParams.width = size.x;
-        binding.drawingView.setLayoutParams(layoutParams);
 
         drawingViewModel.drawingCommands.observe(getViewLifecycleOwner(), new Observer<DrawingCommand>() {
             @Override

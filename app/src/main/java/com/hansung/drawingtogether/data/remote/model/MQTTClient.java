@@ -125,7 +125,8 @@ public enum MQTTClient {
         return INSTANCE;
     }
 
-    public void init(String topic, String name, boolean master, DrawingViewModel drawingViewModel, String ip, String port, String masterName) {
+    public void init(String topic, String name, boolean master, DrawingViewModel drawingViewModel,
+                     String ip, String port, String masterName) {
         connect(ip, port, topic, name);
 
         database = FirebaseDatabase.getInstance();
@@ -395,7 +396,8 @@ public enum MQTTClient {
 
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
-                // Log.e("kkankkan", "message Arrived");
+                //Log.e("kkankkan", "message Arrived");
+
 
                 // [ 중간자 ]
                 if (newTopic.equals(topic_join)) {
@@ -406,6 +408,9 @@ public enum MQTTClient {
                     String master = joinMessage.getMaster(); // null or not-null ( "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..." )
                     String name = joinMessage.getName(); // null or not-null ( "name":"이름" )
                     List<User> users = joinMessage.getUserList(); // null or not-null
+
+                    float drawnCanvasWidth = joinMessage.getDrawnCanvasWidth();
+                    float drawnCanvasHeight = joinMessage.getDrawnCanvasHeight();
 
                     if (master != null) { // 메시지 형식이 "master":"이름"/"userList":"이름1,이름2,이름3"/"loadingData":"..."  일 경우
                         //de.setIntercept(false);
@@ -466,13 +471,13 @@ public enum MQTTClient {
                     } else {  // other or self // 메시지 형식이 "name":"이름"  일 경우
                         if (!myName.equals(name)) {  // other // 한 사람이 "name":"이름" 메시지 보냈을 경우 다른 사람들이 받아서 처리하는 부분 - '나'는 처리 안하는 부분
                             if (!isContainsUserList(name)) {
-                                User user = new User(name, 0, MotionEvent.ACTION_UP, false);  // fixme hyeyeon
+                                User user = new User(name, 0, MotionEvent.ACTION_UP, false, drawnCanvasWidth, drawnCanvasHeight);  // fixme hyeyeon
                                 userList.add(user); // 들어온 사람의 이름을 추가
 
                                 MyLog.e("login", "------------------------------------");
                                 MyLog.e("login", name + " [by join]");  // fixme hyeoen [0521]
 
-                                NotiMessage notiMessage = new NotiMessage(myName);
+                                NotiMessage notiMessage = new NotiMessage(myName, drawnCanvasWidth, drawnCanvasHeight);
                                 MqttMessageFormat msgFormat = new MqttMessageFormat(notiMessage);
 
                                 client2.publish(topic + "_noti", new MqttMessage(parser.jsonWrite(msgFormat).getBytes()));
@@ -543,7 +548,7 @@ public enum MQTTClient {
 //                                    MyLog.i("drawing", "payload size (bytes) = " + parser.jsonWrite(messageFormat).getBytes().length);
                                 } else {
 
-                                    MqttMessageFormat messageFormat = new MqttMessageFormat(new JoinMessage(name));
+                                    MqttMessageFormat messageFormat = new MqttMessageFormat(new JoinMessage(name, drawnCanvasWidth, drawnCanvasHeight));
                                     client2.publish(topic_join, new MqttMessage(parser.jsonWrite(messageFormat).getBytes()));
                                     MyLog.e("master republish name", topic_join);
                                 }
@@ -564,7 +569,7 @@ public enum MQTTClient {
                         MyLog.e("login", "------------------------------------");
                         MyLog.e("login", name + " [by noti]");
 
-                        User user = new User(name, 0, MotionEvent.ACTION_UP, false);
+                        User user = new User(name, 0, MotionEvent.ACTION_UP, false, notiMessage.getDrawnCanvasWidth(), notiMessage.getDrawnCanvasHeight());
                         userList.add(user);
 
                         MyLog.e("login", name + " 추가");
@@ -641,7 +646,7 @@ public enum MQTTClient {
                         while (iterator.hasNext()) {
                             User user = iterator.next();
 
-                            Log.e("alive", userPrintForLog());
+                            //Log.e("alive", userPrintForLog());
 //                            drawingViewModel.setUserAliveCount(userPrintForLog());
                             if (!user.getName().equals(myName)) {
                                 user.setCount(user.getCount() + 1);
@@ -772,6 +777,14 @@ public enum MQTTClient {
 
             }
         });
+    }
+
+    public void setDrawnCanvasSize(String username, float drawnCanvasWidth, float drawnCanvasHeight) {
+        for(User user: userList) {
+            if (user.getName().equals(username) && user.getDrawnCanvasWidth() != 0.0 && user.getDrawnCanvasHeight() != 0.0) {
+                user.setDrawnCanvasSize(drawnCanvasWidth, drawnCanvasHeight);
+            }
+        }
     }
 
     public boolean isContainsUserList(String username) {

@@ -64,7 +64,7 @@ public class DrawingView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        MyLog.e("DrawingView", "call onSizeChanged");
+        MyLog.e("DrawingView", "call onSizeChanged" + " w = " + w + ", h = " + h);
 
         topicData = client.getTopic_data();
         canvasWidth = w;

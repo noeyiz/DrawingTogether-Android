@@ -1,14 +1,14 @@
 package com.hansung.drawingtogether.view.main;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class NotiMessage {
 
     String name;
-
-    public NotiMessage(String name) {
-        this.name = name;
-    }
+    float drawnCanvasWidth;
+    float drawnCanvasHeight;
 
 }

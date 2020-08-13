@@ -155,6 +155,7 @@ public class Text { // EditTextView
             public boolean onTouch(View view, MotionEvent event) {
                 view.getParent().requestDisallowInterceptTouchEvent(true);  // 부모(frame layout)가 터치 이벤트를 가로채지 못 하도록
 
+                MyLog.e("text", "on touch");
 
                 // 1. 중간에 다른 사용자가 들어오는 중일 경우 텍스트 터치 막기
                 // 2. 텍스트에 다른 사용자 이름이 지정되어 있으면
@@ -179,8 +180,19 @@ public class Text { // EditTextView
                     showToastMsg("텍스트 색상 변경중에는 움직일 수 없습니다");
                     return true;
                 }
+                // 지우개 모드일 경우 텍스트 지우기
+                else if(de.getCurrentMode() == Mode.ERASE) {
+                    eraseText();
+                    sendMqttMessage(TextMode.ERASE);
 
-                // else { textAttribute.setUsername(de.getMyUsername()); } // 텍스트 사용이 가능하다면 텍스트에 자신의 이름을 지정하고 사용 시작
+                    MyLog.i("drawing", "text erase");
+                    de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme minj - addHistory
+
+                    MyLog.i("drawing", "history.size()=" + de.getHistory().size());
+                    de.clearUndoArray();
+
+                    return true;
+                }
 
                 setTextAttribute(); // 터치가 시작될 때마다 텍스트가 생성된 레이아웃의 크기 지정(비율 계산을 위해)
 
@@ -388,7 +400,7 @@ public class Text { // EditTextView
     private void startTextColorChange() {
         de.setCurrentText(this); // 현재 텍스트 지정
         setTextAttribute(); // 텍스트 편집 전 사용자 이름 지정
-        textAttribute.setTextChangedColor(true); // 텍스트 컬러 변경중임을 나타내는 플래그 (중간자 처리 위해) todo nayeon 필요?
+        //textAttribute.setTextChangedColor(true); // 텍스트 컬러 변경중임을 나타내는 플래그 (중간자 처리 위해) todo nayeon 필요?
 
         sendMqttMessage(TextMode.START_COLOR_CHANGE); // 다른 사용자의 텍스트 동시 처리 막기 위해 ( 이름, 테두리 설정 )
 
@@ -401,7 +413,7 @@ public class Text { // EditTextView
 
     public void finishTextColorChange() {
         textAttribute.setUsername(null);
-        textAttribute.setTextChangedColor(false);
+        //textAttribute.setTextChangedColor(false);
 
         sendMqttMessage(TextMode.FINISH_COLOR_CHANGE);
 
@@ -533,37 +545,40 @@ public class Text { // EditTextView
 
         @Override
         public boolean onDown(MotionEvent motionEvent) {
-            System.out.println("onDown() called");
+            MyLog.e("text", "on down");
 
-            if(de.getCurrentMode().equals(Mode.ERASE)) {
-                eraseText();
-                sendMqttMessage(TextMode.ERASE);
-                MyLog.i("drawing", "text erase");
-                de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme minj - addHistory
-                MyLog.i("drawing", "history.size()=" + de.getHistory().size());
-                de.clearUndoArray();
+//            if(de.getCurrentMode().equals(Mode.ERASE)) {
+//                eraseText();
+//                sendMqttMessage(TextMode.ERASE);
+//                MyLog.i("drawing", "text erase");
+//                de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme minj - addHistory
+//                MyLog.i("drawing", "history.size()=" + de.getHistory().size());
+//                de.clearUndoArray();
+//
+//                return false;
+//
+//            } else {
+//                //textView.setBackground(de.getTextMoveBorderDrawable());
+//                de.setCurrentMode(Mode.TEXT);
+//            }
 
-                return false;
-
-            } else {
-                //textView.setBackground(de.getTextMoveBorderDrawable());
-                de.setCurrentMode(Mode.TEXT);
-            }
+            de.setCurrentMode(Mode.TEXT);
 
             return true;
         }
 
         @Override
         public void onShowPress(MotionEvent motionEvent) {
-            System.out.println("onShowPress() called");
+            MyLog.e("text", "on show press");
             //textView.setBackground(de.getTextMoveBorderDrawable());
         }
 
         @Override
         public boolean onSingleTapUp(MotionEvent motionEvent) {
-            System.out.println("onSingleTapUp() called");
+            MyLog.e("text", "on single tap up");
 
             //textView.setBackground(null); //
+
 
             textAttribute.setPreText(textAttribute.getText());
             changeTextViewToEditText();
@@ -575,7 +590,7 @@ public class Text { // EditTextView
 
         @Override
         public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
-            System.out.println("onScroll() called"+v+", "+v1);
+            MyLog.e("text", "on scroll");
 
             de.setCurrentMode(Mode.TEXT);
 
@@ -596,7 +611,7 @@ public class Text { // EditTextView
         // fixme nayeon - 텍스트 길게 누를 시 색상 선택
         @Override
         public void onLongPress(MotionEvent motionEvent) {
-            //System.out.println("onLongPress() called");
+            MyLog.e("text", "on long press");
 
             startTextColorChange();
 
@@ -605,7 +620,7 @@ public class Text { // EditTextView
 
         @Override
         public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
-            System.out.println("onFling() called : "+v+", "+v1);
+            MyLog.e("text", "on fling");
             return true;
         }
     }
