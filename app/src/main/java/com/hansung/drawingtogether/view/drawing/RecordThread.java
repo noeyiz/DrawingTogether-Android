@@ -3,14 +3,13 @@ package com.hansung.drawingtogether.view.drawing;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.media.audiofx.AcousticEchoCanceler;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.main.AudioMessage;
 
 import lombok.Setter;
 
-//fixme jiyeon[0428]
+//fixme jiyeon[0813]
 @Setter
 public class RecordThread implements Runnable {
 
@@ -23,11 +22,9 @@ public class RecordThread implements Runnable {
     private int bufferSize;
 
     private AudioRecord audioRecord;
-    private AcousticEchoCanceler acousticEchoCanceler;
 
     private MQTTClient mqttClient = MQTTClient.getInstance();
     private boolean flag = false;
-
 
     private byte[] readData;
 
@@ -45,7 +42,6 @@ public class RecordThread implements Runnable {
                 .setBufferSizeInBytes(bufferSize)
                 .build();
 
-        initEchoCanceler(audioRecord.getAudioSessionId());
         audioRecord.startRecording();
 
         while(flag) {
@@ -59,23 +55,10 @@ public class RecordThread implements Runnable {
 
         audioRecord.stop();
         audioRecord.release();
-
-        releaseEchoCanceler();
     }
 
     public void setBufferUnitSize(int n) {
         bufferSize = bufferUnit * n;
     }
 
-
-    // Echo Canceler
-    public void initEchoCanceler(int audioSession) {
-        acousticEchoCanceler = AcousticEchoCanceler.create(audioSession);
-        acousticEchoCanceler.setEnabled(true);
-    }
-
-    public void releaseEchoCanceler() {
-        acousticEchoCanceler.setEnabled(false);
-        acousticEchoCanceler.release();
-    }
 }
