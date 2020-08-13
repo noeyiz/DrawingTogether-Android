@@ -119,7 +119,7 @@
                 android:layout_height="match_parent"
                 android:singleLine="true"
                 android:imeOptions="actionNext"
-                android:hint="Topic"
+                android:hint="회의명"
                 android:text="@={vm.topic}"
                 android:paddingTop="8dp"
                 android:paddingBottom="8dp"/>
@@ -158,7 +158,7 @@
                 android:layout_height="match_parent"
                 android:singleLine="true"
                 android:imeOptions="actionNext"
-                android:hint="Password"
+                android:hint="비밀번호"
                 android:text="@={vm.password}"
                 android:paddingTop="8dp"
                 android:paddingBottom="8dp"/>
@@ -197,7 +197,7 @@
                 android:layout_height="match_parent"
                 android:singleLine="true"
                 android:imeOptions="actionNext"
-                android:hint="Name"
+                android:hint="이름"
                 android:text="@={vm.name}"
                 android:paddingTop="8dp"
                 android:paddingBottom="8dp"/>

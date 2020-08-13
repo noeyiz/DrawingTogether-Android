@@ -498,25 +498,27 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
         Bitmap imageBitmap = null;
 
+        // fixme jiyeon[0813] - 이미지는 바이너리 데이터 자체를 보내도록 변경
         switch (requestCode) {
             case PICK_FROM_GALLERY:
                 if (data == null) {
                     return;
                 }
-                // fixme jiyeon
+
                 try {
                     Uri uri = data.getData();
                     imageBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
                     String filePath = getRealPathFromURI(uri);
+                    MyLog.e("Image", "Before(Gallery) : " + new File(getRealPathFromURI(uri)).length() + " Bytes");
 
-                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
                     imageBitmap = rotateBitmap(imageBitmap, filePath);
-                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
 
-                    // todo nayeon : check image file size
-                    MyLog.e("gallery", "Gallery Image File Size = " + new File(getRealPathFromURI(uri)).length() + " Bytes");
-                    MyLog.e("gallery", "Gallery Bitmap Byte Count = " + imageBitmap.getRowBytes() * imageBitmap.getHeight());
-
+//                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
+//                    imageBitmap = rotateBitmap(imageBitmap, filePath);
+//                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
+//                    // todo nayeon : check image file size
+//                    MyLog.e("gallery", "Gallery Image File Size = " + new File(getRealPathFromURI(uri)).length() + " Bytes");
+//                    MyLog.e("gallery", "Gallery Bitmap Byte Count = " + imageBitmap.getRowBytes() * imageBitmap.getHeight());
                 } catch(IOException e) {
                     e.printStackTrace();
                 }
@@ -525,16 +527,17 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 try {
                     // fixme jiyeon
                     File file = new File(drawingViewModel.getPhotoPath());
-
-                    // todo nayeon : check image file size
-                    if(file.exists()) { MyLog.e("camera", "Camera File Size = " + file.length() + " Bytes"); }
+                    MyLog.e("Image", "Before(Camera) : " + file.length() + " Bytes");
 
                     imageBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file));
-
-                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
                     imageBitmap = rotateBitmap(imageBitmap, drawingViewModel.getPhotoPath());
-                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
 
+//                    // todo nayeon : check image file size
+//                    if(file.exists()) { MyLog.e("camera", "Camera File Size = " + file.length() + " Bytes"); }
+//                    imageBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file));
+//                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
+//                    imageBitmap = rotateBitmap(imageBitmap, drawingViewModel.getPhotoPath());
+//                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -546,10 +549,14 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             return;
         }
 
-        setBackgroundImage(imageBitmap); // fixme nayeon
+        byte[] mqttImageMessage = de.bitmapToByteArray(imageBitmap);
+        client.publish(client.getTopic_image(), mqttImageMessage);
+        MyLog.e("Image", "After : " + mqttImageMessage.length + " Bytes");
+        //
 
-        messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(imageBitmap));
-        client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
+//        setBackgroundImage(imageBitmap); // fixme nayeon
+//        messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(imageBitmap));
+//        client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
     }
 
     private void setBackgroundImage(Bitmap imageBitmap) {
