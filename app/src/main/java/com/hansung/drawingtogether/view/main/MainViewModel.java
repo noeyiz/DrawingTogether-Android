@@ -9,25 +9,16 @@ import android.util.Log;
 
 import android.view.View;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.MutableLiveData;
 
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.MutableData;
-import com.google.firebase.database.Transaction;
 
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.BaseViewModel;
-
-
-import lombok.Data;
-import lombok.Setter;
 
 public class MainViewModel extends BaseViewModel {
 
@@ -198,8 +189,6 @@ public class MainViewModel extends BaseViewModel {
                         data.setPassword(password.getValue());
                         data.setName(name.getValue());
                         data.setMasterName(masterName);  // fixme hyeyeon
-                        data.setAliveMode(true);
-                        data.setAliveBackground(true);
                         data.setMaster(true);
 
                         clearData();
@@ -262,8 +251,6 @@ public class MainViewModel extends BaseViewModel {
                         data.setPassword(password.getValue());
                         data.setName(name.getValue());
                         data.setMasterName(masterName);  // fixme hyeyeon
-                        data.setAliveMode(true);
-                        data.setAliveBackground(true);
                         data.setMaster(false);
 
                         clearData();

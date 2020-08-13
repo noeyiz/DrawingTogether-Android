@@ -5,7 +5,7 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-set(pathPROJECT C:/AndroidProjects/DrawingTogether) # 수정필요
+set(pathPROJECT /Users/kkankkan/DrawingTogether) # 수정필요
 
 
 set(pathOPENCV ${pathPROJECT}/opencv)

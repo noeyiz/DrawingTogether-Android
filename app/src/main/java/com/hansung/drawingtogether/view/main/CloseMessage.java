@@ -4,10 +4,10 @@ import lombok.Getter;
 
 // fixme hyeyeon
 @Getter
-public class DeleteMessage {
-    String name;
+public class CloseMessage {
+    private String name;
 
-    public DeleteMessage(String name) {
+    public CloseMessage(String name) {
         this.name = name;
     }
 

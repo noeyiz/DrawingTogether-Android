@@ -5,7 +5,7 @@ import lombok.Getter;
 // fixme hyeyeon
 @Getter
 public class AliveMessage {
-    String name;
+    private String name;
 
     public AliveMessage(String name) {
         this.name = name;

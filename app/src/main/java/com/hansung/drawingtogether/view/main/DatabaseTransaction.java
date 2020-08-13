@@ -89,7 +89,7 @@ public abstract class DatabaseTransaction implements completionHandler {
                             }
                             else {
                                 mutableData.child("username").child(name).setValue(name);
-                                mutableData.child("access time").setValue(System.currentTimeMillis()); // fixme nayeon
+//                                mutableData.child("access time").setValue(System.currentTimeMillis()); // fixme nayeon
 
                                 masterName = mutableData.child("master").getValue().toString();  // fixme hyeyeon
                                 MyLog.i("login", "masterName: " + masterName);

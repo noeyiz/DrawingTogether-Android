@@ -1,22 +1,21 @@
 package com.hansung.drawingtogether.view.main;
 
-import com.hansung.drawingtogether.data.remote.model.User;
-
-import java.util.List;
-
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-public class JoinMessage {
+public class JoinAckMessage {
     private String name;
+    private String target;
+
     private float drawnCanvasWidth;
     private float drawnCanvasHeight;
 
-    public JoinMessage(String name, float drawnCanvasWidth, float drawnCanvasHeight) {
+    public JoinAckMessage(String name, String target, float drawnCanvasWidth, float drawnCanvasHeight) {
         this.name = name;
+        this.target = target;
 
         this.drawnCanvasWidth = drawnCanvasWidth;
         this.drawnCanvasHeight = drawnCanvasHeight;
     }
+
 }
