@@ -581,13 +581,19 @@
 
                 </LinearLayout>
 
-                <TextView
+                <ScrollView
                     android:id="@+id/user_print"
                     android:layout_width="100dp"
                     android:layout_height="200dp"
-                    android:background="#FFFFFF"
-                    android:text="@={vm.userPrint}"
-                    android:visibility="invisible" />
+                    android:visibility="invisible">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="#F6F6F6"
+                        android:text="@={vm.userPrint}"/>
+
+                </ScrollView>
 
             </LinearLayout>
 
@@ -626,7 +632,7 @@
                     android:onClick="@{vm::clickRedo}"
                     android:text="redo" />
 
-                <TextView
+                <!--<TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="right"
@@ -642,7 +648,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@={vm.userAliveCount}" />
-                </LinearLayout>
+                </LinearLayout>-->
 
             </LinearLayout>
 

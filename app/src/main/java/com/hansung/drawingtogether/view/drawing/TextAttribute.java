@@ -1,5 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
+import android.view.Gravity;
+
 import java.util.ArrayList;
 
 import lombok.Getter;
@@ -66,7 +68,7 @@ public class TextAttribute {
         this.textSize = textAttr.textSize;
         this.textColor = textAttr.textColor;
         this.textBackgroundColor = textAttr.textBackgroundColor;
-        this.textGravity = textAttr.textGravity;
+        this.textGravity = Gravity.CENTER;
         this.style = textAttr.style;
         this.generatedLayoutWidth = textAttr.generatedLayoutWidth;
         this.generatedLayoutHeight = textAttr.generatedLayoutHeight;
@@ -80,7 +82,8 @@ public class TextAttribute {
     }
 
     public TextAttribute(String id, String username, int textSize, String textColor, int textBackgroundColor,
-                         int textGravity, int style, int generatedLayoutWidth, int generatedLayoutHeight) {
+                         int style, int generatedLayoutWidth, int generatedLayoutHeight) {
+
         this.id = id;
         this.username = username;
 
@@ -88,7 +91,7 @@ public class TextAttribute {
         this.textSize = textSize;
         this.textColor = textColor;
         this.textBackgroundColor = textBackgroundColor;
-        this.textGravity = textGravity;
+        this.textGravity = Gravity.CENTER;
         this.style = style;
         this.generatedLayoutWidth = generatedLayoutWidth;
         this.generatedLayoutHeight = generatedLayoutHeight;

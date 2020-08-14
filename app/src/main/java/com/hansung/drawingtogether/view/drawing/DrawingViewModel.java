@@ -13,9 +13,7 @@ import android.provider.MediaStore;
 
 import android.util.Log;
 
-import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -61,8 +59,8 @@ public class DrawingViewModel extends BaseViewModel {
     private MutableLiveData<String> userNum = new MutableLiveData<>();
     private MutableLiveData<String> userPrint = new MutableLiveData<>();  // fixme hyeyeon
 
-    private MutableLiveData<String> aliveCount = new MutableLiveData<>();
-    private MutableLiveData<String> userAliveCount = new MutableLiveData<>();
+//    private MutableLiveData<String> aliveCount = new MutableLiveData<>();
+//    private MutableLiveData<String> userAliveCount = new MutableLiveData<>();
 
     private Logger logger = Logger.getInstance();
 
@@ -115,20 +113,7 @@ public class DrawingViewModel extends BaseViewModel {
 
         client.setAliveCount(5);
         client.setCallback();
-
-//        client.subscribe(topic + "_join");
-//        client.subscribe(topic + "_noti");
-//        client.subscribe(topic + "_exit");
-//        client.subscribe(topic + "_delete");
-//        client.subscribe(topic + "_data");
-//        client.subscribe(topic + "_mid");
-//        if (data.isAliveMode()) {
-//            client.subscribe(topic + "_alive"); // fixme hyeyeon
-//        }
-        // fixme jiyeon[0525]
         client.subscribeAllTopics();
-        Log.e("alive", "DrawingViewModel aliveMode: " + data.isAliveMode());
-        Log.e("alive", "DrawingViewModel aliveBackground: " + data.isAliveBackground());
 
         de.setCurrentType(ComponentType.STROKE);    //fixme minj
         de.setCurrentMode(Mode.DRAW);
@@ -218,7 +203,9 @@ public class DrawingViewModel extends BaseViewModel {
         // 사용자가 처음 텍스트 편집창에서 텍스트 생성중인 경우
         // 텍스트 정보들을 모든 사용자가 갖고 있지 않음 ( 편집중인 사람만 갖고 있음 )
         // 따라서 중간자가 들어오고 난 후에 텍스트 생성을 할 수 있도록 막아두기
-        if(de.isMidEntered() && !de.getCurrentText().getTextAttribute().isTextInited()) { // todo nayeon ☆☆☆ 텍스트 중간자 처리
+        // fixme nayeon [0614]
+        // de.setMidEntered(false);
+        if(de.isMidEntered() /* && !de.getCurrentText().getTextAttribute().isTextInited() */) { // todo nayeon ☆☆☆ 텍스트 중간자 처리
            showToastMsg("다른 사용자가 접속 중 입니다 잠시만 기다려주세요");
            return;
         }
@@ -238,7 +225,7 @@ public class DrawingViewModel extends BaseViewModel {
         // 텍스트 속성 설정 ( 기본 도구에서 설정할 것인지 텍스트 도구에서 설정할 것인지? )
         TextAttribute textAttribute = new TextAttribute(de.setTextStringId(), de.getMyUsername(),
                 de.getTextSize(), de.getTextColor(), de.getTextBackground(),
-                Gravity.CENTER, de.getFontStyle(),
+                de.getFontStyle(),
 
                 frameLayout.getWidth(), frameLayout.getHeight());
 
@@ -252,6 +239,11 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void clickDone(View view) {
         MyLog.d("button", "done button click");
+
+        if(de.isMidEntered() /* && !de.getCurrentText().getTextAttribute().isTextInited() */) { // todo nayeon ☆☆☆ 텍스트 중간자 처리
+            showToastMsg("다른 사용자가 접속 중 입니다 잠시만 기다려주세요");
+            return;
+        }
 
         // 텍스트 모드가 끝나면 다른 버튼들 활성화
         enableDrawingMenuButton(true);
@@ -405,6 +397,7 @@ public class DrawingViewModel extends BaseViewModel {
         TextTemplate params = TextTemplate.newBuilder("시시콜콜!",
                 LinkObject.newBuilder()
                         .setAndroidExecutionParams("topic=" + topic + "&password=" + password)
+                        .setIosExecutionParams("topic=" + topic + "&password=" + password)
                         .build())
                 .setButtonTitle("앱으로 이동").build();
 
@@ -471,13 +464,13 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void setUserPrint(String user) { userPrint.postValue(user); }  // fixme hyeyoen
 
-    public MutableLiveData<String> getAliveCount() { return aliveCount; }
+//    public MutableLiveData<String> getAliveCount() { return aliveCount; }
 
-    public MutableLiveData<String> getUserAliveCount() { return userAliveCount; }
+//    public MutableLiveData<String> getUserAliveCount() { return userAliveCount; }
 
-    public void setAliveCount(String count) { aliveCount.postValue(count); }
+//    public void setAliveCount(String count) { aliveCount.postValue(count); }
 
-    public void setUserAliveCount(String count) { userAliveCount.postValue(count); }
+//    public void setUserAliveCount(String count) { userAliveCount.postValue(count); }
 
     // fixme hyeyeon[1]
     @Override

@@ -119,7 +119,7 @@
                 android:layout_height="match_parent"
                 android:singleLine="true"
                 android:imeOptions="actionNext"
-                android:hint="Topic"
+                android:hint="회의명"
                 android:text="@={vm.topic}"
                 android:paddingTop="8dp"
                 android:paddingBottom="8dp"/>
@@ -158,7 +158,7 @@
                 android:layout_height="match_parent"
                 android:singleLine="true"
                 android:imeOptions="actionNext"
-                android:hint="Password"
+                android:hint="비밀번호"
                 android:text="@={vm.password}"
                 android:paddingTop="8dp"
                 android:paddingBottom="8dp"/>
@@ -197,7 +197,7 @@
                 android:layout_height="match_parent"
                 android:singleLine="true"
                 android:imeOptions="actionNext"
-                android:hint="Name"
+                android:hint="이름"
                 android:text="@={vm.name}"
                 android:paddingTop="8dp"
                 android:paddingBottom="8dp"/>
@@ -228,7 +228,7 @@
             android:src="@drawable/master_login"
             android:scaleType="centerInside"
             android:background="@android:color/transparent"
-            android:onClick="@{vm::startDrawing}"/>
+            android:onClick="@{vm::masterLoginClicked}"/>
 
         <ImageButton
             android:id="@+id/join"
@@ -242,7 +242,7 @@
             android:src="@drawable/join"
             android:scaleType="centerInside"
             android:background="@android:color/transparent"
-            android:onClick="@{vm::startDrawing}"/>
+            android:onClick="@{vm::joinClicked}"/>
 
 <!--        <Button-->
 <!--            android:id="@+id/local"-->
@@ -251,14 +251,14 @@
 <!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
 <!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
 <!--            app:layout_constraintTop_toBottomOf="@id/join"-->
-<!--            app:layout_constraintBottom_toTopOf="@id/aliveMode"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/aliveThreadMode"-->
 <!--            android:layout_marginHorizontal="10dp"-->
 <!--            android:layout_marginBottom="15dp"-->
 <!--            android:text="Local Start"-->
 <!--            android:onClick="@{vm::showLocalHistory}"/>-->
 
 <!--        <CheckBox-->
-<!--            android:id="@+id/aliveMode"-->
+<!--            android:id="@+id/aliveThreadMode"-->
 <!--            android:layout_width="0dp"-->
 <!--            android:layout_height="wrap_content"-->
 <!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
@@ -268,7 +268,7 @@
 <!--            android:layout_marginHorizontal="10dp"-->
 <!--            android:text="Alive Publish Mode"-->
 <!--            android:textSize="10dp"-->
-<!--            android:checked="@={vm.aliveMode}" />-->
+<!--            android:checked="@={vm.aliveThreadMode}" />-->
 
 <!--        <CheckBox-->
 <!--            android:id="@+id/aliveBackground"-->
@@ -276,7 +276,7 @@
 <!--            android:layout_height="wrap_content"-->
 <!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
 <!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
-<!--            app:layout_constraintTop_toBottomOf="@id/aliveMode"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/aliveThreadMode"-->
 <!--            app:layout_constraintBottom_toBottomOf="@id/view_bottom_guide"-->
 <!--            android:layout_marginHorizontal="10dp"-->
 <!--            android:text="Alive Background Service"-->

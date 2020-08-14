@@ -17,7 +17,7 @@ import java.lang.reflect.Type;
 // Text 객체 파싱은 사실상 TextAttribute 객체 파싱
 public class TextAdapter implements JsonSerializer<Text>, JsonDeserializer<Text> {
 
-    private final String TEXT_ATTRIBUTE = "textAttribute";
+    private final String TEXT_ATTRIBUTE = "textAttr";
     private DrawingFragment drawingFragment;
 
     public TextAdapter(DrawingFragment drawingFragment) { this.drawingFragment = drawingFragment; }

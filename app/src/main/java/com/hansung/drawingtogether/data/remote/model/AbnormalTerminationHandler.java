@@ -14,10 +14,6 @@ import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
-import com.hansung.drawingtogether.view.drawing.JSONParser;
-import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
-import com.hansung.drawingtogether.view.main.DeleteMessage;
-import com.hansung.drawingtogether.view.main.ExitMessage;
 
 // 비 정상 종료 시 실행될 핸들러
 public class AbnormalTerminationHandler
@@ -97,8 +93,8 @@ public class AbnormalTerminationHandler
                     }
 <<<<<<< HEAD
                     if (client.isMaster()) {
-                        DeleteMessage deleteMessage = new DeleteMessage(client.getMyName());
-                        MqttMessageFormat messageFormat = new MqttMessageFormat(deleteMessage);
+                        CloseMessage closeMessage = new CloseMessage(client.getMyName());
+                        MqttMessageFormat messageFormat = new MqttMessageFormat(closeMessage);
                         client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
 
                         client.exitTask();
