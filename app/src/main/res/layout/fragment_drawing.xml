@@ -180,26 +180,31 @@
                 android:id="@+id/currentColorLayout"
                 android:layout_width="40dp"
                 android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:layout_marginRight="10dp">
+                android:layout_marginLeft="1dp"
+                android:layout_marginTop="1dp"
+                android:layout_marginRight="5dp"
+                android:foregroundGravity="center_horizontal"
+                android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/currentColorBtn"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:layout_gravity="center_vertical"
                     android:enabled="false"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
                     android:text="CurrentColor"
                     android:textSize="0sp"
-                    app:cornerRadius="25dp"
-                    android:insetBottom="0dp"
-                    android:insetLeft="0dp"
-                    android:insetRight="0dp"
-                    android:insetTop="0dp"/>
+                    app:cornerRadius="25dp" />
 
                 <ImageView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/rgb_ring"/>
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/rgb_ring" />
 
             </FrameLayout>
 

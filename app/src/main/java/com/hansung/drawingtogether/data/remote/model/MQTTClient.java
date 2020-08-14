@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.firebase.components.Component;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
@@ -671,6 +672,7 @@ public enum MQTTClient {
                     i++;
 
                     String msg = new String(message.getPayload());
+                    MyLog.i("drawMsg", msg);
                     MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
                     if(de.isMidEntered() && (messageFormat.getAction() != MotionEvent.ACTION_UP)) {
@@ -1018,19 +1020,34 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 if (de.getMyUsername().equals(username)) {
                     for (Point point : message.getMovePoints()) {
                         client.getDrawingView().addPoint(dComponent, point);
+                        if(dComponent.getType() == ComponentType.STROKE) {
+                            Canvas canvas = new Canvas(de.getLastDrawingBitmap());
+                            dComponent.draw(canvas);
+                        }
                     }
                 } else {
                     dComponent.calculateRatio(myCanvasWidth, myCanvasHeight);
 
                     MyLog.i("sendThread", "points[] = " + message.getMovePoints().toString());
                     for(Point point : message.getMovePoints()) {
-                        client.getDrawingView().addPointAndDraw(dComponent, point);
+                        if(dComponent.getType() == ComponentType.STROKE) {
+                            client.getDrawingView().addPointAndDraw(dComponent, point);
+                            if(de.getCurrentMode() == Mode.SELECT) {
+                                de.addPostSelectedComponent(dComponent);
+                            }
+                        } else {
+                            client.getDrawingView().addPoint(dComponent, point);
+                        }
                     }
                 }
+
                 client.updateUsersAction(username, action);
 
                 break;
             case MotionEvent.ACTION_UP:
+                if(de.getCurrentMode() == Mode.SELECT) {
+                    de.addPostSelectedComponent(dComponent);
+                }
                 publishProgress(message);
                 break;
         }
@@ -1068,8 +1085,8 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 publishProgress(message);
                 return null;
             case SELECT:
-                if(message.getAction() == null) {
-                    Objects.requireNonNull(de.findDrawingComponentByUsersComponentId(message.getUsersComponentId())).setSelected(message.getIsSelected());
+                if(message.getAction() == null && de.findDrawingComponentByUsersComponentId(message.getUsersComponentId()) != null) {
+                    de.findDrawingComponentByUsersComponentId(message.getUsersComponentId()).setSelected(message.getIsSelected());
                 }
                 publishProgress(message);
 
@@ -1126,6 +1143,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
             case DRAW:
                 if(action == MotionEvent.ACTION_UP) {
                     if(de.getMyUsername().equals(username)) {
+                        client.getDrawingView().addPoint(dComponent, point);
                         client.getDrawingView().doInDrawActionUp(dComponent, de.getMyCanvasWidth(), de.getMyCanvasHeight());
                         if(de.isIntercept()) {
                             client.getDrawingView().setIntercept(true);
@@ -1133,6 +1151,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                         }
                     } else {
                         MyLog.i("sendThread", "up " + dComponent.getUsername() + ", " + dComponent.getId());
+                        client.getDrawingView().addPointAndDraw(dComponent, point);
                         client.getDrawingView().redrawShape(dComponent);
                         client.getDrawingView().doInDrawActionUp(dComponent, myCanvasWidth, myCanvasHeight);
                     }
@@ -1149,12 +1168,12 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 if(selectedComponent == null) return;
 
                 if(message.getAction() == null) {
-                    if(message.getIsSelected()) {
+                    /*if(message.getIsSelected()) {
                         de.clearSelectedBitmap();
                         de.drawSelectedComponentBorder(selectedComponent, de.getSelectedBorderColor());
                     } else {
                         de.clearSelectedBitmap();
-                    }
+                    }*/
                 } else {
                     switch(message.getAction()) {
                         case MotionEvent.ACTION_DOWN:
@@ -1164,18 +1183,28 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                             de.moveSelectedComponent(selectedComponent, message.getMoveX(), message.getMoveY());
                             break;
                         case MotionEvent.ACTION_UP:
-                            de.clearSelectedBitmap();
-                            de.drawSelectedComponentBorder(selectedComponent, de.getSelectedBorderColor());
+                            //de.clearSelectedBitmap();
+                            //de.drawSelectedComponentBorder(selectedComponent, de.getSelectedBorderColor());
                             de.updateSelectedComponent(selectedComponent, myCanvasWidth, myCanvasHeight);
                             de.updateDrawingComponents(selectedComponent);
                             de.clearDrawingBitmap();
                             de.drawAllDrawingComponents();
+                            de.drawAllCurrentStrokes();
+
+                            de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+                            de.clearUndoArray();
+
                             MyLog.i("drawing", "other selected finish");
                             break;
                     }
                 }
                 break;
             case CLEAR:
+                if(client.getBinding().drawingView.isSelected()) {
+                    de.deselect();
+                    //de.clearAllSelectedBitmap();
+                }
+
                 de.clearTexts();
                 client.getBinding().redoBtn.setEnabled(false);
                 client.getBinding().undoBtn.setEnabled(false);
@@ -1184,6 +1213,11 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 de.clearBackgroundImage();
                 break;
             case UNDO:
+                if(client.getBinding().drawingView.isSelected()) {
+                    de.deselect();
+                    //de.clearAllSelectedBitmap();
+                }
+
                 if(de.getHistory().size() == 0)
                     return;
                 de.addUndoArray(de.popHistory());
@@ -1197,6 +1231,11 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 MyLog.i("drawing", "history.size()=" + de.getHistory().size());
                 break;
             case REDO:
+                if(client.getBinding().drawingView.isSelected()) {
+                    de.deselect();
+                    //de.clearAllSelectedBitmap();
+                }
+
                 if(de.getUndoArray().size() == 0)
                     return;
                 de.addHistory(de.popUndoArray());
@@ -1216,8 +1255,6 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-
-
 
         client.getDrawingView().invalidate();
     }

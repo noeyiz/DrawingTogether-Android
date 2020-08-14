@@ -38,7 +38,8 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
             de.removeDrawingComponents(id);
         }
 
-        de.drawAllDrawingComponents();
+        //de.drawAllDrawingComponents();
+        de.drawAllUnselectedDrawingComponents();
         de.drawAllCurrentStrokes();
         //de.getDrawingView().invalidate();
     }
@@ -55,7 +56,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
-        de.addHistory(new DrawingItem(de.getCurrentMode(), components/*, de.getDrawingBitmap()*/));    //fixme
+        de.addHistory(new DrawingItem(Mode.ERASE, components/*, de.getDrawingBitmap()*/));    //fixme
         MyLog.i("drawing", "history.size()=" + de.getHistory().size());
         de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
 

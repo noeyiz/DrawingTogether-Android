@@ -325,6 +325,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             });
         }
         else {
+            backgroundEraserBtn.setTextColor(Color.LTGRAY);
             backgroundEraserBtn.setEnabled(false);
         }
 
@@ -341,6 +342,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             });
         }
         else {
+            clearBtn.setTextColor(Color.LTGRAY);
             clearBtn.setEnabled(false);
         }
     }

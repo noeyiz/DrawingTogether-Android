@@ -24,8 +24,8 @@ public class Stroke extends DrawingComponent {
         paint.setStrokeJoin(Paint.Join.ROUND);
 
         //fixme minj
-        Point from = (this.preSize == 0) ? this.points.get(preSize) : this.points.get(preSize-1);
-        Point to = this.points.get(preSize);
+        //Point from = (this.preSize == 0) ? this.points.get(preSize) : this.points.get(preSize-1);
+        //Point to = this.points.get(preSize);
         /*Point from, to;
         if(this.points.size() == 1) {
             from = this.points.get(0);
@@ -35,13 +35,37 @@ public class Stroke extends DrawingComponent {
             to = this.points.get(this.points.size()-1);
         }*/
 
-        try {
+        /*try {
             canvas.drawLine(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);
         }catch(NullPointerException e) {
             e.printStackTrace();
-        }
+        }*/
         //Log.i("drawing", this.points.toString());
         //Log.i("drawing", "(" + from.x * xRatio + ", " +  from.y * yRatio + ") -> (" +  to.x * xRatio + ", " + to.y * yRatio + ")");
+
+        Point from, to;
+        if(this.points.size() == 1) {
+            from = this.points.get(0);
+            to = this.points.get(0);
+
+            try {
+                canvas.drawLine(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);
+            }catch(NullPointerException e) {
+                e.printStackTrace();
+            }
+
+        } else if(this.points.size() > 1 && this.preSize < this.points.size()) {
+            for(int i=this.preSize; i<this.points.size(); i++) {
+                from = this.points.get(i-1);
+                to = this.points.get(i);
+
+                try {
+                    canvas.drawLine(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);
+                }catch(NullPointerException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     @Override
