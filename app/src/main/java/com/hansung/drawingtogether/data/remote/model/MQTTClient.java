@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.DialogInterface;
+import android.graphics.Canvas;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.os.AsyncTask;
@@ -23,6 +24,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.drawing.AudioPlayThread;
+import com.hansung.drawingtogether.view.drawing.ComponentType;
 import com.hansung.drawingtogether.view.drawing.DrawingComponent;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 import com.hansung.drawingtogether.view.drawing.DrawingFragment;
@@ -656,7 +658,7 @@ public enum MQTTClient {
                     i++;
 
                     String msg = new String(message.getPayload());
-                    MyLog.i("drawMsg", msg);
+                    //MyLog.i("drawMsg", msg);
                     MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
                     if(de.isMidEntered() && (messageFormat.getAction() != MotionEvent.ACTION_UP)) {
