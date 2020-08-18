@@ -154,11 +154,11 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         ViewGroup.LayoutParams layoutParams = binding.drawingView.getLayoutParams();
         //layoutParams.width = size.x*3;
         layoutParams.width = size.x;
-        layoutParams.height = size.y;
+        //layoutParams.height = size.y; //****
 
         binding.drawingView.setLayoutParams(layoutParams);
 
-        Log.e("drawing view size in fragment", size.x + ", " + size.y);
+        Log.e("drawing view size in fragment", size.x + ", " + size.y * 0.83);
 
         //undo, redo 버튼 초기화
         if(de.getHistory().size() == 0)

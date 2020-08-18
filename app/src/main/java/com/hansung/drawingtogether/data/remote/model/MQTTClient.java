@@ -524,6 +524,7 @@ public enum MQTTClient {
                                 de.setHistory(mqttMessageFormat.getHistory());
                                 de.setUndoArray(mqttMessageFormat.getUndoArray());
                                 de.setRemovedComponentId(mqttMessageFormat.getRemovedComponentId());
+                                setDrawnCanvasSize(name, drawnCanvasWidth, drawnCanvasHeight);
 
                                 de.setTexts(mqttMessageFormat.getTexts());
                                 if (mqttMessageFormat.getBitmapByteArray() != null) {
@@ -544,6 +545,7 @@ public enum MQTTClient {
                             else if (!isContainsUserList(name)) {  // 기존 참여자가 보낸 메시지
                                 User user = new User(name, 0, MotionEvent.ACTION_UP, false, drawnCanvasWidth, drawnCanvasHeight);  // fixme hyeyeon
                                 userList.add(user); // 들어온 사람의 이름을 추가
+                                setDrawnCanvasSize(name, drawnCanvasWidth, drawnCanvasHeight);
 
                                 // fixme jiyeon
                                 AudioPlayThread audioPlayThread = new AudioPlayThread();
@@ -1186,6 +1188,11 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
 
                             de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
                             de.clearUndoArray();
+
+                            if(de.getCurrentMode() == Mode.SELECT && client.getDrawingView().isSelected()) {
+                                de.drawAllPreSelectedComponents();
+                                de.drawAllPostSelectedComponents();
+                            }
 
                             MyLog.i("drawing", "other selected finish");
                             break;

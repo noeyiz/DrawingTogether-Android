@@ -269,9 +269,9 @@ public enum DrawingEditor {
     public int removeDrawingComponents(int id) {
         for(int i=0; i<drawingComponents.size(); i++) {
             if(drawingComponents.get(i).getId() == id) {
-                if(drawingComponents.get(i).isSelected() && drawingFragment.getBinding().drawingView.isSelected) {
-                    deselect();
-                }
+                /*if(drawingComponents.get(i).isSelected()) {
+                    drawingComponents.get(i).setSelected(false);
+                }*/
                 drawingComponents.remove(drawingComponents.get(i));
                 return i;
             }
@@ -358,32 +358,26 @@ public enum DrawingEditor {
     }
 
     public void deselect() {
+        if(selectedComponent == null) return;
         drawingFragment.getBinding().drawingView.setSelected(false);
         try {
             findDrawingComponentByUsersComponentId(selectedComponent.getUsersComponentId()).setSelected(false);
         } catch(NullPointerException e) {
             e.printStackTrace();
         }
-        //selectedComponent.setSelected(false);
-        //clearAllSelectedBitmap();
+        selectedComponent.setSelected(false);
+        //selectedComponent = null;
         updateDrawingBitmap(false);
-        drawingFragment.getBinding().drawingView.invalidate();
+        //clearAllSelectedBitmap();
+        //drawingFragment.getBinding().drawingView.invalidate();
         setLastDrawingBitmap(drawingBitmap.copy(drawingBitmap.getConfig(), true));
     }
 
     public void initSelectedBitmap() {
         if(drawingFragment.getBinding().drawingView.isSelected) {
-            drawingFragment.getBinding().drawingView.setSelected(false);
-            try {
-                findDrawingComponentByUsersComponentId(selectedComponent.getUsersComponentId()).setSelected(false);
-            } catch(NullPointerException e) {
-                e.printStackTrace();
-            }
-            updateDrawingBitmap(false);
-            //clearAllSelectedBitmap();
+            deselect();
+            clearAllSelectedBitmap();
             drawingFragment.getBinding().drawingView.invalidate();
-            setLastDrawingBitmap(drawingBitmap.copy(drawingBitmap.getConfig(), true));
-            //selectedComponent.setSelected(false);
             drawingFragment.getBinding().drawingView.sendSelectMqttMessage(false);
         }
     }

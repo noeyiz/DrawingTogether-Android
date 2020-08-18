@@ -120,9 +120,9 @@ public class DrawingView extends View {
 
         setEditorAttribute();
 
-        if(de.getCurrentMode() != Mode.SELECT) {
+        /*if(de.getCurrentMode() != Mode.SELECT) {
             de.initSelectedBitmap();
-        }
+        }*/
 
         switch (de.getCurrentMode()) {
             case DRAW:
@@ -443,8 +443,15 @@ public class DrawingView extends View {
         dTool.setCommand(selectCommand);
 
         if(!isSelected) {
+            de.redraw(null);
+
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
+                    /*de.clearSelectedBitmap();
+                    de.clearDrawingBitmap();
+                    de.drawAllDrawingComponents();
+                    de.drawAllCurrentStrokes();*/
+
                     selectPrePoint = new Point((int) event.getX(), (int) event.getY());
                 case MotionEvent.ACTION_MOVE:
                     selectPostPoint = new Point((int) event.getX(), (int) event.getY());
@@ -477,6 +484,12 @@ public class DrawingView extends View {
                             de.setPostSelectedComponents(selectedComponentId);
 
                             de.clearSelectedBitmap();
+
+                            de.drawAllPreSelectedComponents();
+                            de.drawAllPostSelectedComponents();
+                            //de.drawSelectedComponent();
+                            //de.drawSelectedBitmaps();
+
                             de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
                             invalidate();
 
@@ -497,8 +510,8 @@ public class DrawingView extends View {
 
                         //select cancel
                         if(de.getSelectedComponent() != null) {
-                            de.getSelectedComponent().setSelected(false);
                             isSelected = false;
+                            de.getSelectedComponent().setSelected(false);
 
                             try {
                                 de.findDrawingComponentByUsersComponentId(de.getSelectedComponent().getUsersComponentId()).setSelected(false);
@@ -506,9 +519,10 @@ public class DrawingView extends View {
                                 e.printStackTrace();
                             }
 
-                            de.updateDrawingBitmap(false);
+                            //de.updateDrawingBitmap(false);
+                            de.clearSelectedBitmap();
                             invalidate();
-                            de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+                            //de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
 
                             sendSelectMqttMessage(false);
                             //sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), de.getSelectedComponent().getUsersComponentId(), de.getCurrentMode(), false));
@@ -528,11 +542,20 @@ public class DrawingView extends View {
                     MyLog.i("drawing", "xRatio=" + de.getSelectedComponent().getXRatio() + ", yRatio=" + de.getSelectedComponent().getYRatio());
                     selectDownPoint = new Point((int)event.getX(), (int)event.getY());
                     if(!de.isContainsSelectedComponent(selectDownPoint)) {
-                        //isSelected = false;
-                        //de.initSelectedBitmap();
-                        de.deselect();
+                        isSelected = false;
                         de.getSelectedComponent().setSelected(false);
                         MyLog.i("drawing", "selected false");
+                        //de.initSelectedBitmap();
+                        //de.deselect();
+
+                        try {
+                            de.findDrawingComponentByUsersComponentId(de.getSelectedComponent().getUsersComponentId()).setSelected(false);
+                        } catch(NullPointerException e) {
+                            e.printStackTrace();
+                        }
+
+                        de.clearSelectedBitmap();
+                        de.redraw(null);
 
                         //todo publish - 다른 사람들 셀렉트 가능
                         sendSelectMqttMessage(false);
@@ -541,17 +564,24 @@ public class DrawingView extends View {
                         return true;
                     }
 
-                    de.drawAllPreSelectedComponents();
+                    de.clearSelectedBitmap();
+                    de.drawSelectedBitmaps();
+                    de.getSelectedComponent().drawComponent(de.getSelectedCanvas());
+                    de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
+                    invalidate();
+
+                    /*de.drawAllPreSelectedComponents();
                     de.drawAllPostSelectedComponents();
                     de.drawSelectedComponent();
                     de.drawSelectedBitmaps();
                     de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
-                    invalidate();
+                    invalidate();*/
 
                     MyLog.i("drawing", "selected true");
 
                     //todo publish - selected down
-                    sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), de.getSelectedComponent().getUsersComponentId(), de.getCurrentMode(), event.getAction(), 0, 0));
+
+                    sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), de.getSelectedComponent().getUsersComponentId(), Mode.SELECT, event.getAction(), 0, 0));
 
                     return true;
 
@@ -574,14 +604,14 @@ public class DrawingView extends View {
 
                     selectDownPoint = new Point((int)event.getX(), (int)event.getY());
 
-                    de.moveSelectedComponent(de.getSelectedComponent(), moveX, moveY);
                     de.clearSelectedBitmap();
+                    de.moveSelectedComponent(de.getSelectedComponent(), moveX, moveY);
                     de.getSelectedComponent().drawComponent(de.getSelectedCanvas());
                     de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
                     invalidate();
 
                     //todo publish - selected move
-                    sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), de.getSelectedComponent().getUsersComponentId(), de.getCurrentMode(), event.getAction(), moveX, moveY));
+                    sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), de.getSelectedComponent().getUsersComponentId(), Mode.SELECT, event.getAction(), moveX, moveY));
 
                     return true;
 
@@ -593,7 +623,7 @@ public class DrawingView extends View {
                     de.updateDrawingComponents(de.getSelectedComponent());
                     MyLog.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
 
-                    //de.addHistory(new DrawingItem(de.getCurrentMode(), de.getSelectedComponent())); //todo
+                    //de.addHistory(new DrawingItem(Mode.SELECT, de.getSelectedComponent())); //todo
                     //Log.i("drawing", "history.size()=" + de.getHistory().size() + ", id=" + de.getSelectedComponent().getId());
 
                     de.drawAllCurrentStrokes();
@@ -604,7 +634,7 @@ public class DrawingView extends View {
                     //if(de.isIntercept()) this.isIntercept = true;   //todo - DRAW mode 외에도 중간자 join 시 intercept 처리
 
                     //todo publish - selected up
-                    sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), de.getSelectedComponent().getUsersComponentId(), de.getCurrentMode(), event.getAction(), 0, 0));
+                    sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), de.getSelectedComponent().getUsersComponentId(), Mode.SELECT, event.getAction(), 0, 0));
 
                     return true;
             }
