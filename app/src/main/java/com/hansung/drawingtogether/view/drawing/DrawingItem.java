@@ -41,4 +41,15 @@ public class DrawingItem {
         MyLog.i("drawing", "preText=" + textAttribute.getPreText() + ", text=" + textAttribute.getText());
     }
 
+
+    public Vector<DrawingComponent> getComponents() {
+        MyLog.i("isSelected", "set DrawingItem components selected false");
+
+        for(DrawingComponent comp : components) {
+            comp.setSelected(false);
+        }
+
+        return components;
+    }
+
 }

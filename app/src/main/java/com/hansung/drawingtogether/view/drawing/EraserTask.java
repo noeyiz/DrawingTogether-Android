@@ -30,7 +30,14 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
         //de.getDrawingView().invalidate();
 
         for(int i=1; i<erasedComponentIds.size(); i++) {
-            components.add(de.findDrawingComponentById(erasedComponentIds.get(i)));
+            try {
+                DrawingComponent comp = de.findDrawingComponentById(erasedComponentIds.get(i));
+                comp.setSelected(false);
+                MyLog.i("isSelected", comp.getUsersComponentId() + ", " + comp.isSelected);
+                components.add(comp);
+            } catch (NullPointerException e) {
+                MyLog.w("catch", "EraserTask / NullPointerException");
+            }
         }
 
         for(int i=1; i<erasedComponentIds.size(); i++) {
@@ -38,7 +45,8 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
             de.removeDrawingComponents(id);
         }
 
-        de.drawAllDrawingComponents();
+        //de.drawAllDrawingComponents();
+        de.drawAllUnselectedDrawingComponents();
         de.drawAllCurrentStrokes();
         //de.getDrawingView().invalidate();
     }
@@ -55,7 +63,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
-        de.addHistory(new DrawingItem(de.getCurrentMode(), components/*, de.getDrawingBitmap()*/));    //fixme
+        de.addHistory(new DrawingItem(Mode.ERASE, components/*, de.getDrawingBitmap()*/));    //fixme
         MyLog.i("drawing", "history.size()=" + de.getHistory().size());
         de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
 
