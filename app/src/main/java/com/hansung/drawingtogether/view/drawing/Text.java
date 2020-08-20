@@ -195,10 +195,11 @@ public class Text { // EditTextView
                 }
 
                 setTextAttribute(); // 터치가 시작될 때마다 텍스트가 생성된 레이아웃의 크기 지정(비율 계산을 위해)
+                MyLog.e("text", textAttribute.getUsername());
 
                 if(gestureDetector.onTouchEvent(event)) { return true; }
 
-                return true;
+                return false;
             }
         };
 

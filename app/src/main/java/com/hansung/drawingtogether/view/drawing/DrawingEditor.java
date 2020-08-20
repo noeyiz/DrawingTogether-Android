@@ -125,6 +125,7 @@ public enum DrawingEditor {
         strokeWidth = 10;
 
         isIntercept = false;
+        isMidEntered = false;
     }
 
     public void printDrawingData() {
