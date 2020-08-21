@@ -360,7 +360,7 @@ public class DrawingViewModel extends BaseViewModel {
             speakerFlag = false;
         } else if (speakerMode == 1) { // SPEAKER ON
             speakerFlag = true;
-            client.subscribe(client.getTopic() + "_audio");
+            client.subscribe(client.getTopic_audio());
         } else if (speakerMode == 2) { // SPEAKER LOUD
             audioManager.setSpeakerphoneOn(true);
         }

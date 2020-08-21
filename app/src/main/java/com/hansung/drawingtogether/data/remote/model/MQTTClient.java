@@ -39,7 +39,6 @@ import com.hansung.drawingtogether.view.drawing.Text;
 import com.hansung.drawingtogether.view.drawing.TextAttribute;
 import com.hansung.drawingtogether.view.drawing.TextMode;
 import com.hansung.drawingtogether.view.main.AliveMessage;
-import com.hansung.drawingtogether.view.main.AudioMessage;
 import com.hansung.drawingtogether.view.main.CloseMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinAckMessage;
@@ -57,6 +56,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -323,8 +323,6 @@ public enum MQTTClient {
                     audioPlayThread.setFlag(false);
                     synchronized (audioPlayThread.getBuffer()) {
                         audioPlayThread.getBuffer().clear();
-
-                        Log.e("2yeonz", audioPlayThread.getBuffer().size() + " : clear 후" + audioPlayThread.getName());
                     }
                 }
                 AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
@@ -334,7 +332,7 @@ public enum MQTTClient {
             }
             audioPlayThreadList.clear();
 
-            Log.e("2yeonz", audioPlayThreadList.size() + " : 모두 clear 후");
+            MyLog.e("Audio", "ExitTask - AudioPlayThreadList Size : " + audioPlayThreadList.size());
             //
 
             isMid = true;
@@ -551,7 +549,7 @@ public enum MQTTClient {
                                 audioPlayThread.setName(name);
                                 audioPlayThread.setBufferUnitSize(2);
                                 audioPlayThreadList.add(audioPlayThread);
-                                MyLog.e("2yeonz", audioPlayThreadList.size() + " : add 후");
+                                MyLog.e("Audio", name + " 추가 후 : " +audioPlayThreadList.size());
 
                                 if(drawingViewModel.isSpeakerFlag()) {
                                     audioPlayThread.setFlag(true);
@@ -581,11 +579,11 @@ public enum MQTTClient {
                                 userList.remove(i);
 
                                 // fixme jiyeon
-                                MyLog.e("2yeonz", audioPlayThreadList.size() + " : remove 전");
+                                MyLog.e("Audio", name + " remove 전 : " + audioPlayThreadList.size());
                                 audioPlayThreadList.get(i).setFlag(false);
                                 audioPlayThreadList.get(i).getBuffer().clear();
                                 audioPlayThreadList.remove(i);
-                                MyLog.e("2yeonz", audioPlayThreadList.size() + " : remove 후");
+                                MyLog.e("Audio", name + " remove 후 : " + audioPlayThreadList.size());
 
                                 drawingViewModel.setUserNum(userList.size());
                                 drawingViewModel.setUserPrint(userPrint());
@@ -701,11 +699,9 @@ public enum MQTTClient {
 
                 // fixme jiyeon
                 if (newTopic.equals(topic_audio)) {
-
-                    if (!audioPlaying && drawingViewModel.isSpeakerFlag()) { // fixme jiyeon[0428] 오디오 start
+                    if (!audioPlaying && drawingViewModel.isSpeakerFlag()) { // fixme jiyeon - 오디오 start
                         audioPlaying = true;
-                        Log.e("2yeonz", "audioPlaying");
-                        Log.e("2yeonz", audioPlayThreadList.size() + " : 오디오 start");
+                        MyLog.e("Audio", "Audio Start - AudioPlayThreadList Size : " + audioPlayThreadList.size());
                         for (AudioPlayThread audioPlayThread : audioPlayThreadList) {
                             if (audioPlayThread.getName().equals(myName)) continue;
 
@@ -714,10 +710,8 @@ public enum MQTTClient {
                         }
                     }
 
-
-                    if (audioPlaying && !drawingViewModel.isSpeakerFlag()) { // fixme jiyeon[0428] 오디오 stop
-                        Log.e("2yeonz", "audioPlaying NONO");
-                        Log.e("2yeonz", audioPlayThreadList.size() + " : 오디오 stop");
+                    if (audioPlaying && !drawingViewModel.isSpeakerFlag()) { // fixme jiyeon - 오디오 stop
+                        MyLog.e("Audio", "Audio Stop - AudioPlayThreadList Size : " + audioPlayThreadList.size());
                         for (AudioPlayThread audioPlayThread : audioPlayThreadList) {
                             if (audioPlayThread.getName().equals(myName)) continue;
 
@@ -731,20 +725,27 @@ public enum MQTTClient {
                         return;
                     }
 
-                    String msg = new String(message.getPayload());
-                    MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
-
-                    AudioMessage audioMessage = mqttMessageFormat.getAudioMessage();
-                    String name = audioMessage.getName();
+                    // fixme jiyeon[0821]
+                    byte[] audioMessage = message.getPayload();
+                    byte[] nameByte = Arrays.copyOfRange(audioMessage, 5000, audioMessage.length); // todo - 5000 고치기 ..
+                    String name = new String(nameByte);
 
                     if (myName.equals(name)) return;
 
-                    byte[] data = audioMessage.getData();
+                    byte[] audioData = Arrays.copyOfRange(audioMessage, 0, audioMessage.length - nameByte.length);
+
+                    /*String msg = new String(message.getPayload());
+                    MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
+                    AudioMessage audioMessage = mqttMessageFormat.getAudioMessage();
+                    String name = audioMessage.getName();
+                    if (myName.equals(name)) return;
+                    byte[] data = audioMessage.getData();*/
+                    //
 
                     for (AudioPlayThread audioPlayThread : audioPlayThreadList) {
                         if (audioPlayThread.getName().equals(name)) {
                             synchronized (audioPlayThread.getBuffer()) {
-                                audioPlayThread.getBuffer().add(data);
+                                audioPlayThread.getBuffer().add(audioData);
                             }
                             break;
                         }

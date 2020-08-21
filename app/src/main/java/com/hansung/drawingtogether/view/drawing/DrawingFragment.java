@@ -635,7 +635,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
     // fixme jiyeon
     private Bitmap rotateBitmap(Bitmap bitmap, String path) {
-        MyLog.e("image", "rotate bitmap start");
+        MyLog.e("Image", "rotate bitmap start");
         ExifInterface exif = null;
         try {
             exif = new ExifInterface(path);
@@ -656,11 +656,11 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 matrix.setRotate(-90);
                 break;
             default:
-                MyLog.e("image", "rotate bitmap end 1");
+                MyLog.e("Image", "rotate bitmap end 1");
                 return bitmap;
         }
         try {
-            MyLog.e("image", "rotate bitmap end 2");
+            MyLog.e("Image", "rotate bitmap end 2");
             Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             bitmap.recycle();
             return bmRotated;
