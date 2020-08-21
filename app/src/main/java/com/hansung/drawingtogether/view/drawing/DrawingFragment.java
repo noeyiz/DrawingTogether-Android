@@ -78,7 +78,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     private final int PICK_FROM_GALLERY = 0;
     private final int PICK_FROM_CAMERA = 1;
 
-    Point size;
+    private Point size;
 
     private MQTTClient client = MQTTClient.getInstance();
     private MQTTSettingData data = MQTTSettingData.getInstance();  // fixme hyeyeon
@@ -149,16 +149,14 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         size = new Point();
         display.getSize(size);
+        Log.e("drawing view size in fragment", size.x + ", " + size.y * 0.83);
 
         // 디바이스 화면 넓이의 3배 = 드로잉뷰 넓이
-        ViewGroup.LayoutParams layoutParams = binding.drawingView.getLayoutParams();
+        //ViewGroup.LayoutParams layoutParams = binding.drawingView.getLayoutParams();
         //layoutParams.width = size.x*3;
-        layoutParams.width = size.x;
+        //layoutParams.width = size.x;
         //layoutParams.height = size.y; //****
-
-        binding.drawingView.setLayoutParams(layoutParams);
-
-        Log.e("drawing view size in fragment", size.x + ", " + size.y * 0.83);
+        //binding.drawingView.setLayoutParams(layoutParams);
 
         //undo, redo 버튼 초기화
         if(de.getHistory().size() == 0)
