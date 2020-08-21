@@ -43,7 +43,7 @@ public class Oval  extends DrawingComponent {
             try {
                 paint.setColor(Color.parseColor(this.fillColor));
             } catch(NullPointerException e) {
-                MyLog.i("catch", "parseColor");
+                MyLog.w("catch", "parseColor");
             }
             paint.setAlpha(this.fillAlpha);
             canvas.drawOval(oval, paint);
@@ -52,7 +52,7 @@ public class Oval  extends DrawingComponent {
             try {
                 paint.setColor(Color.parseColor(this.strokeColor));
             } catch(NullPointerException e) {
-                MyLog.i("catch", "parseColor");
+                MyLog.w("catch", "parseColor");
             }
             paint.setAlpha(this.strokeAlpha);
             canvas.drawOval(fillOval, paint);

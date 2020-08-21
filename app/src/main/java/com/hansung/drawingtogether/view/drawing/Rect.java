@@ -60,7 +60,7 @@ public class Rect extends DrawingComponent {
             try {
                 paint.setColor(Color.parseColor(this.fillColor));
             } catch(NullPointerException e) {
-                MyLog.i("catch", "parseColor");
+                MyLog.w("catch", "parseColor");
             }
             paint.setAlpha(this.fillAlpha);
             canvas.drawRect(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint); //fixme alpha 적용되면 strokeWidth/2만큼 작은 사각형
@@ -69,7 +69,7 @@ public class Rect extends DrawingComponent {
             try {
                 paint.setColor(Color.parseColor(this.strokeColor));
             } catch(NullPointerException e) {
-                MyLog.i("catch", "parseColor");
+                MyLog.w("catch", "parseColor");
             }
             paint.setAlpha(this.strokeAlpha);
             canvas.drawRect(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);

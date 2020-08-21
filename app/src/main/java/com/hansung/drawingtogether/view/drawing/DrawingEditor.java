@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.ConcurrentModificationException;
 import java.util.Vector;
 
 import lombok.Getter;
@@ -396,11 +397,15 @@ public enum DrawingEditor {
     }
 
     public void setDrawingComponentSelected(String usersComponentId, boolean isSelect) {
+        try {
         for(DrawingComponent component: drawingComponents) {
             if(component.getUsersComponentId().equals(usersComponentId)) {
                 component.setSelected(isSelect);
                 return;
             }
+        }
+        } catch(ConcurrentModificationException e) {
+            MyLog.w("catch", "setDrawingComponentSelected / ConcurrentModificationException");
         }
     }
 

@@ -25,7 +25,7 @@ public class Stroke extends DrawingComponent {
         try {
             paint.setColor(Color.parseColor(this.strokeColor));
         } catch(NullPointerException e) {
-            MyLog.i("catch", "parseColor");
+            MyLog.w("catch", "parseColor");
         }
         paint.setAlpha(this.strokeAlpha);
         paint.setStrokeCap(Paint.Cap.ROUND);
@@ -92,7 +92,7 @@ public class Stroke extends DrawingComponent {
         try {
             paint.setColor(Color.parseColor(this.strokeColor));
         } catch(NullPointerException e) {
-            MyLog.i("catch", "parseColor");
+            MyLog.w("catch", "parseColor");
         }
         paint.setAlpha(this.strokeAlpha);
         paint.setStrokeCap(Paint.Cap.ROUND);

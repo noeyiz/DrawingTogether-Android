@@ -36,7 +36,7 @@ public class AbnormalTerminationHandler
         MyLog.e("exception", "UncaughtException");
 
         if (databaseRef != null && client.getClient().isConnected()) {
-            client.exitTask();
+            //client.exitTask();
 
             /*databaseRef.child(client.getTopic()).runTransaction(new Transaction.Handler() {
                 @NonNull
