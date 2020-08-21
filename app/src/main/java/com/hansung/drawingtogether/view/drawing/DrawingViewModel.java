@@ -206,8 +206,8 @@ public class DrawingViewModel extends BaseViewModel {
         // fixme nayeon [0614]
         // de.setMidEntered(false);
         if(de.isMidEntered() /* && !de.getCurrentText().getTextAttribute().isTextInited() */) { // todo nayeon ☆☆☆ 텍스트 중간자 처리
-           showToastMsg("다른 사용자가 접속 중 입니다 잠시만 기다려주세요");
-           return;
+            showToastMsg("다른 사용자가 접속 중 입니다 잠시만 기다려주세요");
+            return;
         }
         //if(de.isTextBeingEdited()) return; // 다른 텍스트 편집 중일 때 텍스트 클릭 못하도록
         // 텍스트 모드가 끝날 때 까지 (Done Button) 누르기 전 까지, 다른 버튼들 비활성화
@@ -482,14 +482,12 @@ public class DrawingViewModel extends BaseViewModel {
             // 꼭 여기서 처리 해줘야 하는 부분
             client.getDe().removeAllDrawingData();
             client.getUserList().clear();
-
             // fixme hyeyeon[4] 강제 종료 시 불릴 경우 검사 후 해제, exit publish
             if (!client.isExitPublish()) {
                 // fixme jiyeon
                 for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
                     audioPlayThread.getBuffer().clear();
                 }
-
                 ExitMessage exitMessage = new ExitMessage(client.getMyName());
                 MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
                 client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));

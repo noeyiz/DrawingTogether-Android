@@ -389,7 +389,6 @@ public enum MQTTClient {
             @Override
             public void connectionLost(Throwable cause) {
                 showTimerAlertDialog("브로커 연결 유실", "메인 화면으로 이동합니다.");
-
                 MyLog.e("kkankkan", cause.toString());
                 MyLog.i("mqtt", cause.getCause().toString());
                 MyLog.i("mqtt", "CONNECTION LOST");
@@ -415,7 +414,7 @@ public enum MQTTClient {
             public void connectionLost(Throwable cause) {
                 MyLog.e("modified mqtt", "CONNECTION LOST");
             }
-        //
+            //
 
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
@@ -474,8 +473,8 @@ public enum MQTTClient {
                                 Log.e("canvas size check", userPrintForLog());
                             }
                             if (master) {  // master 수행
-                                if (isUsersActionUp(name) && isTextInUse()) { // fixme nayeon
-
+                                if (isUsersActionUp(name) && !isTextInUse()) { // fixme nayeon
+                                    Log.e("text", "check text in use");
                                     JoinAckMessage joinAckMsgMaster = new JoinAckMessage(myName, name, drawnCanvasWidth, drawnCanvasHeight);
 
 //                                    MqttMessageFormat messageFormat;
@@ -663,7 +662,7 @@ public enum MQTTClient {
                     //MyLog.i("drawMsg", msg);
                     MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
-                    if(de.isMidEntered() && (messageFormat.getAction() != MotionEvent.ACTION_UP)) {
+                    if(de.isMidEntered() && (messageFormat.getAction() != null && messageFormat.getAction() != MotionEvent.ACTION_UP)) { // fixme nayeon - getAction == null
                         //MyLog.i("drawing", "mid entering");
                         if(/*getDrawingView().isIntercept() || */(de.isIntercept() && (de.getCurrentComponent(messageFormat.getUsersComponentId()) == null)))
                             return;
@@ -813,11 +812,14 @@ public enum MQTTClient {
 
     // fixme nayeon
     public boolean isTextInUse() {
+        Log.e("text", "inTextInUse func");
+
         for (Text t : de.getTexts()) {
-            if (t.getTextAttribute().getUsername() != null)
-                return false;
+            if (t.getTextAttribute().getUsername() != null) {
+                return true;
+            }
         }
-        return true;
+        return false;
     }
 
     public void doInBack() {
@@ -1123,7 +1125,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
             case BACKGROUND_IMAGE:
                 if(de.getBackgroundImage() != null) {
                     de.clearBackgroundImage();    //fixme minj - 우선 배경 이미지는 하나만
-               }
+                }
 
                 WarpingControlView imageView = new WarpingControlView(client.getDrawingFragment().getContext());
                 imageView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
