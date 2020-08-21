@@ -33,7 +33,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
             try {
                 DrawingComponent comp = de.findDrawingComponentById(erasedComponentIds.get(i));
                 if((comp != null) && comp.isSelected()) {
-                    comp.setSelected(false);
+                    de.setDrawingComponentSelected(comp.getUsersComponentId(), false);
                     de.clearSelectedBitmap();
                     de.getDrawingFragment().getBinding().drawingView.setSelected(false);
                     MyLog.i("isSelected", comp.getUsersComponentId() + ", " + comp.isSelected);

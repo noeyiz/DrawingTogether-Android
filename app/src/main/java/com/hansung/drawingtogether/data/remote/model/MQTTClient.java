@@ -462,9 +462,9 @@ public enum MQTTClient {
                                 // 텍스트 비활성화를 위해 플래그 설정
                                 de.setMidEntered(true); // fixme nayeon
 
-                                if (de.getCurrentMode() == Mode.DRAW) {  // current mode 가 DRAW 이면, 그리기 중이던 component 까지만 그리고 touch intercept   // todo 다른 모드에서도 intercept 하도록 추가
+                                //if (de.getCurrentMode() == Mode.DRAW) {  // current mode 가 DRAW 이면, 그리기 중이던 component 까지만 그리고 touch intercept   // todo 다른 모드에서도 intercept 하도록 추가
                                     de.setIntercept(true);
-                                }
+                                //}
 
                                 setToastMsg("[ " + name + " ] 님이 접속하셨습니다");
 
@@ -691,6 +691,7 @@ public enum MQTTClient {
                     }
 
                     de.setIntercept(false);
+                    MyLog.i("mqtt", "set intercept false");
 
                     // fixme nayeon
                     // 모든 사용자가 topic_mid 로 메시지 전송받음
@@ -1082,8 +1083,9 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 publishProgress(message);
                 return null;
             case SELECT:
-                if(message.getAction() == null && de.findDrawingComponentByUsersComponentId(message.getUsersComponentId()) != null) {
-                    de.findDrawingComponentByUsersComponentId(message.getUsersComponentId()).setSelected(message.getIsSelected());
+                if(message.getAction() == null && (de.findDrawingComponentByUsersComponentId(message.getUsersComponentId()) != null)) {
+                    de.setDrawingComponentSelected(message.getUsersComponentId(), message.getIsSelected());
+                    //de.findDrawingComponentByUsersComponentId(message.getUsersComponentId()).setSelected(message.getIsSelected());
                 }
                 publishProgress(message);
 
@@ -1144,7 +1146,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                         client.getDrawingView().doInDrawActionUp(dComponent, de.getMyCanvasWidth(), de.getMyCanvasHeight());
                         if(de.isIntercept()) {
                             client.getDrawingView().setIntercept(true);
-                            MyLog.i("intercept", "drawingview true");
+                            MyLog.i("intercept", "drawingview true (MQTT Client)");
                         }
                     } else {
                         MyLog.i("sendThread", "up " + dComponent.getUsername() + ", " + dComponent.getId());
@@ -1426,7 +1428,7 @@ class MidTask extends AsyncTask<Void, Void, Void> {
         de.addAllTextViewToFrameLayoutForMid();
         client.getDrawingView().invalidate();
 
-        MyLog.i("mqtt", "mid progressDialog dismiss");
         client.getProgressDialog().dismiss();
+        MyLog.i("mqtt", "mid progressDialog dismiss");
     }
 }

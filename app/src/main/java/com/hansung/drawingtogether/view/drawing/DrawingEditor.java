@@ -395,6 +395,15 @@ public enum DrawingEditor {
         }
     }
 
+    public void setDrawingComponentSelected(String usersComponentId, boolean isSelect) {
+        for(DrawingComponent component: drawingComponents) {
+            if(component.getUsersComponentId().equals(usersComponentId)) {
+                component.setSelected(isSelect);
+                return;
+            }
+        }
+    }
+
     public void setPreSelectedComponents(int id) {
         preSelectedComponents.clear();
         for(DrawingComponent component: drawingComponents) {

@@ -10,6 +10,8 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Xfermode;
 
+import com.hansung.drawingtogether.data.remote.model.MyLog;
+
 
 public class Stroke extends DrawingComponent {
     //DrawingEditor de = DrawingEditor.getInstance();
@@ -20,7 +22,11 @@ public class Stroke extends DrawingComponent {
 
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setStrokeWidth(this.strokeWidth);
-        paint.setColor(Color.parseColor(this.strokeColor));
+        try {
+            paint.setColor(Color.parseColor(this.strokeColor));
+        } catch(NullPointerException e) {
+            MyLog.i("catch", "parseColor");
+        }
         paint.setAlpha(this.strokeAlpha);
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);
@@ -83,7 +89,11 @@ public class Stroke extends DrawingComponent {
             paint.setStrokeWidth(this.strokeWidth);
         }*/
         paint.setStrokeWidth(this.strokeWidth);
-        paint.setColor(Color.parseColor(this.strokeColor));
+        try {
+            paint.setColor(Color.parseColor(this.strokeColor));
+        } catch(NullPointerException e) {
+            MyLog.i("catch", "parseColor");
+        }
         paint.setAlpha(this.strokeAlpha);
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);

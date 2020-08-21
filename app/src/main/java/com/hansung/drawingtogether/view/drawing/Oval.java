@@ -9,6 +9,8 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.Xfermode;
 
+import com.hansung.drawingtogether.data.remote.model.MyLog;
+
 public class Oval  extends DrawingComponent {
     DrawingEditor de = DrawingEditor.getInstance();
 
@@ -38,12 +40,20 @@ public class Oval  extends DrawingComponent {
             RectF fillOval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);   //fixme alpha 적용되면 strokeWidth/2만큼 작은 사각형
 
             paint.setStyle(Paint.Style.FILL);       //채우기
-            paint.setColor(Color.parseColor(this.fillColor));
+            try {
+                paint.setColor(Color.parseColor(this.fillColor));
+            } catch(NullPointerException e) {
+                MyLog.i("catch", "parseColor");
+            }
             paint.setAlpha(this.fillAlpha);
             canvas.drawOval(oval, paint);
 
             paint.setStyle(Paint.Style.STROKE);     //윤곽선
-            paint.setColor(Color.parseColor(this.strokeColor));
+            try {
+                paint.setColor(Color.parseColor(this.strokeColor));
+            } catch(NullPointerException e) {
+                MyLog.i("catch", "parseColor");
+            }
             paint.setAlpha(this.strokeAlpha);
             canvas.drawOval(fillOval, paint);
         }catch(NullPointerException e) {

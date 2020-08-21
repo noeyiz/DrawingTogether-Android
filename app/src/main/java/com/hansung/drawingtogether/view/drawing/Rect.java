@@ -8,6 +8,8 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Xfermode;
 
+import com.hansung.drawingtogether.data.remote.model.MyLog;
+
 public class Rect extends DrawingComponent {
     DrawingEditor de = DrawingEditor.getInstance();
 
@@ -55,12 +57,20 @@ public class Rect extends DrawingComponent {
 
         try {
             paint.setStyle(Paint.Style.FILL);       //채우기
-            paint.setColor(Color.parseColor(this.fillColor));       //fixme
+            try {
+                paint.setColor(Color.parseColor(this.fillColor));
+            } catch(NullPointerException e) {
+                MyLog.i("catch", "parseColor");
+            }
             paint.setAlpha(this.fillAlpha);
             canvas.drawRect(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint); //fixme alpha 적용되면 strokeWidth/2만큼 작은 사각형
 
             paint.setStyle(Paint.Style.STROKE);     //윤곽선
-            paint.setColor(Color.parseColor(this.strokeColor));
+            try {
+                paint.setColor(Color.parseColor(this.strokeColor));
+            } catch(NullPointerException e) {
+                MyLog.i("catch", "parseColor");
+            }
             paint.setAlpha(this.strokeAlpha);
             canvas.drawRect(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);
         }catch(NullPointerException e) {

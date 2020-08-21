@@ -411,6 +411,11 @@ public class DrawingView extends View {
                 sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, event.getAction()));
                 //sendDrawMqttMessage(event.getAction(), point);
 
+                if(de.isIntercept()) {
+                    this.isIntercept = true;
+                    MyLog.i("intercept", "drawingview true");
+                }
+
                 break;
             default:
                 MyLog.i("drawing", "action = " + MotionEvent.actionToString(event.getAction()));
@@ -467,19 +472,30 @@ public class DrawingView extends View {
                     dTool.doCommand(selectPostPoint);
                     int selectedComponentId = dTool.getIds().get(0);
                     if (selectedComponentId != -1 && selectMoveCount <= 7) {    // 제스처로 할 지 고민
-                        if(!Objects.requireNonNull(de.findDrawingComponentById(selectedComponentId)).isSelected()) {
+                        DrawingComponent comp = de.findDrawingComponentById(selectedComponentId);
+                        if((comp != null) && !comp.isSelected()) {
                             isSelected = true;
 
-                            de.setSelectedComponent(de.findDrawingComponentById(selectedComponentId));
+                            de.setSelectedComponent(comp);
                             if(de.getSelectedComponent() != null) {
                                 if(de.getSelectedComponent().isSelected()) {
                                     de.getSelectedComponent().setSelected(false);
+                                    de.setDrawingComponentSelected(de.getSelectedComponent().getUsersComponentId(), false);
+
                                     //todo publish - 다른 사람들 셀렉트 가능 --> 모드 바뀔 때 추가로 메시지 전송 필요
                                     sendSelectMqttMessage(false);
                                     //sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), de.getSelectedComponent().getUsersComponentId(), de.getCurrentMode(), false));
                                 }
                             }
                             de.getSelectedComponent().setSelected(true);
+                            de.setDrawingComponentSelected(de.getSelectedComponent().getUsersComponentId(), true);
+
+                            String str = "dc(select) [" + de.getDrawingComponents().size() + "] = ";
+                            for(DrawingComponent dc: de.getDrawingComponents()) {
+                                str += dc.getId() + "(" + dc.getUsersComponentId() + "," + dc.isSelected() + ")" + " ";
+                            }
+                            MyLog.i("drawing", str);
+
                             de.setPreSelectedComponents(selectedComponentId);
                             de.setPostSelectedComponents(selectedComponentId);
 
@@ -512,14 +528,7 @@ public class DrawingView extends View {
                         if(de.getSelectedComponent() != null) {
                             isSelected = false;
                             de.getSelectedComponent().setSelected(false);
-
-                            try {
-                                de.findDrawingComponentByUsersComponentId(de.getSelectedComponent().getUsersComponentId()).setSelected(false);
-                            } catch(NullPointerException e) {
-                                //e.printStackTrace();
-                                MyLog.w("catch", "DrawingView / setSelected() / NullPointerException");
-
-                            }
+                            de.setDrawingComponentSelected(de.getSelectedComponent().getUsersComponentId(), false);
 
                             //de.updateDrawingBitmap(false);
                             de.clearSelectedBitmap();
@@ -550,12 +559,7 @@ public class DrawingView extends View {
                         //de.initSelectedBitmap();
                         //de.deselect();
 
-                        try {
-                            de.findDrawingComponentByUsersComponentId(de.getSelectedComponent().getUsersComponentId()).setSelected(false);
-                        } catch(NullPointerException e) {
-                            //e.printStackTrace();
-                            MyLog.w("catch", "DrawingView / setSelected() / NullPointerException");
-                        }
+                        de.setDrawingComponentSelected(de.getSelectedComponent().getUsersComponentId(), false);
 
                         de.clearSelectedBitmap();
                         de.redraw(null);

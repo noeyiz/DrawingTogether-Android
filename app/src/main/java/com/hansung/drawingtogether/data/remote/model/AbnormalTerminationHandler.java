@@ -36,36 +36,33 @@ public class AbnormalTerminationHandler
         MyLog.e("exception", "UncaughtException");
 
         if (databaseRef != null && client.getClient().isConnected()) {
-            if (client.isMaster()) {
-                client.exitTask();
-            }
-            else {
-                databaseRef.child(client.getTopic()).runTransaction(new Transaction.Handler() {
-                    @NonNull
-                    @Override
-                    public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                        if (mutableData.getValue() != null && client.isMaster()) {
-                            mutableData.setValue(null);
-                        }
-                        if (mutableData.getValue() != null && !client.isMaster()) {
-                            mutableData.child("username").child(client.getMyName()).setValue(null);
-                        }
-                        MyLog.e("transaction", "transaction success");
-                        return Transaction.success(mutableData);
-                    }
+            client.exitTask();
 
-                    @Override
-                    public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                        MyLog.e("transaction", "transaction complete");
-
-                        if (databaseError != null) {
-                            MyLog.e("transaction", databaseError.getDetails());
-                            return;
-                        }
-                        client.exitTask();
+            /*databaseRef.child(client.getTopic()).runTransaction(new Transaction.Handler() {
+                @NonNull
+                @Override
+                public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+                    if (mutableData.getValue() != null && client.isMaster()) {
+                        mutableData.setValue(null);
                     }
-                });
-            }
+                    if (mutableData.getValue() != null && !client.isMaster()) {
+                        mutableData.child("username").child(client.getMyName()).setValue(null);
+                    }
+                    MyLog.e("transaction", "transaction success");
+                    return Transaction.success(mutableData);
+                }
+
+                @Override
+                public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                    MyLog.e("transaction", "transaction complete");
+
+                    if (databaseError != null) {
+                        MyLog.e("transaction", databaseError.getDetails());
+                        return;
+                    }
+                    client.exitTask();
+                }
+            });*/
         }
 
         /*if (databaseRef != null && client.getClient().isConnected()) {
