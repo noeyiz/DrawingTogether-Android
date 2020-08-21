@@ -464,9 +464,10 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <HorizontalScrollView
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
                 <com.hansung.drawingtogether.view.drawing.DrawingViewController
                     android:id="@+id/drawingViewContainer"
@@ -505,7 +506,7 @@
                         <SeekBar
                             android:id="@+id/sizeBar"
                             android:layout_width="200dp"
-                            android:layout_height="200dp"
+                            android:layout_height="wrap_content"
                             android:layout_gravity="left|center_vertical"
                             android:layout_marginLeft="-80dp"
                             android:max="50"
@@ -548,7 +549,7 @@
 
                 </com.hansung.drawingtogether.view.drawing.DrawingViewController>
 
-            </HorizontalScrollView>
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="wrap_content"
