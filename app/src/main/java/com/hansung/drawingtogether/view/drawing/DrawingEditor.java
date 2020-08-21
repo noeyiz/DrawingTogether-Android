@@ -103,6 +103,14 @@ public enum DrawingEditor {
         drawingBitmap = null;
         lastDrawingBitmap = null;
 
+        selectedComponent = null;
+        preSelectedComponents.clear();
+        postSelectedComponents.clear();
+
+        selectedComponentBitmap = null;
+        preSelectedComponentsBitmap = null;
+        postSelectedComponentsBitmap = null;
+
         componentId = -1;
         maxComponentId = -1;
         removedComponentId.clear();
@@ -321,11 +329,15 @@ public enum DrawingEditor {
                 return i;
             }
         }
+
+        MyLog.i("selector", "drawingComponents 에 없는 id");
         return -1;
     }
 
     public void updateDrawingComponents(DrawingComponent newComponent) {    //속성 변경 update
         int index = getIndexOfDrawingComponent(newComponent.getId());
+
+        if(index == -1) return;
 
         for(int i=0; i<drawingComponents.size(); i++) {
             if(drawingComponents.get(i).getId() == newComponent.getId()) {

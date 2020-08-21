@@ -665,7 +665,7 @@ public enum MQTTClient {
 
                     if(de.isMidEntered() && (messageFormat.getAction() != MotionEvent.ACTION_UP)) {
                         //MyLog.i("drawing", "mid entering");
-                        if(getDrawingView().isIntercept() || (de.isIntercept() && (de.getCurrentComponent(messageFormat.getUsersComponentId()) == null)))
+                        if(/*getDrawingView().isIntercept() || */(de.isIntercept() && (de.getCurrentComponent(messageFormat.getUsersComponentId()) == null)))
                             return;
                     }
 
@@ -1178,7 +1178,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                             de.moveSelectedComponent(selectedComponent, message.getMoveX(), message.getMoveY());
                             break;
                         case MotionEvent.ACTION_UP:
-                            //de.clearSelectedBitmap();
+                            de.clearSelectedBitmap();
                             //de.drawSelectedComponentBorder(selectedComponent, de.getSelectedBorderColor());
                             de.updateSelectedComponent(selectedComponent, myCanvasWidth, myCanvasHeight);
                             de.updateDrawingComponents(selectedComponent);
@@ -1192,6 +1192,11 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                             if(de.getCurrentMode() == Mode.SELECT && client.getDrawingView().isSelected()) {
                                 de.drawAllPreSelectedComponents();
                                 de.drawAllPostSelectedComponents();
+
+                                de.clearSelectedBitmap();
+                                de.drawSelectedBitmaps();
+                                de.getSelectedComponent().drawComponent(de.getSelectedCanvas());
+                                de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
                             }
 
                             MyLog.i("drawing", "other selected finish");

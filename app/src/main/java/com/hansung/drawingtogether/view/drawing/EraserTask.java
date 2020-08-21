@@ -32,11 +32,16 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
         for(int i=1; i<erasedComponentIds.size(); i++) {
             try {
                 DrawingComponent comp = de.findDrawingComponentById(erasedComponentIds.get(i));
+                if((comp != null) && comp.isSelected()) {
+                    comp.setSelected(false);
+                    de.clearSelectedBitmap();
+                    de.getDrawingFragment().getBinding().drawingView.setSelected(false);
+                    MyLog.i("isSelected", comp.getUsersComponentId() + ", " + comp.isSelected);
+                }
                 comp.setSelected(false);
-                MyLog.i("isSelected", comp.getUsersComponentId() + ", " + comp.isSelected);
                 components.add(comp);
             } catch (NullPointerException e) {
-                MyLog.w("catch", "EraserTask / NullPointerException");
+                MyLog.w("catch", "EraserTask / setSelected() / NullPointerException");
             }
         }
 
@@ -45,8 +50,8 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
             de.removeDrawingComponents(id);
         }
 
-        //de.drawAllDrawingComponents();
-        de.drawAllUnselectedDrawingComponents();
+        de.drawAllDrawingComponents();
+        //de.drawAllUnselectedDrawingComponents();
         de.drawAllCurrentStrokes();
         //de.getDrawingView().invalidate();
     }
@@ -65,6 +70,25 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
 
         de.addHistory(new DrawingItem(Mode.ERASE, components/*, de.getDrawingBitmap()*/));    //fixme
         MyLog.i("drawing", "history.size()=" + de.getHistory().size());
+
+        if(de.getCurrentMode() == Mode.SELECT && de.getDrawingFragment().getBinding().drawingView.isSelected() && de.getSelectedComponent() != null) {
+            int id = de.getSelectedComponent().getId();
+            DrawingComponent comp = de.findDrawingComponentById(id);
+            if((comp != null) && comp.isSelected()) {
+                de.setPreSelectedComponents(id);
+                de.setPostSelectedComponents(id);
+
+                de.clearSelectedBitmap();
+
+                de.drawAllPreSelectedComponents();
+                de.drawAllPostSelectedComponents();
+
+                de.drawSelectedComponent();
+                de.drawSelectedBitmaps();
+                de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
+            }
+        }
+
         de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
 
         //de.clearUndoArray();

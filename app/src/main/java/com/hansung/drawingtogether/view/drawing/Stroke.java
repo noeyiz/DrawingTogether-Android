@@ -90,18 +90,29 @@ public class Stroke extends DrawingComponent {
         paint.setStyle(Paint.Style.STROKE);
         //paint.setMaskFilter(new BlurMaskFilter(30, BlurMaskFilter.Blur.NORMAL));
 
+
         Path path = new Path();
-        path.moveTo(this.points.get(0).x  * xRatio, this.points.get(0).y * yRatio);
 
-        for(int i=0; i<this.points.size()-1; i++) {
-            //Point from = this.points.get(i);
-            //Point to = this.points.get(i+1);
+        if(this.points.size() < 1) {
+            return;
+        } else if(this.points.size() == 1) {
+            path.moveTo(this.points.get(0).x  * xRatio, this.points.get(0).y * yRatio);
+            path.lineTo(this.points.get(0).x * xRatio, this.points.get(0).y * yRatio);
 
-            try {
-                path.lineTo(this.points.get(i+1).x * xRatio, this.points.get(i+1).y * yRatio);
-                //canvas.drawLine(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);
-            }catch(NullPointerException e) {
-                e.printStackTrace();
+        } else {
+
+            path.moveTo(this.points.get(0).x  * xRatio, this.points.get(0).y * yRatio);
+
+            for(int i=0; i<this.points.size()-1; i++) {
+                //Point from = this.points.get(i);
+                //Point to = this.points.get(i+1);
+
+                try {
+                    path.lineTo(this.points.get(i+1).x * xRatio, this.points.get(i+1).y * yRatio);
+                    //canvas.drawLine(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);
+                }catch(NullPointerException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

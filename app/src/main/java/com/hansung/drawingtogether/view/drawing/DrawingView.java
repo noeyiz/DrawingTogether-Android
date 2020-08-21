@@ -516,7 +516,9 @@ public class DrawingView extends View {
                             try {
                                 de.findDrawingComponentByUsersComponentId(de.getSelectedComponent().getUsersComponentId()).setSelected(false);
                             } catch(NullPointerException e) {
-                                e.printStackTrace();
+                                //e.printStackTrace();
+                                MyLog.w("catch", "DrawingView / setSelected() / NullPointerException");
+
                             }
 
                             //de.updateDrawingBitmap(false);
@@ -551,7 +553,8 @@ public class DrawingView extends View {
                         try {
                             de.findDrawingComponentByUsersComponentId(de.getSelectedComponent().getUsersComponentId()).setSelected(false);
                         } catch(NullPointerException e) {
-                            e.printStackTrace();
+                            //e.printStackTrace();
+                            MyLog.w("catch", "DrawingView / setSelected() / NullPointerException");
                         }
 
                         de.clearSelectedBitmap();

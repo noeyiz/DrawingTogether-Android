@@ -168,11 +168,12 @@ public class MainViewModel extends BaseViewModel {
 
                 @Override
                 public void completeLogin(DatabaseError error, String masterName, boolean topicError, boolean passwordError, boolean nameError) {
-                    progressDialog.dismiss();
+                    //progressDialog.dismiss();
 
                     Log.e("dt", "interface complete");
 
                     if (error != null) {
+                        progressDialog.dismiss();
                         Log.e("dt", "error");
                         MainActivity main = (MainActivity)MainActivity.context;
                         showDatabaseErrorAlert(main, "데이터베이스 오류 발생", error.getMessage());
@@ -180,6 +181,7 @@ public class MainViewModel extends BaseViewModel {
                     }
 
                     if (topicError) {
+                        progressDialog.dismiss();
                         setTopicError("이미 존재하는 토픽입니다.");
                     }
                     else {
@@ -226,21 +228,24 @@ public class MainViewModel extends BaseViewModel {
 
                 @Override
                 public void completeLogin(DatabaseError error, String masterName, boolean topicError, boolean passwordError, boolean nameError) {
-                    progressDialog.dismiss();
+                    //progressDialog.dismiss();
 
                     Log.e("dt", "interface complete");
 
                     if (error != null) {
+                        progressDialog.dismiss();
                         Log.e("dt", "error");
                         showDatabaseErrorAlert(MainActivity.context, "데이터베이스 오류 발생", error.getMessage());
                         return;
                     }
 
                     if (passwordError) {
+                        progressDialog.dismiss();
                         setPasswordError("비밀번호가 일치하지 않습니다.");
                         return;
                     }
                     if (nameError) {
+                        progressDialog.dismiss();
                         setNameError("이미 사용중인 이름입니다.");
                         return;
                     }
@@ -258,6 +263,7 @@ public class MainViewModel extends BaseViewModel {
                         navigate(R.id.action_mainFragment_to_drawingFragment);
                     }
                     else {
+                        progressDialog.dismiss();
                         setTopicError("존재하지 않는 토픽입니다");
                     }
                 }
