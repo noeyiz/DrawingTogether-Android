@@ -74,6 +74,21 @@ public class MainActivity extends AppCompatActivity {
         SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
         sendMqttMessage.startThread();
 
+        // kakaolink
+        String kakaoTopic = getIntent().getStringExtra("kakaoTopic");
+        String kakaoPassword = getIntent().getStringExtra("kakaoPassword");
+
+        if (!(kakaoTopic == null) && !(kakaoPassword == null)) {
+            topic = kakaoTopic;
+            password = kakaoPassword;
+        }
+        if (context != null) {
+            Log.e("메인 액티비티 온크리에이트", "context exist");
+            showRunningAlert("앱 중복 실행", "확인을 누르시면 실행 중인 앱으로 이동합니다.\n" +
+                    "(최근 사용한 앱 리스트에 앱이 남아있을 수 있습니다.)");
+        }
+        //
+
         context = this; // fixme nayeon
 
         Log.i("kakao", "[key hash] " + getKeyHash(context));
@@ -82,14 +97,6 @@ public class MainActivity extends AppCompatActivity {
         title = (TextView)findViewById(R.id.toolbar_title);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false); // 기본 title 안 보이게
-
-        String kakaoTopic = getIntent().getStringExtra("kakaoTopic");
-        String kakaoPassword = getIntent().getStringExtra("kakaoPassword");
-
-        if (!(kakaoTopic == null) && !(kakaoPassword == null)) {
-            topic = kakaoTopic;
-            password = kakaoPassword;
-        }
 
     }
 
@@ -110,6 +117,24 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return null;
+    }
+
+    public void showRunningAlert(String title, String message) {
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                })
+                .create();
+
+        dialog.show();
+
     }
 
     @Override
@@ -243,19 +268,6 @@ public class MainActivity extends AppCompatActivity {
         MyLog.i("lifeCycle", "MainActivity onDestroy()");
         if (isFinishing()) {  // 앱 종료 시
             MyLog.i("lifeCycle", "isFinishing() " + isFinishing());
-
-//            // todo database 접근하는 코드 추가할지 말지 고민중
-//            MQTTClient client = MQTTClient.getInstance();
-//            if (client != null && client.getClient().isConnected()) {
-//                try {
-//                    client.getClient().disconnect();
-//                    client.getClient().close();
-//                    MyLog.i("lifeCycle", "mqttClient closed");
-//                } catch (MqttException e) {
-//                    e.printStackTrace();
-//                }
-//                client = null;
-//            }
         }
         else {  // 화면 회전 시
             MyLog.i("lifeCycle", "isFinishing() " + isFinishing());

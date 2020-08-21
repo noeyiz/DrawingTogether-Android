@@ -1,8 +1,10 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -404,7 +406,8 @@ public class DrawingViewModel extends BaseViewModel {
         KakaoLinkService.getInstance().sendDefault((MainActivity)MainActivity.context, params, new ResponseCallback<KakaoLinkResponse>() {
             @Override
             public void onFailure(ErrorResult errorResult) {
-                MyLog.e("kakao", "failure " + errorResult.getErrorMessage().toString());
+                MyLog.e("kakao", "failure " + errorResult.getErrorMessage());
+                showKakaogAlert("카카오링크 에러", errorResult.getErrorMessage());
             }
 
             @Override
@@ -414,6 +417,23 @@ public class DrawingViewModel extends BaseViewModel {
         });
     }
 
+    public void showKakaogAlert(String title, String message) {
+
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
+                .setTitle(title)
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .create();
+
+        dialog.show();
+
+    }
 
     public File createImageFile(Fragment fragment) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());

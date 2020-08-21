@@ -26,10 +26,6 @@ public class MainViewModel extends BaseViewModel {
     private MutableLiveData<String> password = new MutableLiveData<>();
     private MutableLiveData<String> name = new MutableLiveData<>();
 
-    private MutableLiveData<Boolean> aliveMode = new MutableLiveData<>();
-    private MutableLiveData<Boolean> aliveBackground = new MutableLiveData<>();
-
-
     private MutableLiveData<String> ipError = new MutableLiveData<>();
     private MutableLiveData<String> portError = new MutableLiveData<>();
     private MutableLiveData<String> topicError = new MutableLiveData<>();
@@ -39,9 +35,6 @@ public class MainViewModel extends BaseViewModel {
     public final MutableLiveData<String> ip = new MutableLiveData<>();
     public final MutableLiveData<String> port = new MutableLiveData<>();
 
-    private FirebaseDatabase database;
-    private DatabaseReference databaseReference;
-
     private MQTTSettingData data = MQTTSettingData.getInstance();
 
     private boolean hasSpecialCharacterAndBlank;
@@ -49,7 +42,7 @@ public class MainViewModel extends BaseViewModel {
     private MQTTClient client = MQTTClient.getInstance();
     private ProgressDialog progressDialog;
 
-    private String masterName;  // fixme hyeyeon
+    private String masterName;
 
     public MainViewModel() {
 
@@ -61,9 +54,6 @@ public class MainViewModel extends BaseViewModel {
         setPassword("");
         setName("");
 
-        setAliveMode(false);
-        setAliveBackground(false);
-
         setIpError("");
         setTopicError("");
         setPasswordError("");
@@ -73,10 +63,7 @@ public class MainViewModel extends BaseViewModel {
 
         hasSpecialCharacterAndBlank = false;
 
-        database = FirebaseDatabase.getInstance();
-        databaseReference = database.getReference();
-
-        masterName = "";  // fixme hyeyeon
+        masterName = "";
     }
 
     public void hasSpecialCharacterAndBlank() {
@@ -143,7 +130,7 @@ public class MainViewModel extends BaseViewModel {
         }
     }
 
-    public void masterLoginClicked(View view) {
+    public void masterLoginClicked(final View view) {
         setIpError("");
         setPortError("");
         setTopicError("");
@@ -156,51 +143,74 @@ public class MainViewModel extends BaseViewModel {
         MyLog.e("kkankkan", topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
 
         if (!hasSpecialCharacterAndBlank) {
-            progressDialog = new ProgressDialog(view.getContext(), R.style.MyProgressDialogStyle);
-            progressDialog.setMessage("Loading...");
-            progressDialog.setCanceledOnTouchOutside(true);    //fixme minj - master 없는 topic 의 경우 빠져나오지를 못해서 잠시 cancel 가능하게 수정
-            client.setProgressDialog(progressDialog);
-            progressDialog.show();
 
-            DatabaseTransaction dt = new DatabaseTransaction() {
-                @Override
-                public void completeExit(DatabaseError error) { }
+            AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
+                    .setTitle("마스터 체크")
+                    .setMessage("마스터가 맞습니까?")
+                    .setCancelable(false)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            afterMasterCheck(view);
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
 
-                @Override
-                public void completeLogin(DatabaseError error, String masterName, boolean topicError, boolean passwordError, boolean nameError) {
-                    //progressDialog.dismiss();
+                        }
+                    })
+                    .create();
 
-                    Log.e("dt", "interface complete");
-
-                    if (error != null) {
-                        progressDialog.dismiss();
-                        Log.e("dt", "error");
-                        MainActivity main = (MainActivity)MainActivity.context;
-                        showDatabaseErrorAlert(main, "데이터베이스 오류 발생", error.getMessage());
-                        return;
-                    }
-
-                    if (topicError) {
-                        progressDialog.dismiss();
-                        setTopicError("이미 존재하는 토픽입니다.");
-                    }
-                    else {
-                        data.setIp(ip.getValue());
-                        data.setPort(port.getValue());
-                        data.setTopic(topic.getValue());
-                        data.setPassword(password.getValue());
-                        data.setName(name.getValue());
-                        data.setMasterName(masterName);  // fixme hyeyeon
-                        data.setMaster(true);
-
-                        clearData();
-
-                        navigate(R.id.action_mainFragment_to_drawingFragment);
-                    }
-                }
-            };
-            dt.runTransactionLogin(topic.getValue(), password.getValue(), name.getValue(), "masterMode");
+            dialog.show();
         }
+    }
+
+    public void afterMasterCheck(View view) {
+
+        progressDialog = new ProgressDialog(view.getContext(), R.style.MyProgressDialogStyle);
+        progressDialog.setMessage("Loading...");
+        progressDialog.setCanceledOnTouchOutside(true);    //fixme minj - master 없는 topic 의 경우 빠져나오지를 못해서 잠시 cancel 가능하게 수정
+        client.setProgressDialog(progressDialog);
+        progressDialog.show();
+
+        DatabaseTransaction dt = new DatabaseTransaction() {
+            @Override
+            public void completeExit(DatabaseError error) { }
+
+            @Override
+            public void completeLogin(DatabaseError error, String masterName, boolean topicError, boolean passwordError, boolean nameError) {
+                //progressDialog.dismiss();
+
+                Log.e("dt", "interface complete");
+
+                if (error != null) {
+                    progressDialog.dismiss();
+                    Log.e("dt", "error");
+                    showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage());
+                    return;
+                }
+
+                if (topicError) {
+                    progressDialog.dismiss();
+                    setTopicError("이미 존재하는 토픽입니다.");
+                }
+                else {
+                    data.setIp(ip.getValue());
+                    data.setPort(port.getValue());
+                    data.setTopic(topic.getValue());
+                    data.setPassword(password.getValue());
+                    data.setName(name.getValue());
+                    data.setMasterName(masterName);  // fixme hyeyeon
+                    data.setMaster(true);
+
+                    clearData();
+
+                    navigate(R.id.action_mainFragment_to_drawingFragment);
+                }
+            }
+        };
+        dt.runTransactionLogin(topic.getValue(), password.getValue(), name.getValue(), "masterMode");
     }
 
     public void joinClicked(View view) {
@@ -235,7 +245,7 @@ public class MainViewModel extends BaseViewModel {
                     if (error != null) {
                         progressDialog.dismiss();
                         Log.e("dt", "error");
-                        showDatabaseErrorAlert(MainActivity.context, "데이터베이스 오류 발생", error.getMessage());
+                        showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage());
                         return;
                     }
 
@@ -276,8 +286,6 @@ public class MainViewModel extends BaseViewModel {
         setTopic("");
         setPassword("");
         setName("");
-        setAliveMode(false);
-        setAliveBackground(false);
 
         setIpError("");
         setTopicError("");
@@ -285,9 +293,9 @@ public class MainViewModel extends BaseViewModel {
         setNameError("");
     }
 
-    public void showDatabaseErrorAlert(Context context, String title, String message) {
+    public void showDatabaseErrorAlert(String title, String message) {
 
-        AlertDialog dialog = new AlertDialog.Builder(context)
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
                 .setTitle(title)
                 .setMessage(message)
                 .setCancelable(false)
@@ -338,10 +346,6 @@ public class MainViewModel extends BaseViewModel {
         return nameError;
     }
 
-    public MutableLiveData<Boolean> getAliveMode() { return aliveMode; }
-
-    public MutableLiveData<Boolean> getAliveBackground() { return aliveBackground; }
-
     public void setTopic(String text) {
         this.topic.postValue(text);
     }
@@ -374,25 +378,10 @@ public class MainViewModel extends BaseViewModel {
         this.nameError.postValue(text);
     }
 
-    public void setAliveMode(boolean mode) { this.aliveMode.postValue(mode); }
-
-    public void setAliveBackground(boolean mode) { this.aliveBackground.postValue(mode); }
-
     // fixme hyeyeon[1]
     @Override
     public void onCleared() {  // todo
         super.onCleared();
         Log.i("lifeCycle", "MainViewModel onCleared()");
-
-       /* if (database != null) {
-            database = null;
-        }
-        if (databaseReference != null) {
-            databaseReference = null;
-        }
-        if (data != null) {
-            data = null;
-        }*/
-
     }
 }

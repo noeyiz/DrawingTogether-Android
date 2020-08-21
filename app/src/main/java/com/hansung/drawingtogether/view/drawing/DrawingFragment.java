@@ -48,7 +48,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.hansung.drawingtogether.R;
 
-import com.hansung.drawingtogether.data.remote.model.AliveBackgroundService;
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.ExitType;
 import com.hansung.drawingtogether.data.remote.model.Logger;
@@ -91,11 +90,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     private DrawingViewModel drawingViewModel;
     private InputMethodManager inputMethodManager;
 
-
-    // fixme hyeyeon[2]
-    private DatabaseReference databaseReference;
     private ExitOnClickListener exitOnClickListener;
-    //
 
     private AliveThread aliveTh = AliveThread.getInstance();
     private Intent intent;
@@ -120,7 +115,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         MyLog.i("lifeCycle", "DrawingFragment onCreateView()");
 
-        databaseReference = FirebaseDatabase.getInstance().getReference();
         exitOnClickListener = new ExitOnClickListener();
         exitOnClickListener.setBackKeyPressed(false);
 
@@ -196,27 +190,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             Thread th = new Thread(aliveTh);
             th.start();
             client.setThread(th);
-
-//            intent = new Intent(MainActivity.context, AliveBackgroundService.class);
-//            MainActivity.context.startService(intent);
-
-            /*if (data.isAliveThreadMode() && !data.isAliveBackground()) {
-                MyLog.e("alive", "DrawingFragment: " + data.isAliveThreadMode());
-                // fixme hyeyeon
-                aliveTh.setSecond(2000);
-                aliveTh.setCount(0);
-                Thread th = new Thread(aliveTh);
-                th.start();
-                client.setThread(th);
-            }
-            else if (data.isAliveThreadMode() && data.isAliveBackground()) {
-                intent = new Intent(MainActivity.context, AliveBackgroundService.class);
-                MainActivity.context.startService(intent);
-            }
-            else {
-                MyLog.e("alive", "alive publish 안함");
-            }
-            MyLog.e("alive", "DrawingFragment aliveBackground: " + data.isAliveBackground());*/
 
         }
 
@@ -365,7 +338,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     public void exit() { // 좌측 상단 뒤로가기 버튼
         MyLog.e("why", "exit");
         exitOnClickListener.setBackKeyPressed(false);
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.context);
         if (client.isMaster()) {
             builder.setMessage(R.string.master_exit);
         } else {
@@ -403,7 +376,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         MyLog.e("why", "onBackKey");
         exitOnClickListener.setBackKeyPressed(true);
         MyLog.e("kkankkan", "드로잉프레그먼트 onbackpressed");
-        AlertDialog dialog = new AlertDialog.Builder(getContext())
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
                 .setMessage("앱을 종료하시겠습니까?")
                 .setPositiveButton(android.R.string.ok, exitOnClickListener)
                 .setNeutralButton("저장 후 종료", new DialogInterface.OnClickListener() { // fixme nayeon
@@ -448,7 +421,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 public void completeExit(DatabaseError error) {
 
                     if (error != null) {
-                        showDatabaseErrorAlert(MainActivity.context, "데이터베이스 오류 발생", error.getMessage(), backKeyPressed);
+                        showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage(), backKeyPressed);
                         MyLog.e("transaction", error.getDetails());
                         return;
                     }
@@ -468,9 +441,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         }
     }
 
-    public void showDatabaseErrorAlert(Context context, String title, String message, final boolean backPressed) {
+    public void showDatabaseErrorAlert(String title, String message, final boolean backPressed) {
 
-        AlertDialog dialog = new AlertDialog.Builder(context)
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
                 .setTitle(title)
                 .setMessage(message)
                 .setCancelable(false)
@@ -767,10 +740,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         super.onDestroy();
         MyLog.i("lifeCycle", "DrawingFragment onDestroy()");
 
-//        if (data.isAliveThreadMode() && data.isAliveBackground()) {
-//            MainActivity.context.stopService(intent);
-//        }
-
         if (client != null && client.getClient().isConnected()) {
             // 꼭 여기서 처리 해줘야 하는 부분
             client.getDe().removeAllDrawingData();
@@ -789,46 +758,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             } catch (MqttException e) {
                 e.printStackTrace();
             }
-
-//            if (databaseReference != null) {  // todo hyeyeon - code 정리
-//                // 비정상 종료 대비 ( task 날리기 ,,, )
-//                databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
-//                    @NonNull
-//                    @Override
-//                    public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-//                        if (mutableData.getValue() != null && client.isMaster()) {
-//                            mutableData.setValue(null);
-//                        }
-//                        if (mutableData.getValue() != null && !client.isMaster()) {
-//                            mutableData.child("username").child(client.getMyName()).setValue(null);
-//                        }
-//                        Log.e("transaction", "transaction success");
-//                        return Transaction.success(mutableData);
-//                    }
-//
-//                    @Override
-//                    public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-//                        Log.e("transaction", "transaction complete");
-//                        if (databaseError != null) {
-//                            Log.e("transaction", databaseError.getDetails());
-//                            return;
-//                        }
-//                        if (client.isMaster()) {
-//                            CloseMessage closeMessage = new CloseMessage(client.getMyName());
-//                            MqttMessageFormat messageFormat = new MqttMessageFormat(closeMessage);
-//                            client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-//                            client.setExitPublish(true);
-//                            client.exitTask();
-//                        } else {
-//                            ExitMessage exitMessage = new ExitMessage(client.getMyName());
-//                            MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-//                            client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
-//                            client.setExitPublish(true);
-//                            client.exitTask();
-//                        }
-//                    }
-//                });
-//            }
         }
     }
 

@@ -14,8 +14,8 @@ import com.google.firebase.database.Transaction;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 interface completionHandler {
-    public void completeLogin(DatabaseError error, String masterName, boolean topicError, boolean passwordError, boolean nameError);
-    public void completeExit(DatabaseError error);
+    void completeLogin(DatabaseError error, String masterName, boolean topicError, boolean passwordError, boolean nameError);
+    void completeExit(DatabaseError error);
 }
 
 public abstract class DatabaseTransaction implements completionHandler {
@@ -31,31 +31,6 @@ public abstract class DatabaseTransaction implements completionHandler {
     public DatabaseTransaction() {
         ref = FirebaseDatabase.getInstance().getReference();
         Log.e("dt", "init");
-    }
-
-    public void runTransactionExit(String topic, final String name, final String mode) {
-
-        ref.child(topic).runTransaction(new Transaction.Handler() {
-            @NonNull
-            @Override
-            public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                if (mutableData.getValue() != null && mode.equals("masterMode")) {
-                    Log.e("dt", "master delete");
-                    mutableData.setValue(null);
-                }
-                if (mutableData.getValue() != null && mode.equals("joinMode")) {
-                    Log.e("dt", "join delete");
-                    mutableData.child("username").child(name).setValue(null);
-                }
-                MyLog.e("transaction", "transaction success");
-                return Transaction.success(mutableData);
-            }
-
-            @Override
-            public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                completeExit(databaseError);
-            }
-        });
     }
 
     public void runTransactionLogin(String topic, final String password, final String name, final String mode) {
@@ -126,4 +101,30 @@ public abstract class DatabaseTransaction implements completionHandler {
             }
         });
     }
+
+    public void runTransactionExit(String topic, final String name, final String mode) {
+
+        ref.child(topic).runTransaction(new Transaction.Handler() {
+            @NonNull
+            @Override
+            public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+                if (mutableData.getValue() != null && mode.equals("masterMode")) {
+                    Log.e("dt", "master delete");
+                    mutableData.setValue(null);
+                }
+                if (mutableData.getValue() != null && mode.equals("joinMode")) {
+                    Log.e("dt", "join delete");
+                    mutableData.child("username").child(name).setValue(null);
+                }
+                MyLog.e("transaction", "transaction success");
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                completeExit(databaseError);
+            }
+        });
+    }
+
 }

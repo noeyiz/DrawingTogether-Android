@@ -84,6 +84,9 @@ public enum MQTTClient {
     private List<AudioPlayThread> audioPlayThreadList = new ArrayList<>(100); // fixme jiyeon
     private String myName;
 
+    private float myCanvasWidth;  // fixme hyen[0821]
+    private float myCanvasHeight;
+
     private String topic;
     private String topic_join;
     private String topic_exit;
@@ -285,7 +288,6 @@ public enum MQTTClient {
         try {
             MyLog.e("kkankkan", "exitTask 시작");
 
-//            MainActivity.context.stopService(drawingFragment.getIntent());
             th.interrupt();
 
             if (isMaster()) {
@@ -307,10 +309,6 @@ public enum MQTTClient {
             client.unsubscribe(topic_image);
             client.unsubscribe(topic_mid);
             client.unsubscribe(topic_alive);
-
-//            if (data.isAliveThreadMode() || data.isAliveBackground()) {  // fixme hy [0511]
-//                client.unsubscribe(topic_alive);
-//            }
 
             // fixme jiyeon - 오디오 처리[0428]
             if (drawingViewModel.isMicFlag()) {
@@ -399,7 +397,7 @@ public enum MQTTClient {
             public void connectComplete(boolean reconnect, String serverURI) {
                 if (reconnect) {
                     MyLog.e("modified mqtt", "RECONNECT");
-//                    setToastMsg("RECONNECT");
+                    setToastMsg("RECONNECT");
                     subscribeAllTopics();
                     if (audioPlaying) // 오디오 sub 중이었다면 다시 sub
                         subscribe(topic_audio);
@@ -411,6 +409,7 @@ public enum MQTTClient {
             @Override
             public void connectionLost(Throwable cause) {
                 MyLog.e("modified mqtt", "CONNECTION LOST");
+                setToastMsg("CONNECTION LOST");
             }
             //
 
@@ -440,7 +439,7 @@ public enum MQTTClient {
                                 userList.add(user); // 들어온 사람의 이름을 추가
 
                                 if (!master) {
-                                    JoinAckMessage joinAckMsg = new JoinAckMessage(myName, name, drawnCanvasWidth, drawnCanvasHeight);
+                                    JoinAckMessage joinAckMsg = new JoinAckMessage(myName, name, myCanvasWidth, myCanvasHeight);
                                     MqttMessageFormat msgFormat = new MqttMessageFormat(joinAckMsg);
                                     client2.publish(topic_join, new MqttMessage(parser.jsonWrite(msgFormat).getBytes()));
                                 }
@@ -473,7 +472,7 @@ public enum MQTTClient {
                             if (master) {  // master 수행
                                 if (isUsersActionUp(name) && !isTextInUse()) { // fixme nayeon
                                     Log.e("text", "check text in use");
-                                    JoinAckMessage joinAckMsgMaster = new JoinAckMessage(myName, name, drawnCanvasWidth, drawnCanvasHeight);
+                                    JoinAckMessage joinAckMsgMaster = new JoinAckMessage(myName, name, myCanvasWidth, myCanvasHeight);
 
 //                                    MqttMessageFormat messageFormat;
 //                                    if (de.getBackgroundImage() == null) {
@@ -502,6 +501,8 @@ public enum MQTTClient {
                         }
                         else {
                             setDrawnCanvasSize(name, drawnCanvasWidth, drawnCanvasHeight);
+                            myCanvasWidth = drawnCanvasWidth;
+                            myCanvasHeight = drawnCanvasHeight;
                         }
 
                     }
@@ -831,6 +832,40 @@ public enum MQTTClient {
         isMid = true;
         de.removeAllDrawingData();
         drawingViewModel.back();
+    }
+
+    public void showNetworkAlert(final String title, final String message) {
+
+        setToastMsg("네트워크 불안정");
+
+        // publish 실패, connection lost, reconnect시 5번 try
+        // ....
+
+        final MainActivity mainActivity = (MainActivity)MainActivity.context;
+        Objects.requireNonNull(mainActivity).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                AlertDialog dialog = new AlertDialog.Builder(mainActivity)
+                        .setTitle(title)
+                        .setMessage(message)
+                        .setCancelable(false)
+                        .setPositiveButton("재시도", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // ...
+                            }
+                        })
+                        .setNeutralButton("뒤로가기", new DialogInterface.OnClickListener() { // fixme nayeon
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                exitTask();
+                                drawingViewModel.back();
+                            }
+                        })
+                        .create();
+                dialog.show();
+            }
+        });
     }
 
     public void showTimerAlertDialog(final String title, final String message) {
