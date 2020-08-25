@@ -51,9 +51,9 @@ public class HistoryFragment extends Fragment {
             }
         });
 
-        ((MainActivity)getActivity()).setOnBackListener(new MainActivity.OnBackListener() {
+        ((MainActivity)getActivity()).setOnLeftTopBackListener(new MainActivity.OnLeftTopBackListener() {
             @Override
-            public void onBack() {
+            public void onLeftTopBackPressed() {
                 historyViewModel.exit();
             }
         });

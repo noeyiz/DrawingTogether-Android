@@ -93,15 +93,14 @@ public class MainFragment extends Fragment {
         super.onResume();
     }
 
-    // fixme hyeyeon[1]
     @Override
-    public void onPause() {  // todo
+    public void onPause() {
         super.onPause();
         MyLog.i("lifeCycle", "MainFragment onPause()");
     }
 
     @Override
-    public void onDestroyView() {  // todo
+    public void onDestroyView() {
         super.onDestroyView();
         MyLog.i("lifeCycle", "MainFragment onDestroyView()");
     }

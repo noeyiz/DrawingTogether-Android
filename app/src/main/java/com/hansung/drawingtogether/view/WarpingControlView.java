@@ -47,14 +47,22 @@ public class WarpingControlView extends AppCompatImageView {
 	}
 
 	public void setImage(final Bitmap img) {
-		getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-			@Override
-			public void onGlobalLayout() {
-				image = Bitmap.createScaledBitmap(img, getWidth(), getHeight(), true);
-				invalidate();
-				getViewTreeObserver().removeOnGlobalLayoutListener(this);
-			}
-		});
+//		getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+//			@Override
+//			public void onGlobalLayout() {
+//				image = Bitmap.createScaledBitmap(img, getWidth(), getHeight(), true);
+//				invalidate();
+//				getViewTreeObserver().removeOnGlobalLayoutListener(this);
+//			}
+//		});
+
+		// fixme jiyeon[0825]
+		if (img == null)
+			image = null;
+		else
+			image = Bitmap.createScaledBitmap(img, getWidth(), getHeight(), true);
+
+		invalidate();
 	}
 
 	protected void onDraw(Canvas canvas) {

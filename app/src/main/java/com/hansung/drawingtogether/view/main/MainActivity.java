@@ -43,24 +43,18 @@ public class MainActivity extends AppCompatActivity {
     public static Context context; // fixme nayeon
 
     private DrawingEditor de = DrawingEditor.getInstance();
-    private long lastTimeBackPressed;  // fixme hyeyon[3]
     private Logger logger = Logger.getInstance(); // fixme nayeon ☆☆☆☆☆ 1. Log 기록에 사용할 클래스 참조
 
-
-    public interface OnBackListener {
-        public void onBack();
+    public interface OnLeftTopBackListener {  // 좌측 상단의 백버튼 리스너
+        void onLeftTopBackPressed();
     }
+    private OnLeftTopBackListener onLeftTopBackListener;
 
-    private OnBackListener onBackListener;
-
-
-    // fixme hyeyeon
-    private onKeyBackPressedListener mOnKeyBackPressedListener;  // 하단의 백버튼 리스너
-
-    public interface onKeyBackPressedListener {
-        void onBackKey();
+    public interface OnRightBottomBackListener {  // 디바이스의 오른쪽 하단의 백버튼 리스너
+        void onRightBottomBackPressed();
     }
-    //
+    private OnRightBottomBackListener onRightBottomBackListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,11 +75,6 @@ public class MainActivity extends AppCompatActivity {
         if (!(kakaoTopic == null) && !(kakaoPassword == null)) {
             topic = kakaoTopic;
             password = kakaoPassword;
-        }
-        if (context != null) {
-            Log.e("메인 액티비티 온크리에이트", "context exist");
-            showRunningAlert("앱 중복 실행", "확인을 누르시면 실행 중인 앱으로 이동합니다.\n" +
-                    "(최근 사용한 앱 리스트에 앱이 남아있을 수 있습니다.)");
         }
         //
 
@@ -119,29 +108,11 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
-    public void showRunningAlert(String title, String message) {
-
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setCancelable(false)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-                })
-                .create();
-
-        dialog.show();
-
-    }
-
     @Override
     public void onBackPressed() {
 
-        if (mOnKeyBackPressedListener != null) {
-            mOnKeyBackPressedListener.onBackKey();
+        if (onRightBottomBackListener != null) {
+            onRightBottomBackListener.onRightBottomBackPressed();
         }
         else {
             MyLog.e("kkankkan", "메인엑티비티 onbackpressed");
@@ -153,6 +124,8 @@ public class MainActivity extends AppCompatActivity {
                             MyLog.d("button", "back press ok button click"); // fixme nayeon
 
                             MainActivity.super.onBackPressed();
+                            android.os.Process.killProcess(android.os.Process.myPid());
+                            System.exit(10);
                             return;
                         }
                     })
@@ -178,10 +151,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void setOnKeyBackPressedListener(onKeyBackPressedListener listener) {
-        this.mOnKeyBackPressedListener = listener;
+    public void setOnRightBottomBackListener(OnRightBottomBackListener listener) {
+        this.onRightBottomBackListener = listener;
     }
-    //
+
+    public void setOnLeftTopBackListener(OnLeftTopBackListener listener) {
+        this.onLeftTopBackListener = listener;
+    }
 
     public void setToolbarVisible() {
         toolbar.setVisibility(View.VISIBLE);
@@ -219,19 +195,14 @@ public class MainActivity extends AppCompatActivity {
         this.password = password;
     }
 
-    public void setOnBackListener(OnBackListener onBackListener) {
-        this.onBackListener = onBackListener;
-    }
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home)
-            onBackListener.onBack();
+            onLeftTopBackListener.onLeftTopBackPressed();
 
         return super.onOptionsItemSelected(item);
     }
 
-    // fixme hyeyeon[1]
     @Override
     protected void onRestart() {
         super.onRestart();
