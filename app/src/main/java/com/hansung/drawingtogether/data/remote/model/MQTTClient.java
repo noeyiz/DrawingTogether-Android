@@ -496,7 +496,8 @@ public enum MQTTClient {
                                     client2.publish(topic_join, new MqttMessage(json.getBytes()));
 
                                     if (de.getBackgroundImage() != null) {
-                                        byte[] backgroundImage = de.bitmapToByteArray(de.getBackgroundImage());
+                                        byte[] backgroundImage = de.bitmapToByteArray(((WarpingControlView)MQTTClient.getInstance().getBinding().backgroundView).getImage());
+
                                         client2.publish(topic_image, new MqttMessage(backgroundImage));
                                     }
                                     setToastMsg("[ " + name + " ] 님에게 데이터 전송을 완료했습니다");
