@@ -35,79 +35,35 @@ public class AbnormalTerminationHandler
     public void uncaughtException(Thread thread, Throwable e) {
         MyLog.e("exception", "UncaughtException");
 
-        if (databaseRef != null && client.getClient().isConnected()) {
-            //client.exitTask();
-
-            /*databaseRef.child(client.getTopic()).runTransaction(new Transaction.Handler() {
-                @NonNull
-                @Override
-                public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                    if (mutableData.getValue() != null && client.isMaster()) {
-                        mutableData.setValue(null);
-                    }
-                    if (mutableData.getValue() != null && !client.isMaster()) {
-                        mutableData.child("username").child(client.getMyName()).setValue(null);
-                    }
-                    MyLog.e("transaction", "transaction success");
-                    return Transaction.success(mutableData);
-                }
-
-                @Override
-                public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                    MyLog.e("transaction", "transaction complete");
-
-                    if (databaseError != null) {
-                        MyLog.e("transaction", databaseError.getDetails());
-                        return;
-                    }
-                    client.exitTask();
-                }
-            });*/
-        }
-
-        /*if (databaseRef != null && client.getClient().isConnected()) {
-            databaseRef.child(client.getTopic()).runTransaction(new Transaction.Handler() {
-                @NonNull
-                @Override
-                public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                    if (mutableData.getValue() != null && client.isMaster()) {
-                        mutableData.setValue(null);
-                    }
-                    if (mutableData.getValue() != null && !client.isMaster()) {
-                        mutableData.child("username").child(client.getMyName()).setValue(null);
-                    }
-                    MyLog.e("transaction", "transaction success");
-                    return Transaction.success(mutableData);
-
-                }
-
-                @Override
-                public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-                    MyLog.e("transaction", "transaction complete");
-                    if (databaseError != null) {
-                        MyLog.e("transaction", databaseError.getDetails());
-                        return;
-                    }
-<<<<<<< HEAD
-                    if (client.isMaster()) {
-                        CloseMessage closeMessage = new CloseMessage(client.getMyName());
-                        MqttMessageFormat messageFormat = new MqttMessageFormat(closeMessage);
-                        client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-
-                        client.exitTask();
-                    } else {
-                        ExitMessage exitMessage = new ExitMessage(client.getMyName());
-                        MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-                        client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
-
-                        client.exitTask();
-                    }
-=======
-                    client.exitTask();
->>>>>>> 629e23433c1324e422dd63e9b82c2ed247f1d687
-                }
-            });
-        }*/
+//        if (databaseRef != null && client.getClient().isConnected()) {
+//            client.exitTask();
+//
+//            databaseRef.child(client.getTopic()).runTransaction(new Transaction.Handler() {
+//                @NonNull
+//                @Override
+//                public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+//                    if (mutableData.getValue() != null && client.isMaster()) {
+//                        mutableData.setValue(null);
+//                    }
+//                    if (mutableData.getValue() != null && !client.isMaster()) {
+//                        mutableData.child("username").child(client.getMyName()).setValue(null);
+//                    }
+//                    MyLog.e("transaction", "transaction success");
+//                    return Transaction.success(mutableData);
+//                }
+//
+//                @Override
+//                public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+//                    MyLog.e("transaction", "transaction complete");
+//
+//                    if (databaseError != null) {
+//                        MyLog.e("transaction", databaseError.getDetails());
+//                        return;
+//                    }
+//                    client.exitTask();
+//                }
+//            });
+//        }
 
         logger.loggingUncaughtException(thread, e.getStackTrace()); // 발생한 오류에 대한 메시지 로그에 기록
         logger.uploadLogFile(ExitType.ABNORMAL);

@@ -3,7 +3,8 @@ package com.hansung.drawingtogether.view.drawing;
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioTrack;
-import android.util.Log;
+
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 import java.util.ArrayList;
 
@@ -15,6 +16,7 @@ import lombok.Setter;
 @Setter
 public class AudioPlayThread implements Runnable {
 
+    // Output Settings
     private int sampleRate = 5000;
     private int channelCount = AudioFormat.CHANNEL_IN_STEREO;
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
@@ -24,11 +26,10 @@ public class AudioPlayThread implements Runnable {
 
     private AudioTrack audioTrack;
 
-    private ArrayList<byte[]> buffer = new ArrayList<>(5);
+    private ArrayList<byte[]> buffer = new ArrayList<>(5); // Audio Queue
     private String name;
 
     private boolean flag = false;
-
     private boolean start = false;
 
     @Override
@@ -48,8 +49,6 @@ public class AudioPlayThread implements Runnable {
                 .build();
         audioTrack.play();
 
-
-
         while(flag) {
             if (!start) { // fixme jiyeon[0428] - 처음에만 기다림
                 synchronized (buffer) {
@@ -57,17 +56,17 @@ public class AudioPlayThread implements Runnable {
                         audioTrack.write(buffer.get(0), 0, bufferSize);
                         buffer.remove(0);
                         start = true;
-                        Log.e("2yeonz", "2라서 출력함");
+                        MyLog.e("Audio", name + " Audio Start");
                     }
                 }
             } else {
                 synchronized (buffer) {
                     if (buffer.size() > 0) { // fixme jiyeon[0428] - 기다리지 않고 바로 출력
-                        Log.e("2yeonz", buffer.size() + " : 1 " + name);
+                        MyLog.e("Audio", name + " Buffer Size : " + buffer.size() + " : 1");
                         audioTrack.write(buffer.get(0), 0, bufferSize);
-                        Log.e("2yeonz", buffer.size() + " : 2 " + name);
+                        MyLog.e("Audio", name + " Buffer Size : " + buffer.size() + " : 2");
                         buffer.remove(0);
-                        Log.e("2yeonz", buffer.size() + " : 3 " + name);
+                        MyLog.e("Audio", name + " Buffer Size : " + buffer.size() + " : 3");
                     }
                 }
             }

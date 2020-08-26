@@ -1,8 +1,10 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -57,10 +59,7 @@ import lombok.Setter;
 public class DrawingViewModel extends BaseViewModel {
     public final SingleLiveEvent<DrawingCommand> drawingCommands = new SingleLiveEvent<>();
     private MutableLiveData<String> userNum = new MutableLiveData<>();
-    private MutableLiveData<String> userPrint = new MutableLiveData<>();  // fixme hyeyeon
-
-//    private MutableLiveData<String> aliveCount = new MutableLiveData<>();
-//    private MutableLiveData<String> userAliveCount = new MutableLiveData<>();
+    private MutableLiveData<String> userPrint = new MutableLiveData<>();
 
     private Logger logger = Logger.getInstance();
 
@@ -70,14 +69,13 @@ public class DrawingViewModel extends BaseViewModel {
 
     private DrawingEditor de = DrawingEditor.getInstance();
 
-    // fixme hyeyeon
     private String ip;
     private String port;
     private String topic;
     private String name;
     private String password;
     private boolean master;
-    private String masterName;  // fixme hyeyeon
+    private String masterName;
 
     private MQTTClient client = MQTTClient.getInstance();
     private MQTTSettingData data = MQTTSettingData.getInstance();
@@ -96,16 +94,15 @@ public class DrawingViewModel extends BaseViewModel {
 
     public DrawingViewModel() {
         setUserNum(0);
-        setUserPrint("");  // fixme hyeyeon
+        setUserPrint("");
 
-        // fixme hyeyeon
         ip = data.getIp();
         port = data.getPort();
         topic = data.getTopic();
         name = data.getName();
         password = data.getPassword();
         master = data.isMaster();
-        masterName = data.getMasterName();  // fixme hyeyeon
+        masterName = data.getMasterName();
 
         MyLog.e("kkankkan", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master + "/" + masterName);
 
@@ -360,7 +357,7 @@ public class DrawingViewModel extends BaseViewModel {
             speakerFlag = false;
         } else if (speakerMode == 1) { // SPEAKER ON
             speakerFlag = true;
-            client.subscribe(client.getTopic() + "_audio");
+            client.subscribe(client.getTopic_audio());
         } else if (speakerMode == 2) { // SPEAKER LOUD
             audioManager.setSpeakerphoneOn(true);
         }
@@ -401,10 +398,11 @@ public class DrawingViewModel extends BaseViewModel {
                         .build())
                 .setButtonTitle("앱으로 이동").build();
 
-        KakaoLinkService.getInstance().sendDefault((MainActivity)MainActivity.context, params, new ResponseCallback<KakaoLinkResponse>() {
+        KakaoLinkService.getInstance().sendDefault(MainActivity.context, params, new ResponseCallback<KakaoLinkResponse>() {
             @Override
             public void onFailure(ErrorResult errorResult) {
-                MyLog.e("kakao", "failure " + errorResult.getErrorMessage().toString());
+                MyLog.e("kakao", "failure " + errorResult.getErrorMessage());
+                showKakaogAlert("카카오링크 에러", errorResult.getErrorMessage());
             }
 
             @Override
@@ -414,6 +412,23 @@ public class DrawingViewModel extends BaseViewModel {
         });
     }
 
+    public void showKakaogAlert(String title, String message) {
+
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
+                .setTitle(title)
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .create();
+
+        dialog.show();
+
+    }
 
     public File createImageFile(Fragment fragment) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -456,54 +471,18 @@ public class DrawingViewModel extends BaseViewModel {
         return userNum;
     }
 
-    public MutableLiveData<String> getUserPrint() { return userPrint; }  // fixme hyeyeon
+    public MutableLiveData<String> getUserPrint() { return userPrint; }
 
     public void setUserNum(int num) {
         userNum.postValue(num + "명");
     }
 
-    public void setUserPrint(String user) { userPrint.postValue(user); }  // fixme hyeyoen
+    public void setUserPrint(String user) { userPrint.postValue(user); }
 
-//    public MutableLiveData<String> getAliveCount() { return aliveCount; }
-
-//    public MutableLiveData<String> getUserAliveCount() { return userAliveCount; }
-
-//    public void setAliveCount(String count) { aliveCount.postValue(count); }
-
-//    public void setUserAliveCount(String count) { userAliveCount.postValue(count); }
-
-    // fixme hyeyeon[1]
     @Override
-    public void onCleared() {  // todo
+    public void onCleared() {
         super.onCleared();
         Log.i("lifeCycle", "DrawingViewModel onCleared()");
-
-       /* if (client != null && client.getClient().isConnected()) {
-            // 꼭 여기서 처리 해줘야 하는 부분
-            client.getDe().removeAllDrawingData();
-            client.getUserList().clear();
-            // fixme hyeyeon[4] 강제 종료 시 불릴 경우 검사 후 해제, exit publish
-            if (!client.isExitPublish()) {
-                // fixme jiyeon
-                for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
-                    audioPlayThread.getBuffer().clear();
-                }
-                ExitMessage exitMessage = new ExitMessage(client.getMyName());
-                MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-                client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
-                client.setExitPublish(true);
-            }
-            if (client.getTh() != null) {
-                if (!(client.getTh().getState() == Thread.State.TERMINATED)) {  // todo isInterruped() false 문제 해결 -> Thead의 state 검사
-                    client.getTh().interrupt();
-                    client.unsubscribeAllTopics();
-                }
-            }
-            if (client.getUsersActionMap().size() != 0) {
-                client.getUsersActionMap().clear();
-            }
-        }*/
-
     }
 
 }

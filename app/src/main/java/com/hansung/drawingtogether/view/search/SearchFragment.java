@@ -42,9 +42,9 @@ public class SearchFragment extends Fragment{
 
         binding.setVm(searchViewModel);
 
-        ((MainActivity)getActivity()).setOnBackListener(new MainActivity.OnBackListener() {
+        ((MainActivity)getActivity()).setOnLeftTopBackListener(new MainActivity.OnLeftTopBackListener() {
             @Override
-            public void onBack() {
+            public void onLeftTopBackPressed() {
                 searchViewModel.exit();
             }
         });
