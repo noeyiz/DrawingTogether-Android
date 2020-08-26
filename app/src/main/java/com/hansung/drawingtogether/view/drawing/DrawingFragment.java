@@ -107,6 +107,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     //private LinearLayout topToolLayout;
     //private Button doneBtn;
 
+    private ProgressDialog exitProgressDialog;
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -404,6 +406,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         @Override
         public void onClick(DialogInterface dialog, int which) {
 
+            showExitProgressDialog();
+
             ConnectivityManager cm = (ConnectivityManager) MainActivity.context.getSystemService(Context.CONNECTIVITY_SERVICE);
             if (cm.getActiveNetwork() == null) {
                 Log.e("네트워크", "network disconnected");
@@ -438,6 +442,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 public void completeExit(DatabaseError error) {
 
                     if (error != null) {
+                        exitProgressDialog.dismiss();
+
                         showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage(), rightBottomBackPressed);
                         MyLog.e("transaction", error.getDetails());
                         return;
@@ -497,6 +503,13 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         progressDialog.setTitle("오류 발생");
         progressDialog.setMessage("로그 파일 업로드 중");
         progressDialog.setCancelable(false);
+    }
+
+    public void showExitProgressDialog() {
+        exitProgressDialog = new ProgressDialog(MainActivity.context, R.style.MyProgressDialogStyle);
+        exitProgressDialog.setMessage("Loading...");
+        exitProgressDialog.setCanceledOnTouchOutside(false);
+        exitProgressDialog.show();
     }
 
     @Override
@@ -789,6 +802,10 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             } catch (MqttException e) {
                 e.printStackTrace();
             }
+        }
+
+        if (exitProgressDialog.isShowing()) {
+            exitProgressDialog.dismiss();
         }
     }
 
