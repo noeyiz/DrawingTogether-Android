@@ -16,9 +16,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.Toast;
 
 import com.google.firebase.components.Component;
@@ -146,17 +148,20 @@ public enum MQTTClient {
             userList.add(mUser);
 
             AudioPlayThread audioPlayThread = new AudioPlayThread();
-            audioPlayThread.setName(masterName);
+            audioPlayThread.setUserName(masterName);
             audioPlayThread.setBufferUnitSize(2);
+//            audioPlayThread.start();
             audioPlayThreadList.add(audioPlayThread);
+            MyLog.e("Audio", masterName + " 추가 후 : " + audioPlayThreadList.size());
         }
         User user = new User(myName, 0, MotionEvent.ACTION_UP, false);
-        userList.add(user);
-        // fixme jiyeon
-        AudioPlayThread audioPlayThread = new AudioPlayThread();
-        audioPlayThread.setName(myName);
-        audioPlayThread.setBufferUnitSize(2);
-        audioPlayThreadList.add(audioPlayThread);
+        userList.add(user); // 생성자에서 사용자 리스트에 내 이름 추가
+
+        // fixme jiyeon[0826] - 자신의 플레이 스레드는 대체 왜 만드는지?
+//        AudioPlayThread audioPlayThread = new AudioPlayThread();
+//        audioPlayThread.setUserName(myName);
+//        audioPlayThread.setBufferUnitSize(2);
+//        audioPlayThreadList.add(audioPlayThread);
 
         topic_join = this.topic + "_join";
         topic_exit = this.topic + "_exit";
@@ -306,28 +311,7 @@ public enum MQTTClient {
             client.unsubscribe(topic_mid);
             client.unsubscribe(topic_alive);
 
-            // fixme jiyeon - 오디오 처리[0428]
-            if (drawingViewModel.isMicFlag()) {
-                drawingViewModel.getRecThread().setFlag(false);
-            }
-            if (drawingViewModel.isSpeakerFlag()) {
-                for (AudioPlayThread audioPlayThread : audioPlayThreadList) {
-                    if (audioPlayThread.getName().equals(myName)) continue;
 
-                    audioPlayThread.setFlag(false);
-                    synchronized (audioPlayThread.getBuffer()) {
-                        audioPlayThread.getBuffer().clear();
-                    }
-                }
-                AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
-                audioManager.setSpeakerphoneOn(false);
-                client.unsubscribe(topic_audio);
-                audioPlaying = false;
-            }
-            audioPlayThreadList.clear();
-
-            MyLog.e("Audio", "ExitTask - AudioPlayThreadList Size : " + audioPlayThreadList.size());
-            //
 
             isMid = true;
             /*
@@ -452,14 +436,16 @@ public enum MQTTClient {
 
                                 // fixme jiyeon
                                 AudioPlayThread audioPlayThread = new AudioPlayThread();
-                                audioPlayThread.setName(name);
+                                audioPlayThread.setUserName(name);
                                 audioPlayThread.setBufferUnitSize(2);
+//                                audioPlayThread.start();
                                 audioPlayThreadList.add(audioPlayThread);
+                                MyLog.e("Audio", name + " 추가 후 : " + audioPlayThreadList.size());
 
-                                if(drawingViewModel.isSpeakerFlag()) {
-                                    audioPlayThread.setFlag(true);
-                                    new Thread(audioPlayThread).start();
-                                }
+//                                if(drawingViewModel.isSpeakerFlag()) {
+//                                    audioPlayThread.setFlag(true);
+//                                    new Thread(audioPlayThread).start();
+//                                }
 
                                 // 다른 사용자가 들어왔다는 메시지를 받았을 경우
                                 // 텍스트 비활성화를 위해 플래그 설정
@@ -497,7 +483,6 @@ public enum MQTTClient {
 
                                     if (de.getBackgroundImage() != null) {
                                         byte[] backgroundImage = de.bitmapToByteArray(((WarpingControlView)MQTTClient.getInstance().getBinding().backgroundView).getImage());
-
                                         client2.publish(topic_image, new MqttMessage(backgroundImage));
                                     }
                                     setToastMsg("[ " + name + " ] 님에게 데이터 전송을 완료했습니다");
@@ -544,9 +529,9 @@ public enum MQTTClient {
                                 // de.setTextId(mqttMessageFormat.getMaxTextId()); // fixme nayeon - 텍스트 아이디는 "사용자이름-textIdCount" 이므로 textIdCount 가 같아도 고유
                                 MyLog.i("drawing", "component id = " + mqttMessageFormat.getMaxComponentId() + ", text id = " + mqttMessageFormat.getMaxTextId());
 
-                                if (mqttMessageFormat.getBitmapByteArray() != null) {
-                                    de.setBackgroundImage(de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()));
-                                }
+//                                if (mqttMessageFormat.getBitmapByteArray() != null) {
+//                                    de.setBackgroundImage(de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray()));
+//                                }
 
                                 client2.publish(topic_mid, new MqttMessage(JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)).getBytes()));
                             }
@@ -557,15 +542,16 @@ public enum MQTTClient {
 
                                 // fixme jiyeon
                                 AudioPlayThread audioPlayThread = new AudioPlayThread();
-                                audioPlayThread.setName(name);
+                                audioPlayThread.setUserName(name);
                                 audioPlayThread.setBufferUnitSize(2);
+//                                audioPlayThread.start();
                                 audioPlayThreadList.add(audioPlayThread);
-                                MyLog.e("Audio", name + " 추가 후 : " +audioPlayThreadList.size());
+                                MyLog.e("Audio", name + " 추가 후 : " + audioPlayThreadList.size());
 
-                                if(drawingViewModel.isSpeakerFlag()) {
-                                    audioPlayThread.setFlag(true);
-                                    new Thread(audioPlayThread).start();
-                                }
+//                                if(drawingViewModel.isSpeakerFlag()) {
+//                                    audioPlayThread.setFlag(true);
+//                                    new Thread(audioPlayThread).start();
+//                                }
 
                                 drawingViewModel.setUserNum(userList.size());
                                 drawingViewModel.setUserPrint(userPrint());
@@ -589,13 +575,6 @@ public enum MQTTClient {
                             if (userList.get(i).getName().equals(name)) {
                                 userList.remove(i);
 
-                                // fixme jiyeon
-                                MyLog.e("Audio", name + " remove 전 : " + audioPlayThreadList.size());
-                                audioPlayThreadList.get(i).setFlag(false);
-                                audioPlayThreadList.get(i).getBuffer().clear();
-                                audioPlayThreadList.remove(i);
-                                MyLog.e("Audio", name + " remove 후 : " + audioPlayThreadList.size());
-
                                 drawingViewModel.setUserNum(userList.size());
                                 drawingViewModel.setUserPrint(userPrint());
 
@@ -606,6 +585,18 @@ public enum MQTTClient {
                             }
                         }
 
+                        // fixme jiyeon[0826]
+                        for (int i=0; i<audioPlayThreadList.size(); i++) {
+                            if (audioPlayThreadList.get(i).getUserName().equals(name)) {
+                                audioPlayThreadList.get(i).setFlag(false);
+                                audioPlayThreadList.get(i).getBuffer().clear();
+                                audioPlayThreadList.get(i).stopPlaying();
+                                audioPlayThreadList.get(i).interrupt(); // fixme jiyeon[0826]
+                                MyLog.e("Audio", name + " remove 전 : " + audioPlayThreadList.size());
+                                audioPlayThreadList.remove(i);
+                                MyLog.e("Audio", name + " remove 후 : " + audioPlayThreadList.size());
+                            }
+                        }
                     }
                 }
 
@@ -704,35 +695,8 @@ public enum MQTTClient {
                     de.setMidEntered(false);
                 }
 
-                // fixme jiyeon
+                // fixme jiyeon[0826]
                 if (newTopic.equals(topic_audio)) {
-                    if (!audioPlaying && drawingViewModel.isSpeakerFlag()) { // fixme jiyeon - 오디오 start
-                        audioPlaying = true;
-                        MyLog.e("Audio", "Audio Start - AudioPlayThreadList Size : " + audioPlayThreadList.size());
-                        for (AudioPlayThread audioPlayThread : audioPlayThreadList) {
-                            if (audioPlayThread.getName().equals(myName)) continue;
-
-                            audioPlayThread.setFlag(true);
-                            new Thread(audioPlayThread).start();
-                        }
-                    }
-
-                    if (audioPlaying && !drawingViewModel.isSpeakerFlag()) { // fixme jiyeon - 오디오 stop
-                        MyLog.e("Audio", "Audio Stop - AudioPlayThreadList Size : " + audioPlayThreadList.size());
-                        for (AudioPlayThread audioPlayThread : audioPlayThreadList) {
-                            if (audioPlayThread.getName().equals(myName)) continue;
-
-                            audioPlayThread.setFlag(false);
-                            synchronized (audioPlayThread.getBuffer()) {
-                                audioPlayThread.getBuffer().clear();
-                            }
-                        }
-                        audioPlaying = false;
-                        client.unsubscribe(topic_audio);
-                        return;
-                    }
-
-                    // fixme jiyeon[0821]
                     byte[] audioMessage = message.getPayload();
                     byte[] nameByte = Arrays.copyOfRange(audioMessage, 5000, audioMessage.length); // todo - 5000 고치기 ..
                     String name = new String(nameByte);
@@ -750,20 +714,23 @@ public enum MQTTClient {
                     //
 
                     for (AudioPlayThread audioPlayThread : audioPlayThreadList) {
-                        if (audioPlayThread.getName().equals(name)) {
-                            synchronized (audioPlayThread.getBuffer()) {
-                                audioPlayThread.getBuffer().add(audioData);
-                            }
+                        if (audioPlayThread.getUserName().equals(name)) {
+                            audioPlayThread.getBuffer().add(audioData);
+//                            synchronized (audioPlayThread.getBuffer()) {
+//                                audioPlayThread.getBuffer().add(audioData);
+//                            }
                             break;
                         }
                     }
                 }
+                //
 
                 if (newTopic.equals(topic_image)) {
                     byte[] imageData = message.getPayload();
                     de.setBackgroundImage(de.byteArrayToBitmap(imageData));
 
                     // fixme jiyeon[0825] - WarpingControlView(backgroundview) 고정, 비트맵만 갈아끼우도록 변경 (깜빡임 없애기 위해)
+                    binding.backgroundView.setCancel(true);
                     binding.backgroundView.setImage(de.getBackgroundImage());
                     MyLog.e("Image", "set image");
                 }
@@ -939,7 +906,9 @@ public enum MQTTClient {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 MyLog.d("button", "exit dialog ok button click"); // fixme nayeon
-                                exitTask();
+                                if (client.isConnected()) {
+                                    exitTask();
+                                }
                                 if (progressDialog.isShowing())
                                     progressDialog.dismiss();  // todo 로딩하는 동안 터치 안먹히도록 수정해야함
                                 drawingViewModel.back();
@@ -949,7 +918,9 @@ public enum MQTTClient {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 if(!exitCompleteFlag) drawingViewModel.clickSave(); // fixme nayeon 저장
-                                exitTask();
+                                if (client.isConnected()) {
+                                    exitTask();
+                                }
                                 if (progressDialog.isShowing())
                                     progressDialog.dismiss();  // todo 로딩하는 동안 터치 안먹히도록 수정해야함
                                 drawingViewModel.back();

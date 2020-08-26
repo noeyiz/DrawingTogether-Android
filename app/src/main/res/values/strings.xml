@@ -2,7 +2,7 @@
     <string name="app_name">시시콜콜</string>
 
     <!-- Ted Permission -->
-    <string name="permission_camera">[설정]-[권한]에서 권한을 허용할 수 있습니다.</string>
+    <string name="permission">[설정]-[애플리케이션]-[시시콜콜]-[권한]에서 권한을 허용할 수 있습니다.</string>
 
     <!-- Kakao App Key -->
     <string name="kakao_app_key">668d7864167c674522a55e0db88fb304</string>

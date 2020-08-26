@@ -5,12 +5,15 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.data.remote.model.MyLog;
 
+import lombok.Getter;
 import lombok.Setter;
 
 //fixme jiyeon[0821]
+@Getter
 @Setter
-public class RecordThread implements Runnable {
+public class RecordThread extends Thread {
 
     // Input Settings
     private int audioSource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
@@ -45,22 +48,38 @@ public class RecordThread implements Runnable {
                 .build();
 
         audioRecord.startRecording();
+        MyLog.e("Audio", "Start Recording");
 
-        while(flag) {
-            int ret = audioRecord.read(readData, 0, bufferSize);
+        try {
+            while (true) {
+                if (!flag) {
+                    synchronized (audioRecord) {
+                        MyLog.e("Audio", "RecordThread Wait");
+                        audioRecord.wait();
+                    }
+                    flag = true;
+                }
 
-            publishAudioMessage(readData);
-//            AudioMessage audioMessage = new AudioMessage(mqttClient.getMyName(), readData);
-//            MqttMessageFormat messageFormat = new MqttMessageFormat(audioMessage);
-//            mqttClient.publish(mqttClient.getTopic() + "_audio", JSONParser.getInstance().jsonWrite(messageFormat));
+                int ret = audioRecord.read(readData, 0, bufferSize);
+
+                publishAudioMessage(readData);
+                //            AudioMessage audioMessage = new AudioMessage(mqttClient.getMyName(), readData);
+                //            MqttMessageFormat messageFormat = new MqttMessageFormat(audioMessage);
+                //            mqttClient.publish(mqttClient.getTopic() + "_audio", JSONParser.getInstance().jsonWrite(messageFormat));
+            }
+        } catch (InterruptedException e) {
+            MyLog.e("Audio", "Record Thread is dead");
         }
-
-        audioRecord.stop();
-        audioRecord.release();
     }
 
     public void setBufferUnitSize(int n) {
         bufferSize = bufferUnit * n;
+    }
+
+    public void stopRecording() {
+        audioRecord.stop();
+        audioRecord.release();
+        MyLog.e("Audio", "Stop Recording");
     }
 
     // fixme jiyeon - 오디오 데이터 + 이름 (바이너리 데이터 자체를 보내도록 변경)

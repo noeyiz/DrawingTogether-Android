@@ -29,6 +29,7 @@ public class WarpingControlView extends AppCompatImageView {
 	private JSONParser parser = JSONParser.getInstance();
 	private Bitmap undo=null;
 	private Bitmap image=null;
+	private Bitmap warpingImage = null;
 	private int touchX[] = new int[2];
 	private int touchY[] = new int[2];
 	private int touchUpX[] = new int[2];
@@ -37,6 +38,7 @@ public class WarpingControlView extends AppCompatImageView {
 	int pointerCount = 1;
 	boolean flag = false;
 	boolean flag2 = false;
+	private boolean cancel = false;
 
 	public WarpingControlView(Context context) {
 		super(context);
@@ -83,6 +85,10 @@ public class WarpingControlView extends AppCompatImageView {
 
 	public void dispatchEvent(MotionEvent event) {
 		warping(event);
+	}
+
+	public void setCancel(boolean cancel) {
+		this.cancel = cancel;
 	}
 
 	public void warping(MotionEvent event) {
@@ -153,8 +159,8 @@ public class WarpingControlView extends AppCompatImageView {
 					dt.Triangulation();
 
 //					undo = Bitmap.createBitmap(image);
-					image = BitmapProcess.warping(image, srcTriangle, dstTriangle);
-					invalidate();
+					warpingImage = BitmapProcess.warping(image, srcTriangle, dstTriangle);
+					image = warpingImage;
 					for (int i = 0; i < pointer_count; i++) {
 						touchX[i] = (int)event.getX(i);
 						touchY[i] = (int)event.getY(i);
@@ -165,6 +171,7 @@ public class WarpingControlView extends AppCompatImageView {
 			case MotionEvent.ACTION_UP:
 				flag = false;
 				flag2 = false;
+				cancel = false;
 				break;
 		}
 	}
