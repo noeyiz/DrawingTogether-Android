@@ -41,7 +41,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
                 comp.setSelected(false);
                 components.add(comp);
             } catch (NullPointerException e) {
-                MyLog.w("catch", "EraserTask / setSelected() / NullPointerException");
+                MyLog.w("catch", "EraserTask.setSelected() | NullPointerException");
             }
         }
 

@@ -47,21 +47,10 @@ public class WarpingControlView extends AppCompatImageView {
 	}
 
 	public void setImage(final Bitmap img) {
-//		getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-//			@Override
-//			public void onGlobalLayout() {
-//				image = Bitmap.createScaledBitmap(img, getWidth(), getHeight(), true);
-//				invalidate();
-//				getViewTreeObserver().removeOnGlobalLayoutListener(this);
-//			}
-//		});
-
-		// fixme jiyeon[0825]
 		if (img == null)
 			image = null;
 		else
 			image = Bitmap.createScaledBitmap(img, getWidth(), getHeight(), true);
-
 		invalidate();
 	}
 
@@ -97,6 +86,8 @@ public class WarpingControlView extends AppCompatImageView {
 	}
 
 	public void warping(MotionEvent event) {
+		if (image == null)
+			return;
 		int pointer_count = event.getPointerCount(); //현재 터치 발생한 포인트 수를 얻는다.
 		if(pointer_count >= 2) {
 			pointer_count = 2; //2개 이상의 포인트를 터치했더라도 2개까지만 처리를 한다.

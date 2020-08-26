@@ -1,9 +1,12 @@
 package com.hansung.drawingtogether.view.splash;
 
 import android.animation.Animator;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,6 +23,14 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+
+        if (MainActivity.context != null) {
+            Log.e("스플래쉬 액티비티", "context exist");
+            showRunningAlert("앱 중복 실행", "이미 실행 중인 앱이 존재합니다.\n" +
+                    "최근에 사용한 앱 리스트에 앱이 존재 하는지 확인해 주세요.");
+            return;
+        }
+
         startService(new Intent(this, TaskService.class));
 
         LottieAnimationView animationView = findViewById(R.id.intro);
@@ -65,5 +76,23 @@ public class SplashActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    public void showRunningAlert(String title, String message) {
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                })
+                .create();
+
+        dialog.show();
+
     }
 }

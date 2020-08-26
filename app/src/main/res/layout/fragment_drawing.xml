@@ -106,7 +106,7 @@
                 android:onClick="@{vm::clickEraser}"
                 android:text="지우개" />
 
-            <ImageButton
+            <!--<ImageButton
                 android:id="@+id/selectBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -116,7 +116,7 @@
                 android:background="@android:color/transparent"
                 android:padding="20dp"
                 android:onClick="@{vm::clickSelector}"
-                android:text="셀렉터" />
+                android:text="셀렉터" />-->
 
             <ImageButton
                 android:id="@+id/warpingBtn"
@@ -613,11 +613,12 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="right"
-                    android:src="@drawable/undo"
-                    android:scaleType="centerCrop"
+                    android:layout_marginTop="10dp"
                     android:layout_marginRight="20dp"
                     android:background="@android:color/transparent"
                     android:onClick="@{vm::clickUndo}"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/undo"
                     android:text="undo" />
 
                 <ImageButton
@@ -625,11 +626,12 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="right"
-                    android:src="@drawable/redo"
-                    android:scaleType="centerCrop"
+                    android:layout_marginTop="10dp"
                     android:layout_marginRight="20dp"
                     android:background="@android:color/transparent"
                     android:onClick="@{vm::clickRedo}"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/redo"
                     android:text="redo" />
 
                 <!--<TextView

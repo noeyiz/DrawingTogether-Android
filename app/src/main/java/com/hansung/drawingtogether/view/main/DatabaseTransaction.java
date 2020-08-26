@@ -5,6 +5,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.firebase.FirebaseException;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -81,7 +82,7 @@ public abstract class DatabaseTransaction implements completionHandler {
                         mutableData.child("password").setValue(password);
                         mutableData.child("username").child(name).setValue(name);
                         mutableData.child("master").setValue(name);
-                        mutableData.child("access time").setValue(System.currentTimeMillis()); // fixme nayeon
+//                        mutableData.child("access time").setValue(System.currentTimeMillis()); // fixme nayeon
 
                         masterName = name;  // fixme hyeyeon
                         MyLog.i("login", "masterName: " + masterName);

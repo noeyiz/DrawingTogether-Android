@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.ConnectivityManager;
 import android.util.Log;
 
 import android.view.View;
@@ -42,8 +43,6 @@ public class MainViewModel extends BaseViewModel {
     private MQTTClient client = MQTTClient.getInstance();
     private ProgressDialog progressDialog;
 
-    private String masterName;
-
     public MainViewModel() {
 
         MyLog.e("kkankkan", "메인뷰모델 생성자");
@@ -62,8 +61,6 @@ public class MainViewModel extends BaseViewModel {
         MyLog.e("kkankkan", "메인뷰모델 초기화 완료");
 
         hasSpecialCharacterAndBlank = false;
-
-        masterName = "";
     }
 
     public void hasSpecialCharacterAndBlank() {
@@ -131,6 +128,7 @@ public class MainViewModel extends BaseViewModel {
     }
 
     public void masterLoginClicked(final View view) {
+
         setIpError("");
         setPortError("");
         setTopicError("");
@@ -168,6 +166,13 @@ public class MainViewModel extends BaseViewModel {
 
     public void afterMasterCheck(View view) {
 
+        ConnectivityManager cm = (ConnectivityManager) MainActivity.context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm.getActiveNetwork() == null) {
+            Log.e("네트워크", "network disconnected");
+            showNetworkAlert("네트워크 연결 오류", "네트워크가 연결되어 있는지 확인해주세요.");
+            return;
+        }
+
         progressDialog = new ProgressDialog(view.getContext(), R.style.MyProgressDialogStyle);
         progressDialog.setMessage("Loading...");
         progressDialog.setCanceledOnTouchOutside(true);    //fixme minj - master 없는 topic 의 경우 빠져나오지를 못해서 잠시 cancel 가능하게 수정
@@ -193,7 +198,7 @@ public class MainViewModel extends BaseViewModel {
 
                 if (topicError) {
                     progressDialog.dismiss();
-                    setTopicError("이미 존재하는 토픽입니다.");
+                    setTopicError("이미 존재하는 회의명입니다.");
                 }
                 else {
                     data.setIp(ip.getValue());
@@ -214,6 +219,7 @@ public class MainViewModel extends BaseViewModel {
     }
 
     public void joinClicked(View view) {
+
         setIpError("");
         setPortError("");
         setTopicError("");
@@ -226,6 +232,14 @@ public class MainViewModel extends BaseViewModel {
         MyLog.e("kkankkan", topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
 
         if (!hasSpecialCharacterAndBlank) {
+
+            ConnectivityManager cm = (ConnectivityManager) MainActivity.context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm.getActiveNetwork() == null) {
+                Log.e("네트워크", "network disconnected");
+                showNetworkAlert("네트워크 연결 오류", "네트워크가 연결되어 있는지 확인해주세요.");
+                return;
+            }
+
             progressDialog = new ProgressDialog(view.getContext(), R.style.MyProgressDialogStyle);
             progressDialog.setMessage("Loading...");
             progressDialog.setCanceledOnTouchOutside(true);    //fixme minj - master 없는 topic 의 경우 빠져나오지를 못해서 잠시 cancel 가능하게 수정
@@ -274,12 +288,30 @@ public class MainViewModel extends BaseViewModel {
                     }
                     else {
                         progressDialog.dismiss();
-                        setTopicError("존재하지 않는 토픽입니다");
+                        setTopicError("존재하지 않는 회의명입니다");
                     }
                 }
             };
             dt.runTransactionLogin(topic.getValue(), password.getValue(), name.getValue(), "joinMode");
         }
+    }
+
+    public void showNetworkAlert(String title, String message) {
+
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
+                .setTitle(title)
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .create();
+
+        dialog.show();
+
     }
 
     public void clearData() {

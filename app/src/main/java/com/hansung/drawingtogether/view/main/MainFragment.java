@@ -89,20 +89,39 @@ public class MainFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
+        MyLog.i("lifeCycle", "MainFragment onStart()");
     }
 
-    // fixme hyeyeon[1]
     @Override
-    public void onPause() {  // todo
+    public void onResume() {
+        super.onResume();
+        MyLog.i("lifeCycle", "MainFragment onPause()");
+    }
+
+    @Override
+    public void onPause() {
         super.onPause();
         MyLog.i("lifeCycle", "MainFragment onPause()");
     }
 
     @Override
-    public void onDestroyView() {  // todo
+    public void onStop() {
+        super.onStop();
+        MyLog.i("lifeCycle", "MainFragment onStop()");
+    }
+
+    @Override
+    public void onDestroyView() {
         super.onDestroyView();
         MyLog.i("lifeCycle", "MainFragment onDestroyView()");
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        MyLog.i("lifeCycle", "MainFragment onDestroy()");
+    }
+
 }
