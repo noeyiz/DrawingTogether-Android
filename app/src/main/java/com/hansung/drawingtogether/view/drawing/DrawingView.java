@@ -32,6 +32,8 @@ public class DrawingView extends View {
     private SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
     private int msgChunkSize = 20;
     private ArrayList<Point> points = new ArrayList<>(msgChunkSize);
+    private int lastDrawAction = MotionEvent.ACTION_UP;
+    private boolean movable = false;
 
     private String topicData;
 
@@ -110,7 +112,7 @@ public class DrawingView extends View {
         }
         if(this.isIntercept || ((event.getAction() == MotionEvent.ACTION_DOWN) && de.isIntercept())) {
             //MyLog.i("intercept", "drawing view isIntercept = " + isIntercept + ", de isIntercept = " + de.isIntercept() + ", " + event.getAction());
-            MyLog.i("drawing", "intercept drawing view touch");
+            MyLog.i("drawing", "intercept drawing view touch 111");
             return true;
         } else {
             this.getParent().requestDisallowInterceptTouchEvent(true);
@@ -125,6 +127,11 @@ public class DrawingView extends View {
 
             switch (de.getCurrentMode()) {
                 case DRAW:
+                    if((event.getAction() == MotionEvent.ACTION_MOVE || event.getAction() == MotionEvent.ACTION_UP) && !movable) {
+                        MyLog.i("drawing", "intercept drawing view touch 222");
+                        return true;
+                    }
+
                     if (event.getAction() == MotionEvent.ACTION_DOWN)
                         initDrawingComponent(); // 드로잉 컴포넌트 객체 생성
                     setDrawingComponentType();
@@ -291,6 +298,8 @@ public class DrawingView extends View {
 
         // 터치가 DrawingView 밖으로 나갔을 때
         if(event.getX()-5 < 0 || event.getY()-5 < 0 || de.getDrawnCanvasWidth()-5 < event.getX() || de.getDrawnCanvasHeight()-5 < event.getY()) {   //fixme 반응이 느려서 임시로 -5
+            movable = false;
+
             //MyLog.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
             MyLog.i("drawing", "exit");
 
@@ -323,6 +332,8 @@ public class DrawingView extends View {
 
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                movable = true;
+
                 isExit = false;
                 MyLog.i("mqtt", "isExit3 = " + isExit);
 
@@ -340,6 +351,8 @@ public class DrawingView extends View {
                 break;
 
             case MotionEvent.ACTION_MOVE:
+                movable = true;
+
                 point = new Point((int)event.getX(), (int)event.getY());
                 addPointAndDraw(dComponent, point);
 
@@ -356,6 +369,8 @@ public class DrawingView extends View {
                 break;
 
             case MotionEvent.ACTION_UP:
+                movable = false;
+
                 point = new Point((int)event.getX(), (int)event.getY());
                 addPointAndDraw(dComponent, point);
 

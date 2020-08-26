@@ -661,7 +661,7 @@ public enum MQTTClient {
                 if (newTopic.equals(topic_data) && de.getDrawingBitmap() != null) {
 
                     String msg = new String(message.getPayload());
-                    MyLog.i("drawMsg", msg);
+                    //MyLog.i("drawMsg", msg);
                     MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
                     if(de.isMidEntered() && (messageFormat.getAction() != null && messageFormat.getAction() != MotionEvent.ACTION_UP)) { // fixme nayeon - getAction == null
