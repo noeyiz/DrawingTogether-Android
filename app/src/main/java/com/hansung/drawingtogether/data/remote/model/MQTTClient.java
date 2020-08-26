@@ -150,7 +150,7 @@ public enum MQTTClient {
             AudioPlayThread audioPlayThread = new AudioPlayThread();
             audioPlayThread.setUserName(masterName);
             audioPlayThread.setBufferUnitSize(2);
-            audioPlayThread.start();
+//            audioPlayThread.start();
             audioPlayThreadList.add(audioPlayThread);
             MyLog.e("Audio", masterName + " 추가 후 : " + audioPlayThreadList.size());
         }
@@ -438,7 +438,7 @@ public enum MQTTClient {
                                 AudioPlayThread audioPlayThread = new AudioPlayThread();
                                 audioPlayThread.setUserName(name);
                                 audioPlayThread.setBufferUnitSize(2);
-                                audioPlayThread.start();
+//                                audioPlayThread.start();
                                 audioPlayThreadList.add(audioPlayThread);
                                 MyLog.e("Audio", name + " 추가 후 : " + audioPlayThreadList.size());
 
@@ -482,7 +482,7 @@ public enum MQTTClient {
                                     client2.publish(topic_join, new MqttMessage(json.getBytes()));
 
                                     if (de.getBackgroundImage() != null) {
-                                        byte[] backgroundImage = de.bitmapToByteArray(de.getBackgroundImage());
+                                        byte[] backgroundImage = de.bitmapToByteArray(((WarpingControlView)MQTTClient.getInstance().getBinding().backgroundView).getImage());
                                         client2.publish(topic_image, new MqttMessage(backgroundImage));
                                     }
                                     setToastMsg("[ " + name + " ] 님에게 데이터 전송을 완료했습니다");
@@ -544,7 +544,7 @@ public enum MQTTClient {
                                 AudioPlayThread audioPlayThread = new AudioPlayThread();
                                 audioPlayThread.setUserName(name);
                                 audioPlayThread.setBufferUnitSize(2);
-                                audioPlayThread.start();
+//                                audioPlayThread.start();
                                 audioPlayThreadList.add(audioPlayThread);
                                 MyLog.e("Audio", name + " 추가 후 : " + audioPlayThreadList.size());
 
@@ -730,6 +730,7 @@ public enum MQTTClient {
                     de.setBackgroundImage(de.byteArrayToBitmap(imageData));
 
                     // fixme jiyeon[0825] - WarpingControlView(backgroundview) 고정, 비트맵만 갈아끼우도록 변경 (깜빡임 없애기 위해)
+                    binding.backgroundView.setCancel(true);
                     binding.backgroundView.setImage(de.getBackgroundImage());
                     MyLog.e("Image", "set image");
                 }

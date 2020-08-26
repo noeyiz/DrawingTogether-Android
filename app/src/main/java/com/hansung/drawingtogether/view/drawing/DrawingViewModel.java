@@ -120,7 +120,7 @@ public class DrawingViewModel extends BaseViewModel {
         // fixme jiyeon[0824] -  RecordThread 하나만 두기
         recThread = new RecordThread();
         recThread.setBufferUnitSize(2);
-        recThread.start();
+//        recThread.start();
         //
     }
 
@@ -141,7 +141,7 @@ public class DrawingViewModel extends BaseViewModel {
 
         DrawingFragment fragment = de.getDrawingFragment();
 
-        checkPermission(fragment.getContext()); // todo nayeon 권한 체크 앱 처음 실행 시 하도록 수정하기
+//        checkPermission(fragment.getContext()); // todo nayeon 권한 체크 앱 처음 실행 시 하도록 수정하기
 
         // todo nayeon
         DrawingViewController dvc = fragment.getBinding().drawingViewContainer;
@@ -455,25 +455,6 @@ public class DrawingViewModel extends BaseViewModel {
         MyLog.e("kkankkan", photoPath);
 
         return image;
-    }
-
-    public void checkPermission(Context context) {
-        PermissionListener permissionListener = new PermissionListener() {
-            @Override
-            public void onPermissionGranted() {
-                //
-            }
-            @Override
-            public void onPermissionDenied(List<String> deniedPermissions) {
-                //
-            }
-        };
-
-        TedPermission.with(context)
-                .setPermissionListener(permissionListener)
-                .setDeniedMessage(context.getResources().getString(R.string.permission_camera))
-                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO)
-                .check();
     }
 
     private void showToastMsg(final String message) { Toast.makeText(de.getDrawingFragment().getActivity(), message, Toast.LENGTH_SHORT).show(); }

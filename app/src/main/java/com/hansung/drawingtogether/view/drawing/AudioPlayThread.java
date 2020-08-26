@@ -55,7 +55,6 @@ public class AudioPlayThread extends Thread {
 
         try {
             while(true) {
-                MyLog.e("Audio", "here");
                 if (!flag) {
                     synchronized (audioTrack) {
                         MyLog.e("Audio", "Audio Track Wait");

@@ -61,7 +61,6 @@ public class RecordThread extends Thread {
                 }
 
                 int ret = audioRecord.read(readData, 0, bufferSize);
-                MyLog.e("Audio", ret + "");
 
                 publishAudioMessage(readData);
                 //            AudioMessage audioMessage = new AudioMessage(mqttClient.getMyName(), readData);

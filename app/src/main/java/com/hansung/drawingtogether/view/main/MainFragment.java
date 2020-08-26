@@ -85,6 +85,8 @@ public class MainFragment extends Fragment {
 
         ((MainActivity)getActivity()).setToolbarInvisible();
 
+        mainViewModel.checkPermission(mainActivity.getApplicationContext());
+
         return binding.getRoot();
     }
 
