@@ -123,7 +123,6 @@ public enum MQTTClient {
 
     // fixme hyen[0825]
     private int networkTry = 0;
-    private MqttConnectOptions connOpts;
     //
 
     public static MQTTClient getInstance() {
@@ -192,7 +191,7 @@ public enum MQTTClient {
             client = new MqttClient(BROKER_ADDRESS, ("*" + name + "_" + topic + "_Android"), new MemoryPersistence());
             client2 = new MqttClient(BROKER_ADDRESS, MqttClient.generateClientId(), new MemoryPersistence());
 
-            connOpts = new MqttConnectOptions();
+            MqttConnectOptions connOpts = new MqttConnectOptions();
 
             connOpts.setCleanSession(true);
             connOpts.setKeepAliveInterval(1000);
@@ -228,7 +227,7 @@ public enum MQTTClient {
     public void publish(String newTopic, String payload) {
         try {
             client.publish(newTopic, new MqttMessage(payload.getBytes()));
-            networkTry = 0;
+//            networkTry = 0;
         } catch (MqttException e) {
             e.printStackTrace();
             showTimerAlertDialog("메시지 전송 실패", "메인 화면으로 이동합니다");
