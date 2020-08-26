@@ -14,7 +14,6 @@ import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 
 public class Stroke extends DrawingComponent {
-    //DrawingEditor de = DrawingEditor.getInstance();
 
     @Override
     public void draw(Canvas canvas) {
@@ -102,6 +101,8 @@ public class Stroke extends DrawingComponent {
 
 
         Path path = new Path();
+        float mX, mY;
+        float x, y;
 
         if(this.points.size() < 1) {
             return;
@@ -110,24 +111,34 @@ public class Stroke extends DrawingComponent {
             path.lineTo(this.points.get(0).x * xRatio, this.points.get(0).y * yRatio);
 
         } else {
-
-            path.moveTo(this.points.get(0).x  * xRatio, this.points.get(0).y * yRatio);
+            mX = this.points.get(0).x  * xRatio;
+            mY = this.points.get(0).y * yRatio;
+            path.moveTo(mX, mY);
 
             for(int i=0; i<this.points.size()-1; i++) {
                 //Point from = this.points.get(i);
                 //Point to = this.points.get(i+1);
 
                 try {
-                    path.lineTo(this.points.get(i+1).x * xRatio, this.points.get(i+1).y * yRatio);
+                    x = this.points.get(i+1).x * xRatio;
+                    y = this.points.get(i+1).y * yRatio;
+                    path.quadTo(mX, mY, (x + mX)/2, (y + mY)/2);
+                    mX = x;
+                    mY = y;
+
+                    //path.lineTo(this.points.get(i+1).x * xRatio, this.points.get(i+1).y * yRatio);
+
                     //canvas.drawLine(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);
                 }catch(NullPointerException e) {
                     e.printStackTrace();
                 }
             }
+
+            path.lineTo(mX, mY);
+
         }
 
         canvas.drawPath(path, paint);
-
 
         /*Paint paint2 = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint2.setStrokeWidth(this.strokeWidth);

@@ -32,7 +32,7 @@ public class DrawingView extends View {
     private SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
     private int msgChunkSize = 20;
     private ArrayList<Point> points = new ArrayList<>(msgChunkSize);
-    private int lastDrawAction = MotionEvent.ACTION_UP;
+    //private int lastDrawAction = MotionEvent.ACTION_UP;
     private boolean movable = false;
 
     private String topicData;
@@ -261,6 +261,13 @@ public class DrawingView extends View {
     }
 
     public void doInDrawActionUp(DrawingComponent dComponent, float canvasWidth, float canvasHeight) {
+        if(dComponent.getType() == ComponentType.STROKE) {
+            de.clearDrawingBitmap();
+            de.drawAllDrawingComponents();
+            de.drawAllCurrentStrokes();
+            de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
+        }
+
         //de.removeCurrentShapes(dComponent.getUsersComponentId());
         de.splitPoints(dComponent, canvasWidth, canvasHeight);
         de.addDrawingComponents(dComponent);
@@ -298,8 +305,6 @@ public class DrawingView extends View {
 
         // 터치가 DrawingView 밖으로 나갔을 때
         if(event.getX()-5 < 0 || event.getY()-5 < 0 || de.getDrawnCanvasWidth()-5 < event.getX() || de.getDrawnCanvasHeight()-5 < event.getY()) {   //fixme 반응이 느려서 임시로 -5
-            movable = false;
-
             //MyLog.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
             MyLog.i("drawing", "exit");
 
@@ -326,14 +331,14 @@ public class DrawingView extends View {
                 MyLog.i("intercept", "drawingview true");
             }
 
+            movable = false;
+
             invalidate();
             return true;
         }
 
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                movable = true;
-
                 isExit = false;
                 MyLog.i("mqtt", "isExit3 = " + isExit);
 
@@ -348,11 +353,11 @@ public class DrawingView extends View {
                 //down에서는 DrawingComponent 자체를 보내고, move, up에서는 추가된 점에 관한 정보만 보낸다. fixme minj
                 sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), dComponent, event.getAction()));
 
+                movable = true;
+
                 break;
 
             case MotionEvent.ACTION_MOVE:
-                movable = true;
-
                 point = new Point((int)event.getX(), (int)event.getY());
                 addPointAndDraw(dComponent, point);
 
@@ -366,11 +371,11 @@ public class DrawingView extends View {
                     points.clear();
                 }
 
+                movable = true;
+
                 break;
 
             case MotionEvent.ACTION_UP:
-                movable = false;
-
                 point = new Point((int)event.getX(), (int)event.getY());
                 addPointAndDraw(dComponent, point);
 
@@ -389,6 +394,8 @@ public class DrawingView extends View {
                     this.isIntercept = true;
                     MyLog.i("intercept", "drawingview true");
                 }
+
+                movable = false;
 
                 break;
             default:

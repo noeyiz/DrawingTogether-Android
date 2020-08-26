@@ -467,7 +467,7 @@ public enum MQTTClient {
 
                                 //if (de.getCurrentMode() == Mode.DRAW) {  // current mode 가 DRAW 이면, 그리기 중이던 component 까지만 그리고 touch intercept   // todo 다른 모드에서도 intercept 하도록 추가
                                     de.setIntercept(true);
-                                    if(isActionUp()) {
+                                    if(!getDrawingView().isMovable()) {
                                         getDrawingView().setIntercept(true);
                                     }
                                 //}
@@ -817,21 +817,6 @@ public enum MQTTClient {
         MyLog.i("drawing", "users action = " + str);
 
         return true;
-    }
-
-    public boolean isActionUp() {
-        for (User user : userList) {
-            try {
-                if (user.getName().equals(this.myName)) {
-                     if(user.getAction() == MotionEvent.ACTION_UP)
-                         return true;
-                }
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-        return false;
     }
 
     // fixme nayeon

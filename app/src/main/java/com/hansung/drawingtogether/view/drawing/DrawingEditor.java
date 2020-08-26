@@ -89,7 +89,7 @@ public enum DrawingEditor {
     private String fillColor = "#000000";
     private String strokeColor = "#000000";
     private int strokeAlpha = 255;
-    private int fillAlpha = 100;
+    private int fillAlpha = 0;
     private int strokeWidth = 10;
 
     /* 텍스트 속성 */
@@ -187,10 +187,12 @@ public enum DrawingEditor {
     public void drawAllCurrentStrokes() {   //drawingComponents draw
         for (DrawingComponent component : currentComponents) {
             if(component.getType() == ComponentType.STROKE) {
-
-                component.drawComponent(getBackCanvas());
-                if(component.username.equals(this.myUsername))
+                if(component.username.equals(this.myUsername)) {
                     drawingFragment.getBinding().drawingView.drawDComponent();
+                }
+                else {
+                    component.drawComponent(getBackCanvas());
+                }
             }
         }
     }
@@ -893,6 +895,11 @@ public enum DrawingEditor {
         float slope;       //기울기
         float yIntercept;  //y절편
 
+        if(calcPoints.size() == 1) {
+            newPoints.add(new Point(calcPoints.get(0).x, calcPoints.get(0).y));
+            return newPoints;
+        }
+
         for (int i=0; i<calcPoints.size() - 1; i++) {
             Point from = calcPoints.get(i);
             Point to = calcPoints.get(i+1);
@@ -1131,7 +1138,7 @@ public enum DrawingEditor {
 
     public void clearBackgroundImage() {
 //        drawingFragment.getBinding().backgroundView.removeAllViews();
-
+        this.setCurrentMode(Mode.ERASE);
         // fixme jiiyeon[0825]
         drawingFragment.getBinding().backgroundView.setImage(null);
     }
