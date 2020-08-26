@@ -232,11 +232,15 @@ public enum DrawingEditor {
     }
 
     public void printCurrentComponents(String status) {
-        String str = "cc(" + status + ") [" + getCurrentComponents().size() + "] = ";
-        for(DrawingComponent dc: getCurrentComponents()) {
-            str += dc.getId() + "(" + dc.getUsersComponentId() + ")" + " ";
+        try {
+            String str = "cc(" + status + ") [" + getCurrentComponents().size() + "] = ";
+            for (DrawingComponent dc : getCurrentComponents()) {
+                str += dc.getId() + "(" + dc.getUsersComponentId() + ")" + " ";
+            }
+            MyLog.i("drawing", str);
+        } catch(ConcurrentModificationException e) {
+            MyLog.w("catch", "DrawingEditor.printCurrentComponents() | ConcurrentModificationException");
         }
-        MyLog.i("drawing", str);
     }
 
     public boolean isContainsCurrentComponents(int id, String usersComponentId) {    //다른 디바이스에서 동시에 그렸을 경우
@@ -290,11 +294,15 @@ public enum DrawingEditor {
     }
 
     public void printDrawingComponents(String status) {
-        String str = "dc(" + status + ") [" + getDrawingComponents().size() + "] = ";
-        for(DrawingComponent dc: getDrawingComponents()) {
-            str += dc.getId() + "(" + dc.getUsersComponentId() + ")" + " ";
+        try {
+            String str = "dc(" + status + ") [" + getDrawingComponents().size() + "] = ";
+            for (DrawingComponent dc : getDrawingComponents()) {
+                str += dc.getId() + "(" + dc.getUsersComponentId() + ")" + " ";
+            }
+            MyLog.i("drawing", str);
+        } catch(ConcurrentModificationException e) {
+            MyLog.w("catch", "DrawingEditor.printDrawingComponents() | ConcurrentModificationException");
         }
-        MyLog.i("drawing", str);
     }
 
     public boolean isContainsAllDrawingComponents(Vector<Integer> ids) {
@@ -405,7 +413,7 @@ public enum DrawingEditor {
             }
         }
         } catch(ConcurrentModificationException e) {
-            MyLog.w("catch", "setDrawingComponentSelected / ConcurrentModificationException");
+            MyLog.w("catch", "DrawingEditor.setDrawingComponentSelected() | ConcurrentModificationException");
         }
     }
 

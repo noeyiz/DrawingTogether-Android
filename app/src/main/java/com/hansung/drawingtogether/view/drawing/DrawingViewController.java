@@ -12,7 +12,7 @@ import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 
 public class DrawingViewController extends FrameLayout {
-
+    private DrawingEditor de = DrawingEditor.getInstance();
 
     public DrawingViewController(@NonNull Context context) {
         super(context);
@@ -28,10 +28,12 @@ public class DrawingViewController extends FrameLayout {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if(ev.getAction() == MotionEvent.ACTION_CANCEL) {
+        //MyLog.i("drawing", "DrawingViewController | onInterceptTouchEvent");
+
+        /*if(ev.getAction() == MotionEvent.ACTION_CANCEL) {
             MyLog.i("drawing", "intercept complete");
-            return true;
-        }
+            return false;
+        }*/
 
         return super.onInterceptTouchEvent(ev);
     }
