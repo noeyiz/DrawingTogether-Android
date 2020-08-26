@@ -458,28 +458,31 @@
         </LinearLayout>
 
         <FrameLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="0dp"
             app:layout_constraintBottom_toTopOf="@+id/palette_menu_guideline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
                 <com.hansung.drawingtogether.view.drawing.DrawingViewController
                     android:id="@+id/drawingViewContainer"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
                     <LinearLayout
-                        android:id="@+id/background_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@null"
                         android:orientation="horizontal">
+
+                        <com.hansung.drawingtogether.view.WarpingControlView
+                            android:id="@+id/background_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"/>
 
                     </LinearLayout>
 

@@ -1122,7 +1122,9 @@ public enum DrawingEditor {
     }
 
     public void clearBackgroundImage() {
-        drawingFragment.getBinding().backgroundView.removeAllViews();
+        // fixme jiyeon[0825]
+        drawingFragment.getBinding().backgroundView.setImage(null);
+//        drawingFragment.getBinding().backgroundView.removeAllViews();
     }
 
     public byte[] bitmapToByteArray(Bitmap bitmap){

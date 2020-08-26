@@ -42,6 +42,8 @@ import com.kakao.message.template.TextTemplate;
 import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -120,8 +122,11 @@ public class DrawingViewModel extends BaseViewModel {
         de.setCurrentType(ComponentType.STROKE);    //fixme minj
         de.setCurrentMode(Mode.DRAW);
 
-//        client.subscribe(topic + "_audio"); // fixme jiyeon
-
+        // fixme jiyeon[0824] -  RecordThread 하나만 두기
+        recThread = new RecordThread();
+        recThread.setBufferUnitSize(2);
+        recThread.start();
+        //
     }
 
     public void clickUndo(View view) {
@@ -173,7 +178,6 @@ public class DrawingViewModel extends BaseViewModel {
         Toast.makeText(fragment.getContext(), R.string.success_save, Toast.LENGTH_SHORT).show();
 
     }
-
 
     public void clickPen(View view) { // drawBtn1, drawBtn2, drawBtn3
         MyLog.d("button", "pen button click");
@@ -306,7 +310,6 @@ public class DrawingViewModel extends BaseViewModel {
     public void changeClickedButtonBackground(View view) {
         LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
 
-
         // fixme nayeon
         // preMenuButton -> 아무것도 누르지 않은 상태에서 텍스트 버튼 클릭했을 때 NULL
         // 제일 첫 번째 버튼 (얇은 펜(그리기)) 로 지정
@@ -330,38 +333,51 @@ public class DrawingViewModel extends BaseViewModel {
         }
     }
 
-    //fixme jiyeon[0428]
-    public boolean clickVoice() {
-        if (!micFlag) { // RECORD 시작
+    // fixme jiyeon[0825]
+    public boolean clickMic() {
+        if (!micFlag) { // Record Start
             micFlag = true;
-            recThread = new RecordThread();
-            recThread.setFlag(micFlag);
-            recThread.setBufferUnitSize(2);
-            new Thread(recThread).start();
+            synchronized (recThread.getAudioRecord()) {
+                recThread.getAudioRecord().notify();
+                MyLog.e("Audio", "Mic On - RecordThread Notify");
+            }
 
             return true;
-        } else {
+        } else { // Record Stop
             micFlag = false;
-            try {
-                micFlag = false;
-                recThread.setFlag(micFlag);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            recThread.setFlag(micFlag);
+            MyLog.e("Audio", "Mic  Off");
 
             return false;
         }
     }
 
-
+    // fixme jiyeon[0826]
     public int clickSpeaker() {
         speakerMode = (speakerMode + 1) % 3; // 0, 1, 2, 0, 1, 2, ...
 
         if (speakerMode == 0) { // SPEAKER MUTE
             audioManager.setSpeakerphoneOn(false);
             speakerFlag = false;
+            try {
+                if (client.getClient().isConnected()) {
+                    client.getClient().unsubscribe(client.getTopic_audio());
+                }
+            } catch (MqttException e) {
+                MyLog.e("Audio", "Topic Audio Unsubscribe error : " + e.getMessage());
+            }
+            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+                audioPlayThread.setFlag(speakerFlag);
+                audioPlayThread.getBuffer().clear();
+                MyLog.e("Audio", audioPlayThread.getUserName() + " buffer clear");
+            }
         } else if (speakerMode == 1) { // SPEAKER ON
             speakerFlag = true;
+            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+                synchronized (audioPlayThread.getAudioTrack()) {
+                    audioPlayThread.getAudioTrack().notify();
+                }
+            }
             client.subscribe(client.getTopic_audio());
         } else if (speakerMode == 2) { // SPEAKER LOUD
             audioManager.setSpeakerphoneOn(true);
@@ -369,7 +385,6 @@ public class DrawingViewModel extends BaseViewModel {
 
         return speakerMode;
     }
-    //
 
     public void getImageFromGallery(Fragment fragment) {
         Intent galleryIntent = new Intent(Intent.ACTION_PICK);

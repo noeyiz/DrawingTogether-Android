@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.media.AudioManager;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -168,11 +170,15 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         }
 
         if(de.getBackgroundImage() != null) {   //backgroundImage 다시 붙이기
-            binding.backgroundView.removeAllViews();
-            ImageView imageView = new ImageView(this.getContext());
-            imageView.setLayoutParams(new LinearLayout.LayoutParams(this.getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
-            imageView.setImageBitmap(de.getBackgroundImage());
-            binding.backgroundView.addView(imageView);
+//            binding.backgroundView.removeAllViews();
+//            WarpingControlView imageView = new WarpingControlView(this.getContext()); // fixme jiyeon[0824]
+//            imageView.setLayoutParams(new LinearLayout.LayoutParams(this.getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
+//            imageView.setImageBitmap(de.getBackgroundImage());
+//            binding.backgroundView.addView(imageView);
+//            binding.backgroundView.addView(imageView);
+
+            // fixme jiyeon[0825]
+            binding.backgroundView.setImage(de.getBackgroundImage());
         }
         Log.e("pre pub join message", this.getSize().x + ", " + this.getSize().y);
 
@@ -536,16 +542,16 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 //        client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
     }
 
-    private void setBackgroundImage(Bitmap imageBitmap) {
-        binding.backgroundView.removeAllViews(); // fixme nayeon 배경이미지 하나
-
-        de.setBackgroundImage(imageBitmap);
-
-        WarpingControlView imageView = new WarpingControlView(getContext());
-        imageView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        imageView.setImage(de.getBackgroundImage()); // invalidate
-        client.getBinding().backgroundView.addView(imageView);
-    }
+//    private void setBackgroundImage(Bitmap imageBitmap) {
+//        binding.backgroundView.removeAllViews(); // fixme nayeon 배경이미지 하나
+//
+//        de.setBackgroundImage(imageBitmap);
+//
+//        WarpingControlView imageView = new WarpingControlView(getContext());
+//        imageView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+//        imageView.setImage(de.getBackgroundImage()); // invalidate
+//        client.getBinding().backgroundView.addView(imageView);
+//    }
 
     @Override
     public void onResume() {
@@ -566,8 +572,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         switch(item.getItemId()) {
 
             // fixme jiyeon[0428]
-            case R.id.drawing_voice:
-                boolean click = drawingViewModel.clickVoice();
+            case R.id.drawing_mic:
+                boolean click = drawingViewModel.clickMic();
                 if (click) {
                     item.setIcon(R.drawable.mic);
                 } else {
@@ -739,6 +745,37 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     public void onDestroy() {
         super.onDestroy();
         MyLog.i("lifeCycle", "DrawingFragment onDestroy()");
+
+        // fixme jiyeon[0826] - 오디오 처리
+        if (drawingViewModel.isMicFlag()) {
+            drawingViewModel.getRecThread().setFlag(false);
+        }
+        drawingViewModel.getRecThread().stopRecording();
+        drawingViewModel.getRecThread().interrupt();
+
+        try {
+            if (client.getClient().isConnected()) {
+                client.getClient().unsubscribe(client.getTopic_audio());
+            }
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+        for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+            if (drawingViewModel.isSpeakerFlag()) {
+                audioPlayThread.setFlag(false);
+                AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
+                audioManager.setSpeakerphoneOn(false);
+            }
+
+            audioPlayThread.stopPlaying();
+            synchronized (audioPlayThread.getBuffer()) {
+                audioPlayThread.getBuffer().clear();
+            }
+            audioPlayThread.interrupt();
+        }
+        client.getAudioPlayThreadList().clear();
+        //
 
         if (client != null && client.getClient().isConnected()) {
             // 꼭 여기서 처리 해줘야 하는 부분
