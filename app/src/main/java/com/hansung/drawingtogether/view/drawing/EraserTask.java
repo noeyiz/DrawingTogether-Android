@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.os.AsyncTask;
 
+import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 import java.util.Vector;
@@ -11,6 +12,8 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
     private DrawingEditor de = DrawingEditor.getInstance();
     private Vector<Integer> erasedComponentIds;
     private Vector<DrawingComponent> components;
+
+    private MQTTClient client = MQTTClient.getInstance(); // fixme nayeon
 
     public EraserTask(Vector<Integer> erasedComponentIds) {
         //de.setDrawingView(((MainActivity) de.getContext()).getDrawingView());
@@ -35,6 +38,22 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
                 comp.setSelected(false);
                 MyLog.i("isSelected", comp.getUsersComponentId() + ", " + comp.isSelected);
                 components.add(comp);
+
+                // fixme nayeon
+                if(client.isMaster()) {
+                    switch (comp.getType()) {
+                        case STROKE:
+                            client.getComponentCount().decreaseStroke();
+                            break;
+                        case RECT:
+                            client.getComponentCount().decreaseRect();
+                            break;
+                        case OVAL:
+                            client.getComponentCount().decreaseOval();
+                            break;
+                    }
+                }
+
             } catch (NullPointerException e) {
                 MyLog.w("catch", "EraserTask / NullPointerException");
             }

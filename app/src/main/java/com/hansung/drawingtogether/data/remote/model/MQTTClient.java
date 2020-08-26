@@ -18,7 +18,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.google.firebase.components.Component;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
@@ -93,6 +92,7 @@ public enum MQTTClient {
     private String topic_audio; // fixme jiyeon
     private String topic_image; // fixme jyeon[0813]
     private String topic_alive;
+    private String topic_monitoring;
 
     private int aliveCount = 5;  // fixme hyeyeon
 
@@ -119,6 +119,9 @@ public enum MQTTClient {
     int i=1;
 
     private String curMqttMsg;
+
+    private ComponentCount componentCount;
+    private Thread monitoringThread;
 
     // fixme jiyeon[0813] - UI 변경을 위해 Handler 사용
     private Handler imageHandler = new Handler() {
@@ -154,7 +157,7 @@ public enum MQTTClient {
         userList.clear();
         audioPlayThreadList.clear();
 
-        if (!isMaster()) {  // fixme hyeyeon-마스터가 토픽을 삭제하지 못하고 종료해서 마스터 없는 토픽방이 되었을 때 join한 유저들을 토픽방에서 나가게 하기 위해
+        if (!isMaster()) {  // fixme hyeyeon- 토픽을 삭제하지 못하고 종료해서 마스터 없는 토픽방이 되었을 때 join한 유저들을 토픽방에서 나가게 하기 위해
             User mUser = new User(masterName, 0, MotionEvent.ACTION_UP, false);
             userList.add(mUser);
 
@@ -163,6 +166,14 @@ public enum MQTTClient {
             audioPlayThread.setBufferUnitSize(2);
             audioPlayThreadList.add(audioPlayThread);
         }
+        else { // fixme nayeon - 마스터는 모니터링을 위한 스레드 시작
+            Log.e("monitoring", "mqtt client class init func. check master. i'am master.");
+            componentCount = new ComponentCount();
+            monitoringThread = new Thread(MonitoringRunnable.getInstance());
+            monitoringThread.start();
+        }
+
+
         User user = new User(myName, 0, MotionEvent.ACTION_UP, false);
         userList.add(user); // 생성자에서 사용자 리스트에 내 이름 추가
         // fixme jiyeon
@@ -179,6 +190,8 @@ public enum MQTTClient {
         topic_alive = this.topic + "_alive";
         topic_audio = this.topic + "_audio";
         topic_image = this.topic + "_image";
+
+        topic_monitoring = "monitoring";
 
         this.drawingViewModel = drawingViewModel;
         this.drawingViewModel.setUserNum(userList.size());
@@ -287,6 +300,7 @@ public enum MQTTClient {
 
 //            MainActivity.context.stopService(drawingFragment.getIntent());
             th.interrupt();
+            monitoringThread.interrupt(); // fixme nayeon
 
             if (isMaster()) {
                 CloseMessage closeMessage = new CloseMessage(myName);
@@ -662,12 +676,30 @@ public enum MQTTClient {
                     //MyLog.i("drawMsg", msg);
                     MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
+                    // 중간 참여자가 입장했을 때 처리
                     if(de.isMidEntered() && (messageFormat.getAction() != null && messageFormat.getAction() != MotionEvent.ACTION_UP)) { // fixme nayeon - getAction == null
                         //MyLog.i("drawing", "mid entering");
                         if(getDrawingView().isIntercept() || (de.isIntercept() && (de.getCurrentComponent(messageFormat.getUsersComponentId()) == null)))
                             return;
                     }
 
+
+                    Log.e("> monitoring", "before check component count");
+                    Log.e("> monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
+                            + ", text mode = " + messageFormat.getTextMode());
+
+                    // 컴포넌트 개수 저장
+                    if( (messageFormat.getAction() != null && messageFormat.getAction() == MotionEvent.ACTION_DOWN)
+                            || messageFormat.getMode() == Mode.TEXT || messageFormat.getMode() == Mode.ERASE) {
+                        Log.e("< monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
+                        + ", text mode = " + messageFormat.getTextMode());
+                        checkComponentCount(messageFormat.getMode(), messageFormat.getType(), messageFormat.getTextMode());
+                    }
+
+                    Log.e("< monitoring", "after check component count");
+
+
+                    // 컴포넌트 처리
                     if (messageFormat.getMode() == Mode.TEXT) {  //TEXT 모드일 경우, username 이 다른 경우만 task 생성
                         if (!messageFormat.getUsername().equals(de.getMyUsername())) {
                             MyLog.i("drawing", "username = " + messageFormat.getUsername() + ", text id = " + messageFormat.getTextAttr().getId() + ", mode = " + messageFormat.getMode() + ", text mode = " + messageFormat.getTextMode());
@@ -822,9 +854,48 @@ public enum MQTTClient {
         return false;
     }
 
+    public void checkComponentCount(Mode mode, ComponentType type, TextMode textMode) {
+        Log.e("monitoring", "execute check component count func.");
+
+
+        // 마스터만 컴포넌트 개수 카운팅
+        if(!isMaster()) {
+            Log.e("monitoring", "check component count func. i'am not master.");
+            return;
+        }
+
+        if(mode == Mode.TEXT && textMode == TextMode.CREATE) {
+            Log.e("monitoring", "check component count func. text count increase.");
+
+            componentCount.increaseText();
+            return;
+        }
+
+        if(mode != Mode.DRAW) {
+            Log.e("monitoring", "check component count func. mode is not DRAW");
+            return;
+        }
+        Log.e("monitoring", "check component count func. mode is DRAW");
+
+
+        switch (type) {
+            case STROKE:
+                componentCount.increaseStroke();
+                break;
+            case RECT:
+                componentCount.increaseRect();
+                break;
+            case OVAL:
+                componentCount.increaseOval();
+                break;
+        }
+    }
+
     public void doInBack() {
 
         th.interrupt();
+        monitoringThread.interrupt(); // fixme nayeon
+
 
         isMid = true;
         de.removeAllDrawingData();

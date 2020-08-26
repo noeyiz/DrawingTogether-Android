@@ -127,6 +127,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
         JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
+        Log.e("monitoring", "check parser init");
 
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 
