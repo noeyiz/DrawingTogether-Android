@@ -106,7 +106,7 @@
                 android:onClick="@{vm::clickEraser}"
                 android:text="지우개" />
 
-            <!--<ImageButton
+            <ImageButton
                 android:id="@+id/selectBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -116,7 +116,7 @@
                 android:background="@android:color/transparent"
                 android:padding="20dp"
                 android:onClick="@{vm::clickSelector}"
-                android:text="셀렉터" />-->
+                android:text="셀렉터" />
 
             <ImageButton
                 android:id="@+id/warpingBtn"
@@ -477,6 +477,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:background="#FFFFFF"
                         android:orientation="horizontal">
 
                         <com.hansung.drawingtogether.view.WarpingControlView
@@ -617,7 +618,7 @@
                     android:background="@android:color/transparent"
                     android:onClick="@{vm::clickUndo}"
                     android:padding="8dp"
-                    android:scaleType="centerCrop"
+                    android:scaleType="centerInside"
                     android:src="@drawable/undo2"
                     android:text="undo" />
 
@@ -630,7 +631,7 @@
                     android:background="@android:color/transparent"
                     android:onClick="@{vm::clickRedo}"
                     android:padding="8dp"
-                    android:scaleType="centerCrop"
+                    android:scaleType="centerInside"
                     android:src="@drawable/redo2"
                     android:text="redo" />
 

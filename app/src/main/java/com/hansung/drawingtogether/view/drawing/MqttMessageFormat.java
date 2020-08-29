@@ -111,15 +111,13 @@ public class MqttMessageFormat {
     }
 
     //select - down, move, up
-    Integer moveX;
-    Integer moveY;
-    public MqttMessageFormat(String username, String usersComponentId, Mode mode, int action, int moveX, int moveY) {
+    ArrayList<Point> moveSelectPoints;
+    public MqttMessageFormat(String username, String usersComponentId, Mode mode, int action, ArrayList<Point> moveSelectPoints) {
         this.username = username;
         this.usersComponentId = usersComponentId;
         this.mode = mode;
         this.action = action;
-        this.moveX = moveX;
-        this.moveY = moveY;
+        this.moveSelectPoints = moveSelectPoints;
     }
 
     // fixme nayeon - 텍스트 동시성 처리

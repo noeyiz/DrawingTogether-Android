@@ -34,7 +34,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
                 DrawingComponent comp = de.findDrawingComponentById(erasedComponentIds.get(i));
                 if((comp != null) && comp.isSelected()) {
                     de.setDrawingComponentSelected(comp.getUsersComponentId(), false);
-                    de.clearSelectedBitmap();
+                    de.clearMyCurrentBitmap();
                     de.getDrawingFragment().getBinding().drawingView.setSelected(false);
                     MyLog.i("isSelected", comp.getUsersComponentId() + ", " + comp.isSelected);
                 }
@@ -52,7 +52,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
 
         de.drawAllDrawingComponents();
         //de.drawAllUnselectedDrawingComponents();
-        de.drawAllCurrentStrokes();
+        //de.drawAllCurrentStrokes();
         //de.getDrawingView().invalidate();
     }
 
@@ -78,18 +78,16 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
                 de.setPreSelectedComponents(id);
                 de.setPostSelectedComponents(id);
 
-                de.clearSelectedBitmap();
+                de.clearMyCurrentBitmap();
 
-                de.drawAllPreSelectedComponents();
-                de.drawAllPostSelectedComponents();
+                de.setPreSelectedComponentsBitmap();
+                de.setPostSelectedComponentsBitmap();
 
-                de.drawSelectedComponent();
-                de.drawSelectedBitmaps();
+                de.getSelectedComponent().drawComponent(de.getMyCurrentCanvas());
+                de.drawUnselectedComponents();
                 de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
             }
         }
-
-        de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
 
         //de.clearUndoArray();
         //de.getDrawingView().invalidate();

@@ -32,12 +32,13 @@ public enum DrawingEditor {
     /* 배경 이미지와 그리기 위한 자원 */
     private Bitmap backgroundImage;             //
     private Bitmap drawingBitmap;               //그리기 bitmap
+    private Bitmap currentBitmap;
     private Canvas backCanvas;                  //미리 그려두기 위한 Canvas
-    private Bitmap lastDrawingBitmap = null;    //drawingBitmap 의 마지막 상태 bitmap --> 도형 그리기
+    private Canvas currentCanvas;
+    private Canvas myCurrentCanvas;
 
     /* 드로잉 컴포넌트에 필요한 객체 */
     private boolean isIntercept = false;
-    //private int currentDrawAction = MotionEvent.ACTION_UP;
     private boolean isDrawingShape = false;
     private int componentId = -1;
     private int maxComponentId = -1;
@@ -47,13 +48,12 @@ public enum DrawingEditor {
 
     private ArrayList<DrawingComponent> drawingComponents = new ArrayList<>();  //현재 그려져있는 모든 drawing component 배열
     private ArrayList<DrawingComponent> currentComponents = new ArrayList<>();  //현재 그리기중인 drawing component 배열
-    private ArrayList<DrawingComponent> currentShapes = new ArrayList<>();      //현재 그리기중인 shape drawing component 배열
 
     /* selector 에 필요한 객체 */
     private DrawingComponent selectedComponent = null;
     private ArrayList<DrawingComponent> preSelectedComponents = new ArrayList<>();
     private ArrayList<DrawingComponent> postSelectedComponents = new ArrayList<>();
-    private Bitmap selectedComponentBitmap;
+    private Bitmap myCurrentBitmap;
     private Bitmap preSelectedComponentsBitmap;
     private Bitmap postSelectedComponentsBitmap;
     private int selectedBorderColor = Color.LTGRAY;
@@ -88,7 +88,7 @@ public enum DrawingEditor {
     /* 드로잉 펜 속성 */
     private String fillColor = "#000000";
     private String strokeColor = "#000000";
-    private int strokeAlpha = 255;
+    private int strokeAlpha = 100;//255;
     private int fillAlpha = 0;
     private int strokeWidth = 10;
 
@@ -102,13 +102,12 @@ public enum DrawingEditor {
     public void removeAllDrawingData() {
         backgroundImage = null;
         drawingBitmap = null;
-        lastDrawingBitmap = null;
 
         selectedComponent = null;
         preSelectedComponents.clear();
         postSelectedComponents.clear();
 
-        selectedComponentBitmap = null;
+        myCurrentBitmap = null;
         preSelectedComponentsBitmap = null;
         postSelectedComponentsBitmap = null;
 
@@ -142,7 +141,6 @@ public enum DrawingEditor {
     public void printDrawingData() {
         MyLog.i("backgroundImage", backgroundImage.toString());
         MyLog.i("drawingBitmap", drawingBitmap.toString());
-        MyLog.i("lastDrawingBitmap", lastDrawingBitmap.toString());
 
         MyLog.i("componentId", Integer.toString(componentId));
         MyLog.i("maxComponentId", Integer.toString(maxComponentId));
@@ -184,14 +182,25 @@ public enum DrawingEditor {
         }*/
     }
 
-    public void drawAllCurrentStrokes() {   //drawingComponents draw
-        for (DrawingComponent component : currentComponents) {
-            if(component.getType() == ComponentType.STROKE) {
+    public void drawOthersCurrentComponent(String username) {
+        if(username == null) {
+            for (DrawingComponent component : currentComponents) {
+            /*if(component.getType() == ComponentType.STROKE) {
                 if(component.username.equals(this.myUsername)) {
                     drawingFragment.getBinding().drawingView.drawDComponent();
                 }
                 else {
                     component.drawComponent(getBackCanvas());
+                }
+            }*/
+                if (!component.username.equals(getMyUsername())) {
+                    component.drawComponent(getCurrentCanvas());
+                }
+            }
+        } else {
+            for (DrawingComponent component : currentComponents) {
+                if (!component.username.equals(username) && !component.username.equals(getMyUsername())) {
+                    component.drawComponent(getCurrentCanvas());
                 }
             }
         }
@@ -346,7 +355,7 @@ public enum DrawingEditor {
         return -1;
     }
 
-    public void updateDrawingComponents(DrawingComponent newComponent) {    //속성 변경 update
+    public void updateSelectedComponent(DrawingComponent newComponent) {    //속성 변경 update
         int index = getIndexOfDrawingComponent(newComponent.getId());
 
         if(index == -1) return;
@@ -359,26 +368,6 @@ public enum DrawingEditor {
 
         drawingComponents.add(index, newComponent);
         //addDrawingComponents(newComponent);
-    }
-
-    public void addCurrentShapes(DrawingComponent component) {
-        this.currentShapes.add(component);
-    }
-
-    public int removeCurrentShapes(String usersComponentId) {
-        for (int i=0; i<currentShapes.size(); i++) {
-            if(currentShapes.get(i).getUsersComponentId().equals(usersComponentId)) {
-                currentShapes.remove(i);
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public void updateCurrentShapes(DrawingComponent newComponent) {
-        int index = removeCurrentShapes(newComponent.getUsersComponentId());
-        if(index == -1) return;
-        currentShapes.add(index, newComponent);
     }
 
     public void deselect() {
@@ -394,7 +383,6 @@ public enum DrawingEditor {
         updateDrawingBitmap(false);
         //clearAllSelectedBitmap();
         //drawingFragment.getBinding().drawingView.invalidate();
-        setLastDrawingBitmap(drawingBitmap.copy(drawingBitmap.getConfig(), true));
     }
 
     public void initSelectedBitmap() {
@@ -481,25 +469,18 @@ public enum DrawingEditor {
             //paint.setStrokeCap(Paint.Cap.ROUND);
             paint.setStyle(Paint.Style.STROKE);     //윤곽선
             paint.setColor(color);
-            if(getSelectedCanvas() == null) {
-                selectedComponentBitmap.eraseColor(Color.TRANSPARENT);
-                selectedCanvas = new Canvas(selectedComponentBitmap);
-            }
-            getSelectedCanvas().drawRect((datumPoint.x*component.getXRatio() - strokeWidth / 2 - 10), (datumPoint.y*component.getYRatio() - strokeWidth / 2 - 10), (datumPoint.x*component.getXRatio() + width + strokeWidth / 2 + 10), (datumPoint.y*component.getYRatio() + height + strokeWidth / 2 + 10), paint);
+            /*if(getMyCurrentCanvas() == null) {
+                myCurrentBitmap.eraseColor(Color.TRANSPARENT);
+                myCurrentCanvas = new Canvas(myCurrentBitmap);
+            }*/
+            getMyCurrentCanvas().drawRect((datumPoint.x*component.getXRatio() - strokeWidth / 2 - 10), (datumPoint.y*component.getYRatio() - strokeWidth / 2 - 10), (datumPoint.x*component.getXRatio() + width + strokeWidth / 2 + 10), (datumPoint.y*component.getYRatio() + height + strokeWidth / 2 + 10), paint);
 
         }catch(NullPointerException e) {
             e.printStackTrace();
         }
     }
 
-    private Canvas selectedCanvas;
-    public void drawSelectedComponent() {
-        selectedComponentBitmap.eraseColor(Color.TRANSPARENT);
-        selectedCanvas = new Canvas(selectedComponentBitmap);
-        selectedComponent.draw(selectedCanvas);
-    }
-
-    public void drawAllPreSelectedComponents() {
+    public void setPreSelectedComponentsBitmap() {
         preSelectedComponentsBitmap.eraseColor(Color.TRANSPARENT);
         Canvas canvas = new Canvas(preSelectedComponentsBitmap);
         for (DrawingComponent component: preSelectedComponents) {
@@ -507,7 +488,7 @@ public enum DrawingEditor {
         }
     }
 
-    public void drawAllPostSelectedComponents() {
+    public void setPostSelectedComponentsBitmap() {
         postSelectedComponents.addAll(tempPostSelectedComponents);
         postSelectedComponentsBitmap.eraseColor(Color.TRANSPARENT);
         Canvas canvas = new Canvas(postSelectedComponentsBitmap);
@@ -523,7 +504,7 @@ public enum DrawingEditor {
         component.drawComponent(canvas);
     }
 
-    public void drawSelectedBitmaps() {
+    public void drawUnselectedComponents() {
         drawingBitmap.eraseColor(Color.TRANSPARENT);
         drawingBitmap = preSelectedComponentsBitmap.copy(preSelectedComponentsBitmap.getConfig(), true);
         backCanvas.setBitmap(drawingBitmap);
@@ -540,7 +521,7 @@ public enum DrawingEditor {
         drawingBitmap.eraseColor(Color.TRANSPARENT);
         drawingBitmap = preSelectedComponentsBitmap.copy(preSelectedComponentsBitmap.getConfig(), true);
         backCanvas.setBitmap(drawingBitmap);
-        clearSelectedBitmap();
+        clearMyCurrentBitmap();
         selectedComponent.drawComponent(backCanvas);
         if(border) {
             drawSelectedComponentBorder(getSelectedComponent(), mySelectedBorderColor); //
@@ -548,7 +529,7 @@ public enum DrawingEditor {
         backCanvas.drawBitmap(postSelectedComponentsBitmap, 0, 0, null);
     }
 
-    public void updateSelectedComponent(DrawingComponent component, float canvasWidth, float canvasHeight) {
+    public void splitPointsOfSelectedComponent(DrawingComponent component, float canvasWidth, float canvasHeight) {
         if(component == null) return;
 
         Vector<Integer> id = new Vector<>();
@@ -711,7 +692,7 @@ public enum DrawingEditor {
                     addRemovedComponentIds(ids);
                     removeAllDrawingComponents(ids);
                     drawAllDrawingComponents();
-                    drawAllCurrentStrokes();
+                    //drawAllCurrentStrokes();
                     eraseDrawingBoardArray(ids);
                 } else {
                     MyLog.i("drawing", "update draw");
@@ -727,9 +708,7 @@ public enum DrawingEditor {
                     sortDrawingComponents();
                     clearDrawingBitmap();
                     drawAllDrawingComponents();
-                    drawAllCurrentStrokes();
                 }
-                setLastDrawingBitmap(getDrawingBitmap().copy(getDrawingBitmap().getConfig(), true));
                 MyLog.i("drawing", "removedComponentIds = " + getRemovedComponentId());
 
                 break;
@@ -1035,6 +1014,13 @@ public enum DrawingEditor {
         drawingBitmap.eraseColor(Color.TRANSPARENT);
     }
 
+    public void clearCurrentBitmap() {
+        currentBitmap.eraseColor(Color.TRANSPARENT);
+    }
+    public void clearMyCurrentBitmap() {
+        myCurrentBitmap.eraseColor(Color.TRANSPARENT);
+    }
+
     public void eraseDrawingBoardArray(Vector<Integer> erasedComponentIds) {
         for (int i=1; i<erasedComponentIds.size(); i++) {    //i=0 --> -1
             int id = erasedComponentIds.get(i);
@@ -1057,37 +1043,8 @@ public enum DrawingEditor {
         }
     }
 
-    public void redraw(String usersComponentId) {
-        if(lastDrawingBitmap == null) {
-            drawingBitmap.eraseColor(Color.TRANSPARENT);
-            return;
-        }
-
-        drawingBitmap = lastDrawingBitmap.copy(lastDrawingBitmap.getConfig(), true);
-        backCanvas.setBitmap(drawingBitmap);
-
-        /*if(isDrawingShape) {
-            for (DrawingComponent component : currentShapes) {
-                try {
-                    if (!component.getUsersComponentId().equals(usersComponentId))
-                        component.drawComponent(backCanvas);
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                }
-            }
-        }*/
-        /*Bitmap bitmap = history.get(history.size() - 1).getBitmap();
-        //drawingBitmap = Bitmap.createBitmap(bitmap);
-        drawingBitmap = bitmap.copy(bitmap.getConfig(), true);
-        backCanvas.setBitmap(drawingBitmap);*/
-    }
-
-    public void clearSelectedBitmap() {
-        selectedComponentBitmap.eraseColor(Color.TRANSPARENT);
-    }
-
     public void clearAllSelectedBitmap() {
-        selectedComponentBitmap.eraseColor(Color.TRANSPARENT);
+        myCurrentBitmap.eraseColor(Color.TRANSPARENT);
         preSelectedComponentsBitmap.eraseColor(Color.TRANSPARENT);
         postSelectedComponentsBitmap.eraseColor(Color.TRANSPARENT);
     }
@@ -1118,7 +1075,6 @@ public enum DrawingEditor {
 
     public void clearDrawingComponents() {
         drawingBitmap.eraseColor(Color.TRANSPARENT);
-        lastDrawingBitmap.eraseColor(Color.TRANSPARENT);
         undoArray.clear();
         history.clear();
         drawingComponents.clear();
@@ -1178,10 +1134,6 @@ public enum DrawingEditor {
 
     public void setBackCanvas(Canvas backCanvas) {
         this.backCanvas = backCanvas;
-    }
-
-    public void setLastDrawingBitmap(Bitmap lastDrawingBitmap) {
-        this.lastDrawingBitmap = lastDrawingBitmap;
     }
 
     public void setCurrentText(Text text) { this.currentText = text; }
@@ -1283,8 +1235,8 @@ public enum DrawingEditor {
         this.selectedComponent = selectedComponent;
     }
 
-    public void setSelectedComponentBitmap(Bitmap selectedComponentBitmap) {
-        this.selectedComponentBitmap = selectedComponentBitmap;
+    public void setMyCurrentBitmap(Bitmap myCurrentBitmap) {
+        this.myCurrentBitmap = myCurrentBitmap;
     }
 
     public void setPreSelectedComponentsBitmap(Bitmap preSelectedComponentsBitmap) {
@@ -1295,12 +1247,17 @@ public enum DrawingEditor {
         this.postSelectedComponentsBitmap = postSelectedComponentsBitmap;
     }
 
-    /*public void setCurrentDrawAction(int currentDrawAction) {
-        this.currentDrawAction = currentDrawAction;
-    }*/
-
     public void setDrawingShape(boolean drawingShape) {
         isDrawingShape = drawingShape;
     }
 
+    public void setCurrentBitmap(Bitmap currentBitmap) { this.currentBitmap = currentBitmap; }
+
+    public void setCurrentCanvas(Canvas currentCanvas) {
+        this.currentCanvas = currentCanvas;
+    }
+
+    public void setMyCurrentCanvas(Canvas myCurrentCanvas) {
+        this.myCurrentCanvas = myCurrentCanvas;
+    }
 }
