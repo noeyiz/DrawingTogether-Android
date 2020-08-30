@@ -50,9 +50,11 @@ import com.hansung.drawingtogether.R;
 
 import com.hansung.drawingtogether.data.remote.model.AliveBackgroundService;
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
+import com.hansung.drawingtogether.data.remote.model.ComponentCount;
 import com.hansung.drawingtogether.data.remote.model.ExitType;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.data.remote.model.MonitoringRunnable;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
@@ -104,6 +106,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
     private Toolbar toolbar;
     private TextView title;
+
+    private MonitoringRunnable monitoringRunnable = MonitoringRunnable.getInstance();
 
     //private LinearLayout topToolLayout;
     //private Button doneBtn;
@@ -199,6 +203,13 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             Thread th = new Thread(aliveTh);
             th.start();
             client.setThread(th);
+
+            if(client.isMaster()) {
+                Log.e("monitoring", "mqtt client class init func. check master. i'am master.");
+                client.setComponentCount(new ComponentCount(client.getTopic()));
+                Thread monitoringThread = new Thread(MonitoringRunnable.getInstance());
+                monitoringThread.start();
+            }
 
 //            intent = new Intent(MainActivity.context, AliveBackgroundService.class);
 //            MainActivity.context.startService(intent);

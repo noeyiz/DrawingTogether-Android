@@ -55,7 +55,7 @@ public class MainViewModel extends BaseViewModel {
 
         MyLog.e("kkankkan", "메인뷰모델 생성자");
 
-        ip.setValue("192.168.0.36");
+        ip.setValue("192.168.0.103");
         port.postValue("1883");
         setTopic("");
         setPassword("");

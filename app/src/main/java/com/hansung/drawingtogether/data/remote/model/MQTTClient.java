@@ -166,12 +166,7 @@ public enum MQTTClient {
             audioPlayThread.setBufferUnitSize(2);
             audioPlayThreadList.add(audioPlayThread);
         }
-        else { // fixme nayeon - 마스터는 모니터링을 위한 스레드 시작
-            Log.e("monitoring", "mqtt client class init func. check master. i'am master.");
-            componentCount = new ComponentCount();
-            monitoringThread = new Thread(MonitoringRunnable.getInstance());
-            monitoringThread.start();
-        }
+
 
 
         User user = new User(myName, 0, MotionEvent.ACTION_UP, false);
@@ -1020,6 +1015,7 @@ public enum MQTTClient {
         this.th = th;
     }
 
+    public void setComponentCount(ComponentCount componentCount) { this.componentCount = componentCount; }
 
     //
     private int cnt = 0;

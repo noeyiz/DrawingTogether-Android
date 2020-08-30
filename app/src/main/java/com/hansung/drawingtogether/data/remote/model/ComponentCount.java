@@ -2,16 +2,21 @@ package com.hansung.drawingtogether.data.remote.model;
 
 
 public class ComponentCount {
+
+    String topic;
     int stroke;
     int rect;
     int oval;
     int text;
+    int image;
 
-    public ComponentCount() {
+    public ComponentCount(String topic) {
+        this.topic = topic;
         this.stroke = 0;
         this.rect = 0;
         this.oval = 0;
         this.text = 0;
+        this.image = 0;
     }
 
     public void increaseStroke() { stroke++; }
@@ -21,6 +26,8 @@ public class ComponentCount {
     public void increaseOval() { oval++; }
 
     public void increaseText() { text++; }
+
+    public void increaseImage() { image++; }
 
     public void decreaseStroke() { stroke--; }
 
