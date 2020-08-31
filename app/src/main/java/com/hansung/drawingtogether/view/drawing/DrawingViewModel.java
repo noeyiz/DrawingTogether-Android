@@ -1,8 +1,10 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -40,6 +42,8 @@ import com.kakao.message.template.TextTemplate;
 import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -57,10 +61,7 @@ import lombok.Setter;
 public class DrawingViewModel extends BaseViewModel {
     public final SingleLiveEvent<DrawingCommand> drawingCommands = new SingleLiveEvent<>();
     private MutableLiveData<String> userNum = new MutableLiveData<>();
-    private MutableLiveData<String> userPrint = new MutableLiveData<>();  // fixme hyeyeon
-
-//    private MutableLiveData<String> aliveCount = new MutableLiveData<>();
-//    private MutableLiveData<String> userAliveCount = new MutableLiveData<>();
+    private MutableLiveData<String> userPrint = new MutableLiveData<>();
 
     private Logger logger = Logger.getInstance();
 
@@ -70,14 +71,13 @@ public class DrawingViewModel extends BaseViewModel {
 
     private DrawingEditor de = DrawingEditor.getInstance();
 
-    // fixme hyeyeon
     private String ip;
     private String port;
     private String topic;
     private String name;
     private String password;
     private boolean master;
-    private String masterName;  // fixme hyeyeon
+    private String masterName;
 
     private MQTTClient client = MQTTClient.getInstance();
     private MQTTSettingData data = MQTTSettingData.getInstance();
@@ -96,16 +96,15 @@ public class DrawingViewModel extends BaseViewModel {
 
     public DrawingViewModel() {
         setUserNum(0);
-        setUserPrint("");  // fixme hyeyeon
+        setUserPrint("");
 
-        // fixme hyeyeon
         ip = data.getIp();
         port = data.getPort();
         topic = data.getTopic();
         name = data.getName();
         password = data.getPassword();
         master = data.isMaster();
-        masterName = data.getMasterName();  // fixme hyeyeon
+        masterName = data.getMasterName();
 
         MyLog.e("kkankkan", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master + "/" + masterName);
 
@@ -118,8 +117,11 @@ public class DrawingViewModel extends BaseViewModel {
         de.setCurrentType(ComponentType.STROKE);    //fixme minj
         de.setCurrentMode(Mode.DRAW);
 
-//        client.subscribe(topic + "_audio"); // fixme jiyeon
-
+        // fixme jiyeon[0824] -  RecordThread 하나만 두기
+        recThread = new RecordThread();
+        recThread.setBufferUnitSize(2);
+//        recThread.start();
+        //
     }
 
     public void clickUndo(View view) {
@@ -139,7 +141,7 @@ public class DrawingViewModel extends BaseViewModel {
 
         DrawingFragment fragment = de.getDrawingFragment();
 
-        checkPermission(fragment.getContext()); // todo nayeon 권한 체크 앱 처음 실행 시 하도록 수정하기
+//        checkPermission(fragment.getContext()); // todo nayeon 권한 체크 앱 처음 실행 시 하도록 수정하기
 
         // todo nayeon
         DrawingViewController dvc = fragment.getBinding().drawingViewContainer;
@@ -171,7 +173,6 @@ public class DrawingViewModel extends BaseViewModel {
         Toast.makeText(fragment.getContext(), R.string.success_save, Toast.LENGTH_SHORT).show();
 
     }
-
 
     public void clickPen(View view) { // drawBtn1, drawBtn2, drawBtn3
         MyLog.d("button", "pen button click");
@@ -304,7 +305,6 @@ public class DrawingViewModel extends BaseViewModel {
     public void changeClickedButtonBackground(View view) {
         LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
 
-
         // fixme nayeon
         // preMenuButton -> 아무것도 누르지 않은 상태에서 텍스트 버튼 클릭했을 때 NULL
         // 제일 첫 번째 버튼 (얇은 펜(그리기)) 로 지정
@@ -328,46 +328,58 @@ public class DrawingViewModel extends BaseViewModel {
         }
     }
 
-    //fixme jiyeon[0428]
-    public boolean clickVoice() {
-        if (!micFlag) { // RECORD 시작
+    // fixme jiyeon[0825]
+    public boolean clickMic() {
+        if (!micFlag) { // Record Start
             micFlag = true;
-            recThread = new RecordThread();
-            recThread.setFlag(micFlag);
-            recThread.setBufferUnitSize(2);
-            new Thread(recThread).start();
+            synchronized (recThread.getAudioRecord()) {
+                recThread.getAudioRecord().notify();
+                MyLog.e("Audio", "Mic On - RecordThread Notify");
+            }
 
             return true;
-        } else {
+        } else { // Record Stop
             micFlag = false;
-            try {
-                micFlag = false;
-                recThread.setFlag(micFlag);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            recThread.setFlag(micFlag);
+            MyLog.e("Audio", "Mic  Off");
 
             return false;
         }
     }
 
-
+    // fixme jiyeon[0826]
     public int clickSpeaker() {
         speakerMode = (speakerMode + 1) % 3; // 0, 1, 2, 0, 1, 2, ...
 
         if (speakerMode == 0) { // SPEAKER MUTE
             audioManager.setSpeakerphoneOn(false);
             speakerFlag = false;
+            try {
+                if (client.getClient().isConnected()) {
+                    client.getClient().unsubscribe(client.getTopic_audio());
+                }
+            } catch (MqttException e) {
+                MyLog.e("Audio", "Topic Audio Unsubscribe error : " + e.getMessage());
+            }
+            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+                audioPlayThread.setFlag(speakerFlag);
+                audioPlayThread.getBuffer().clear();
+                MyLog.e("Audio", audioPlayThread.getUserName() + " buffer clear");
+            }
         } else if (speakerMode == 1) { // SPEAKER ON
             speakerFlag = true;
-            client.subscribe(client.getTopic() + "_audio");
+            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+                synchronized (audioPlayThread.getAudioTrack()) {
+                    audioPlayThread.getAudioTrack().notify();
+                }
+            }
+            client.subscribe(client.getTopic_audio());
         } else if (speakerMode == 2) { // SPEAKER LOUD
             audioManager.setSpeakerphoneOn(true);
         }
 
         return speakerMode;
     }
-    //
 
     public void getImageFromGallery(Fragment fragment) {
         Intent galleryIntent = new Intent(Intent.ACTION_PICK);
@@ -401,10 +413,11 @@ public class DrawingViewModel extends BaseViewModel {
                         .build())
                 .setButtonTitle("앱으로 이동").build();
 
-        KakaoLinkService.getInstance().sendDefault((MainActivity)MainActivity.context, params, new ResponseCallback<KakaoLinkResponse>() {
+        KakaoLinkService.getInstance().sendDefault(MainActivity.context, params, new ResponseCallback<KakaoLinkResponse>() {
             @Override
             public void onFailure(ErrorResult errorResult) {
-                MyLog.e("kakao", "failure " + errorResult.getErrorMessage().toString());
+                MyLog.e("kakao", "failure " + errorResult.getErrorMessage());
+                showKakaogAlert("카카오링크 에러", errorResult.getErrorMessage());
             }
 
             @Override
@@ -414,6 +427,23 @@ public class DrawingViewModel extends BaseViewModel {
         });
     }
 
+    public void showKakaogAlert(String title, String message) {
+
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
+                .setTitle(title)
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .create();
+
+        dialog.show();
+
+    }
 
     public File createImageFile(Fragment fragment) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -427,25 +457,6 @@ public class DrawingViewModel extends BaseViewModel {
         return image;
     }
 
-    public void checkPermission(Context context) {
-        PermissionListener permissionListener = new PermissionListener() {
-            @Override
-            public void onPermissionGranted() {
-                //
-            }
-            @Override
-            public void onPermissionDenied(List<String> deniedPermissions) {
-                //
-            }
-        };
-
-        TedPermission.with(context)
-                .setPermissionListener(permissionListener)
-                .setDeniedMessage(context.getResources().getString(R.string.permission_camera))
-                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO)
-                .check();
-    }
-
     private void showToastMsg(final String message) { Toast.makeText(de.getDrawingFragment().getActivity(), message, Toast.LENGTH_SHORT).show(); }
 
     public String getPhotoPath() {
@@ -456,54 +467,18 @@ public class DrawingViewModel extends BaseViewModel {
         return userNum;
     }
 
-    public MutableLiveData<String> getUserPrint() { return userPrint; }  // fixme hyeyeon
+    public MutableLiveData<String> getUserPrint() { return userPrint; }
 
     public void setUserNum(int num) {
         userNum.postValue(num + "명");
     }
 
-    public void setUserPrint(String user) { userPrint.postValue(user); }  // fixme hyeyoen
+    public void setUserPrint(String user) { userPrint.postValue(user); }
 
-//    public MutableLiveData<String> getAliveCount() { return aliveCount; }
-
-//    public MutableLiveData<String> getUserAliveCount() { return userAliveCount; }
-
-//    public void setAliveCount(String count) { aliveCount.postValue(count); }
-
-//    public void setUserAliveCount(String count) { userAliveCount.postValue(count); }
-
-    // fixme hyeyeon[1]
     @Override
-    public void onCleared() {  // todo
+    public void onCleared() {
         super.onCleared();
         Log.i("lifeCycle", "DrawingViewModel onCleared()");
-
-       /* if (client != null && client.getClient().isConnected()) {
-            // 꼭 여기서 처리 해줘야 하는 부분
-            client.getDe().removeAllDrawingData();
-            client.getUserList().clear();
-            // fixme hyeyeon[4] 강제 종료 시 불릴 경우 검사 후 해제, exit publish
-            if (!client.isExitPublish()) {
-                // fixme jiyeon
-                for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
-                    audioPlayThread.getBuffer().clear();
-                }
-                ExitMessage exitMessage = new ExitMessage(client.getMyName());
-                MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-                client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
-                client.setExitPublish(true);
-            }
-            if (client.getTh() != null) {
-                if (!(client.getTh().getState() == Thread.State.TERMINATED)) {  // todo isInterruped() false 문제 해결 -> Thead의 state 검사
-                    client.getTh().interrupt();
-                    client.unsubscribeAllTopics();
-                }
-            }
-            if (client.getUsersActionMap().size() != 0) {
-                client.getUsersActionMap().clear();
-            }
-        }*/
-
     }
 
 }

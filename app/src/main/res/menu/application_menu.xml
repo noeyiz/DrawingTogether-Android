@@ -2,17 +2,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/drawing_voice"
-        android:title="음성 대화"
-        app:showAsAction="always"
-        android:icon="@drawable/mic_slash"/>
+<!--    <item-->
+<!--        android:id="@+id/drawing_mic"-->
+<!--        android:title="마이"-->
+<!--        app:showAsAction="always"-->
+<!--        android:icon="@drawable/mic_slash"/>-->
 
-    <item
-        android:id="@+id/drawing_speaker"
-        android:title="스피커 모드"
-        app:showAsAction="always"
-        android:icon="@drawable/speakerslash"/>
+<!--    <item-->
+<!--        android:id="@+id/drawing_speaker"-->
+<!--        android:title="스피커"-->
+<!--        app:showAsAction="always"-->
+<!--        android:icon="@drawable/speakerslash"/>-->
 
     <item
         android:id="@+id/drawing_image"

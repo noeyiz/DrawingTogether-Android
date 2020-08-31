@@ -244,45 +244,6 @@
             android:background="@android:color/transparent"
             android:onClick="@{vm::joinClicked}"/>
 
-<!--        <Button-->
-<!--            android:id="@+id/local"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
-<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
-<!--            app:layout_constraintTop_toBottomOf="@id/join"-->
-<!--            app:layout_constraintBottom_toTopOf="@id/aliveThreadMode"-->
-<!--            android:layout_marginHorizontal="10dp"-->
-<!--            android:layout_marginBottom="15dp"-->
-<!--            android:text="Local Start"-->
-<!--            android:onClick="@{vm::showLocalHistory}"/>-->
-
-<!--        <CheckBox-->
-<!--            android:id="@+id/aliveThreadMode"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
-<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
-<!--            app:layout_constraintTop_toBottomOf="@id/local"-->
-<!--            app:layout_constraintBottom_toTopOf="@id/aliveBackground"-->
-<!--            android:layout_marginHorizontal="10dp"-->
-<!--            android:text="Alive Publish Mode"-->
-<!--            android:textSize="10dp"-->
-<!--            android:checked="@={vm.aliveThreadMode}" />-->
-
-<!--        <CheckBox-->
-<!--            android:id="@+id/aliveBackground"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
-<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
-<!--            app:layout_constraintTop_toBottomOf="@id/aliveThreadMode"-->
-<!--            app:layout_constraintBottom_toBottomOf="@id/view_bottom_guide"-->
-<!--            android:layout_marginHorizontal="10dp"-->
-<!--            android:text="Alive Background Service"-->
-<!--            android:textSize="10dp"-->
-<!--            android:checked="@={vm.aliveBackground}" />-->
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
 

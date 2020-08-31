@@ -23,6 +23,7 @@ public enum MonitoringRunnable implements Runnable {
         String topic_monitoring = client.getTopic_monitoring();  // 복사
 
         while (true) {
+            try {
 
                 MqttMessageFormat mqttMessageFormat = new MqttMessageFormat(client.getComponentCount());
 
@@ -32,9 +33,7 @@ public enum MonitoringRunnable implements Runnable {
 
                 Log.e("monitoring", "publish monitoring message");
 
-            try {
                 Thread.sleep(second);
-
 
             } catch (InterruptedException e) {
                 Log.e("monitoring", "monitoring thread is dead");

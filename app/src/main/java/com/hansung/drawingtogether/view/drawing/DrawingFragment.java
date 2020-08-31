@@ -2,16 +2,21 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.media.AudioManager;
 import android.media.ExifInterface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -26,7 +31,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
@@ -48,7 +52,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.hansung.drawingtogether.R;
 
-import com.hansung.drawingtogether.data.remote.model.AliveBackgroundService;
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.ComponentCount;
 import com.hansung.drawingtogether.data.remote.model.ExitType;
@@ -66,6 +69,8 @@ import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 
 
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.File;
@@ -75,12 +80,12 @@ import java.util.Objects;
 
 
 @Getter
-public class DrawingFragment extends Fragment implements MainActivity.onKeyBackPressedListener{  // fixme hyeyeon
+public class DrawingFragment extends Fragment implements MainActivity.OnRightBottomBackListener {  // fixme hyeyeon
 
     private final int PICK_FROM_GALLERY = 0;
     private final int PICK_FROM_CAMERA = 1;
 
-    Point size;
+    private Point size;
 
     private MQTTClient client = MQTTClient.getInstance();
     private MQTTSettingData data = MQTTSettingData.getInstance();  // fixme hyeyeon
@@ -93,14 +98,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     private DrawingViewModel drawingViewModel;
     private InputMethodManager inputMethodManager;
 
-
-    // fixme hyeyeon[2]
-    private DatabaseReference databaseReference;
     private ExitOnClickListener exitOnClickListener;
-    //
 
     private AliveThread aliveTh = AliveThread.getInstance();
-    private Intent intent;
 
     private ProgressDialog progressDialog;
 
@@ -112,11 +112,12 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     //private LinearLayout topToolLayout;
     //private Button doneBtn;
 
-    // fixme hyeyeon
+    private ProgressDialog exitProgressDialog;
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        ((MainActivity)context).setOnKeyBackPressedListener(this);
+        ((MainActivity)context).setOnRightBottomBackListener(this);
     }
 
     @Nullable
@@ -124,9 +125,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         MyLog.i("lifeCycle", "DrawingFragment onCreateView()");
 
-        databaseReference = FirebaseDatabase.getInstance().getReference();
         exitOnClickListener = new ExitOnClickListener();
-        exitOnClickListener.setBackKeyPressed(false);
+        exitOnClickListener.setRightBottomBackPressed(false);
 
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
@@ -154,16 +154,14 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         size = new Point();
         display.getSize(size);
+        Log.e("drawing view size in fragment", size.x + ", " + size.y * 0.83);
 
         // 디바이스 화면 넓이의 3배 = 드로잉뷰 넓이
-        ViewGroup.LayoutParams layoutParams = binding.drawingView.getLayoutParams();
+        //ViewGroup.LayoutParams layoutParams = binding.drawingView.getLayoutParams();
         //layoutParams.width = size.x*3;
-        layoutParams.width = size.x;
+        //layoutParams.width = size.x;
         //layoutParams.height = size.y; //****
-
-        binding.drawingView.setLayoutParams(layoutParams);
-
-        Log.e("drawing view size in fragment", size.x + ", " + size.y * 0.83);
+        //binding.drawingView.setLayoutParams(layoutParams);
 
         //undo, redo 버튼 초기화
         if(de.getHistory().size() == 0)
@@ -181,11 +179,8 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         }
 
         if(de.getBackgroundImage() != null) {   //backgroundImage 다시 붙이기
-            binding.backgroundView.removeAllViews();
-            ImageView imageView = new ImageView(this.getContext());
-            imageView.setLayoutParams(new LinearLayout.LayoutParams(this.getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
-            imageView.setImageBitmap(de.getBackgroundImage());
-            binding.backgroundView.addView(imageView);
+            // fixme jiyeon[0825]
+            binding.backgroundView.setImage(de.getBackgroundImage());
         }
         Log.e("pre pub join message", this.getSize().x + ", " + this.getSize().y);
 
@@ -207,8 +202,9 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             if(client.isMaster()) {
                 Log.e("monitoring", "mqtt client class init func. check master. i'am master.");
                 client.setComponentCount(new ComponentCount(client.getTopic()));
-                Thread monitoringThread = new Thread(MonitoringRunnable.getInstance());
+                Thread monitoringThread = new Thread(monitoringRunnable);
                 monitoringThread.start();
+                client.setMonitoringThread(monitoringThread);
             }
 
 //            intent = new Intent(MainActivity.context, AliveBackgroundService.class);
@@ -280,11 +276,10 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         binding.setLifecycleOwner(this);
 
         setHasOptionsMenu(true);
-        drawingViewModel.checkPermission(getContext());
 
-        ((MainActivity)getActivity()).setOnBackListener(new MainActivity.OnBackListener() {
+        ((MainActivity)getActivity()).setOnLeftTopBackListener(new MainActivity.OnLeftTopBackListener() {
             @Override
-            public void onBack() {
+            public void onLeftTopBackPressed() {
                 exit();
             }
         });
@@ -375,15 +370,16 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         });
     }
 
-    // fixme hyeyeon[2]-messageArrived 콜백에서 처리 -> 나가기 버튼 누른 후 바로 처리하도록 변경
     public void exit() { // 좌측 상단 뒤로가기 버튼
-        MyLog.e("why", "exit");
-        exitOnClickListener.setBackKeyPressed(false);
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        MyLog.e("back", "left top back pressed");
+
+        exitOnClickListener.setRightBottomBackPressed(false);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.context);
         if (client.isMaster()) {
-            builder.setMessage(R.string.master_exit);
+            builder.setMessage("회의방을 종료하시겠습니까?");
         } else {
-            builder.setMessage(R.string.joiner_exit);
+            builder.setMessage("회의방을 나가시겠습니까?");
         }
         builder.setPositiveButton(android.R.string.ok, exitOnClickListener);
         builder.setNeutralButton("저장 후 종료", new DialogInterface.OnClickListener() { // fixme nayeon
@@ -404,20 +400,13 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         builder.create().show();
     }
 
-    private void setProgressDialog() {
-        progressDialog = new ProgressDialog(MainActivity.context);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.setTitle("오류 발생");
-        progressDialog.setMessage("로그 파일 업로드 중");
-        progressDialog.setCancelable(false);
-    }
-
     @Override
-    public void onBackKey() { // 디바이스 자체 뒤로가기 버튼
-        MyLog.e("why", "onBackKey");
-        exitOnClickListener.setBackKeyPressed(true);
-        MyLog.e("kkankkan", "드로잉프레그먼트 onbackpressed");
-        AlertDialog dialog = new AlertDialog.Builder(getContext())
+    public void onRightBottomBackPressed() {  // 우측 하단 뒤로가기 버튼
+        MyLog.e("back", "right bottom back pressed");
+
+        exitOnClickListener.setRightBottomBackPressed(true);
+
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
                 .setMessage("앱을 종료하시겠습니까?")
                 .setPositiveButton(android.R.string.ok, exitOnClickListener)
                 .setNeutralButton("저장 후 종료", new DialogInterface.OnClickListener() { // fixme nayeon
@@ -439,13 +428,32 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
     @Setter
     class ExitOnClickListener implements DialogInterface.OnClickListener {
-        private boolean backKeyPressed;
+
+        private boolean rightBottomBackPressed;
 
         @Override
         public void onClick(DialogInterface dialog, int which) {
-            logger.uploadLogFile(ExitType.NORMAL); // fixme nayeon
 
-            MyLog.e("why", "exitOnClickListener : " + backKeyPressed);
+            showExitProgressDialog();
+
+            ConnectivityManager cm = (ConnectivityManager) MainActivity.context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm.getActiveNetwork() == null) {
+                Log.e("네트워크", "network disconnected");
+
+                if (rightBottomBackPressed) {
+                    getActivity().finish();
+                    android.os.Process.killProcess(android.os.Process.myPid());
+                    System.exit(10);
+                    return;
+                }
+                else {
+                    drawingViewModel.back();
+                    return;
+                }
+            }
+            else if (cm.getActiveNetwork() != null && client.getClient().isConnected()){  // fixme hyen[0825]
+                logger.uploadLogFile(ExitType.NORMAL); // fixme nayeon
+            }
 
             String mode = "";
             if (data.isMaster()) {
@@ -462,14 +470,20 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 public void completeExit(DatabaseError error) {
 
                     if (error != null) {
-                        showDatabaseErrorAlert(MainActivity.context, "데이터베이스 오류 발생", error.getMessage(), backKeyPressed);
+                        exitProgressDialog.dismiss();
+
+                        showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage(), rightBottomBackPressed);
                         MyLog.e("transaction", error.getDetails());
                         return;
                     }
 
-                    client.exitTask();
-                    if (backKeyPressed) {
+                    if (client.getClient().isConnected()) {
+                        client.exitTask();
+                    }
+                    if (rightBottomBackPressed) {
                         getActivity().finish();
+                        android.os.Process.killProcess(android.os.Process.myPid());
+                        System.exit(10);
                         return;
                     }
                     else {
@@ -482,18 +496,22 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         }
     }
 
-    public void showDatabaseErrorAlert(Context context, String title, String message, final boolean backPressed) {
+    public void showDatabaseErrorAlert(String title, String message, final boolean rightBottomBackPressed) {
 
-        AlertDialog dialog = new AlertDialog.Builder(context)
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
                 .setTitle(title)
                 .setMessage(message)
                 .setCancelable(false)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        client.exitTask();
-                        if (backPressed) {
+                        if (client.getClient().isConnected()) {
+                            client.exitTask();
+                        }
+                        if (rightBottomBackPressed) {
                             getActivity().finish();
+                            android.os.Process.killProcess(android.os.Process.myPid());
+                            System.exit(10);
                             return;
                         }
                         else {
@@ -505,6 +523,21 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 .create();
 
         dialog.show();
+    }
+
+    private void setProgressDialog() {
+        progressDialog = new ProgressDialog(MainActivity.context);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setTitle("오류 발생");
+        progressDialog.setMessage("로그 파일 업로드 중");
+        progressDialog.setCancelable(false);
+    }
+
+    public void showExitProgressDialog() {
+        exitProgressDialog = new ProgressDialog(MainActivity.context, R.style.MyProgressDialogStyle);
+        exitProgressDialog.setMessage("Loading...");
+        exitProgressDialog.setCanceledOnTouchOutside(false);
+        exitProgressDialog.show();
     }
 
     @Override
@@ -577,16 +610,16 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 //        client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
     }
 
-    private void setBackgroundImage(Bitmap imageBitmap) {
-        binding.backgroundView.removeAllViews(); // fixme nayeon 배경이미지 하나
-
-        de.setBackgroundImage(imageBitmap);
-
-        WarpingControlView imageView = new WarpingControlView(getContext());
-        imageView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        imageView.setImage(de.getBackgroundImage()); // invalidate
-        client.getBinding().backgroundView.addView(imageView);
-    }
+//    private void setBackgroundImage(Bitmap imageBitmap) {
+//        binding.backgroundView.removeAllViews(); // fixme nayeon 배경이미지 하나
+//
+//        de.setBackgroundImage(imageBitmap);
+//
+//        WarpingControlView imageView = new WarpingControlView(getContext());
+//        imageView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+//        imageView.setImage(de.getBackgroundImage()); // invalidate
+//        client.getBinding().backgroundView.addView(imageView);
+//    }
 
     @Override
     public void onResume() {
@@ -607,24 +640,24 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         switch(item.getItemId()) {
 
             // fixme jiyeon[0428]
-            case R.id.drawing_voice:
-                boolean click = drawingViewModel.clickVoice();
-                if (click) {
-                    item.setIcon(R.drawable.mic);
-                } else {
-                    item.setIcon(R.drawable.mic_slash);
-                }
-                break;
-            case R.id.drawing_speaker:
-                int mode = drawingViewModel.clickSpeaker();
-                if (mode == 0) { // speaker off
-                    item.setIcon(R.drawable.speakerslash);
-                } else if (mode == 1) { // speaker on
-                    item.setIcon(R.drawable.speaker1);
-                } else if (mode == 2) { // speaker loud
-                    item.setIcon(R.drawable.speaker3);
-                }
-                break;
+//            case R.id.drawing_mic:
+//                boolean click = drawingViewModel.clickMic();
+//                if (click) {
+//                    item.setIcon(R.drawable.mic);
+//                } else {
+//                    item.setIcon(R.drawable.mic_slash);
+//                }
+//                break;
+//            case R.id.drawing_speaker:
+//                int mode = drawingViewModel.clickSpeaker();
+//                if (mode == 0) { // speaker off
+//                    item.setIcon(R.drawable.speakerslash);
+//                } else if (mode == 1) { // speaker on
+//                    item.setIcon(R.drawable.speaker1);
+//                } else if (mode == 2) { // speaker loud
+//                    item.setIcon(R.drawable.speaker3);
+//                }
+//                break;
             //
             case R.id.gallery:
                 drawingViewModel.getImageFromGallery(DrawingFragment.this);
@@ -636,7 +669,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 //                drawingViewModel.clickSearch(getView());
 //                break;
             case R.id.drawing_invite:
-                drawingViewModel.clickInvite();  // fixme hyeyeon
+                drawingViewModel.clickInvite();
                 break;
             case R.id.drawing_save:
                 drawingViewModel.clickSave();
@@ -649,7 +682,7 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
 
     // fixme jiyeon
     private Bitmap rotateBitmap(Bitmap bitmap, String path) {
-        MyLog.e("image", "rotate bitmap start");
+        MyLog.e("Image", "rotate bitmap start");
         ExifInterface exif = null;
         try {
             exif = new ExifInterface(path);
@@ -670,11 +703,11 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
                 matrix.setRotate(-90);
                 break;
             default:
-                MyLog.e("image", "rotate bitmap end 1");
+                MyLog.e("Image", "rotate bitmap end 1");
                 return bitmap;
         }
         try {
-            MyLog.e("image", "rotate bitmap end 2");
+            MyLog.e("Image", "rotate bitmap end 2");
             Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             bitmap.recycle();
             return bmRotated;
@@ -752,9 +785,6 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         return BitmapFactory.decodeByteArray(bitmapArray, 0, bitmapArray.length, options);
     }
 
-    // fixme hyeyeon[1]
-
-
     @Override
     public void onStart() {
         super.onStart();
@@ -762,18 +792,18 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
     }
 
     @Override
-    public void onPause() {  // todo
+    public void onPause() {
         super.onPause();
         MyLog.i("lifeCycle", "DrawingFragment onPause()");
     }
 
     @Override
-    public void onDestroyView() {  // todo
+    public void onDestroyView() {
         super.onDestroyView();
         MyLog.i("lifeCycle", "DrawingFragment onDestroyView()");
-        if (exitOnClickListener != null) {
-            exitOnClickListener = null;
-        }
+//        if (exitOnClickListener != null) {
+//            exitOnClickListener = null;
+//        }
     }
 
     @Override
@@ -781,20 +811,48 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
         super.onDestroy();
         MyLog.i("lifeCycle", "DrawingFragment onDestroy()");
 
-//        if (data.isAliveThreadMode() && data.isAliveBackground()) {
-//            MainActivity.context.stopService(intent);
-//        }
+        // 꼭 여기서 처리 해줘야 하는 부분
+        client.getDe().removeAllDrawingData();
+        client.getUserList().clear();
+        client.getTh().interrupt();
+        client.setIsMid(true);
 
-        if (client != null && client.getClient().isConnected()) {
-            // 꼭 여기서 처리 해줘야 하는 부분
-            client.getDe().removeAllDrawingData();
-            client.getUserList().clear();
+        // fixme jiyeon[0826] - 오디오 처리
+        if (drawingViewModel.isMicFlag()) {
+            drawingViewModel.getRecThread().setFlag(false);
+        }
+//        drawingViewModel.getRecThread().stopRecording();
+//        drawingViewModel.getRecThread().interrupt();
 
+        try {
+            if (client.getClient().isConnected()) {
+                client.getClient().unsubscribe(client.getTopic_audio());
+            }
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+        for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+            if (drawingViewModel.isSpeakerFlag()) {
+                audioPlayThread.setFlag(false);
+                AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
+                audioManager.setSpeakerphoneOn(false);
+            }
+
+//            audioPlayThread.stopPlaying();
+            synchronized (audioPlayThread.getBuffer()) {
+                audioPlayThread.getBuffer().clear();
+            }
+//            audioPlayThread.interrupt();
+        }
+        client.getAudioPlayThreadList().clear();
+        //
+
+        if (client.getClient().isConnected()) {
             if (!client.isExitCompleteFlag()) {
                 MyLog.e("exit", "비정상 종료");
                 client.exitTask();
             }
-
             try {
                 client.getClient().disconnect();
                 client.getClient().close();
@@ -803,53 +861,17 @@ public class DrawingFragment extends Fragment implements MainActivity.onKeyBackP
             } catch (MqttException e) {
                 e.printStackTrace();
             }
+        }
 
-//            if (databaseReference != null) {  // todo hyeyeon - code 정리
-//                // 비정상 종료 대비 ( task 날리기 ,,, )
-//                databaseReference.child(client.getTopic()).runTransaction(new Transaction.Handler() {
-//                    @NonNull
-//                    @Override
-//                    public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-//                        if (mutableData.getValue() != null && client.isMaster()) {
-//                            mutableData.setValue(null);
-//                        }
-//                        if (mutableData.getValue() != null && !client.isMaster()) {
-//                            mutableData.child("username").child(client.getMyName()).setValue(null);
-//                        }
-//                        Log.e("transaction", "transaction success");
-//                        return Transaction.success(mutableData);
-//                    }
-//
-//                    @Override
-//                    public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
-//                        Log.e("transaction", "transaction complete");
-//                        if (databaseError != null) {
-//                            Log.e("transaction", databaseError.getDetails());
-//                            return;
-//                        }
-//                        if (client.isMaster()) {
-//                            CloseMessage closeMessage = new CloseMessage(client.getMyName());
-//                            MqttMessageFormat messageFormat = new MqttMessageFormat(closeMessage);
-//                            client.publish(client.getTopic() + "_delete", JSONParser.getInstance().jsonWrite(messageFormat)); // fixme hyeyeon
-//                            client.setExitPublish(true);
-//                            client.exitTask();
-//                        } else {
-//                            ExitMessage exitMessage = new ExitMessage(client.getMyName());
-//                            MqttMessageFormat messageFormat = new MqttMessageFormat(exitMessage);
-//                            client.publish(client.getTopic() + "_exit", JSONParser.getInstance().jsonWrite(messageFormat));
-//                            client.setExitPublish(true);
-//                            client.exitTask();
-//                        }
-//                    }
-//                });
-//            }
+        if (exitProgressDialog != null && exitProgressDialog.isShowing()) {
+            exitProgressDialog.dismiss();
         }
     }
 
     @Override
-    public void onDetach() {  // todo
+    public void onDetach() {
         super.onDetach();
         MyLog.i("lifeCycle", "DrawingFragment onDetach()");
-        ((MainActivity)getContext()).setOnKeyBackPressedListener(null);
+        ((MainActivity)getContext()).setOnRightBottomBackListener(null);
     }
 }

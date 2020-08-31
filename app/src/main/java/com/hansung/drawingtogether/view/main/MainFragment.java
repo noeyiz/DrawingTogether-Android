@@ -85,24 +85,45 @@ public class MainFragment extends Fragment {
 
         ((MainActivity)getActivity()).setToolbarInvisible();
 
+        mainViewModel.checkPermission(mainActivity.getApplicationContext());
+
         return binding.getRoot();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        MyLog.i("lifeCycle", "MainFragment onStart()");
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        MyLog.i("lifeCycle", "MainFragment onPause()");
     }
 
-    // fixme hyeyeon[1]
     @Override
-    public void onPause() {  // todo
+    public void onPause() {
         super.onPause();
         MyLog.i("lifeCycle", "MainFragment onPause()");
     }
 
     @Override
-    public void onDestroyView() {  // todo
+    public void onStop() {
+        super.onStop();
+        MyLog.i("lifeCycle", "MainFragment onStop()");
+    }
+
+    @Override
+    public void onDestroyView() {
         super.onDestroyView();
         MyLog.i("lifeCycle", "MainFragment onDestroyView()");
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        MyLog.i("lifeCycle", "MainFragment onDestroy()");
+    }
+
 }
