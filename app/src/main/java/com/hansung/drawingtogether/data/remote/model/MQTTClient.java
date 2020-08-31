@@ -127,6 +127,8 @@ public enum MQTTClient {
     private int networkTry = 0;
     //
 
+    private MqttConnectOptions connOpts;
+
     public static MQTTClient getInstance() {
         return INSTANCE;
     }
@@ -150,7 +152,7 @@ public enum MQTTClient {
             AudioPlayThread audioPlayThread = new AudioPlayThread();
             audioPlayThread.setUserName(masterName);
             audioPlayThread.setBufferUnitSize(2);
-//            audioPlayThread.start();
+            audioPlayThread.start();
             audioPlayThreadList.add(audioPlayThread);
             MyLog.e("Audio", masterName + " 추가 후 : " + audioPlayThreadList.size());
         }
@@ -196,7 +198,7 @@ public enum MQTTClient {
             client = new MqttClient(BROKER_ADDRESS, ("*" + name + "_" + topic + "_Android"), new MemoryPersistence());
             client2 = new MqttClient(BROKER_ADDRESS, MqttClient.generateClientId(), new MemoryPersistence());
 
-            MqttConnectOptions connOpts = new MqttConnectOptions();
+            connOpts = new MqttConnectOptions();
 
             connOpts.setCleanSession(true);
             connOpts.setKeepAliveInterval(1000);
@@ -438,7 +440,7 @@ public enum MQTTClient {
                                 AudioPlayThread audioPlayThread = new AudioPlayThread();
                                 audioPlayThread.setUserName(name);
                                 audioPlayThread.setBufferUnitSize(2);
-//                                audioPlayThread.start();
+                                audioPlayThread.start();
                                 audioPlayThreadList.add(audioPlayThread);
                                 MyLog.e("Audio", name + " 추가 후 : " + audioPlayThreadList.size());
 
@@ -544,7 +546,7 @@ public enum MQTTClient {
                                 AudioPlayThread audioPlayThread = new AudioPlayThread();
                                 audioPlayThread.setUserName(name);
                                 audioPlayThread.setBufferUnitSize(2);
-//                                audioPlayThread.start();
+                                audioPlayThread.start();
                                 audioPlayThreadList.add(audioPlayThread);
                                 MyLog.e("Audio", name + " 추가 후 : " + audioPlayThreadList.size());
 
