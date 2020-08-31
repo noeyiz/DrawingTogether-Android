@@ -123,8 +123,8 @@ public enum Logger {
 
         if(exitType == ExitType.ABNORMAL) {
             new ErrorAlertDialogThread().start(); // 오류 메시지를 보여주는 알림창 띄우기
-            // android.os.Process.killProcess(android.os.Process.myPid());
-            // System.exit(10);
+            //android.os.Process.killProcess(android.os.Process.myPid());
+            //System.exit(10);
         }
     }
 

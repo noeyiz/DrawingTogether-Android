@@ -53,9 +53,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.hansung.drawingtogether.R;
 
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
+import com.hansung.drawingtogether.data.remote.model.ComponentCount;
 import com.hansung.drawingtogether.data.remote.model.ExitType;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.data.remote.model.MonitoringRunnable;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
@@ -105,6 +107,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     private Toolbar toolbar;
     private TextView title;
 
+    private MonitoringRunnable monitoringRunnable = MonitoringRunnable.getInstance();
+
     //private LinearLayout topToolLayout;
     //private Button doneBtn;
 
@@ -127,6 +131,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
         JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
+        Log.e("monitoring", "check parser init");
 
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 
@@ -193,6 +198,35 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             Thread th = new Thread(aliveTh);
             th.start();
             client.setThread(th);
+
+            if(client.isMaster()) {
+                Log.e("monitoring", "mqtt client class init func. check master. i'am master.");
+                client.setComponentCount(new ComponentCount(client.getTopic()));
+                Thread monitoringThread = new Thread(monitoringRunnable);
+                monitoringThread.start();
+                client.setMonitoringThread(monitoringThread);
+            }
+
+//            intent = new Intent(MainActivity.context, AliveBackgroundService.class);
+//            MainActivity.context.startService(intent);
+
+            /*if (data.isAliveThreadMode() && !data.isAliveBackground()) {
+                MyLog.e("alive", "DrawingFragment: " + data.isAliveThreadMode());
+                // fixme hyeyeon
+                aliveTh.setSecond(2000);
+                aliveTh.setCount(0);
+                Thread th = new Thread(aliveTh);
+                th.start();
+                client.setThread(th);
+            }
+            else if (data.isAliveThreadMode() && data.isAliveBackground()) {
+                intent = new Intent(MainActivity.context, AliveBackgroundService.class);
+                MainActivity.context.startService(intent);
+            }
+            else {
+                MyLog.e("alive", "alive publish 안함");
+            }
+            MyLog.e("alive", "DrawingFragment aliveBackground: " + data.isAliveBackground());*/
 
         }
 

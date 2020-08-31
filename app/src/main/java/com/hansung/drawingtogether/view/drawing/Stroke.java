@@ -1,5 +1,6 @@
 package com.hansung.drawingtogether.view.drawing;
 
+import android.graphics.Bitmap;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -14,12 +15,13 @@ import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 
 public class Stroke extends DrawingComponent {
+    DrawingEditor de = DrawingEditor.getInstance();
 
     @Override
     public void draw(Canvas canvas) {
         //Log.i("drawing", this.id + " draw()");
 
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        /*Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setStrokeWidth(this.strokeWidth);
         try {
             paint.setColor(Color.parseColor(this.strokeColor));
@@ -29,7 +31,7 @@ public class Stroke extends DrawingComponent {
         paint.setAlpha(this.strokeAlpha);
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);
-        paint.setStyle(Paint.Style.STROKE);
+        paint.setStyle(Paint.Style.STROKE);*/
 
         //fixme minj
         //Point from = (this.preSize == 0) ? this.points.get(preSize) : this.points.get(preSize-1);
@@ -51,7 +53,7 @@ public class Stroke extends DrawingComponent {
         //Log.i("drawing", this.points.toString());
         //Log.i("drawing", "(" + from.x * xRatio + ", " +  from.y * yRatio + ") -> (" +  to.x * xRatio + ", " + to.y * yRatio + ")");
 
-        Point from, to;
+        /*Point from, to;
         if(this.points.size() == 1) {
             from = this.points.get(0);
             to = this.points.get(0);
@@ -73,6 +75,15 @@ public class Stroke extends DrawingComponent {
                     e.printStackTrace();
                 }
             }
+        }*/
+        //de.clearCurrentBitmap();
+        //canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR); // Clear the canvas with a transparent color
+        if(canvas == de.getMyCurrentCanvas()) {
+            de.clearMyCurrentBitmap();
+            drawComponent(canvas);
+        } else if(canvas == de.getCurrentCanvas()) {
+            de.clearCurrentBitmap();
+            de.drawOthersCurrentComponent(null);
         }
     }
 

@@ -1,31 +1,17 @@
 package com.hansung.drawingtogether.data.remote.model;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.app.Service;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Point;
-import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.MultiAutoCompleteTextView;
 import android.widget.Toast;
 
-import com.google.firebase.components.Component;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.drawing.AudioPlayThread;
@@ -98,6 +84,7 @@ public enum MQTTClient {
     private String topic_audio; // fixme jiyeon
     private String topic_image; // fixme jiyeon[0813]
     private String topic_alive;
+    private String topic_monitoring;
 
     private int aliveCount = 5;
 
@@ -122,6 +109,10 @@ public enum MQTTClient {
     private boolean exitCompleteFlag = false; // fixme nayeon
 
     private String curMqttMsg;
+
+    private ComponentCount componentCount;
+    private Thread monitoringThread;
+
 
     // fixme hyen[0825]
     private int networkTry = 0;
@@ -156,6 +147,9 @@ public enum MQTTClient {
             audioPlayThreadList.add(audioPlayThread);
             MyLog.e("Audio", masterName + " 추가 후 : " + audioPlayThreadList.size());
         }
+
+
+
         User user = new User(myName, 0, MotionEvent.ACTION_UP, false);
         userList.add(user); // 생성자에서 사용자 리스트에 내 이름 추가
 
@@ -173,6 +167,8 @@ public enum MQTTClient {
         topic_alive = this.topic + "_alive";
         topic_audio = this.topic + "_audio";
         topic_image = this.topic + "_image";
+
+        topic_monitoring = "monitoring";
 
         this.drawingViewModel = drawingViewModel;
         this.drawingViewModel.setUserNum(userList.size());
@@ -292,6 +288,7 @@ public enum MQTTClient {
             MyLog.e("kkankkan", "exitTask 시작");
 
             th.interrupt();
+            monitoringThread.interrupt(); // fixme nayeon
 
             if (isMaster()) {
                 CloseMessage closeMessage = new CloseMessage(myName);
@@ -660,12 +657,30 @@ public enum MQTTClient {
                     //MyLog.i("drawMsg", msg);
                     MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
+                    // 중간 참여자가 입장했을 때 처리
                     if(de.isMidEntered() && (messageFormat.getAction() != null && messageFormat.getAction() != MotionEvent.ACTION_UP)) { // fixme nayeon - getAction == null
                         //MyLog.i("drawing", "mid entering");
                         if(/*getDrawingView().isIntercept() || */(de.isIntercept() && (de.getCurrentComponent(messageFormat.getUsersComponentId()) == null)))
                             return;
                     }
 
+
+                    Log.e("> monitoring", "before check component count");
+                    Log.e("> monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
+                            + ", text mode = " + messageFormat.getTextMode());
+
+                    // 컴포넌트 개수 저장
+                    if( (messageFormat.getAction() != null && messageFormat.getAction() == MotionEvent.ACTION_DOWN)
+                            || messageFormat.getMode() == Mode.TEXT || messageFormat.getMode() == Mode.ERASE) {
+                        Log.e("< monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
+                        + ", text mode = " + messageFormat.getTextMode());
+                        checkComponentCount(messageFormat.getMode(), messageFormat.getType(), messageFormat.getTextMode());
+                    }
+
+                    Log.e("< monitoring", "after check component count");
+
+
+                    // 컴포넌트 처리
                     if (messageFormat.getMode() == Mode.TEXT) {  //TEXT 모드일 경우, username 이 다른 경우만 task 생성
                         if (!messageFormat.getUsername().equals(de.getMyUsername())) {
                             MyLog.i("drawing", "username = " + messageFormat.getUsername() + ", text id = " + messageFormat.getTextAttr().getId() + ", mode = " + messageFormat.getMode() + ", text mode = " + messageFormat.getTextMode());
@@ -735,6 +750,10 @@ public enum MQTTClient {
                     binding.backgroundView.setCancel(true);
                     binding.backgroundView.setImage(de.getBackgroundImage());
                     MyLog.e("Image", "set image");
+
+                    if(isMaster()) { // fixme nayeon : 전송한 이미지 개수 카운팅 (모니터링)
+                        componentCount.increaseImage();
+                    }
                 }
             }
 
@@ -801,9 +820,48 @@ public enum MQTTClient {
         return false;
     }
 
+    public void checkComponentCount(Mode mode, ComponentType type, TextMode textMode) {
+        Log.e("monitoring", "execute check component count func.");
+
+
+        // 마스터만 컴포넌트 개수 카운팅
+        if(!isMaster()) {
+            Log.e("monitoring", "check component count func. i'am not master.");
+            return;
+        }
+
+        if(mode == Mode.TEXT && textMode == TextMode.CREATE) {
+            Log.e("monitoring", "check component count func. text count increase.");
+
+            componentCount.increaseText();
+            return;
+        }
+
+        if(mode != Mode.DRAW) {
+            Log.e("monitoring", "check component count func. mode is not DRAW");
+            return;
+        }
+        Log.e("monitoring", "check component count func. mode is DRAW");
+
+
+        switch (type) {
+            case STROKE:
+                componentCount.increaseStroke();
+                break;
+            case RECT:
+                componentCount.increaseRect();
+                break;
+            case OVAL:
+                componentCount.increaseOval();
+                break;
+        }
+    }
+
     public void doInBack() {
 
         th.interrupt();
+        monitoringThread.interrupt(); // fixme nayeon
+
 
         isMid = true;
         de.removeAllDrawingData();
@@ -962,6 +1020,12 @@ public enum MQTTClient {
         this.th = th;
     }
 
+    public void setMonitoringThread(Thread monitoringThread) {
+        this.monitoringThread = monitoringThread;
+    }
+
+    public void setComponentCount(ComponentCount componentCount) { this.componentCount = componentCount; }
+
     public void setIsMid(boolean mid) {
         this.isMid = mid;
     }
@@ -1001,15 +1065,8 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
 
         if(de.getMyUsername().equals(username) && !mode.equals(Mode.DRAW)) { return null; }
 
-        if(mode == Mode.DRAW) {
-            try{
-                draw(message);
-            } catch(NullPointerException e) {
-                e.printStackTrace();
-            }
-        } else {
-            publishProgress(message);
-        }
+        publishProgress(message);
+
         return null;
     }
 
@@ -1020,21 +1077,10 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
 
         switch(mode) {
             case DRAW:
-                if(action == MotionEvent.ACTION_UP) {
-                    if(de.getMyUsername().equals(username)) {
-                        client.getDrawingView().addPoint(dComponent, point);
-                        client.getDrawingView().doInDrawActionUp(dComponent, de.getMyCanvasWidth(), de.getMyCanvasHeight());
-                        if(de.isIntercept()) {
-                            client.getDrawingView().setIntercept(true);
-                            MyLog.i("intercept", "drawingview true (MQTT Client)");
-                        }
-                    } else {
-                        MyLog.i("sendThread", "draw up");
-                        client.getDrawingView().addPointAndDraw(dComponent, point);
-                        client.getDrawingView().redrawShape(dComponent);
-                        client.getDrawingView().doInDrawActionUp(dComponent, myCanvasWidth, myCanvasHeight);
-                    }
-                    client.updateUsersAction(username, action);
+                try{
+                    draw(message);
+                } catch(NullPointerException e) {
+                    e.printStackTrace();
                 }
 
                 break;
@@ -1056,10 +1102,10 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
 
                 if(message.getAction() == null) {
                     /*if(message.getIsSelected()) {
-                        de.clearSelectedBitmap();
+                        de.clearMyCurrentBitmap();
                         de.drawSelectedComponentBorder(selectedComponent, de.getSelectedBorderColor());
                     } else {
-                        de.clearSelectedBitmap();
+                        de.clearMyCurrentBitmap();
                     }*/
                 } else {
                     switch(message.getAction()) {
@@ -1067,27 +1113,32 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                             MyLog.i("drawing", "other selected true");
                             break;
                         case MotionEvent.ACTION_MOVE:
-                            de.moveSelectedComponent(selectedComponent, message.getMoveX(), message.getMoveY());
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            de.clearSelectedBitmap();
-                            //de.drawSelectedComponentBorder(selectedComponent, de.getSelectedBorderColor());
-                            de.updateSelectedComponent(selectedComponent, myCanvasWidth, myCanvasHeight);
-                            de.updateDrawingComponents(selectedComponent);
+                            if(message.getMoveSelectPoints().size() == 0) break;
+                            for(Point point : message.getMoveSelectPoints()) {
+                                de.moveSelectedComponent(selectedComponent, point.x, point.y);
+                            }
+                            de.clearMyCurrentBitmap();
+                            de.updateSelectedComponent(selectedComponent);
                             de.clearDrawingBitmap();
                             de.drawAllDrawingComponents();
-                            de.drawAllCurrentStrokes();
+                            break;
+                        case MotionEvent.ACTION_UP:
+                            de.clearMyCurrentBitmap();
+                            //de.drawSelectedComponentBorder(selectedComponent, de.getSelectedBorderColor());
+                            de.splitPointsOfSelectedComponent(selectedComponent, myCanvasWidth, myCanvasHeight);
+                            de.updateSelectedComponent(selectedComponent);
+                            de.clearDrawingBitmap();
+                            de.drawAllDrawingComponents();
 
-                            de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
                             de.clearUndoArray();
 
                             if(de.getCurrentMode() == Mode.SELECT && client.getDrawingView().isSelected()) {
-                                de.drawAllPreSelectedComponents();
-                                de.drawAllPostSelectedComponents();
+                                de.setPreSelectedComponentsBitmap();
+                                de.setPostSelectedComponentsBitmap();
 
-                                de.clearSelectedBitmap();
-                                de.drawSelectedBitmaps();
-                                de.getSelectedComponent().drawComponent(de.getSelectedCanvas());
+                                de.clearMyCurrentBitmap();
+                                de.drawUnselectedComponents();
+                                de.getSelectedComponent().drawComponent(de.getMyCurrentCanvas());
                                 de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
                             }
 
@@ -1184,32 +1235,18 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
 
                 client.updateUsersAction(username, action);
 
-            /* if(dComponent.getType() != ComponentType.STROKE)
-                de.addCurrentShapes(dComponent);*/
-                //Log.i("drawing", "currentShapes.size() = " + de.getCurrentShapes().size());
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (de.getMyUsername().equals(username)) {
                     for (Point point : message.getMovePoints()) {
                         client.getDrawingView().addPoint(dComponent, point);
-                        if(dComponent.getType() == ComponentType.STROKE) {
-                            Canvas canvas = new Canvas(de.getLastDrawingBitmap());
-                            dComponent.draw(canvas);
-                        }
                     }
                 } else {
                     dComponent.calculateRatio(myCanvasWidth, myCanvasHeight);
 
                     MyLog.i("sendThread", "points[] = " + message.getMovePoints().toString());
                     for(Point point : message.getMovePoints()) {
-                        if(dComponent.getType() == ComponentType.STROKE) {
-                            client.getDrawingView().addPointAndDraw(dComponent, point);
-                            if(de.getCurrentMode() == Mode.SELECT) {
-                                de.addPostSelectedComponent(dComponent);
-                            }
-                        } else {
-                            client.getDrawingView().addPoint(dComponent, point);
-                        }
+                         client.getDrawingView().addPointAndDraw(dComponent, point, de.getCurrentCanvas());
                     }
                 }
 
@@ -1220,13 +1257,30 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 if(de.getCurrentMode() == Mode.SELECT) {
                     de.addPostSelectedComponent(dComponent);
                 }
-                publishProgress(message);
+
+                if(de.getMyUsername().equals(username)) {
+                    client.getDrawingView().addPoint(dComponent, point);
+                    client.getDrawingView().doInDrawActionUp(dComponent, de.getMyCanvasWidth(), de.getMyCanvasHeight());
+                    if(de.isIntercept()) {
+                        client.getDrawingView().setIntercept(true);
+                        MyLog.i("intercept", "drawingview true (MQTT Client)");
+                    }
+                } else {
+                    MyLog.i("sendThread", "draw up");
+                    client.getDrawingView().addPointAndDraw(dComponent, point, de.getCurrentCanvas());
+                    //client.getDrawingView().redrawShape(dComponent);
+                    client.getDrawingView().doInDrawActionUp(dComponent, myCanvasWidth, myCanvasHeight);
+
+                    de.clearCurrentBitmap();
+                    de.drawOthersCurrentComponent(dComponent.getUsername());
+                    dComponent.drawComponent(de.getBackCanvas());
+                }
+                client.updateUsersAction(username, action);
+
                 break;
         }
 
-        //client.updateUsersAction(username, action);
-
-        if(de.getMyUsername().equals(username)) return;
+        //if(de.getMyUsername().equals(username)) return;
 
     }
 
@@ -1388,7 +1442,6 @@ class MidTask extends AsyncTask<Void, Void, Void> {
             client.getBinding().redoBtn.setEnabled(true);
 
         de.drawAllDrawingComponentsForMid();
-        de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
         de.addAllTextViewToFrameLayoutForMid();
         client.getDrawingView().invalidate();
 

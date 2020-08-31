@@ -658,7 +658,7 @@
                     android:background="@android:color/transparent"
                     android:onClick="@{vm::clickUndo}"
                     android:padding="8dp"
-                    android:scaleType="centerCrop"
+                    android:scaleType="centerInside"
                     android:src="@drawable/undo2"
                     android:text="undo" />
 
@@ -671,7 +671,7 @@
                     android:background="@android:color/transparent"
                     android:onClick="@{vm::clickRedo}"
                     android:padding="8dp"
-                    android:scaleType="centerCrop"
+                    android:scaleType="centerInside"
                     android:src="@drawable/redo2"
                     android:text="redo" />
             </LinearLayout>

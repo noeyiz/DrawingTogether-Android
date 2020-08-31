@@ -185,6 +185,10 @@ public class Text { // EditTextView
                     eraseText();
                     sendMqttMessage(TextMode.ERASE);
 
+                    if(client.isMaster()) {
+                        client.getComponentCount().decreaseText();
+                    }
+
                     MyLog.i("drawing", "text erase");
                     de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme minj - addHistory
 
@@ -498,8 +502,8 @@ public class Text { // EditTextView
     public void addTextViewToFrameLayout() {
 
         // todo nayeon - 강제 오류 발생시키기
-        // frameLayout.addView(textView);
-        // frameLayout.addView(textView);
+//         frameLayout.addView(textView);
+//         frameLayout.addView(textView);
 
         try {
             frameLayout.addView(textView);
