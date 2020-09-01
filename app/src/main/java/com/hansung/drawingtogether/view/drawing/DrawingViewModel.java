@@ -120,7 +120,7 @@ public class DrawingViewModel extends BaseViewModel {
         // fixme jiyeon[0824] -  RecordThread 하나만 두기
         recThread = new RecordThread();
         recThread.setBufferUnitSize(2);
-//        recThread.start();
+        recThread.start();
         //
     }
 
@@ -176,7 +176,7 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void clickPen(View view) { // drawBtn1, drawBtn2, drawBtn3
         MyLog.d("button", "pen button click");
-
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.VISIBLE);
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.STROKE);
@@ -188,10 +188,35 @@ public class DrawingViewModel extends BaseViewModel {
         preMenuButton = (ImageButton)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
     }
 
+    public void clickPencil(View view) {
+        de.getDrawingFragment().getBinding().pencilBtn.setImageResource(R.drawable.pencil_1);
+        de.getDrawingFragment().getBinding().highlightBtn.setImageResource(R.drawable.highlight_0);
+        de.getDrawingFragment().getBinding().neonBtn.setImageResource(R.drawable.neon_0);
+
+        de.setPenMode(PenMode.NORMAL);
+    }
+
+    public void clickHighlight(View view) {
+        de.getDrawingFragment().getBinding().pencilBtn.setImageResource(R.drawable.pencil_0);
+        de.getDrawingFragment().getBinding().highlightBtn.setImageResource(R.drawable.highlight_1);
+        de.getDrawingFragment().getBinding().neonBtn.setImageResource(R.drawable.neon_0);
+
+        de.setPenMode(PenMode.HIGHLIGHT);
+    }
+
+    public void clickNeon(View view) {
+        de.getDrawingFragment().getBinding().pencilBtn.setImageResource(R.drawable.pencil_0);
+        de.getDrawingFragment().getBinding().highlightBtn.setImageResource(R.drawable.highlight_0);
+        de.getDrawingFragment().getBinding().neonBtn.setImageResource(R.drawable.neon_1);
+
+        de.setPenMode(PenMode.NEON);
+    }
+
     public void clickEraser(View view) {
         MyLog.d("button", "eraser button click");
-
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.INVISIBLE);
         changeClickedButtonBackground(view);
+
         if(de.getCurrentMode() == Mode.ERASE)
             drawingCommands.postValue(new DrawingCommand.EraserMode(view));     //fixme minj add pixel eraser
         de.setCurrentMode(Mode.ERASE);
@@ -200,6 +225,7 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void clickText(View view) {
         MyLog.d("button", "text button click");
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.INVISIBLE);
 
         // 사용자가 처음 텍스트 편집창에서 텍스트 생성중인 경우
         // 텍스트 정보들을 모든 사용자가 갖고 있지 않음 ( 편집중인 사람만 갖고 있음 )
@@ -260,6 +286,7 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void clickShape(View view) {
         MyLog.d("button", "shape button click");
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.INVISIBLE);
 
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
@@ -272,6 +299,7 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void clickSelector(View view) {
         MyLog.d("button", "selector button click");
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.INVISIBLE);
 
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.SELECT);
@@ -298,6 +326,7 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickWarp(View view) {
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.INVISIBLE);
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.WARP);
     }

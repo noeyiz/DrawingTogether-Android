@@ -191,6 +191,7 @@ public class DrawingView extends View {
         dComponent.setUsername(de.getUsername());
         dComponent.setUsersComponentId(de.usersComponentIdCounter());
         dComponent.setType(de.getCurrentType());
+        dComponent.setPenMode(de.getPenMode());
         dComponent.setFillColor(de.getFillColor());
         dComponent.setStrokeColor(de.getStrokeColor());
         dComponent.setStrokeAlpha(de.getStrokeAlpha());
@@ -479,8 +480,12 @@ public class DrawingView extends View {
                             de.getSelectedComponent().setSelected(false);
                             de.setDrawingComponentSelected(de.getSelectedComponent().getUsersComponentId(), false);
 
-                            de.updateDrawingBitmap(false);
-                            //de.clearMyCurrentBitmap();
+                            de.clearMyCurrentBitmap();
+                            //de.updateDrawingBitmap(false);
+                            //de.clearAllSelectedBitmap();
+                            //de.clearDrawingBitmap();
+                            //de.drawAllDrawingComponents();
+
                             invalidate();
 
                             sendSelectMqttMessage(false);
@@ -509,12 +514,21 @@ public class DrawingView extends View {
                         de.setDrawingComponentSelected(de.getSelectedComponent().getUsersComponentId(), false);
 
                         de.clearMyCurrentBitmap();
+                        //de.updateDrawingBitmap(false);
+                        //de.clearAllSelectedBitmap();
+                        //de.clearDrawingBitmap();
+                        //de.drawAllDrawingComponents();
 
                         //todo publish - 다른 사람들 셀렉트 가능
                         sendSelectMqttMessage(false);
 
                         return true;
                     }
+
+                    //de.clearMyCurrentBitmap();
+
+                    de.setPreSelectedComponentsBitmap();
+                    de.setPostSelectedComponentsBitmap();
 
                     de.clearMyCurrentBitmap();
                     de.drawUnselectedComponents();
@@ -543,9 +557,6 @@ public class DrawingView extends View {
                     //moveX = (((int)event.getX() - selectDownPoint.x));
                     //moveY = (((int)event.getY() - selectDownPoint.y));
 
-                    totalMoveX += moveX;
-                    totalMoveY += moveY;
-
                     //Point datumPoint = de.getSelectedComponent().getDatumPoint();
                     Point datumPoint = new Point((int)(de.getSelectedComponent().getDatumPoint().x*de.getSelectedComponent().getXRatio()), (int)(de.getSelectedComponent().getDatumPoint().y*de.getSelectedComponent().getYRatio()));
 
@@ -555,6 +566,9 @@ public class DrawingView extends View {
                     if((datumPoint.x+moveX-10 < 0 && moveX < 0) || (datumPoint.y+moveY-10 < 0 && moveY < 0) || (datumPoint.y+moveY+height+10 > de.getDrawnCanvasHeight() && moveY > 0) || (datumPoint.x+moveX+width+10 > de.getDrawnCanvasWidth() && moveX > 0)) {
                         return true;
                     }
+
+                    totalMoveX += moveX;
+                    totalMoveY += moveY;
 
                     selectDownPoint = new Point((int)event.getX(), (int)event.getY());
 

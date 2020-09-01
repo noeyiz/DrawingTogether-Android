@@ -636,24 +636,24 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         switch(item.getItemId()) {
 
             // fixme jiyeon[0428]
-//            case R.id.drawing_mic:
-//                boolean click = drawingViewModel.clickMic();
-//                if (click) {
-//                    item.setIcon(R.drawable.mic);
-//                } else {
-//                    item.setIcon(R.drawable.mic_slash);
-//                }
-//                break;
-//            case R.id.drawing_speaker:
-//                int mode = drawingViewModel.clickSpeaker();
-//                if (mode == 0) { // speaker off
-//                    item.setIcon(R.drawable.speakerslash);
-//                } else if (mode == 1) { // speaker on
-//                    item.setIcon(R.drawable.speaker1);
-//                } else if (mode == 2) { // speaker loud
-//                    item.setIcon(R.drawable.speaker3);
-//                }
-//                break;
+            case R.id.drawing_mic:
+                boolean click = drawingViewModel.clickMic();
+                if (click) {
+                    item.setIcon(R.drawable.mic);
+                } else {
+                    item.setIcon(R.drawable.mic_slash);
+                }
+                break;
+            case R.id.drawing_speaker:
+                int mode = drawingViewModel.clickSpeaker();
+                if (mode == 0) { // speaker off
+                    item.setIcon(R.drawable.speakerslash);
+                } else if (mode == 1) { // speaker on
+                    item.setIcon(R.drawable.speaker1);
+                } else if (mode == 2) { // speaker loud
+                    item.setIcon(R.drawable.speaker3);
+                }
+                break;
             //
             case R.id.gallery:
                 drawingViewModel.getImageFromGallery(DrawingFragment.this);
@@ -812,13 +812,12 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         client.getUserList().clear();
         client.getTh().interrupt();
         client.setIsMid(true);
+        client.getConnOpts().setAutomaticReconnect(false);
 
         // fixme jiyeon[0826] - 오디오 처리
         if (drawingViewModel.isMicFlag()) {
             drawingViewModel.getRecThread().setFlag(false);
         }
-//        drawingViewModel.getRecThread().stopRecording();
-//        drawingViewModel.getRecThread().interrupt();
 
         try {
             if (client.getClient().isConnected()) {
@@ -828,6 +827,9 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             e.printStackTrace();
         }
 
+        drawingViewModel.getRecThread().stopRecording();
+        drawingViewModel.getRecThread().interrupt();
+
         for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
             if (drawingViewModel.isSpeakerFlag()) {
                 audioPlayThread.setFlag(false);
@@ -835,11 +837,11 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 audioManager.setSpeakerphoneOn(false);
             }
 
-//            audioPlayThread.stopPlaying();
+            audioPlayThread.stopPlaying();
             synchronized (audioPlayThread.getBuffer()) {
                 audioPlayThread.getBuffer().clear();
             }
-//            audioPlayThread.interrupt();
+            audioPlayThread.interrupt();
         }
         client.getAudioPlayThreadList().clear();
         //

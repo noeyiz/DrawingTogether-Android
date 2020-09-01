@@ -75,7 +75,7 @@ public class SendMqttMessage {    //consumer  //queue 가 비어있을때까지 
                         // fixme nayeon: monitoring
                         if(client.isMaster()
                                 && messageFormat.getAction() != null && messageFormat.getAction() == MotionEvent.ACTION_MOVE
-                                && messageFormat.getType().equals(ComponentType.STROKE)) {
+                                && (messageFormat.getType() != null && messageFormat.getType().equals(ComponentType.STROKE))) {
                             MQTTClient.receiveTimeList.add(new Velocity(System.currentTimeMillis()));
                         }
 

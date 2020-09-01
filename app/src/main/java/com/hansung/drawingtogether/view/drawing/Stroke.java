@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.MaskFilter;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
@@ -89,28 +90,6 @@ public class Stroke extends DrawingComponent {
 
     @Override
     public void drawComponent(Canvas canvas) {
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-        /*if(isErased) {
-            Xfermode xmode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR);
-            paint.setXfermode(xmode);
-            paint.setStrokeWidth(this.strokeWidth + 1);
-        } else {
-            paint.setStrokeWidth(this.strokeWidth);
-        }*/
-        paint.setStrokeWidth(this.strokeWidth);
-        try {
-            paint.setColor(Color.parseColor(this.strokeColor));
-        } catch(NullPointerException e) {
-            MyLog.w("catch", "parseColor");
-        }
-        paint.setAlpha(this.strokeAlpha);
-        paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setStrokeJoin(Paint.Join.ROUND);
-        paint.setStyle(Paint.Style.STROKE);
-        //paint.setMaskFilter(new BlurMaskFilter(30, BlurMaskFilter.Blur.NORMAL));
-
-
         Path path = new Path();
         float mX, mY;
         float x, y;
@@ -146,10 +125,70 @@ public class Stroke extends DrawingComponent {
             }
 
             path.lineTo(mX, mY);
-
         }
 
-        canvas.drawPath(path, paint);
+
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+        /*if(isErased) {
+            Xfermode xmode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR);
+            paint.setXfermode(xmode);
+            paint.setStrokeWidth(this.strokeWidth + 1);
+        } else {
+            paint.setStrokeWidth(this.strokeWidth);
+        }*/
+
+        /*try {
+            paint.setColor(Color.parseColor(this.strokeColor));
+        } catch(NullPointerException e) {
+            MyLog.w("catch", "parseColor");
+        }*/
+        //paint.setAlpha(this.strokeAlpha);
+
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setStyle(Paint.Style.STROKE);
+        //paint.setMaskFilter(new BlurMaskFilter(30, BlurMaskFilter.Blur.NORMAL));
+
+        if(this.penMode == PenMode.NEON) {
+            paint.setStrokeWidth(this.strokeWidth);
+            try {
+                paint.setColor(Color.parseColor(this.strokeColor));
+            } catch(NullPointerException e) {
+                MyLog.w("catch", "parseColor");
+            }
+            paint.setMaskFilter(new BlurMaskFilter(this.strokeWidth + 10, BlurMaskFilter.Blur.NORMAL));
+            canvas.drawPath(path, paint);
+
+            Paint paint2 = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint2.setStrokeWidth(this.strokeWidth);
+            paint2.setStrokeCap(Paint.Cap.ROUND);
+            paint2.setStrokeJoin(Paint.Join.ROUND);
+            paint2.setStyle(Paint.Style.STROKE);
+            paint2.setColor(Color.WHITE);
+            canvas.drawPath(path, paint2);
+
+        } else {
+            try {
+                paint.setColor(Color.parseColor(this.strokeColor));
+            } catch(NullPointerException e) {
+                MyLog.w("catch", "parseColor");
+            }
+
+            if(this.penMode == PenMode.HIGHLIGHT) {
+                paint.setAlpha(de.getHighlightAlpha());
+                paint.setStrokeWidth(this.strokeWidth * 2);
+            } else if (this.penMode == PenMode.NORMAL) {
+                paint.setAlpha(de.getNormalAlpha());
+                paint.setStrokeWidth(this.strokeWidth);
+            }
+
+            canvas.drawPath(path, paint);
+        }
+
+
+
+
 
         /*Paint paint2 = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint2.setStrokeWidth(this.strokeWidth);

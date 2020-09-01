@@ -130,6 +130,8 @@ public enum MQTTClient {
     public static Vector<Velocity> displayTimeList = new Vector<Velocity>();  // 화면에 출력하는데 걸린 속도 데이터
     public static Vector<Velocity> deliveryTimeList = new Vector<Velocity>(); // 중간 참여자에게 메시지를 전송하는데 걸린 속도 데이터
 
+    private MqttConnectOptions connOpts;
+
     public static MQTTClient getInstance() {
         return INSTANCE;
     }
@@ -153,7 +155,7 @@ public enum MQTTClient {
             AudioPlayThread audioPlayThread = new AudioPlayThread();
             audioPlayThread.setUserName(masterName);
             audioPlayThread.setBufferUnitSize(2);
-//            audioPlayThread.start();
+            audioPlayThread.start();
             audioPlayThreadList.add(audioPlayThread);
             MyLog.e("Audio", masterName + " 추가 후 : " + audioPlayThreadList.size());
         }
@@ -204,7 +206,7 @@ public enum MQTTClient {
             client = new MqttClient(BROKER_ADDRESS, ("*" + name + "_" + topic + "_Android"), new MemoryPersistence());
             client2 = new MqttClient(BROKER_ADDRESS, MqttClient.generateClientId(), new MemoryPersistence());
 
-            MqttConnectOptions connOpts = new MqttConnectOptions();
+            connOpts = new MqttConnectOptions();
 
             connOpts.setCleanSession(true);
             connOpts.setKeepAliveInterval(1000);
@@ -432,14 +434,14 @@ public enum MQTTClient {
 //                System.out.println("message arrived");
 //                System.out.println(message.toString());
 
-                if(!newTopic.equals(topic_image)) {
+                /*if(!newTopic.equals(topic_image)) {
                     MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(new String(message.getPayload()));
 
                     Log.e("monitoring", mmf.getUsername() + " ? " + myName);
 
                     // fixme nayeon: monitoring
                     if (isMaster() && mmf.getAction() != null && mmf.getAction() == MotionEvent.ACTION_MOVE
-                            && mmf.getType().equals(ComponentType.STROKE)) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
+                            && (mmf.getType() != null && mmf.getType().equals(ComponentType.STROKE))) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
                         if (mmf.getUsername().equals(myName)) { // 자기 자신이 보낸 메시지일 경우 [메시지를 받는데 걸린 시간 측정]
                             (receiveTimeList.lastElement()).calcTime(System.currentTimeMillis(), message.getPayload().length);
                             printReceiveTimeList();
@@ -448,8 +450,7 @@ public enum MQTTClient {
                             displayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), message.getPayload().length));
                         }
                     }
-
-                }
+                }*/
 
 
                 // [ 중간자 ]
@@ -484,7 +485,7 @@ public enum MQTTClient {
                                 AudioPlayThread audioPlayThread = new AudioPlayThread();
                                 audioPlayThread.setUserName(name);
                                 audioPlayThread.setBufferUnitSize(2);
-//                                audioPlayThread.start();
+                                audioPlayThread.start();
                                 audioPlayThreadList.add(audioPlayThread);
                                 MyLog.e("Audio", name + " 추가 후 : " + audioPlayThreadList.size());
 
@@ -606,7 +607,7 @@ public enum MQTTClient {
                                 AudioPlayThread audioPlayThread = new AudioPlayThread();
                                 audioPlayThread.setUserName(name);
                                 audioPlayThread.setBufferUnitSize(2);
-//                                audioPlayThread.start();
+                                audioPlayThread.start();
                                 audioPlayThreadList.add(audioPlayThread);
                                 MyLog.e("Audio", name + " 추가 후 : " + audioPlayThreadList.size());
 
@@ -1181,6 +1182,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                     e.printStackTrace();
                 }
 
+                /*
                 // fixme nayeon: draw point monitoring
                 if (client.isMaster() && message.getAction() == MotionEvent.ACTION_MOVE
                         && message.getType().equals(ComponentType.STROKE) && !message.getUsername().equals(de.getMyUsername())) { // // 다른 사람이 보낸 메시지일 경우 [마스터가 자신의 화면에 그리는 시간 측정]
@@ -1188,6 +1190,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                     (MQTTClient.displayTimeList.lastElement()).calcTime(System.currentTimeMillis());
                     client.printDisplayTimeList();
                 }
+                */
 
                 break;
             case ERASE:
