@@ -1,14 +1,14 @@
-package com.hansung.drawingtogether.data.remote.model;
+package com.hansung.drawingtogether.monitoring;
 
 
 public class ComponentCount {
 
-    String topic;
-    int stroke;
-    int rect;
-    int oval;
-    int text;
-    int image;
+    private String topic;
+    private int stroke;
+    private int rect;
+    private int oval;
+    private int text;
+    private int image;
 
     public ComponentCount(String topic) {
         this.topic = topic;

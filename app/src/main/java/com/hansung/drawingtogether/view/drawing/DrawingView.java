@@ -209,6 +209,8 @@ public class DrawingView extends View {
         dComponent.setEndPoint(point);
 
         dComponent.draw(mCanvas);
+
+
     }
 
     public void addPoint(DrawingComponent dComponent, Point point) {

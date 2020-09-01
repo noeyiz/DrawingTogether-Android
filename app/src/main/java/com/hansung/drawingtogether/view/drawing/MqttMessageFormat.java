@@ -2,7 +2,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Point;
 
-import com.hansung.drawingtogether.data.remote.model.ComponentCount;
+import com.hansung.drawingtogether.monitoring.ComponentCount;
 import com.hansung.drawingtogether.view.main.AliveMessage;
 import com.hansung.drawingtogether.view.main.AudioMessage;
 import com.hansung.drawingtogether.view.main.CloseMessage;

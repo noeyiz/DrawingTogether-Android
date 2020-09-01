@@ -1,7 +1,8 @@
-package com.hansung.drawingtogether.data.remote.model;
+package com.hansung.drawingtogether.monitoring;
 
 import android.util.Log;
 
+import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.view.drawing.JSONParser;
 import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
 
