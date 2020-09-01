@@ -819,6 +819,9 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             drawingViewModel.getRecThread().setFlag(false);
         }
 
+        drawingViewModel.getRecThread().stopRecording();
+        drawingViewModel.getRecThread().interrupt();
+
         try {
             if (client.getClient().isConnected()) {
                 client.getClient().unsubscribe(client.getTopic_audio());
@@ -826,9 +829,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         } catch (MqttException e) {
             e.printStackTrace();
         }
-
-        drawingViewModel.getRecThread().stopRecording();
-        drawingViewModel.getRecThread().interrupt();
 
         for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
             if (drawingViewModel.isSpeakerFlag()) {

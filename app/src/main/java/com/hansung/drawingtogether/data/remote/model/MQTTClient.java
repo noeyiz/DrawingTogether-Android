@@ -260,8 +260,11 @@ public enum MQTTClient {
         try {
             client.publish(newTopic, new MqttMessage(payload));
         } catch (MqttException e) {
-            e.printStackTrace();
-            showTimerAlertDialog("메시지 전송 실패", "메인 화면으로 이동합니다");
+            if (drawingViewModel.getRecThread().isAlive()) {
+                drawingViewModel.getRecThread().interrupt();
+            }
+//            e.printStackTrace();
+//            showTimerAlertDialog("메시지 전송 실패", "메인 화면으로 이동합니다");
         }
     }
 
