@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Point;
 
+import com.hansung.drawingtogether.monitoring.ComponentCount;
 import com.hansung.drawingtogether.view.main.AliveMessage;
 import com.hansung.drawingtogether.view.main.AudioMessage;
 import com.hansung.drawingtogether.view.main.CloseMessage;
@@ -42,18 +43,15 @@ public class MqttMessageFormat {
     private JoinMessage joinMessage;
     private JoinAckMessage joinAckMessage;
 
-    // fixme hyeyeon
     private ExitMessage exitMessage;
     private CloseMessage closeMessage;
     private AliveMessage aliveMessage;
     private NotiMessage notiMessage;
 
-    // fixme jiyeon
     private AudioMessage audioMessage;
 
     private WarpingMessage warpingMessage;
 
-    // fixme nayeon 중간자 처리 시 필요한 변수 추가
     private ArrayList<DrawingComponent> drawingComponents;
     private ArrayList<Text> texts;
     private ArrayList<DrawingItem> history;
@@ -62,6 +60,8 @@ public class MqttMessageFormat {
     private Integer maxComponentId;
     private Integer maxTextId;
     private byte[] bitmapByteArray;
+
+    private ComponentCount componentCount;
 
     //draw - action down
     public MqttMessageFormat(String username, String usersComponentId, Mode mode, ComponentType type, DrawingComponent component, int action) {
@@ -120,7 +120,6 @@ public class MqttMessageFormat {
         this.moveSelectPoints = moveSelectPoints;
     }
 
-    // fixme nayeon - 텍스트 동시성 처리
     public MqttMessageFormat(String username, Mode mode, ComponentType type, TextAttribute textAttr, TextMode textMode, int myTextArrayIndex) {
         this.username = username;
         this.mode = mode;
@@ -175,6 +174,8 @@ public class MqttMessageFormat {
         this.warpingMessage = warpingMessage;
     }
 
+    public MqttMessageFormat(ComponentCount componentCount) { this.componentCount = componentCount; }
+
     public MqttMessageFormat(JoinMessage joinMessage) {
         this.joinMessage = joinMessage;
     }
@@ -202,4 +203,5 @@ public class MqttMessageFormat {
     public MqttMessageFormat(AudioMessage audioMessage) {
         this.audioMessage = audioMessage;
     }
+
 }

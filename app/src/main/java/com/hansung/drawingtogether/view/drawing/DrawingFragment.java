@@ -6,7 +6,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,7 +15,6 @@ import android.graphics.Point;
 import android.media.AudioManager;
 import android.media.ExifInterface;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -48,18 +46,18 @@ import lombok.Getter;
 import lombok.Setter;
 
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.hansung.drawingtogether.R;
 
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
+import com.hansung.drawingtogether.monitoring.ComponentCount;
 import com.hansung.drawingtogether.data.remote.model.ExitType;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.monitoring.MonitoringDataWriter;
+import com.hansung.drawingtogether.monitoring.MonitoringRunnable;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
-import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.main.DatabaseTransaction;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 
@@ -67,8 +65,6 @@ import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 
 
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.File;
@@ -105,6 +101,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     private Toolbar toolbar;
     private TextView title;
 
+    private MonitoringRunnable monitoringRunnable = MonitoringRunnable.getInstance();
+
     //private LinearLayout topToolLayout;
     //private Button doneBtn;
 
@@ -127,6 +125,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
         JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
+        Log.e("monitoring", "check parser init");
 
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 
@@ -193,6 +192,35 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             Thread th = new Thread(aliveTh);
             th.start();
             client.setThread(th);
+
+            if(client.isMaster()) {
+                Log.e("monitoring", "mqtt client class init func. check master. i'am master.");
+                client.setComponentCount(new ComponentCount(client.getTopic()));
+                Thread monitoringThread = new Thread(monitoringRunnable);
+                monitoringThread.start();
+                client.setMonitoringThread(monitoringThread);
+            }
+
+//            intent = new Intent(MainActivity.context, AliveBackgroundService.class);
+//            MainActivity.context.startService(intent);
+
+            /*if (data.isAliveThreadMode() && !data.isAliveBackground()) {
+                MyLog.e("alive", "DrawingFragment: " + data.isAliveThreadMode());
+                // fixme hyeyeon
+                aliveTh.setSecond(2000);
+                aliveTh.setCount(0);
+                Thread th = new Thread(aliveTh);
+                th.start();
+                client.setThread(th);
+            }
+            else if (data.isAliveThreadMode() && data.isAliveBackground()) {
+                intent = new Intent(MainActivity.context, AliveBackgroundService.class);
+                MainActivity.context.startService(intent);
+            }
+            else {
+                MyLog.e("alive", "alive publish 안함");
+            }
+            MyLog.e("alive", "DrawingFragment aliveBackground: " + data.isAliveBackground());*/
 
         }
 
@@ -445,6 +473,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
 
                     if (client.getClient().isConnected()) {
                         client.exitTask();
+                        MonitoringDataWriter.getInstance().write();
                     }
                     if (rightBottomBackPressed) {
                         getActivity().finish();
@@ -473,6 +502,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                     public void onClick(DialogInterface dialog, int which) {
                         if (client.getClient().isConnected()) {
                             client.exitTask();
+                            MonitoringDataWriter.getInstance().write();
                         }
                         if (rightBottomBackPressed) {
                             getActivity().finish();
@@ -818,6 +848,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             if (!client.isExitCompleteFlag()) {
                 MyLog.e("exit", "비정상 종료");
                 client.exitTask();
+                MonitoringDataWriter.getInstance().write();
             }
             try {
                 client.getClient().disconnect();
