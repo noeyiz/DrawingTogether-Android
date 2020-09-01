@@ -17,10 +17,10 @@ public class Eraser {
     private SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
     private JSONParser parser = JSONParser.getInstance();
     private int squareScope = 20;//(int) (((de.getMyCanvasWidth() * de.getMyCanvasHeight()) * 0.0014556040756914) / 100);
-    private Vector<Integer> erasedComponentIds;
+    private Vector<Integer> erasedComponentIds = new Vector<>();
 
     public void findComponentsToErase(Point eraserPoint) {
-        erasedComponentIds = new Vector<>();
+        erasedComponentIds.clear();
         erasedComponentIds.add(-1);
 
         int x = eraserPoint.x;

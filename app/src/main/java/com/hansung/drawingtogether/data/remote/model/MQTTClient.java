@@ -98,6 +98,8 @@ public enum MQTTClient {
     private FragmentDrawingBinding binding;
     private DrawingView drawingView;
     private boolean isMid = true;
+    private int totalMoveX = 0;
+    private int totalMoveY = 0;
 
     private ProgressDialog progressDialog;
 
@@ -956,6 +958,11 @@ public enum MQTTClient {
 
     public int getSavedFileCount() { return ++savedFileCount; }
 
+    public void setTotalMovePoint(int x, int y) {
+        this.totalMoveX = x;
+        this.totalMoveY = y;
+    }
+
 }
 
 
@@ -1030,26 +1037,32 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 } else {
                     switch(message.getAction()) {
                         case MotionEvent.ACTION_DOWN:
+                            client.setTotalMovePoint(0, 0);
                             MyLog.i("drawing", "other selected true");
                             break;
                         case MotionEvent.ACTION_MOVE:
                             if(message.getMoveSelectPoints().size() == 0) break;
                             for(Point point : message.getMoveSelectPoints()) {
+                                client.setTotalMovePoint(client.getTotalMoveX()+point.x, client.getTotalMoveY()+point.y);
                                 de.moveSelectedComponent(selectedComponent, point.x, point.y);
                             }
-                            de.clearMyCurrentBitmap();
+                            //de.clearMyCurrentBitmap();
                             de.updateSelectedComponent(selectedComponent);
                             de.clearDrawingBitmap();
                             de.drawAllDrawingComponents();
                             break;
                         case MotionEvent.ACTION_UP:
-                            de.clearMyCurrentBitmap();
+                            //de.clearMyCurrentBitmap();
                             //de.drawSelectedComponentBorder(selectedComponent, de.getSelectedBorderColor());
                             de.splitPointsOfSelectedComponent(selectedComponent, myCanvasWidth, myCanvasHeight);
                             de.updateSelectedComponent(selectedComponent);
                             de.clearDrawingBitmap();
                             de.drawAllDrawingComponents();
 
+                            if(selectedComponent.clone() != null) {
+                                de.addHistory(new DrawingItem(Mode.SELECT, selectedComponent.clone(), new Point(client.getTotalMoveX(), client.getTotalMoveY())));
+                                MyLog.i("drawing", "history.size()=" + de.getHistory().size() + "id=" + selectedComponent.getId());
+                            }
                             de.clearUndoArray();
 
                             if(de.getCurrentMode() == Mode.SELECT && client.getDrawingView().isSelected()) {
@@ -1072,7 +1085,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 de.clearDrawingComponents();
 
                 if(client.getBinding().drawingView.isSelected()) {
-                    de.deselect();
+                    de.deselect(true);
                     //de.clearAllSelectedBitmap();
                 }
 
@@ -1087,7 +1100,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
             case UNDO:
                 MyLog.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString());
                 if(client.getBinding().drawingView.isSelected()) {
-                    de.deselect();
+                    de.deselect(true);
                     //de.clearAllSelectedBitmap();
                 }
 
@@ -1106,7 +1119,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
             case REDO:
                 MyLog.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString());
                 if(client.getBinding().drawingView.isSelected()) {
-                    de.deselect();
+                    de.deselect(true);
                     //de.clearAllSelectedBitmap();
                 }
 
@@ -1241,13 +1254,13 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
                 text.setTextViewLocation();
                 return null;
             case DROP:
-                de.addHistory(new DrawingItem(TextMode.DROP, textAttr));
+                //de.addHistory(new DrawingItem(TextMode.DROP, textAttr));
                 text.setTextViewLocation();
                 publishProgress(message);
                 return null;
             case DONE:
                 if(textAttr.isModified()) {
-                    de.addHistory(new DrawingItem(TextMode.MODIFY, textAttr));
+                    //de.addHistory(new DrawingItem(TextMode.MODIFY, textAttr));
                     MyLog.i("drawing", "isModified mqtt= " + textAttr.isModified());
                 }
                 publishProgress(message);
@@ -1255,7 +1268,7 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
             case DRAG_ENDED:
                 return null;
             case ERASE:
-                de.addHistory(new DrawingItem(TextMode.ERASE, textAttr));
+                //de.addHistory(new DrawingItem(TextMode.ERASE, textAttr));
                 publishProgress(message);
                 return null;
         }
@@ -1275,18 +1288,18 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
                 Text newText = new Text(client.getDrawingFragment(), textAttr);
                 newText.getTextAttribute().setTextInited(true); // 만들어진 직후 상단 중앙에 놓이도록
                 de.addTexts(newText);
-                de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));
+                //de.addHistory(new DrawingItem(TextMode.CREATE, textAttr));
                 newText.setTextViewProperties();  // fixme nayeon
                 newText.addTextViewToFrameLayout();
                 newText.createGestureDetector();
-                de.clearUndoArray();
+                //de.clearUndoArray();
                 break;
             case DRAG_STARTED:
             case DRAG_LOCATION:
             case DRAG_ENDED:
                 break;
             case DROP:
-                de.clearUndoArray();
+                //de.clearUndoArray();
                 break;
             case DONE: // fixme nayeon
                 text.getTextView().setBackground(null); // 테두리 설정 해제
@@ -1296,7 +1309,7 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
             case ERASE:
                 text.removeTextViewToFrameLayout();
                 de.removeTexts(text);
-                de.clearUndoArray();
+                //de.clearUndoArray();
                 //Log.e("texts size", Integer.toString(de.getTexts().size()));
                 break;
             case MODIFY_START: // fixme nayeon

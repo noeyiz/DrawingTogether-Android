@@ -186,10 +186,10 @@ public class Text { // EditTextView
                     sendMqttMessage(TextMode.ERASE);
 
                     MyLog.i("drawing", "text erase");
-                    de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme minj - addHistory
+                    //de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme minj - addHistory
 
-                    MyLog.i("drawing", "history.size()=" + de.getHistory().size());
-                    de.clearUndoArray();
+                    //MyLog.i("drawing", "history.size()=" + de.getHistory().size());
+                    //de.clearUndoArray();
 
                     return true;
                 }
@@ -307,11 +307,11 @@ public class Text { // EditTextView
 
 
             MyLog.i("drawing", "text create");
-            de.addHistory(new DrawingItem(TextMode.CREATE, getTextAttribute())); //fixme minj - addHistory
+            /*de.addHistory(new DrawingItem(TextMode.CREATE, getTextAttribute())); //fixme minj - addHistory
             if(de.getHistory().size() == 1)
                 de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
             MyLog.i("drawing", "history.size()=" + de.getHistory().size());
-            de.clearUndoArray();
+            de.clearUndoArray();*/
 
             de.setCurrentMode(Mode.DRAW); // 텍스트 편집이 완료 되면 현재 모드는 기본 드로잉 모드로
             return;
@@ -341,9 +341,9 @@ public class Text { // EditTextView
         if(preText != null && !preText.equals(textAttribute.getText())) {   //modify 이전과 text 가 달라졌을 때만 history 에 저장
             textAttribute.setModified(true);
             MyLog.i("drawing", "text modify");
-            de.addHistory(new DrawingItem(TextMode.MODIFY, getTextAttribute()));   //fixme minj - addHistory
+            /*de.addHistory(new DrawingItem(TextMode.MODIFY, getTextAttribute()));   //fixme minj - addHistory
             MyLog.i("drawing", "history.size()=" + de.getHistory().size());
-            de.clearUndoArray();
+            de.clearUndoArray();*/
         }
 
         sendMqttMessage(TextMode.DONE); // 사용 종료를 알리기 위해 보내야함 ( 사용자이름 : null )

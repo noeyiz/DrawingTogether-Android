@@ -1,6 +1,8 @@
 package com.hansung.drawingtogether.view.drawing;
 
 
+import android.graphics.Point;
+
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 import java.util.Vector;
@@ -15,6 +17,8 @@ public class DrawingItem {
     private Vector<DrawingComponent> components;
     private TextMode textMode;
     private TextAttribute textAttribute;
+    private Point movePoint;
+    private DrawingComponent component;
     //private ArrayList<Point> drawingBoardItem;
     //private Bitmap bitmap;
 
@@ -34,6 +38,13 @@ public class DrawingItem {
         this.components.addAll(components);
         //this.bitmap = bitmap.copy(bitmap.getConfig(), true);//Bitmap.createBitmap(bitmap);
     }
+
+    public DrawingItem(Mode mode, DrawingComponent component, Point movePoint) {
+        this.mode = mode;
+        this.component = component;
+        this.movePoint = movePoint;
+    }
+
 
     public DrawingItem(TextMode textMode, TextAttribute textAttribute) {
         this.textMode = textMode;

@@ -10,12 +10,12 @@ import java.util.Vector;
 public class EraserTask extends AsyncTask<Void, Void, Void> {
     private DrawingEditor de = DrawingEditor.getInstance();
     private Vector<Integer> erasedComponentIds;
-    private Vector<DrawingComponent> components;
+    private Vector<DrawingComponent> components = new Vector<>();
 
     public EraserTask(Vector<Integer> erasedComponentIds) {
         //de.setDrawingView(((MainActivity) de.getContext()).getDrawingView());
         this.erasedComponentIds = erasedComponentIds;
-        this.components = new Vector<>();
+        this.components.clear();
 
         de.printCurrentComponents("erase");
         de.printDrawingComponents("erase");

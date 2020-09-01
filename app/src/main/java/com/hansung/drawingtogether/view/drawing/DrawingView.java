@@ -397,6 +397,10 @@ public class DrawingView extends View {
     Point selectDownPoint;
     int selectMsgChunkSize = 10;
     ArrayList<Point> moveSelectPoints = new ArrayList<>(selectMsgChunkSize);
+    int totalMoveX = 0;
+    int totalMoveY = 0;
+    int preMoveX = 0;
+    int preMoveY = 0;
     public boolean onTouchSelectMode(MotionEvent event) {
         dTool.setCommand(selectCommand);
 
@@ -473,8 +477,8 @@ public class DrawingView extends View {
                             de.getSelectedComponent().setSelected(false);
                             de.setDrawingComponentSelected(de.getSelectedComponent().getUsersComponentId(), false);
 
-                            //de.updateDrawingBitmap(false);
-                            de.clearMyCurrentBitmap();
+                            de.updateDrawingBitmap(false);
+                            //de.clearMyCurrentBitmap();
                             invalidate();
 
                             sendSelectMqttMessage(false);
@@ -518,6 +522,11 @@ public class DrawingView extends View {
 
                     MyLog.i("drawing", "selected true");
 
+                    totalMoveX = 0;
+                    totalMoveY = 0;
+                    preMoveX = de.getSelectedComponent().beginPoint.x;
+                    preMoveY = de.getSelectedComponent().beginPoint.y;
+
                     //todo publish - selected down
                     moveSelectPoints.clear();
                     sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), de.getSelectedComponent().getUsersComponentId(), Mode.SELECT, event.getAction(), (ArrayList<Point>)moveSelectPoints.clone()));
@@ -526,10 +535,14 @@ public class DrawingView extends View {
 
                 case MotionEvent.ACTION_MOVE:
                     MyLog.i("drawing", "selected move");
-                    //moveX = (int)(((int)event.getX() - selectDownPoint.x)*de.getSelectedComponent().getXRatio());
-                    //moveY = (int)(((int)event.getY() - selectDownPoint.y)*de.getSelectedComponent().getYRatio());
-                    moveX = (((int)event.getX() - selectDownPoint.x));
-                    moveY = (((int)event.getY() - selectDownPoint.y));
+
+                    moveX = (int)(((int)event.getX() - selectDownPoint.x)/de.getSelectedComponent().getXRatio());
+                    moveY = (int)(((int)event.getY() - selectDownPoint.y)/de.getSelectedComponent().getYRatio());
+                    //moveX = (((int)event.getX() - selectDownPoint.x));
+                    //moveY = (((int)event.getY() - selectDownPoint.y));
+
+                    totalMoveX += moveX;
+                    totalMoveY += moveY;
 
                     //Point datumPoint = de.getSelectedComponent().getDatumPoint();
                     Point datumPoint = new Point((int)(de.getSelectedComponent().getDatumPoint().x*de.getSelectedComponent().getXRatio()), (int)(de.getSelectedComponent().getDatumPoint().y*de.getSelectedComponent().getYRatio()));
@@ -567,8 +580,10 @@ public class DrawingView extends View {
                     de.updateSelectedComponent(de.getSelectedComponent());
                     MyLog.i("drawing", "drawingComponents.size() = " + de.getDrawingComponents().size());
 
-                    //de.addHistory(new DrawingItem(Mode.SELECT, de.getSelectedComponent())); //todo
-                    //Log.i("drawing", "history.size()=" + de.getHistory().size() + ", id=" + de.getSelectedComponent().getId());
+                    if(de.getSelectedComponent().clone() != null) {
+                        de.addHistory(new DrawingItem(Mode.SELECT, de.getSelectedComponent().clone(), new Point(totalMoveX, totalMoveY)));
+                        MyLog.i("drawing", "history.size()=" + de.getHistory().size() + ", preBeginPoint=(" + preMoveX + "," + preMoveY + "), postBeginPoint-movePoint=(" + (de.getSelectedComponent().getBeginPoint().x - (float) totalMoveX) + "," + (de.getSelectedComponent().getBeginPoint().y - (float) totalMoveY) + "), postBeginPoint=" + de.getSelectedComponent().getBeginPoint().toString());
+                    }
 
                     de.clearUndoArray();
                     invalidate();
