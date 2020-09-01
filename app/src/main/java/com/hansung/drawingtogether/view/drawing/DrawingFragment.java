@@ -466,7 +466,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                     if (error != null) {
                         exitProgressDialog.dismiss();
 
-                        showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage(), rightBottomBackPressed);
+                        showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage());
                         MyLog.e("transaction", error.getDetails());
                         return;
                     }
@@ -491,7 +491,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         }
     }
 
-    public void showDatabaseErrorAlert(String title, String message, final boolean rightBottomBackPressed) {
+    public void showDatabaseErrorAlert(String title, String message) {
 
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
                 .setTitle(title)
@@ -500,25 +500,13 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (client.getClient().isConnected()) {
-                            client.exitTask();
-                            MonitoringDataWriter.getInstance().write();
-                        }
-                        if (rightBottomBackPressed) {
-                            getActivity().finish();
-                            android.os.Process.killProcess(android.os.Process.myPid());
-                            System.exit(10);
-                            return;
-                        }
-                        else {
-                            drawingViewModel.back();
-                            return;
-                        }
+
                     }
                 })
                 .create();
 
         dialog.show();
+
     }
 
     private void setProgressDialog() {
