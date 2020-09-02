@@ -5,5 +5,5 @@ public enum Mode {
     BACKGROUND_IMAGE,
     MID,
     WARP,
-    AURODRAW;
+    AUTODRAW;
 }
