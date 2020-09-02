@@ -10,7 +10,6 @@ import com.hansung.drawingtogether.view.main.CloseMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinAckMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
-import com.hansung.drawingtogether.view.main.NotiMessage;
 import com.hansung.drawingtogether.view.main.WarpingMessage;
 
 import java.util.ArrayList;
@@ -43,19 +42,13 @@ public class MqttMessageFormat {
 
     private JoinMessage joinMessage;
     private JoinAckMessage joinAckMessage;
-
     private ExitMessage exitMessage;
     private CloseMessage closeMessage;
     private AliveMessage aliveMessage;
-    private NotiMessage notiMessage;
-
     private AudioMessage audioMessage;
-
     private WarpingMessage warpingMessage;
-
     private AutoDrawMessage autoDrawMessage;
 
-    // fixme nayeon 중간자 처리 시 필요한 변수 추가
     private ArrayList<DrawingComponent> drawingComponents;
     private ArrayList<Text> texts;
     private ArrayList<DrawingItem> history;
@@ -67,7 +60,7 @@ public class MqttMessageFormat {
 
     private ComponentCount componentCount;
 
-    //draw - action down
+    /* Draw - Action Down */
     public MqttMessageFormat(String username, String usersComponentId, Mode mode, ComponentType type, DrawingComponent component, int action) {
         this.username = username;
         this.usersComponentId = usersComponentId;
@@ -77,7 +70,7 @@ public class MqttMessageFormat {
         this.action  = action;
     }
 
-    //draw - action up
+    /* Draw - Action Up */
     public MqttMessageFormat(String username, /*Integer id, */String usersComponentId, Mode mode, ComponentType type, Point point, int action) {
         this.username = username;
         this.id = id;
@@ -88,14 +81,14 @@ public class MqttMessageFormat {
         this.action  = action;
     }
 
-    //erase
+    /* Erase */
     public MqttMessageFormat(String username, Mode mode, Vector<Integer> componentIds) {
         this.username = username;
         this.mode = mode;
         this.componentIds = componentIds;
     }
 
-    //draw - move chunk
+    /* Draw - Move Chunk */
     public MqttMessageFormat(String username, /*Integer id, */String usersComponentId, Mode mode, ComponentType type, ArrayList<Point> movePoints, int action) {
         this.username = username;
         //this.id = id;
@@ -106,7 +99,7 @@ public class MqttMessageFormat {
         this.action  = action;
     }
 
-    //select, deselect
+    /* Select, Deselect */
     public MqttMessageFormat(String username, String usersComponentId, Mode mode, boolean isSelected) {
         this.username = username;
         this.usersComponentId = usersComponentId;
@@ -114,7 +107,7 @@ public class MqttMessageFormat {
         this.isSelected = isSelected;
     }
 
-    //select - down, move, up
+    /* Select - Down, Move, Up */
     ArrayList<Point> moveSelectPoints;
     public MqttMessageFormat(String username, String usersComponentId, Mode mode, int action, ArrayList<Point> moveSelectPoints) {
         this.username = username;
@@ -133,20 +126,20 @@ public class MqttMessageFormat {
         this.myTextArrayIndex = myTextArrayIndex;
     }
 
-    //mode change
+    /* Mode Change */
     public MqttMessageFormat(String username, Mode mode) {
         this.username = username;
         this.mode = mode;
     }
 
-    public MqttMessageFormat(String username, Mode mode,  byte[] bitmapByteArray) { // 이미지 전송 시 사용할 생성자
+    /* 이미지 전송 시 필요한 생성자 */
+    public MqttMessageFormat(String username, Mode mode,  byte[] bitmapByteArray) {
         this.username = username;
         this.mode = mode;
         this.bitmapByteArray = bitmapByteArray;
     }
 
-    //fixme nayeon 중간자 처리 시 필요한 생성자 3개 추가
-    //fixme minj - add history for undo, redo
+    /* 중간자 처리시 필요한 생성자 */
     public MqttMessageFormat(JoinAckMessage joinAckMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId, Integer maxComponentId, Integer maxTextId) {
         this.joinAckMessage = joinAckMessage;
         this.drawingComponents = drawingComponents;
@@ -158,6 +151,7 @@ public class MqttMessageFormat {
         this.maxTextId = maxTextId;
     }
 
+    /* 중간자 처리시 필요한 생성자 (BitmapByteArray 포함) */
     public MqttMessageFormat(JoinAckMessage joinAckMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId, Integer maxComponentId, Integer maxTextId, byte[] bitmapByteArray) {
         this.joinAckMessage = joinAckMessage;
         this.drawingComponents = drawingComponents;
@@ -184,15 +178,18 @@ public class MqttMessageFormat {
         this.type = type;
         this.autoDrawMessage = autoDrawMessage;
     }
-    public MqttMessageFormat(ComponentCount componentCount) { this.componentCount = componentCount; }
+    public MqttMessageFormat(ComponentCount componentCount) {
+        this.componentCount = componentCount;
+    }
 
     public MqttMessageFormat(JoinMessage joinMessage) {
         this.joinMessage = joinMessage;
     }
 
-    public MqttMessageFormat(JoinAckMessage joinAckMessage) { this.joinAckMessage = joinAckMessage; }
+    public MqttMessageFormat(JoinAckMessage joinAckMessage) {
+        this.joinAckMessage = joinAckMessage;
+    }
 
-    // fixme hyeyeon
     public MqttMessageFormat(ExitMessage exitMessage) {
         this.exitMessage = exitMessage;
     }
@@ -205,11 +202,6 @@ public class MqttMessageFormat {
         this.aliveMessage = aliveMessage;
     }
 
-    public MqttMessageFormat(NotiMessage notiMessage) {
-        this.notiMessage = notiMessage;
-    }
-
-    // fixme jiyeon
     public MqttMessageFormat(AudioMessage audioMessage) {
         this.audioMessage = audioMessage;
     }

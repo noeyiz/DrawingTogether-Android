@@ -1,15 +1,11 @@
 package com.hansung.drawingtogether.view.drawing;
 
-import android.Manifest;
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.app.Service;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.PictureDrawable;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Environment;
@@ -30,10 +26,6 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.RequestBuilder;
-import com.gun0912.tedpermission.PermissionListener;
-import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.AutoDrawInterface;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.Logger;
@@ -59,7 +51,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -68,7 +59,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DrawingViewModel extends BaseViewModel {
+
     public final SingleLiveEvent<DrawingCommand> drawingCommands = new SingleLiveEvent<>();
+
+    /* 멤버 리스트를 출력하기 위한 변수 */
     private MutableLiveData<String> userNum = new MutableLiveData<>();
     private MutableLiveData<String> userPrint = new MutableLiveData<>();
 
@@ -91,15 +85,12 @@ public class DrawingViewModel extends BaseViewModel {
     private MQTTClient client = MQTTClient.getInstance();
     private MQTTSettingData data = MQTTSettingData.getInstance();
 
-
-    // fixme jiyeon[0428]
     private boolean micFlag = false;
     private boolean speakerFlag = false;
     private int speakerMode = 0; // 0: mute, 1: speaker on, 2: speaker loud
 
     private RecordThread recThread;
     private AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
-    //
 
     private ImageButton preMenuButton;
 
@@ -107,6 +98,7 @@ public class DrawingViewModel extends BaseViewModel {
     private String autoDrawImageUrl;
 
     public DrawingViewModel() {
+
         setUserNum(0);
         setUserPrint("");
 
@@ -118,24 +110,20 @@ public class DrawingViewModel extends BaseViewModel {
         master = data.isMaster();
         masterName = data.getMasterName();
 
-        MyLog.e("kkankkan", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master + "/" + masterName);
+        MyLog.i("MQTTSettingData", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master + "/" + masterName);
 
         client.init(topic, name, master, this, ip, port, masterName);
 
-        client.setAliveCount(5);
+        client.setAliveLimitCount(5);
         client.setCallback();
         client.subscribeAllTopics();
 
-        de.setCurrentType(ComponentType.STROKE);    //fixme minj
+        de.setCurrentType(ComponentType.STROKE);
         de.setCurrentMode(Mode.DRAW);
 
-//        client.subscribe(topic + "_audio"); // fixme jiyeon
-
-        // fixme jiyeon[0824] -  RecordThread 하나만 두기
         recThread = new RecordThread();
         recThread.setBufferUnitSize(2);
         recThread.start();
-        //
     }
 
     public void clickUndo(View view) {
@@ -150,25 +138,19 @@ public class DrawingViewModel extends BaseViewModel {
         de.getDrawingFragment().getBinding().drawingView.redo();
     }
 
-    // fixme nayeon
     public void clickSave() {
 
         DrawingFragment fragment = de.getDrawingFragment();
 
-//        checkPermission(fragment.getContext()); // todo nayeon 권한 체크 앱 처음 실행 시 하도록 수정하기
-
-        // todo nayeon
         DrawingViewController dvc = fragment.getBinding().drawingViewContainer;
         dvc.setDrawingCacheEnabled(true);
         dvc.buildDrawingCache();
         Bitmap captureContainer = dvc.getDrawingCache();
 
-
         FileOutputStream fos;
         String fileName = "image-" + client.getTopic() + client.getSavedFileCount() + ".png";
         String filePath = Environment.getExternalStorageDirectory() + File.separator  + "Pictures"
-                + File.separator + fileName; // todo nayeon - change file name
-
+                + File.separator + fileName;
 
         File fileCacheItem = new File(filePath);
 
@@ -178,7 +160,7 @@ public class DrawingViewModel extends BaseViewModel {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
-            fragment.getContext().sendBroadcast(new Intent( Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(fileCacheItem)));             // 갤러리 데이터 갱신
+            fragment.getContext().sendBroadcast(new Intent( Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(fileCacheItem))); // 갤러리 데이터 갱신
             MyLog.e("export", "capture path == " + filePath);
         }
 
@@ -201,8 +183,8 @@ public class DrawingViewModel extends BaseViewModel {
         de.setCurrentType(ComponentType.STROKE);
 
         MyLog.i("drawing", "mode = " + de.getCurrentMode().toString() + ", type = " + de.getCurrentType().toString());
-        //drawingCommands.postValue(new DrawingCommand.PenMode(view));      //fixme nayeon color picker [ View Model 과 Navigator 관계, 이벤트 처리 방식 ]
-        preMenuButton = (ImageButton)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
+        //drawingCommands.postValue(new DrawingCommand.PenMode(view)); // color picker [ View Model 과 Navigator 관계, 이벤트 처리 방식 ]
+        preMenuButton = (ImageButton)view; // 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
     }
 
     public void clickPencil(View view) {
@@ -235,7 +217,7 @@ public class DrawingViewModel extends BaseViewModel {
         changeClickedButtonBackground(view);
 
         if(de.getCurrentMode() == Mode.ERASE)
-            drawingCommands.postValue(new DrawingCommand.EraserMode(view));     //fixme minj add pixel eraser
+            drawingCommands.postValue(new DrawingCommand.EraserMode(view));  // add pixel eraser
         de.setCurrentMode(Mode.ERASE);
         MyLog.i("drawing", "mode = " + de.getCurrentMode().toString());
     }
@@ -247,9 +229,8 @@ public class DrawingViewModel extends BaseViewModel {
         // 사용자가 처음 텍스트 편집창에서 텍스트 생성중인 경우
         // 텍스트 정보들을 모든 사용자가 갖고 있지 않음 ( 편집중인 사람만 갖고 있음 )
         // 따라서 중간자가 들어오고 난 후에 텍스트 생성을 할 수 있도록 막아두기
-        // fixme nayeon [0614]
         // de.setMidEntered(false);
-        if(de.isMidEntered() /* && !de.getCurrentText().getTextAttribute().isTextInited() */) { // todo nayeon ☆☆☆ 텍스트 중간자 처리
+        if(de.isMidEntered() /* && !de.getCurrentText().getTextAttribute().isTextInited() */) { // 텍스트 중간자 처리
             showToastMsg("다른 사용자가 접속 중 입니다 잠시만 기다려주세요");
             return;
         }
@@ -264,7 +245,7 @@ public class DrawingViewModel extends BaseViewModel {
         FrameLayout frameLayout = de.getDrawingFragment().getBinding().drawingViewContainer;
 
 
-        ((MainActivity)de.getDrawingFragment().getActivity()).setVisibilityToolbarMenus(false); // fixme nayeon
+        ((MainActivity)de.getDrawingFragment().getActivity()).setVisibilityToolbarMenus(false);
 
         // 텍스트 속성 설정 ( 기본 도구에서 설정할 것인지 텍스트 도구에서 설정할 것인지? )
         TextAttribute textAttribute = new TextAttribute(de.setTextStringId(), de.getMyUsername(),
@@ -284,7 +265,7 @@ public class DrawingViewModel extends BaseViewModel {
     public void clickDone(View view) {
         MyLog.d("button", "done button click");
 
-        if(de.isMidEntered() /* && !de.getCurrentText().getTextAttribute().isTextInited() */) { // todo nayeon ☆☆☆ 텍스트 중간자 처리
+        if(de.isMidEntered() /* && !de.getCurrentText().getTextAttribute().isTextInited() */) { // 텍스트 중간자 처리
             showToastMsg("다른 사용자가 접속 중 입니다 잠시만 기다려주세요");
             return;
         }
@@ -292,12 +273,12 @@ public class DrawingViewModel extends BaseViewModel {
         // 텍스트 모드가 끝나면 다른 버튼들 활성화
         enableDrawingMenuButton(true);
 
-        changeClickedButtonBackground(preMenuButton); //  fixme nayeon  텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해
+        changeClickedButtonBackground(preMenuButton); //  텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해
 
         Text text = de.getCurrentText();
         text.changeEditTextToTextView();
 
-        ((MainActivity)de.getDrawingFragment().getActivity()).setVisibilityToolbarMenus(true); // fixme nayeon
+        ((MainActivity)de.getDrawingFragment().getActivity()).setVisibilityToolbarMenus(true);
 
     }
 
@@ -309,7 +290,7 @@ public class DrawingViewModel extends BaseViewModel {
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.RECT);
 
-        preMenuButton = (ImageButton)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
+        preMenuButton = (ImageButton)view; // 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
 
         drawingCommands.postValue(new DrawingCommand.ShapeMode(view));
     }
@@ -329,7 +310,6 @@ public class DrawingViewModel extends BaseViewModel {
         MyLog.i("drawing", "mode = " + de.getCurrentMode().toString());
     }
 
-    // fixme nayeon
     public void clickTextColor(View view) {
         MyLog.d("button", "text color button click");
 
@@ -388,7 +368,6 @@ public class DrawingViewModel extends BaseViewModel {
     public void changeClickedButtonBackground(View view) {
         LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
 
-        // fixme nayeon
         // preMenuButton -> 아무것도 누르지 않은 상태에서 텍스트 버튼 클릭했을 때 NULL
         // 제일 첫 번째 버튼 (얇은 펜(그리기)) 로 지정
         if(view == null) { view = drawingMenuLayout.getChildAt(0); }
@@ -402,7 +381,7 @@ public class DrawingViewModel extends BaseViewModel {
 
     }
 
-    // fixme nayeon - 텍스트 편집 시 키보드가 내려가면 하단 메뉴 보임, 이들을 비활성화 : 추후에 키보드 내려가는 이벤트 처리로 바꿀 예정
+    // 텍스트 편집 시 키보드가 내려가면 하단 메뉴 보임, 이들을 비활성화 : 추후에 키보드 내려가는 이벤트 처리로 바꿀 예정
     public void enableDrawingMenuButton(Boolean bool) {
         LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
 
@@ -411,7 +390,6 @@ public class DrawingViewModel extends BaseViewModel {
         }
     }
 
-    // fixme jiyeon[0825]
     public boolean clickMic() {
         if (!micFlag) { // Record Start
             micFlag = true;
@@ -430,7 +408,6 @@ public class DrawingViewModel extends BaseViewModel {
         }
     }
 
-    // fixme jiyeon[0826]
     public int clickSpeaker() {
         speakerMode = (speakerMode + 1) % 3; // 0, 1, 2, 0, 1, 2, ...
 
@@ -487,8 +464,11 @@ public class DrawingViewModel extends BaseViewModel {
         }
     }
 
+    /* 카카오링크 친구 초대 버튼 클릭 시 */
     public void clickInvite() {
-        MyLog.e("kakao", "clickInvite");
+        MyLog.i("KakaoLink", "Click KakaoLink Invite");
+
+        /* 카카오링크에 회의명, 비밀번호 전달 */
         TextTemplate params = TextTemplate.newBuilder("시시콜콜!",
                 LinkObject.newBuilder()
                         .setAndroidExecutionParams("topic=" + topic + "&password=" + password)
@@ -499,17 +479,18 @@ public class DrawingViewModel extends BaseViewModel {
         KakaoLinkService.getInstance().sendDefault(MainActivity.context, params, new ResponseCallback<KakaoLinkResponse>() {
             @Override
             public void onFailure(ErrorResult errorResult) {
-                MyLog.e("kakao", "failure " + errorResult.getErrorMessage());
+                MyLog.e("KakaoLink", "Failure: " + errorResult.getErrorMessage());
                 showKakaogAlert("카카오링크 에러", errorResult.getErrorMessage());
             }
 
             @Override
             public void onSuccess(KakaoLinkResponse result) {
-                MyLog.e("kakao", "success");
+                MyLog.i("KakaoLink", "Success");
             }
         });
     }
 
+    /* 카카오링크 에러 시 */
     public void showKakaogAlert(String title, String message) {
 
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
