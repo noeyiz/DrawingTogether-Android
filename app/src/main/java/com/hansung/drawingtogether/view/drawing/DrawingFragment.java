@@ -140,7 +140,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         am.setListener(); // 리스너 초기화
         am.showCurrentColor(Color.parseColor(de.getStrokeColor())); // 현재 색상 보여주기
 
-        binding.drawBtn1.setBackgroundColor(Color.rgb(233, 233, 233)); // 초기 얇은 펜으로 설정
+        binding.drawBtn.setBackgroundColor(Color.rgb(233, 233, 233)); // 초기 얇은 펜으로 설정
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
         inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -292,7 +292,10 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         popupWindow.showAtLocation(penSettingPopup, Gravity.NO_GRAVITY, location[0], location[1] - penSettingPopup.getMeasuredHeight());
         popupWindow.setElevation(20);
 
-        if(layout == R.layout.popup_eraser_mode) {
+        if (layout == R.layout.popup_pen_mode) {
+            setPenPopupClickListener(penSettingPopup, popupWindow);
+        }
+        else if(layout == R.layout.popup_eraser_mode) {
             setEraserPopupClickListener(penSettingPopup, popupWindow);
         }
         else if(layout == R.layout.popup_shape_mode) {
@@ -300,7 +303,55 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         }
     }
 
+
+    private void setPenPopupClickListener(View penSettingPopup, final PopupWindow popupWindow) {
+        final Button drawBtn1 = penSettingPopup.findViewById(R.id.drawBtn1);
+        drawBtn1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MyLog.d("button", "draw1 pen button click");
+                de.setStrokeWidth(10);
+                popupWindow.dismiss();
+            }
+        });
+        final Button drawBtn2 = penSettingPopup.findViewById(R.id.drawBtn2);
+        drawBtn2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyLog.d("button", "draw2 pen button click");
+                popupWindow.dismiss();de.setStrokeWidth(20);
+            }
+        });
+        final Button drawBtn3 = penSettingPopup.findViewById(R.id.drawBtn3);
+        drawBtn3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyLog.d("button", "draw3 pen button click");
+                popupWindow.dismiss();
+                de.setStrokeWidth(30);
+            }
+        });
+    }
+
+
     private void setEraserPopupClickListener(View penSettingPopup, final PopupWindow popupWindow) {
+        final Button clearBtn = penSettingPopup.findViewById(R.id.clearBtn);
+        if(client.isMaster()) {
+            clearBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    MyLog.d("button", "clear button click"); // fixme nayeon
+
+                    binding.drawingView.clear();
+                    popupWindow.dismiss();
+                }
+            });
+        }
+        else {
+            clearBtn.setTextColor(Color.LTGRAY);
+            clearBtn.setEnabled(false);
+        }
+
         final Button backgroundEraserBtn = penSettingPopup.findViewById(R.id.backgroundEraserBtn);
         if(client.isMaster()) {
             backgroundEraserBtn.setOnClickListener(new View.OnClickListener() {
@@ -318,21 +369,21 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             backgroundEraserBtn.setEnabled(false);
         }
 
-        final Button clearBtn = penSettingPopup.findViewById(R.id.clearBtn);
+        final Button viewEraserBtn = penSettingPopup.findViewById(R.id.viewEraserBtn);
         if(client.isMaster()) {
-            clearBtn.setOnClickListener(new View.OnClickListener() {
+            viewEraserBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     MyLog.d("button", "drawing clear button click"); // fixme nayeon
 
-                    binding.drawingView.clear();
+                    binding.drawingView.clearDrawingView();
                     popupWindow.dismiss();
                 }
             });
         }
         else {
-            clearBtn.setTextColor(Color.LTGRAY);
-            clearBtn.setEnabled(false);
+            viewEraserBtn.setTextColor(Color.LTGRAY);
+            viewEraserBtn.setEnabled(false);
         }
     }
 

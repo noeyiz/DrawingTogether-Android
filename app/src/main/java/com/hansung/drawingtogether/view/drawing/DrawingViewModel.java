@@ -178,6 +178,11 @@ public class DrawingViewModel extends BaseViewModel {
         MyLog.d("button", "pen button click");
         de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.VISIBLE);
         changeClickedButtonBackground(view);
+
+        if(de.getCurrentMode() == Mode.DRAW && de.getCurrentType() == ComponentType.STROKE) {
+            drawingCommands.postValue(new DrawingCommand.PenMode(view));
+        }
+
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.STROKE);
 
@@ -329,6 +334,12 @@ public class DrawingViewModel extends BaseViewModel {
         de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.INVISIBLE);
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.WARP);
+    }
+
+    public void clickAutoDraw(View view) {
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.INVISIBLE);
+        changeClickedButtonBackground(view);
+        de.setCurrentMode(Mode.AURODRAW);
     }
 
     public void changeClickedButtonBackground(View view) {

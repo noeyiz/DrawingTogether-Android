@@ -31,43 +31,43 @@
             app:layout_constraintTop_toBottomOf="@id/bottom_menu_guideline">
 
             <ImageButton
-                android:id="@+id/drawBtn1"
+                android:id="@+id/drawBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:contentDescription="10"
-                android:src="@drawable/pen1"
+                android:src="@drawable/pen"
                 android:scaleType="centerInside"
                 android:background="@android:color/transparent"
                 android:padding="15dp"
                 android:onClick="@{vm::clickPen}"
-                android:text="얇은 펜"/>
+                android:text="펜"/>
 
-            <ImageButton
-                android:id="@+id/drawBtn2"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:contentDescription="20"
-                android:src="@drawable/pen2"
-                android:scaleType="centerInside"
-                android:background="@android:color/transparent"
-                android:padding="15dp"
-                android:onClick="@{vm::clickPen}"
-                android:text="중간 펜" />
+<!--            <ImageButton-->
+<!--                android:id="@+id/drawBtn2"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_weight="1"-->
+<!--                android:contentDescription="20"-->
+<!--                android:src="@drawable/pen2"-->
+<!--                android:scaleType="centerInside"-->
+<!--                android:background="@android:color/transparent"-->
+<!--                android:padding="15dp"-->
+<!--                android:onClick="@{vm::clickPen}"-->
+<!--                android:text="중간 펜" />-->
 
-            <ImageButton
-                android:id="@+id/drawBtn3"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:contentDescription="30"
-                android:src="@drawable/pen3"
-                android:scaleType="centerInside"
-                android:background="@android:color/transparent"
-                android:padding="15dp"
-                android:onClick="@{vm::clickPen}"
-                android:text="굵은 펜" />
+<!--            <ImageButton-->
+<!--                android:id="@+id/drawBtn3"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_weight="1"-->
+<!--                android:contentDescription="30"-->
+<!--                android:src="@drawable/pen3"-->
+<!--                android:scaleType="centerInside"-->
+<!--                android:background="@android:color/transparent"-->
+<!--                android:padding="15dp"-->
+<!--                android:onClick="@{vm::clickPen}"-->
+<!--                android:text="굵은 펜" />-->
 
             <ImageButton
                 android:id="@+id/shapeBtn"
@@ -129,6 +129,18 @@
                 android:padding="15dp"
                 android:onClick="@{vm::clickWarp}"
                 android:text="와핑" />
+
+            <ImageButton
+                android:id="@+id/autoDrawBtn"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:src="@drawable/auto_draw"
+                android:scaleType="centerInside"
+                android:background="@android:color/transparent"
+                android:padding="15dp"
+                android:onClick="@{vm::clickAutoDraw}"
+                android:text="오토드로" />
 
             <!--<Button
                 android:id="@+id/groupBtn"

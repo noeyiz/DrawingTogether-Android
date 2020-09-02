@@ -625,7 +625,7 @@ public class DrawingView extends View {
         return false;
     }
 
-    public void clear() {
+    public void clearDrawingView() {
         AlertDialog.Builder builder = new AlertDialog.Builder(de.getDrawingFragment().getActivity());
         builder.setTitle("화면 초기화").setMessage("모든 그리기 내용이 삭제됩니다.\n그래도 지우시겠습니까?");
 
@@ -671,6 +671,42 @@ public class DrawingView extends View {
                 de.clearBackgroundImage();
 
                 MyLog.i("drawing", "clear background image");
+            }
+        });
+
+        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                MyLog.i("drawing", "canceled");
+            }
+        });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    public void clear() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(de.getDrawingFragment().getActivity());
+        builder.setTitle("전체 초기화").setMessage("모든 내용이 삭제됩니다.\n그래도 지우시겠습니까?");
+
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                de.initSelectedBitmap();
+
+                sendModeMqttMessage(Mode.CLEAR);
+                de.clearDrawingComponents();
+                de.clearTexts();
+                de.getDrawingFragment().getBinding().redoBtn.setEnabled(false);
+                de.getDrawingFragment().getBinding().undoBtn.setEnabled(false);
+                invalidate();
+
+                de.setCurrentMode(Mode.CLEAR_BACKGROUND_IMAGE);
+                sendModeMqttMessage(Mode.CLEAR_BACKGROUND_IMAGE);
+                de.setBackgroundImage(null);
+                de.clearBackgroundImage();
+
+                MyLog.i("drawing", "clear all");
             }
         });
 

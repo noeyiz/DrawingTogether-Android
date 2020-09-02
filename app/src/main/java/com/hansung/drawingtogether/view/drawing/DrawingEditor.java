@@ -1150,9 +1150,6 @@ public enum DrawingEditor {
     }
 
     public void clearBackgroundImage() {
-//        drawingFragment.getBinding().backgroundView.removeAllViews();
-        this.setCurrentMode(Mode.ERASE);
-
         // fixme jiiyeon[0825]
         drawingFragment.getBinding().backgroundView.setImage(null);
     }
