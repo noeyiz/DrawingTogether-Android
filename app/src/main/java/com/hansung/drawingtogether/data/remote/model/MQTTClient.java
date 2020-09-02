@@ -1334,7 +1334,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 WarpData data = warpingMessage.getWarpData();
                 ((WarpingControlView)client.getBinding().backgroundView).warping2(data.getAction(), data.getPoints());
                 break;
-            case AUTO:
+            case AURODRAW:
                 AutoDrawMessage autoDrawMessage = message.getAutoDrawMessage();
                 ImageView imageView = new ImageView(MainActivity.context);
                 imageView.setLayoutParams(new LinearLayout.LayoutParams(300, 300));
