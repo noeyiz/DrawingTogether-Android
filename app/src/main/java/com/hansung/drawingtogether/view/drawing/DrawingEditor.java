@@ -151,6 +151,9 @@ public enum DrawingEditor {
 
         isIntercept = false;
         isMidEntered = false;
+
+        autoDrawImageList.clear();
+        autoDrawImageViewList.clear();
     }
 
     public void printDrawingData() {

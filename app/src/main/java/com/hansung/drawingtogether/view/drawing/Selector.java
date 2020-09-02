@@ -28,7 +28,7 @@ public class Selector {
             return;
         }
 
-        if(de.findEnclosingDrawingComponents(selectorPoint).size() != 1 && !de.isContainsRemovedComponentIds(de.findEnclosingDrawingComponents(selectorPoint))) {
+        if(de.findEnclosingDrawingComponents(selectorPoint).size() != 0  && !de.isContainsRemovedComponentIds(de.findEnclosingDrawingComponents(selectorPoint))) {
             selectedComponentId = de.findEnclosingDrawingComponents(selectorPoint).lastElement();
             MyLog.i("drawing", "selected shape ids = " + selectedComponentId);
         }
