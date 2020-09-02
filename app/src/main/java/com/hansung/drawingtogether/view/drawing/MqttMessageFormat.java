@@ -4,6 +4,7 @@ import android.graphics.Point;
 
 import com.hansung.drawingtogether.view.main.AliveMessage;
 import com.hansung.drawingtogether.view.main.AudioMessage;
+import com.hansung.drawingtogether.view.main.AutoDrawMessage;
 import com.hansung.drawingtogether.view.main.CloseMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinAckMessage;
@@ -52,6 +53,8 @@ public class MqttMessageFormat {
     private AudioMessage audioMessage;
 
     private WarpingMessage warpingMessage;
+
+    private AutoDrawMessage autoDrawMessage;
 
     // fixme nayeon 중간자 처리 시 필요한 변수 추가
     private ArrayList<DrawingComponent> drawingComponents;
@@ -175,6 +178,13 @@ public class MqttMessageFormat {
         this.type = type;
         this.action  = action;
         this.warpingMessage = warpingMessage;
+    }
+
+    public MqttMessageFormat(String username, Mode mode, ComponentType type, AutoDrawMessage autoDrawMessage) {
+        this.username = username;
+        this.mode = mode;
+        this.type = type;
+        this.autoDrawMessage = autoDrawMessage;
     }
 
     public MqttMessageFormat(JoinMessage joinMessage) {

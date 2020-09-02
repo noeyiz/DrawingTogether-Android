@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.PictureDrawable;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Environment;
@@ -15,7 +16,10 @@ import android.provider.MediaStore;
 
 import android.util.Log;
 
+import android.view.LayoutInflater;
 import android.view.View;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -25,12 +29,16 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
+import com.hansung.drawingtogether.AutoDrawInterface;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
+import com.hansung.drawingtogether.databinding.DialogAutoDrawBinding;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
@@ -92,6 +100,9 @@ public class DrawingViewModel extends BaseViewModel {
 
     private ImageButton preMenuButton;
 
+    private MutableLiveData<String> autoDrawImage = new MutableLiveData<>();
+    private String autoDrawImageUrl;
+
     public DrawingViewModel() {
         setUserNum(0);
         setUserPrint("");
@@ -116,6 +127,7 @@ public class DrawingViewModel extends BaseViewModel {
         de.setCurrentMode(Mode.DRAW);
 
 //        client.subscribe(topic + "_audio"); // fixme jiyeon
+
 
     }
 
@@ -296,6 +308,37 @@ public class DrawingViewModel extends BaseViewModel {
     public void clickWarp(View view) {
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.WARP);
+    }
+
+    public void clickAutoDraw(View view) {
+        changeClickedButtonBackground(view);
+        de.setCurrentMode(Mode.AUTO);
+
+        DialogAutoDrawBinding binding = DialogAutoDrawBinding.inflate(LayoutInflater.from(MainActivity.context));
+        binding.webview.getSettings().setJavaScriptEnabled(true);
+        binding.webview.setWebChromeClient(new WebChromeClient());
+        binding.webview.loadUrl("file:///android_asset/canvas.html");
+        binding.webview.addJavascriptInterface(new AutoDrawInterface() {
+            @JavascriptInterface
+            @Override
+            public void setImage(String imageUrl) {
+                Log.e("img", imageUrl);
+                autoDrawImageUrl = imageUrl;
+            }
+        }, "AutoDrawInterface");
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
+                .setTitle("AutoDraw")
+                .setCancelable(false)
+                .setView(binding.getRoot())
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        autoDrawImage.postValue(autoDrawImageUrl);
+                    }
+                })
+                .create();
+
+        dialog.show();
     }
 
     public void changeClickedButtonBackground(View view) {
