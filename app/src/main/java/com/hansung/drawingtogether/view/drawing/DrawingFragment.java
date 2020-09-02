@@ -2,26 +2,24 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
-import android.graphics.drawable.PictureDrawable;
+import android.media.AudioManager;
 import android.media.ExifInterface;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Display;
-import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -35,7 +33,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
-
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,39 +43,34 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
-import lombok.Getter;
-import lombok.Setter;
 
-import com.bumptech.glide.RequestBuilder;
 import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.hansung.drawingtogether.R;
-
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
 import com.hansung.drawingtogether.data.remote.model.ExitType;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
+import com.hansung.drawingtogether.monitoring.ComponentCount;
+import com.hansung.drawingtogether.monitoring.MonitoringDataWriter;
+import com.hansung.drawingtogether.monitoring.MonitoringRunnable;
 import com.hansung.drawingtogether.view.NavigationCommand;
-import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.main.AutoDrawMessage;
 import com.hansung.drawingtogether.view.main.DatabaseTransaction;
 import com.hansung.drawingtogether.view.main.JoinMessage;
-
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 
-
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+
+import lombok.Getter;
+import lombok.Setter;
 
 
 
@@ -110,6 +102,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     private Toolbar toolbar;
     private TextView title;
 
+    private MonitoringRunnable monitoringRunnable = MonitoringRunnable.getInstance();
+
     //private LinearLayout topToolLayout;
     //private Button doneBtn;
 
@@ -135,6 +129,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
         JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
+        Log.e("monitoring", "check parser init");
 
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 
@@ -182,12 +177,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         }
 
         if(de.getBackgroundImage() != null) {   //backgroundImage 다시 붙이기
-//            binding.backgroundView.removeAllViews();
-//            ImageView imageView = new ImageView(this.getContext());
-//            imageView.setLayoutParams(new LinearLayout.LayoutParams(this.getSize().x, ViewGroup.LayoutParams.MATCH_PARENT));
-//            imageView.setImageBitmap(de.getBackgroundImage());
-//            binding.backgroundView.addView(imageView);
-
             // fixme jiyeon[0825]
             binding.backgroundView.setImage(de.getBackgroundImage());
         }
@@ -207,6 +196,35 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             Thread th = new Thread(aliveTh);
             th.start();
             client.setThread(th);
+
+            if(client.isMaster()) {
+                Log.e("monitoring", "mqtt client class init func. check master. i'am master.");
+                client.setComponentCount(new ComponentCount(client.getTopic()));
+                Thread monitoringThread = new Thread(monitoringRunnable);
+                monitoringThread.start();
+                client.setMonitoringThread(monitoringThread);
+            }
+
+//            intent = new Intent(MainActivity.context, AliveBackgroundService.class);
+//            MainActivity.context.startService(intent);
+
+            /*if (data.isAliveThreadMode() && !data.isAliveBackground()) {
+                MyLog.e("alive", "DrawingFragment: " + data.isAliveThreadMode());
+                // fixme hyeyeon
+                aliveTh.setSecond(2000);
+                aliveTh.setCount(0);
+                Thread th = new Thread(aliveTh);
+                th.start();
+                client.setThread(th);
+            }
+            else if (data.isAliveThreadMode() && data.isAliveBackground()) {
+                intent = new Intent(MainActivity.context, AliveBackgroundService.class);
+                MainActivity.context.startService(intent);
+            }
+            else {
+                MyLog.e("alive", "alive publish 안함");
+            }
+            MyLog.e("alive", "DrawingFragment aliveBackground: " + data.isAliveBackground());*/
 
         }
 
@@ -295,7 +313,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         binding.setLifecycleOwner(this);
 
         setHasOptionsMenu(true);
-        drawingViewModel.checkPermission(getContext());
 
         ((MainActivity)getActivity()).setOnLeftTopBackListener(new MainActivity.OnLeftTopBackListener() {
             @Override
@@ -492,13 +509,14 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                     if (error != null) {
                         exitProgressDialog.dismiss();
 
-                        showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage(), rightBottomBackPressed);
+                        showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage());
                         MyLog.e("transaction", error.getDetails());
                         return;
                     }
 
                     if (client.getClient().isConnected()) {
                         client.exitTask();
+                        MonitoringDataWriter.getInstance().write();
                     }
                     if (rightBottomBackPressed) {
                         getActivity().finish();
@@ -516,7 +534,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         }
     }
 
-    public void showDatabaseErrorAlert(String title, String message, final boolean rightBottomBackPressed) {
+    public void showDatabaseErrorAlert(String title, String message) {
 
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
                 .setTitle(title)
@@ -525,24 +543,13 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (client.getClient().isConnected()) {
-                            client.exitTask();
-                        }
-                        if (rightBottomBackPressed) {
-                            getActivity().finish();
-                            android.os.Process.killProcess(android.os.Process.myPid());
-                            System.exit(10);
-                            return;
-                        }
-                        else {
-                            drawingViewModel.back();
-                            return;
-                        }
+
                     }
                 })
                 .create();
 
         dialog.show();
+
     }
 
     private void setProgressDialog() {
@@ -660,8 +667,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         switch(item.getItemId()) {
 
             // fixme jiyeon[0428]
-            case R.id.drawing_voice:
-                boolean click = drawingViewModel.clickVoice();
+            case R.id.drawing_mic:
+                boolean click = drawingViewModel.clickMic();
                 if (click) {
                     item.setIcon(R.drawable.mic);
                 } else {
@@ -836,11 +843,45 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         client.getUserList().clear();
         client.getTh().interrupt();
         client.setIsMid(true);
+        client.getConnOpts().setAutomaticReconnect(false);
+
+        // fixme jiyeon[0826] - 오디오 처리
+        if (drawingViewModel.isMicFlag()) {
+            drawingViewModel.getRecThread().setFlag(false);
+        }
+
+        drawingViewModel.getRecThread().stopRecording();
+        drawingViewModel.getRecThread().interrupt();
+
+        try {
+            if (client.getClient().isConnected()) {
+                client.getClient().unsubscribe(client.getTopic_audio());
+            }
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+        for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+            if (drawingViewModel.isSpeakerFlag()) {
+                audioPlayThread.setFlag(false);
+                AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
+                audioManager.setSpeakerphoneOn(false);
+            }
+
+            audioPlayThread.stopPlaying();
+            synchronized (audioPlayThread.getBuffer()) {
+                audioPlayThread.getBuffer().clear();
+            }
+            audioPlayThread.interrupt();
+        }
+        client.getAudioPlayThreadList().clear();
+        //
 
         if (client.getClient().isConnected()) {
             if (!client.isExitCompleteFlag()) {
                 MyLog.e("exit", "비정상 종료");
                 client.exitTask();
+                MonitoringDataWriter.getInstance().write();
             }
             try {
                 client.getClient().disconnect();
@@ -852,7 +893,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             }
         }
 
-        if (exitProgressDialog.isShowing()) {
+        if (exitProgressDialog != null && exitProgressDialog.isShowing()) {
             exitProgressDialog.dismiss();
         }
     }

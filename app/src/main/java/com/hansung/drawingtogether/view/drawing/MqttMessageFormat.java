@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Point;
 
+import com.hansung.drawingtogether.monitoring.ComponentCount;
 import com.hansung.drawingtogether.view.main.AliveMessage;
 import com.hansung.drawingtogether.view.main.AudioMessage;
 import com.hansung.drawingtogether.view.main.AutoDrawMessage;
@@ -43,13 +44,11 @@ public class MqttMessageFormat {
     private JoinMessage joinMessage;
     private JoinAckMessage joinAckMessage;
 
-    // fixme hyeyeon
     private ExitMessage exitMessage;
     private CloseMessage closeMessage;
     private AliveMessage aliveMessage;
     private NotiMessage notiMessage;
 
-    // fixme jiyeon
     private AudioMessage audioMessage;
 
     private WarpingMessage warpingMessage;
@@ -65,6 +64,8 @@ public class MqttMessageFormat {
     private Integer maxComponentId;
     private Integer maxTextId;
     private byte[] bitmapByteArray;
+
+    private ComponentCount componentCount;
 
     //draw - action down
     public MqttMessageFormat(String username, String usersComponentId, Mode mode, ComponentType type, DrawingComponent component, int action) {
@@ -114,18 +115,15 @@ public class MqttMessageFormat {
     }
 
     //select - down, move, up
-    Integer moveX;
-    Integer moveY;
-    public MqttMessageFormat(String username, String usersComponentId, Mode mode, int action, int moveX, int moveY) {
+    ArrayList<Point> moveSelectPoints;
+    public MqttMessageFormat(String username, String usersComponentId, Mode mode, int action, ArrayList<Point> moveSelectPoints) {
         this.username = username;
         this.usersComponentId = usersComponentId;
         this.mode = mode;
         this.action = action;
-        this.moveX = moveX;
-        this.moveY = moveY;
+        this.moveSelectPoints = moveSelectPoints;
     }
 
-    // fixme nayeon - 텍스트 동시성 처리
     public MqttMessageFormat(String username, Mode mode, ComponentType type, TextAttribute textAttr, TextMode textMode, int myTextArrayIndex) {
         this.username = username;
         this.mode = mode;
@@ -186,6 +184,7 @@ public class MqttMessageFormat {
         this.type = type;
         this.autoDrawMessage = autoDrawMessage;
     }
+    public MqttMessageFormat(ComponentCount componentCount) { this.componentCount = componentCount; }
 
     public MqttMessageFormat(JoinMessage joinMessage) {
         this.joinMessage = joinMessage;
@@ -214,4 +213,5 @@ public class MqttMessageFormat {
     public MqttMessageFormat(AudioMessage audioMessage) {
         this.audioMessage = audioMessage;
     }
+
 }

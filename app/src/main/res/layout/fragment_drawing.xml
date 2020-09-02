@@ -37,9 +37,9 @@
                 android:layout_weight="1"
                 android:contentDescription="10"
                 android:src="@drawable/pen1"
-                android:scaleType="centerCrop"
+                android:scaleType="centerInside"
                 android:background="@android:color/transparent"
-                android:padding="20dp"
+                android:padding="15dp"
                 android:onClick="@{vm::clickPen}"
                 android:text="얇은 펜"/>
 
@@ -50,9 +50,9 @@
                 android:layout_weight="1"
                 android:contentDescription="20"
                 android:src="@drawable/pen2"
-                android:scaleType="centerCrop"
+                android:scaleType="centerInside"
                 android:background="@android:color/transparent"
-                android:padding="20dp"
+                android:padding="15dp"
                 android:onClick="@{vm::clickPen}"
                 android:text="중간 펜" />
 
@@ -63,9 +63,9 @@
                 android:layout_weight="1"
                 android:contentDescription="30"
                 android:src="@drawable/pen3"
-                android:scaleType="centerCrop"
+                android:scaleType="centerInside"
                 android:background="@android:color/transparent"
-                android:padding="20dp"
+                android:padding="15dp"
                 android:onClick="@{vm::clickPen}"
                 android:text="굵은 펜" />
 
@@ -75,9 +75,9 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:src="@drawable/shape"
-                android:scaleType="centerCrop"
+                android:scaleType="centerInside"
                 android:background="@android:color/transparent"
-                android:padding="20dp"
+                android:padding="15dp"
                 android:onClick="@{vm::clickShape}"
                 android:text="shape" />
 
@@ -87,9 +87,9 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:src="@drawable/text"
-                android:scaleType="centerCrop"
+                android:scaleType="centerInside"
                 android:background="@android:color/transparent"
-                android:padding="20dp"
+                android:padding="15dp"
                 android:onClick="@{vm::clickText}"
                 android:text="text"
                 android:enabled = "true" /> <!-- fixme nayeon 텍스트 수정 전 까지 비활성화 -->
@@ -100,23 +100,23 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:src="@drawable/eraser"
-                android:scaleType="centerCrop"
+                android:scaleType="centerInside"
                 android:background="@android:color/transparent"
-                android:padding="20dp"
+                android:padding="15dp"
                 android:onClick="@{vm::clickEraser}"
                 android:text="지우개" />
 
-            <!--<ImageButton
+            <ImageButton
                 android:id="@+id/selectBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:src="@drawable/selector"
-                android:scaleType="centerCrop"
+                android:scaleType="centerInside"
                 android:background="@android:color/transparent"
-                android:padding="20dp"
+                android:padding="15dp"
                 android:onClick="@{vm::clickSelector}"
-                android:text="셀렉터" />-->
+                android:text="셀렉터" />
 
             <ImageButton
                 android:id="@+id/warpingBtn"
@@ -124,9 +124,9 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:src="@drawable/warping"
-                android:scaleType="centerCrop"
+                android:scaleType="centerInside"
                 android:background="@android:color/transparent"
-                android:padding="20dp"
+                android:padding="15dp"
                 android:onClick="@{vm::clickWarp}"
                 android:text="와핑" />
 
@@ -489,7 +489,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@null"
+                        android:background="#FFFFFF"
                         android:orientation="horizontal">
 
                         <com.hansung.drawingtogether.view.WarpingControlView
@@ -570,7 +570,8 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="10dp"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -611,6 +612,45 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/penModeLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp">
+
+                <ImageButton
+                    android:id="@+id/pencilBtn"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/pencil_1"
+                    android:layout_marginRight="15dp"
+                    android:scaleType="centerInside"
+                    android:background="@android:color/transparent"
+                    android:onClick="@{vm::clickPencil}"/>
+
+                <ImageButton
+                    android:id="@+id/highlightBtn"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/highlight_0"
+                    android:layout_marginRight="15dp"
+                    android:scaleType="centerInside"
+                    android:background="@android:color/transparent"
+                    android:onClick="@{vm::clickHighlight}"/>
+
+                <ImageButton
+                    android:id="@+id/neonBtn"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/neon_0"
+                    android:scaleType="centerInside"
+                    android:background="@android:color/transparent"
+                    android:onClick="@{vm::clickNeon}"/>
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/topToolLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -623,29 +663,30 @@
 
                 <ImageButton
                     android:id="@+id/undoBtn"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="right"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginRight="20dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="10dp"
                     android:background="@android:color/transparent"
                     android:onClick="@{vm::clickUndo}"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/undo"
+                    android:padding="8dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/undo2"
                     android:text="undo" />
 
                 <ImageButton
                     android:id="@+id/redoBtn"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="right"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginRight="20dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="10dp"
                     android:background="@android:color/transparent"
                     android:onClick="@{vm::clickRedo}"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/redo"
+                    android:padding="8dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/redo2"
                     android:text="redo" />
+            </LinearLayout>
 
                 <!--<TextView
                     android:layout_width="wrap_content"
@@ -662,10 +703,6 @@
                         android:layout_height="wrap_content"
                         android:text="@={vm.userAliveCount}" />
                 </LinearLayout>-->
-
-            </LinearLayout>
-
-
 
         </FrameLayout>
 

@@ -1,6 +1,7 @@
 
 package com.hansung.drawingtogether.view.main;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -9,6 +10,7 @@ import android.net.ConnectivityManager;
 import android.util.Log;
 
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.lifecycle.MutableLiveData;
 
@@ -16,10 +18,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.TedPermission;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.BaseViewModel;
+
+import java.util.List;
 
 public class MainViewModel extends BaseViewModel {
 
@@ -47,7 +53,7 @@ public class MainViewModel extends BaseViewModel {
 
         MyLog.e("kkankkan", "메인뷰모델 생성자");
 
-        ip.setValue("54.180.154.63");
+        ip.setValue("54.180.154.63");//("192.168.0.36");//
         port.postValue("1883");
         setTopic("");
         setPassword("");
@@ -340,6 +346,29 @@ public class MainViewModel extends BaseViewModel {
                 .create();
 
         dialog.show();
+    }
+
+    public void checkPermission(final Context context) {
+        PermissionListener permissionListener = new PermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+                //
+            }
+            @Override
+            public void onPermissionDenied(List<String> deniedPermissions) {
+                if (deniedPermissions.size() > 0) {
+                    ((MainActivity)MainActivity.context).finish();
+                    android.os.Process.killProcess(android.os.Process.myPid());
+                    System.exit(10);
+                }
+            }
+        };
+
+        TedPermission.with(context)
+                .setPermissionListener(permissionListener)
+                .setDeniedMessage(context.getResources().getString(R.string.permission))
+                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO)
+                .check();
     }
 
     public void showLocalHistory(View view) {

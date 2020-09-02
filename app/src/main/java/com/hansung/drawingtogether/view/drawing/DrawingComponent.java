@@ -35,6 +35,7 @@ public abstract class DrawingComponent {
     protected int height;
     protected boolean isErased = false;
     protected boolean isSelected = false;
+    protected PenMode penMode = PenMode.NORMAL;
     //protected byte[] byteArray;
     //protected Canvas myCanvas;
     //protected Bitmap bitmap;
@@ -53,6 +54,52 @@ public abstract class DrawingComponent {
     public void calculateRatio(float myCanvasWidth, float myCanvasHeight) {
         this.xRatio = myCanvasWidth / this.drawnCanvasWidth;
         this.yRatio = myCanvasHeight / this.drawnCanvasHeight;
+    }
+
+
+    public DrawingComponent clone() {
+
+        if (this.type == null) { return null; }
+
+        DrawingComponent dComponent = null;
+
+        switch (this.type) {
+            case STROKE:
+                dComponent = new Stroke();
+                break;
+            case RECT:
+                dComponent = new Rect();
+                break;
+            case OVAL:
+                dComponent = new Oval();
+                break;
+        }
+
+        dComponent.points = this.points;
+        dComponent.id = this.id;
+        dComponent.username = this.username;
+        dComponent.usersComponentId = this.usersComponentId;
+        dComponent.type = this.type;
+        dComponent.strokeColor = this.strokeColor;
+        dComponent.fillColor = this.fillColor;
+        dComponent.strokeAlpha = this.strokeAlpha;
+        dComponent.fillAlpha = this.fillAlpha;
+        dComponent.strokeWidth = this.strokeWidth;
+        dComponent.preSize = this.preSize;
+        dComponent.drawnCanvasWidth = this.drawnCanvasWidth;
+        dComponent.drawnCanvasHeight = this.drawnCanvasHeight;
+        dComponent.xRatio = this.xRatio;
+        dComponent.yRatio = this.yRatio;
+        dComponent.beginPoint = this.beginPoint;
+        dComponent.endPoint = this.endPoint;
+        dComponent.datumPoint = this.datumPoint;
+        dComponent.width = this.width;
+        dComponent.height = this.height;
+        dComponent.isErased = this.isErased;
+        dComponent.isSelected = this.isSelected;
+        dComponent.penMode = this.penMode;
+
+        return dComponent;
     }
 
     public abstract void draw(Canvas canvas);

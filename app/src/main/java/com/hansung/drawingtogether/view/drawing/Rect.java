@@ -15,27 +15,16 @@ public class Rect extends DrawingComponent {
 
     @Override
     public void draw(Canvas canvas) {
-        /*Point from = this.beginPoint;
-        Point to = this.endPoint;
+        //canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR); // Clear the canvas with a transparent color
+        //drawComponent(canvas);
 
-        Point prePoint = (this.preSize == 0) ? this.points.get(preSize) : this.points.get(preSize-1);
-
-        int width = Math.abs(to.x - from.x);
-        int height = Math.abs(to.y - from.y);
-
-        int preWidth = Math.abs(prePoint.x - from.x);
-        int preHeight = Math.abs(prePoint.y - from.y);
-
-        if(width < preWidth || height < preHeight) {
-            de.redraw();
-            this.drawComponent(canvas);
-
-        } else {
-            this.drawComponent(canvas);
-        }*/
-
-        de.redraw(this.usersComponentId);
-        drawComponent(canvas);
+        if(canvas == de.getMyCurrentCanvas()) {
+            de.clearMyCurrentBitmap();
+            drawComponent(canvas);
+        } else if(canvas == de.getCurrentCanvas()) {
+            de.clearCurrentBitmap();
+            de.drawOthersCurrentComponent(null);
+        }
     }
 
     @Override

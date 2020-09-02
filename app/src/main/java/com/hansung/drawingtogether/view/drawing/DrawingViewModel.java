@@ -50,6 +50,8 @@ import com.kakao.message.template.TextTemplate;
 import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -128,7 +130,11 @@ public class DrawingViewModel extends BaseViewModel {
 
 //        client.subscribe(topic + "_audio"); // fixme jiyeon
 
-
+        // fixme jiyeon[0824] -  RecordThread 하나만 두기
+        recThread = new RecordThread();
+        recThread.setBufferUnitSize(2);
+        recThread.start();
+        //
     }
 
     public void clickUndo(View view) {
@@ -148,7 +154,7 @@ public class DrawingViewModel extends BaseViewModel {
 
         DrawingFragment fragment = de.getDrawingFragment();
 
-        checkPermission(fragment.getContext()); // todo nayeon 권한 체크 앱 처음 실행 시 하도록 수정하기
+//        checkPermission(fragment.getContext()); // todo nayeon 권한 체크 앱 처음 실행 시 하도록 수정하기
 
         // todo nayeon
         DrawingViewController dvc = fragment.getBinding().drawingViewContainer;
@@ -181,10 +187,9 @@ public class DrawingViewModel extends BaseViewModel {
 
     }
 
-
     public void clickPen(View view) { // drawBtn1, drawBtn2, drawBtn3
         MyLog.d("button", "pen button click");
-
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.VISIBLE);
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.STROKE);
@@ -196,10 +201,35 @@ public class DrawingViewModel extends BaseViewModel {
         preMenuButton = (ImageButton)view; // fixme nayeon 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
     }
 
+    public void clickPencil(View view) {
+        de.getDrawingFragment().getBinding().pencilBtn.setImageResource(R.drawable.pencil_1);
+        de.getDrawingFragment().getBinding().highlightBtn.setImageResource(R.drawable.highlight_0);
+        de.getDrawingFragment().getBinding().neonBtn.setImageResource(R.drawable.neon_0);
+
+        de.setPenMode(PenMode.NORMAL);
+    }
+
+    public void clickHighlight(View view) {
+        de.getDrawingFragment().getBinding().pencilBtn.setImageResource(R.drawable.pencil_0);
+        de.getDrawingFragment().getBinding().highlightBtn.setImageResource(R.drawable.highlight_1);
+        de.getDrawingFragment().getBinding().neonBtn.setImageResource(R.drawable.neon_0);
+
+        de.setPenMode(PenMode.HIGHLIGHT);
+    }
+
+    public void clickNeon(View view) {
+        de.getDrawingFragment().getBinding().pencilBtn.setImageResource(R.drawable.pencil_0);
+        de.getDrawingFragment().getBinding().highlightBtn.setImageResource(R.drawable.highlight_0);
+        de.getDrawingFragment().getBinding().neonBtn.setImageResource(R.drawable.neon_1);
+
+        de.setPenMode(PenMode.NEON);
+    }
+
     public void clickEraser(View view) {
         MyLog.d("button", "eraser button click");
-
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.INVISIBLE);
         changeClickedButtonBackground(view);
+
         if(de.getCurrentMode() == Mode.ERASE)
             drawingCommands.postValue(new DrawingCommand.EraserMode(view));     //fixme minj add pixel eraser
         de.setCurrentMode(Mode.ERASE);
@@ -208,6 +238,7 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void clickText(View view) {
         MyLog.d("button", "text button click");
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.INVISIBLE);
 
         // 사용자가 처음 텍스트 편집창에서 텍스트 생성중인 경우
         // 텍스트 정보들을 모든 사용자가 갖고 있지 않음 ( 편집중인 사람만 갖고 있음 )
@@ -268,6 +299,7 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void clickShape(View view) {
         MyLog.d("button", "shape button click");
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.INVISIBLE);
 
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.DRAW);
@@ -280,6 +312,7 @@ public class DrawingViewModel extends BaseViewModel {
 
     public void clickSelector(View view) {
         MyLog.d("button", "selector button click");
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.INVISIBLE);
 
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.SELECT);
@@ -306,6 +339,7 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     public void clickWarp(View view) {
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.INVISIBLE);
         changeClickedButtonBackground(view);
         de.setCurrentMode(Mode.WARP);
     }
@@ -344,7 +378,6 @@ public class DrawingViewModel extends BaseViewModel {
     public void changeClickedButtonBackground(View view) {
         LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
 
-
         // fixme nayeon
         // preMenuButton -> 아무것도 누르지 않은 상태에서 텍스트 버튼 클릭했을 때 NULL
         // 제일 첫 번째 버튼 (얇은 펜(그리기)) 로 지정
@@ -368,38 +401,51 @@ public class DrawingViewModel extends BaseViewModel {
         }
     }
 
-    //fixme jiyeon[0428]
-    public boolean clickVoice() {
-        if (!micFlag) { // RECORD 시작
+    // fixme jiyeon[0825]
+    public boolean clickMic() {
+        if (!micFlag) { // Record Start
             micFlag = true;
-            recThread = new RecordThread();
-            recThread.setFlag(micFlag);
-            recThread.setBufferUnitSize(2);
-            new Thread(recThread).start();
+            synchronized (recThread.getAudioRecord()) {
+                recThread.getAudioRecord().notify();
+                MyLog.e("Audio", "Mic On - RecordThread Notify");
+            }
 
             return true;
-        } else {
+        } else { // Record Stop
             micFlag = false;
-            try {
-                micFlag = false;
-                recThread.setFlag(micFlag);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            recThread.setFlag(micFlag);
+            MyLog.e("Audio", "Mic  Off");
 
             return false;
         }
     }
 
-
+    // fixme jiyeon[0826]
     public int clickSpeaker() {
         speakerMode = (speakerMode + 1) % 3; // 0, 1, 2, 0, 1, 2, ...
 
         if (speakerMode == 0) { // SPEAKER MUTE
             audioManager.setSpeakerphoneOn(false);
             speakerFlag = false;
+            try {
+                if (client.getClient().isConnected()) {
+                    client.getClient().unsubscribe(client.getTopic_audio());
+                }
+            } catch (MqttException e) {
+                MyLog.e("Audio", "Topic Audio Unsubscribe error : " + e.getMessage());
+            }
+            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+                audioPlayThread.setFlag(speakerFlag);
+                audioPlayThread.getBuffer().clear();
+                MyLog.e("Audio", audioPlayThread.getUserName() + " buffer clear");
+            }
         } else if (speakerMode == 1) { // SPEAKER ON
             speakerFlag = true;
+            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+                synchronized (audioPlayThread.getAudioTrack()) {
+                    audioPlayThread.getAudioTrack().notify();
+                }
+            }
             client.subscribe(client.getTopic_audio());
         } else if (speakerMode == 2) { // SPEAKER LOUD
             audioManager.setSpeakerphoneOn(true);
@@ -407,7 +453,6 @@ public class DrawingViewModel extends BaseViewModel {
 
         return speakerMode;
     }
-    //
 
     public void getImageFromGallery(Fragment fragment) {
         Intent galleryIntent = new Intent(Intent.ACTION_PICK);
@@ -483,25 +528,6 @@ public class DrawingViewModel extends BaseViewModel {
         MyLog.e("kkankkan", photoPath);
 
         return image;
-    }
-
-    public void checkPermission(Context context) {
-        PermissionListener permissionListener = new PermissionListener() {
-            @Override
-            public void onPermissionGranted() {
-                //
-            }
-            @Override
-            public void onPermissionDenied(List<String> deniedPermissions) {
-                //
-            }
-        };
-
-        TedPermission.with(context)
-                .setPermissionListener(permissionListener)
-                .setDeniedMessage(context.getResources().getString(R.string.permission_camera))
-                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO)
-                .check();
     }
 
     private void showToastMsg(final String message) { Toast.makeText(de.getDrawingFragment().getActivity(), message, Toast.LENGTH_SHORT).show(); }
