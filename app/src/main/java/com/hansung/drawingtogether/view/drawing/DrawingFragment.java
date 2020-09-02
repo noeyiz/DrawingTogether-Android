@@ -25,13 +25,14 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
-
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,33 +43,33 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
-import lombok.Getter;
-import lombok.Setter;
 
+import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou;
 import com.google.firebase.database.DatabaseError;
 import com.hansung.drawingtogether.R;
-
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
-import com.hansung.drawingtogether.monitoring.ComponentCount;
 import com.hansung.drawingtogether.data.remote.model.ExitType;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.monitoring.MonitoringRunnable;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
+import com.hansung.drawingtogether.monitoring.ComponentCount;
+import com.hansung.drawingtogether.monitoring.MonitoringRunnable;
 import com.hansung.drawingtogether.view.NavigationCommand;
+import com.hansung.drawingtogether.view.main.AutoDrawMessage;
 import com.hansung.drawingtogether.view.main.DatabaseTransaction;
 import com.hansung.drawingtogether.view.main.JoinMessage;
-
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
-
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+
+import lombok.Getter;
+import lombok.Setter;
 
 
 
@@ -107,6 +108,9 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
 
     private ProgressDialog exitProgressDialog;
 
+    float dX, dY;
+
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -139,7 +143,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         am.setListener(); // 리스너 초기화
         am.showCurrentColor(Color.parseColor(de.getStrokeColor())); // 현재 색상 보여주기
 
-        binding.drawBtn1.setBackgroundColor(Color.rgb(233, 233, 233)); // 초기 얇은 펜으로 설정
+        binding.drawBtn.setBackgroundColor(Color.rgb(233, 233, 233)); // 초기 얇은 펜으로 설정
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
         inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -254,6 +258,45 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             }
         });
 
+        drawingViewModel.getAutoDrawImage().observe(getViewLifecycleOwner(), new Observer<String>() {
+            @Override
+            public void onChanged(final String url) {
+                Toast.makeText(getContext(), "이미지를 원하는 위치로 드래그해주세요.", Toast.LENGTH_SHORT).show();
+                final ImageView imageView = new ImageView(getContext());
+                imageView.setLayoutParams(new LinearLayout.LayoutParams(300, 300));
+                binding.drawingViewContainer.addView(imageView);
+                GlideToVectorYou.init().with(getContext()).load(Uri.parse(url),imageView);
+                imageView.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View view, MotionEvent event) {
+                        switch (event.getAction()) {
+                            case MotionEvent.ACTION_DOWN:
+                                dX = view.getX() - event.getRawX();
+                                dY = view.getY() - event.getRawY();
+                                break;
+                            case MotionEvent.ACTION_MOVE:
+                                view.animate()
+                                        .x(event.getRawX() + dX - (view.getWidth() / 2))
+                                        .y(event.getRawY() + dY - (view.getHeight() / 2))
+                                        .setDuration(0)
+                                        .start();
+                                break;
+                            case MotionEvent.ACTION_UP:
+                                imageView.setOnTouchListener(null);
+                                AutoDrawMessage autoDrawMessage = new AutoDrawMessage(data.getName(), url, view.getX(), view.getY());
+                                MqttMessageFormat messageFormat = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), de.getCurrentType(), autoDrawMessage);
+                                client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
+                                de.addAutoDraw(autoDrawMessage.getUrl(), imageView);
+                                break;
+                            default:
+                                return false;
+                        }
+                        return true;
+                    }
+                });
+            }
+        });
+
         binding.userInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -291,7 +334,10 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         popupWindow.showAtLocation(penSettingPopup, Gravity.NO_GRAVITY, location[0], location[1] - penSettingPopup.getMeasuredHeight());
         popupWindow.setElevation(20);
 
-        if(layout == R.layout.popup_eraser_mode) {
+        if (layout == R.layout.popup_pen_mode) {
+            setPenPopupClickListener(penSettingPopup, popupWindow);
+        }
+        else if(layout == R.layout.popup_eraser_mode) {
             setEraserPopupClickListener(penSettingPopup, popupWindow);
         }
         else if(layout == R.layout.popup_shape_mode) {
@@ -299,7 +345,55 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         }
     }
 
+
+    private void setPenPopupClickListener(View penSettingPopup, final PopupWindow popupWindow) {
+        final Button drawBtn1 = penSettingPopup.findViewById(R.id.drawBtn1);
+        drawBtn1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MyLog.d("button", "draw1 pen button click");
+                de.setStrokeWidth(10);
+                popupWindow.dismiss();
+            }
+        });
+        final Button drawBtn2 = penSettingPopup.findViewById(R.id.drawBtn2);
+        drawBtn2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyLog.d("button", "draw2 pen button click");
+                popupWindow.dismiss();de.setStrokeWidth(20);
+            }
+        });
+        final Button drawBtn3 = penSettingPopup.findViewById(R.id.drawBtn3);
+        drawBtn3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyLog.d("button", "draw3 pen button click");
+                popupWindow.dismiss();
+                de.setStrokeWidth(30);
+            }
+        });
+    }
+
+
     private void setEraserPopupClickListener(View penSettingPopup, final PopupWindow popupWindow) {
+        final Button clearBtn = penSettingPopup.findViewById(R.id.clearBtn);
+        if(client.isMaster()) {
+            clearBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    MyLog.d("button", "clear button click"); // fixme nayeon
+
+                    binding.drawingView.clear();
+                    popupWindow.dismiss();
+                }
+            });
+        }
+        else {
+            clearBtn.setTextColor(Color.LTGRAY);
+            clearBtn.setEnabled(false);
+        }
+
         final Button backgroundEraserBtn = penSettingPopup.findViewById(R.id.backgroundEraserBtn);
         if(client.isMaster()) {
             backgroundEraserBtn.setOnClickListener(new View.OnClickListener() {
@@ -317,21 +411,21 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             backgroundEraserBtn.setEnabled(false);
         }
 
-        final Button clearBtn = penSettingPopup.findViewById(R.id.clearBtn);
+        final Button viewEraserBtn = penSettingPopup.findViewById(R.id.viewEraserBtn);
         if(client.isMaster()) {
-            clearBtn.setOnClickListener(new View.OnClickListener() {
+            viewEraserBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     MyLog.d("button", "drawing clear button click"); // fixme nayeon
 
-                    binding.drawingView.clear();
+                    binding.drawingView.clearDrawingView();
                     popupWindow.dismiss();
                 }
             });
         }
         else {
-            clearBtn.setTextColor(Color.LTGRAY);
-            clearBtn.setEnabled(false);
+            viewEraserBtn.setTextColor(Color.LTGRAY);
+            viewEraserBtn.setEnabled(false);
         }
     }
 
@@ -465,7 +559,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                     if (error != null) {
                         exitProgressDialog.dismiss();
 
-                        showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage(), rightBottomBackPressed);
+                        showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage());
                         MyLog.e("transaction", error.getDetails());
                         return;
                     }
@@ -489,7 +583,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         }
     }
 
-    public void showDatabaseErrorAlert(String title, String message, final boolean rightBottomBackPressed) {
+    public void showDatabaseErrorAlert(String title, String message) {
 
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
                 .setTitle(title)
@@ -498,24 +592,13 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (client.getClient().isConnected()) {
-                            client.exitTask();
-                        }
-                        if (rightBottomBackPressed) {
-                            getActivity().finish();
-                            android.os.Process.killProcess(android.os.Process.myPid());
-                            System.exit(10);
-                            return;
-                        }
-                        else {
-                            drawingViewModel.back();
-                            return;
-                        }
+
                     }
                 })
                 .create();
 
         dialog.show();
+
     }
 
     private void setProgressDialog() {
@@ -816,6 +899,9 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             drawingViewModel.getRecThread().setFlag(false);
         }
 
+        drawingViewModel.getRecThread().stopRecording();
+        drawingViewModel.getRecThread().interrupt();
+
         try {
             if (client.getClient().isConnected()) {
                 client.getClient().unsubscribe(client.getTopic_audio());
@@ -823,9 +909,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         } catch (MqttException e) {
             e.printStackTrace();
         }
-
-        drawingViewModel.getRecThread().stopRecording();
-        drawingViewModel.getRecThread().interrupt();
 
         for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
             if (drawingViewModel.isSpeakerFlag()) {

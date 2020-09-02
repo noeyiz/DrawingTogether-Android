@@ -4,13 +4,17 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.monitoring.ComponentCount;
 import com.hansung.drawingtogether.view.WarpingControlView;
@@ -30,6 +34,7 @@ import com.hansung.drawingtogether.view.drawing.Text;
 import com.hansung.drawingtogether.view.drawing.TextAttribute;
 import com.hansung.drawingtogether.view.drawing.TextMode;
 import com.hansung.drawingtogether.view.main.AliveMessage;
+import com.hansung.drawingtogether.view.main.AutoDrawMessage;
 import com.hansung.drawingtogether.view.main.CloseMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
 import com.hansung.drawingtogether.view.main.JoinAckMessage;
@@ -250,8 +255,11 @@ public enum MQTTClient {
         try {
             client.publish(newTopic, new MqttMessage(payload));
         } catch (MqttException e) {
-            e.printStackTrace();
-            showTimerAlertDialog("메시지 전송 실패", "메인 화면으로 이동합니다");
+            if (drawingViewModel.getRecThread().isAlive()) {
+                drawingViewModel.getRecThread().interrupt();
+            }
+//            e.printStackTrace();
+//            showTimerAlertDialog("메시지 전송 실패", "메인 화면으로 이동합니다");
         }
     }
 
@@ -502,6 +510,15 @@ public enum MQTTClient {
                                         byte[] backgroundImage = de.bitmapToByteArray(((WarpingControlView)MQTTClient.getInstance().getBinding().backgroundView).getImage());
                                         client2.publish(topic_image, new MqttMessage(backgroundImage));
                                     }
+                                    for (int i = 0; i < de.getAutoDrawImageList().size(); i++) {
+                                        String url = de.getAutoDrawImageList().get(i);
+                                        ImageView view = de.getAutoDrawImageViewList().get(i);
+                                        AutoDrawMessage autoDrawMessage = new AutoDrawMessage(data.getName(), url, view.getX(), view.getY());
+                                        MqttMessageFormat messageFormat2 = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), de.getCurrentType(), autoDrawMessage);
+                                        String json2 = parser.jsonWrite(messageFormat2);
+                                        client2.publish(topic_data, new MqttMessage(json2.getBytes()));
+                                    }
+
                                     setToastMsg("[ " + name + " ] 님에게 데이터 전송을 완료했습니다");
 
                                 } else {
@@ -1243,8 +1260,18 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 break;
             case WARP:
                 this.warpingMessage = message.getWarpingMessage();
-                MotionEvent event = warpingMessage.getEvent();
-                ((WarpingControlView)client.getBinding().backgroundView).dispatchEvent(event);
+                WarpData data = warpingMessage.getWarpData();
+                ((WarpingControlView)client.getBinding().backgroundView).warping2(data.getAction(), data.getPoints());
+                break;
+            case AURODRAW:
+                AutoDrawMessage autoDrawMessage = message.getAutoDrawMessage();
+                ImageView imageView = new ImageView(MainActivity.context);
+                imageView.setLayoutParams(new LinearLayout.LayoutParams(300, 300));
+                imageView.setX(autoDrawMessage.getX());
+                imageView.setY(autoDrawMessage.getY());
+                client.getBinding().drawingViewContainer.addView(imageView);
+                GlideToVectorYou.init().with(MainActivity.context).load(Uri.parse(autoDrawMessage.getUrl()),imageView);
+                de.addAutoDraw(autoDrawMessage.getUrl(), imageView);
                 break;
         }
     }

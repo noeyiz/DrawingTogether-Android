@@ -11,6 +11,8 @@ import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.SparseArray;
+import android.view.ViewManager;
+import android.widget.ImageView;
 
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 
@@ -102,6 +104,10 @@ public enum DrawingEditor {
     private String textColor = "#000000";
     private int fontStyle = Typeface.BOLD;
     private int textBackground = Color.TRANSPARENT;
+
+    /* Auto Draw */
+    private ArrayList<String> autoDrawImageList = new ArrayList<>();
+    private ArrayList<ImageView> autoDrawImageViewList = new ArrayList<>();
 
     // 드로잉 하는동안 저장되는 모든 데이터들 지우기 [나가기 버튼 눌렀을 때 처리 필요 - MQTTClient.java if(topic_exit, topic_delete) 부분에서 호출]
     public void removeAllDrawingData() {
@@ -1144,6 +1150,12 @@ public enum DrawingEditor {
         clearDrawingBoardArray();
         removedComponentId.clear();
         drawingBoardMap.clear();
+        for (int i = 0; i < autoDrawImageViewList.size(); i++) {
+            ImageView view = autoDrawImageViewList.get(i);
+            ((ViewManager) view.getParent()).removeView(view);
+        }
+        autoDrawImageList.clear();
+        autoDrawImageViewList.clear();
     }
 
     public void clearTexts() {
@@ -1153,8 +1165,6 @@ public enum DrawingEditor {
     }
 
     public void clearBackgroundImage() {
-//        drawingFragment.getBinding().backgroundView.removeAllViews();
-        //this.setCurrentMode(Mode.ERASE);
 
         // fixme jiiyeon[0825]
         drawingFragment.getBinding().backgroundView.setImage(null);
@@ -1309,6 +1319,11 @@ public enum DrawingEditor {
 
     public void setDrawingShape(boolean drawingShape) {
         isDrawingShape = drawingShape;
+    }
+
+    public void addAutoDraw(String image, ImageView view) {
+        this.autoDrawImageList.add(image);
+        this.autoDrawImageViewList.add(view);
     }
 
     public void setCurrentBitmap(Bitmap currentBitmap) { this.currentBitmap = currentBitmap; }
