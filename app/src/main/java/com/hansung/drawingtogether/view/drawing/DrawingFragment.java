@@ -53,7 +53,6 @@ import com.hansung.drawingtogether.monitoring.ComponentCount;
 import com.hansung.drawingtogether.data.remote.model.ExitType;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.monitoring.MonitoringDataWriter;
 import com.hansung.drawingtogether.monitoring.MonitoringRunnable;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
@@ -473,7 +472,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
 
                     if (client.getClient().isConnected()) {
                         client.exitTask();
-                        MonitoringDataWriter.getInstance().write();
                     }
                     if (rightBottomBackPressed) {
                         getActivity().finish();
@@ -502,7 +500,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                     public void onClick(DialogInterface dialog, int which) {
                         if (client.getClient().isConnected()) {
                             client.exitTask();
-                            MonitoringDataWriter.getInstance().write();
                         }
                         if (rightBottomBackPressed) {
                             getActivity().finish();
@@ -850,7 +847,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             if (!client.isExitCompleteFlag()) {
                 MyLog.e("exit", "비정상 종료");
                 client.exitTask();
-                MonitoringDataWriter.getInstance().write();
             }
             try {
                 client.getClient().disconnect();

@@ -32,7 +32,8 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
         //de.redrawErasedDrawingComponent(erasedComponentIds);  //지워진 components 만 xfermode 로 그리기
         //de.getDrawingView().invalidate();
 
-        for(int i=1; i<erasedComponentIds.size(); i++) {
+        //for(int i=1; i<erasedComponentIds.size(); i++) {
+        for(int i=0; i<erasedComponentIds.size(); i++) {
             try {
                 DrawingComponent comp = de.findDrawingComponentById(erasedComponentIds.get(i));
                 if((comp != null) && comp.isSelected()) {
@@ -64,7 +65,8 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
             }
         }
 
-        for(int i=1; i<erasedComponentIds.size(); i++) {
+        //for(int i=1; i<erasedComponentIds.size(); i++) {
+        for(int i=0; i<erasedComponentIds.size(); i++) {
             int id = erasedComponentIds.get(i);
             de.removeDrawingComponents(id);
         }

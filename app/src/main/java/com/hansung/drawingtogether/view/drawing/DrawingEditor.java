@@ -225,7 +225,7 @@ public enum DrawingEditor {
         }
 
         MyLog.i("drawing", "drawingBoardArray[][] w=" + drawingBoardArray[0].length + ", h=" + drawingBoardArray.length);
-        MyLog.i("drawing", "dba[0][0] = " + drawingBoardArray[0][0].get(0));
+        //MyLog.i("drawing", "dba[0][0] = " + drawingBoardArray[0][0].get(0));
     }
 
     public void addCurrentComponents(DrawingComponent component) {
@@ -389,6 +389,7 @@ public enum DrawingEditor {
         }
         selectedComponent.setSelected(false);
         //selectedComponent = null;
+        clearMyCurrentBitmap();
         if(updateBitmap) { updateDrawingBitmap(false); }
         //clearAllSelectedBitmap();
         //drawingFragment.getBinding().drawingView.invalidate();
@@ -682,7 +683,8 @@ public enum DrawingEditor {
 
     public boolean isContainsRemovedComponentIds(Vector<Integer> ids) {
         boolean flag = true;
-        for (int i=1; i<ids.size(); i++) {
+        //for (int i=1; i<ids.size(); i++) {
+        for (int i=0; i<ids.size(); i++) {
             if(!removedComponentId.contains(ids.get(i))) {
                 flag = false;
             }
@@ -849,7 +851,7 @@ public enum DrawingEditor {
             for (int i=0; i<height; i++) {
                 for (int j=0; j<width; j++) {
                     drawingBoardArray[i][j] = new Vector<>();
-                    drawingBoardArray[i][j].add(-1);
+                    //drawingBoardArray[i][j].add(-1);
                 }
             }
         } catch(OutOfMemoryError e) {
@@ -1077,7 +1079,8 @@ public enum DrawingEditor {
     }
 
     public void eraseDrawingBoardArray(Vector<Integer> erasedComponentIds) {
-        for (int i=1; i<erasedComponentIds.size(); i++) {    //i=0 --> -1
+        //for (int i=1; i<erasedComponentIds.size(); i++) {    //i=0 --> -1
+        for (int i=0; i<erasedComponentIds.size(); i++) {    //i=0 --> -1
             int id = erasedComponentIds.get(i);
 
             ArrayList<Point> newPoints = (drawingBoardMap.get(id));
@@ -1151,7 +1154,7 @@ public enum DrawingEditor {
 
     public void clearBackgroundImage() {
 //        drawingFragment.getBinding().backgroundView.removeAllViews();
-        this.setCurrentMode(Mode.ERASE);
+        //this.setCurrentMode(Mode.ERASE);
 
         // fixme jiiyeon[0825]
         drawingFragment.getBinding().backgroundView.setImage(null);
