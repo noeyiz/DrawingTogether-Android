@@ -25,13 +25,14 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
-
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,34 +43,34 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
-import lombok.Getter;
-import lombok.Setter;
 
+import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou;
 import com.google.firebase.database.DatabaseError;
 import com.hansung.drawingtogether.R;
-
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
-import com.hansung.drawingtogether.monitoring.ComponentCount;
 import com.hansung.drawingtogether.data.remote.model.ExitType;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
-import com.hansung.drawingtogether.monitoring.MonitoringDataWriter;
-import com.hansung.drawingtogether.monitoring.MonitoringRunnable;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
+import com.hansung.drawingtogether.monitoring.ComponentCount;
+import com.hansung.drawingtogether.monitoring.MonitoringDataWriter;
+import com.hansung.drawingtogether.monitoring.MonitoringRunnable;
 import com.hansung.drawingtogether.view.NavigationCommand;
+import com.hansung.drawingtogether.view.main.AutoDrawMessage;
 import com.hansung.drawingtogether.view.main.DatabaseTransaction;
 import com.hansung.drawingtogether.view.main.JoinMessage;
-
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
-
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+
+import lombok.Getter;
+import lombok.Setter;
 
 
 
@@ -107,6 +108,9 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     //private Button doneBtn;
 
     private ProgressDialog exitProgressDialog;
+
+    float dX, dY;
+
 
     @Override
     public void onAttach(Context context) {
@@ -252,6 +256,45 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 if (navigationCommand instanceof  NavigationCommand.Back) {
                     NavHostFragment.findNavController(DrawingFragment.this).popBackStack();
                 }
+            }
+        });
+
+        drawingViewModel.getAutoDrawImage().observe(getViewLifecycleOwner(), new Observer<String>() {
+            @Override
+            public void onChanged(final String url) {
+                Toast.makeText(getContext(), "이미지를 원하는 위치로 드래그해주세요.", Toast.LENGTH_SHORT).show();
+                final ImageView imageView = new ImageView(getContext());
+                imageView.setLayoutParams(new LinearLayout.LayoutParams(300, 300));
+                binding.drawingViewContainer.addView(imageView);
+                GlideToVectorYou.init().with(getContext()).load(Uri.parse(url),imageView);
+                imageView.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View view, MotionEvent event) {
+                        switch (event.getAction()) {
+                            case MotionEvent.ACTION_DOWN:
+                                dX = view.getX() - event.getRawX();
+                                dY = view.getY() - event.getRawY();
+                                break;
+                            case MotionEvent.ACTION_MOVE:
+                                view.animate()
+                                        .x(event.getRawX() + dX - (view.getWidth() / 2))
+                                        .y(event.getRawY() + dY - (view.getHeight() / 2))
+                                        .setDuration(0)
+                                        .start();
+                                break;
+                            case MotionEvent.ACTION_UP:
+                                imageView.setOnTouchListener(null);
+                                AutoDrawMessage autoDrawMessage = new AutoDrawMessage(data.getName(), url, view.getX(), view.getY());
+                                MqttMessageFormat messageFormat = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), de.getCurrentType(), autoDrawMessage);
+                                client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
+                                de.addAutoDraw(autoDrawMessage.getUrl(), imageView);
+                                break;
+                            default:
+                                return false;
+                        }
+                        return true;
+                    }
+                });
             }
         });
 
