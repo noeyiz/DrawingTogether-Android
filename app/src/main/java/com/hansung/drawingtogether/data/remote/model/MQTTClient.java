@@ -17,8 +17,6 @@ import android.widget.Toast;
 import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.monitoring.ComponentCount;
-import com.hansung.drawingtogether.monitoring.MonitoringDataWriter;
-import com.hansung.drawingtogether.monitoring.Velocity;
 import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.drawing.AudioPlayThread;
 import com.hansung.drawingtogether.view.drawing.ComponentType;
@@ -126,12 +124,6 @@ public enum MQTTClient {
     private int networkTry = 0;
     //
 
-    /* monitoring data structure */
-
-    // [Key] UUID [Value] Velocity
-    public static Vector<Velocity> receiveTimeList = new Vector<Velocity>();  // 메시지를 수신하는데 걸린 속도 데이터
-    public static Vector<Velocity> displayTimeList = new Vector<Velocity>();  // 화면에 출력하는데 걸린 속도 데이터
-    public static Vector<Velocity> deliveryTimeList = new Vector<Velocity>(); // 중간 참여자에게 메시지를 전송하는데 걸린 속도 데이터
 
     private MqttConnectOptions connOpts;
 
@@ -437,28 +429,6 @@ public enum MQTTClient {
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
 
-//                System.out.println("message arrived");
-//                System.out.println(message.toString());
-
-                /*if(!newTopic.equals(topic_image)) {
-                    MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(new String(message.getPayload()));
-
-                    Log.e("monitoring", mmf.getUsername() + " ? " + myName);
-
-                    // fixme nayeon: monitoring
-                    if (isMaster() && mmf.getAction() != null && mmf.getAction() == MotionEvent.ACTION_MOVE
-                            && (mmf.getType() != null && mmf.getType().equals(ComponentType.STROKE))) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
-                        if (mmf.getUsername().equals(myName)) { // 자기 자신이 보낸 메시지일 경우 [메시지를 받는데 걸린 시간 측정]
-                            (receiveTimeList.lastElement()).calcTime(System.currentTimeMillis(), message.getPayload().length);
-                            printReceiveTimeList();
-                        }
-                        else if (!mmf.getUsername().equals(myName)) { // 다른 사람이 보낸 메시지일 경우 [화면에 그리는 시간 측정]
-                            displayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), message.getPayload().length));
-                        }
-                    }
-                }*/
-
-
                 // [ 중간자 ]
                 if (newTopic.equals(topic_join)) {
 
@@ -534,9 +504,6 @@ public enum MQTTClient {
                                     MqttMessageFormat messageFormat = new MqttMessageFormat(joinAckMsgMaster, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId(), de.getMaxComponentId(), de.getMaxTextId());
                                     String json = parser.jsonWrite(messageFormat);
 
-                                    // fixme nayeon: monitoring
-                                    deliveryTimeList.add(new Velocity(System.currentTimeMillis(), name, json.getBytes().length));
-
                                     client2.publish(topic_join, new MqttMessage(json.getBytes()));
 
                                     if (de.getBackgroundImage() != null) {
@@ -575,17 +542,6 @@ public enum MQTTClient {
 
                         String name = joinAckMessage.getName();
                         String target = joinAckMessage.getTarget();
-
-                        // fixme nayeon: monitoring
-                        if(isMaster()) {
-                            for(Velocity v: deliveryTimeList) { // 해당 중간 참여자에게 메시지를 보낼때 생성한 속도
-                                if(v.getParticipant().equals(target)) {
-                                    v.calcTime(System.currentTimeMillis());
-                                    printDeliveryTimeList();
-                                    break;
-                                }
-                            }
-                        }
 
                         if (target.equals(myName)) {
                             if (name.equals(masterName)) {  // master가 보낸 메시지
@@ -739,7 +695,7 @@ public enum MQTTClient {
                     // 중간 참여자가 입장했을 때 처리
                     if(de.isMidEntered() && (messageFormat.getAction() != null && messageFormat.getAction() != MotionEvent.ACTION_UP)) { // fixme nayeon - getAction == null
                         //MyLog.i("drawing", "mid entering");
-                        if(/*getDrawingView().isIntercept() || */(de.isIntercept() && (de.getCurrentComponent(messageFormat.getUsersComponentId()) == null)))
+                        if(/*getDrawingView().isIntercept() || */(de.isIntercept() && (messageFormat.getAction() != null && messageFormat.getAction() == MotionEvent.ACTION_DOWN)) || (de.getCurrentComponent(messageFormat.getUsersComponentId()) == null))
                             return;
                     }
 
@@ -1049,7 +1005,6 @@ public enum MQTTClient {
                                 MyLog.d("button", "exit dialog ok button click"); // fixme nayeon
                                 if (client.isConnected()) {
                                     exitTask();
-                                    MonitoringDataWriter.getInstance().write();
                                 }
                                 if (progressDialog.isShowing())
                                     progressDialog.dismiss();  // todo 로딩하는 동안 터치 안먹히도록 수정해야함
@@ -1062,7 +1017,6 @@ public enum MQTTClient {
                                 if(!exitCompleteFlag) drawingViewModel.clickSave(); // fixme nayeon 저장
                                 if (client.isConnected()) {
                                     exitTask();
-                                    MonitoringDataWriter.getInstance().write();
                                 }
                                 if (progressDialog.isShowing())
                                     progressDialog.dismiss();  // todo 로딩하는 동안 터치 안먹히도록 수정해야함
@@ -1123,31 +1077,6 @@ public enum MQTTClient {
     public void setTotalMovePoint(int x, int y) {
         this.totalMoveX = x;
         this.totalMoveY = y;
-    }
-
-
-    /* monitoring function */
-
-    public void printReceiveTimeList() {
-        System.out.println("-------------------- Receive Time List --------------------");
-
-        for(int i=0; i<receiveTimeList.size(); i++)
-            System.out.println(i + ". " + receiveTimeList.get(i).toString());
-    }
-
-    public void printDisplayTimeList() {
-        System.out.println("-------------------- Display Time List --------------------");
-
-        for(int i=0; i<displayTimeList.size(); i++)
-            System.out.println(i + ". " + displayTimeList.get(i).toString());
-    }
-
-    public void printDeliveryTimeList() {
-        System.out.println("-------------------- Delivery Time List --------------------");
-
-        for(int i=0; i<deliveryTimeList.size(); i++)
-            System.out.println(i + ". " + deliveryTimeList.get(i).toString());
-
     }
 
 }

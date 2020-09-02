@@ -55,12 +55,16 @@ public class DrawingItem {
 
     public Vector<DrawingComponent> getComponents() {
         MyLog.i("isSelected", "set DrawingItem components selected false");
-
         for(DrawingComponent comp : components) {
             comp.setSelected(false);
         }
-
         return components;
+    }
+
+    public DrawingComponent getComponent() {
+        MyLog.i("isSelected", "set DrawingItem components selected false");
+        component.setSelected(false);
+        return component;
     }
 
 }

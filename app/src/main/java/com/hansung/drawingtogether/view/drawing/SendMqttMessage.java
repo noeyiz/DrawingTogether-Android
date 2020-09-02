@@ -1,10 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
-import android.view.MotionEvent;
-
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
-import com.hansung.drawingtogether.monitoring.Velocity;
 
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -71,14 +68,6 @@ public class SendMqttMessage {    //consumer  //queue 가 비어있을때까지 
                         MyLog.i("sendThread", "before publish");
                         MqttMessageFormat messageFormat = queue.take();
                         //MyLog.i("sendThread", "active thread count: " + Thread.activeCount() + ", current: " + Thread.currentThread().getName());
-
-                        // fixme nayeon: monitoring
-                        if(client.isMaster()
-                                && messageFormat.getAction() != null && messageFormat.getAction() == MotionEvent.ACTION_MOVE
-                                && (messageFormat.getType() != null && messageFormat.getType().equals(ComponentType.STROKE))) {
-                            MQTTClient.receiveTimeList.add(new Velocity(System.currentTimeMillis()));
-                        }
-
 
                         client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
                         takeCnt++;

@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -374,6 +375,11 @@ public class DrawingViewModel extends BaseViewModel {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         autoDrawImage.postValue(autoDrawImageUrl);
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
                     }
                 })
                 .create();
