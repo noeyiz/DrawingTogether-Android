@@ -16,10 +16,8 @@ import com.hansung.drawingtogether.view.BaseViewModel;
 
 public class SearchViewModel extends BaseViewModel {
     private ObservableField<String> keyword;
-
-    // fixme hyeyeon[1]
     @Override
-    public void onCleared() {  // todo
+    public void onCleared() {
         super.onCleared();
         MyLog.i("lifeCycle", "SearchViewModel onCleared()");
     }

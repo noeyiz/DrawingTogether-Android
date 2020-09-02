@@ -74,7 +74,7 @@ import lombok.Setter;
 
 
 @Getter
-public class DrawingFragment extends Fragment implements MainActivity.OnRightBottomBackListener {  // fixme hyeyeon
+public class DrawingFragment extends Fragment implements MainActivity.OnRightBottomBackListener {
 
     private final int PICK_FROM_GALLERY = 0;
     private final int PICK_FROM_CAMERA = 1;
@@ -82,11 +82,11 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     private Point size;
 
     private MQTTClient client = MQTTClient.getInstance();
-    private MQTTSettingData data = MQTTSettingData.getInstance();  // fixme hyeyeon
+    private MQTTSettingData data = MQTTSettingData.getInstance();
 
     private DrawingEditor de = DrawingEditor.getInstance();
     private AttributeManager am = AttributeManager.getInstance();
-    private Logger logger = Logger.getInstance(); // fixme nayeon
+    private Logger logger = Logger.getInstance();
 
     private FragmentDrawingBinding binding;
     private DrawingViewModel drawingViewModel;
@@ -98,18 +98,11 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
 
     private ProgressDialog progressDialog;
 
-    private Toolbar toolbar;
-    private TextView title;
-
     private MonitoringRunnable monitoringRunnable = MonitoringRunnable.getInstance();
-
-    //private LinearLayout topToolLayout;
-    //private Button doneBtn;
 
     private ProgressDialog exitProgressDialog;
 
     float dX, dY;
-
 
     @Override
     public void onAttach(Context context) {
@@ -127,17 +120,17 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
 
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
-        JSONParser.getInstance().initJsonParser(this); // fixme nayeon ☆☆☆ JSON Parser 초기화 (toss DrawingFragmenet)
-        Log.e("monitoring", "check parser init");
+        JSONParser.getInstance().initJsonParser(this); // fixme - JSON Parser 초기화 (toss DrawingFragmenet)
+        MyLog.i("monitoring", "check parser init");
 
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
 
         client.setDrawingFragment(this);
         de.setDrawingFragment(this);
 
-        de.setTextMoveBorderDrawable(getResources().getDrawable(R.drawable.text_move_border)); // fixme nayeon 텍스트 테두리 설정
+        de.setTextMoveBorderDrawable(getResources().getDrawable(R.drawable.text_move_border)); // fixme - 텍스트 테두리 설정
         de.setTextFocusBorderDrawable(getResources().getDrawable(R.drawable.text_focus_border));
-        de.setTextHighlightBorderDrawable(getResources().getDrawable(R.drawable.text_highlight_border)); // fixme nayeon
+        de.setTextHighlightBorderDrawable(getResources().getDrawable(R.drawable.text_highlight_border));
 
         am.setBinding(binding); // Palette Manager 의 FragmentDrawingBinding 변수 초기화
         am.setListener(); // 리스너 초기화
@@ -151,14 +144,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         size = new Point();
         display.getSize(size);
-        Log.e("drawing view size in fragment", size.x + ", " + size.y * 0.83);
-
-        // 디바이스 화면 넓이의 3배 = 드로잉뷰 넓이
-        //ViewGroup.LayoutParams layoutParams = binding.drawingView.getLayoutParams();
-        //layoutParams.width = size.x*3;
-        //layoutParams.width = size.x;
-        //layoutParams.height = size.y; //****
-        //binding.drawingView.setLayoutParams(layoutParams);
+        MyLog.i("drawing view size in fragment", size.x + ", " + size.y * 0.83);
 
         //undo, redo 버튼 초기화
         if(de.getHistory().size() == 0)
@@ -175,13 +161,10 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             }
         }
 
-        if(de.getBackgroundImage() != null) {   //backgroundImage 다시 붙이기
-            // fixme jiyeon[0825]
+        if(de.getBackgroundImage() != null) { // backgroundImage 다시 붙이기
             binding.backgroundView.setImage(de.getBackgroundImage());
         }
-        Log.e("pre pub join message", this.getSize().x + ", " + this.getSize().y);
-
-        Log.e("pre pub join message", this.getSize().x + ", " + this.getSize().y);
+        MyLog.i("pre pub join message", this.getSize().x + ", " + this.getSize().y);
 
         if(de.getDrawingBitmap() == null) { // join 메시지 publish
 
@@ -197,34 +180,12 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             client.setThread(th);
 
             if(client.isMaster()) {
-                Log.e("monitoring", "mqtt client class init func. check master. i'am master.");
+                MyLog.i("monitoring", "mqtt client class init func. check master. i'am master.");
                 client.setComponentCount(new ComponentCount(client.getTopic()));
                 Thread monitoringThread = new Thread(monitoringRunnable);
                 monitoringThread.start();
                 client.setMonitoringThread(monitoringThread);
             }
-
-//            intent = new Intent(MainActivity.context, AliveBackgroundService.class);
-//            MainActivity.context.startService(intent);
-
-            /*if (data.isAliveThreadMode() && !data.isAliveBackground()) {
-                MyLog.e("alive", "DrawingFragment: " + data.isAliveThreadMode());
-                // fixme hyeyeon
-                aliveTh.setSecond(2000);
-                aliveTh.setCount(0);
-                Thread th = new Thread(aliveTh);
-                th.start();
-                client.setThread(th);
-            }
-            else if (data.isAliveThreadMode() && data.isAliveBackground()) {
-                intent = new Intent(MainActivity.context, AliveBackgroundService.class);
-                MainActivity.context.startService(intent);
-            }
-            else {
-                MyLog.e("alive", "alive publish 안함");
-            }
-            MyLog.e("alive", "DrawingFragment aliveBackground: " + data.isAliveBackground());*/
-
         }
 
         drawingViewModel.drawingCommands.observe(getViewLifecycleOwner(), new Observer<DrawingCommand>() {
@@ -300,7 +261,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         binding.userInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyLog.i("button", "user info"); // fixme nayeon
+                MyLog.i("button", "user info");
 
                 if (binding.userPrint.getVisibility() == View.VISIBLE)
                     binding.userPrint.setVisibility(View.INVISIBLE);
@@ -382,7 +343,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             clearBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    MyLog.d("button", "clear button click"); // fixme nayeon
+                    MyLog.d("button", "clear button click");
 
                     binding.drawingView.clear();
                     popupWindow.dismiss();
@@ -399,7 +360,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             backgroundEraserBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    MyLog.d("button", "background eraser button click"); // fixme nayeon
+                    MyLog.d("button", "background eraser button click");
 
                     binding.drawingView.clearBackgroundImage();
                     popupWindow.dismiss();
@@ -416,7 +377,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             viewEraserBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    MyLog.d("button", "drawing clear button click"); // fixme nayeon
+                    MyLog.d("button", "drawing clear button click");
 
                     binding.drawingView.clearDrawingView();
                     popupWindow.dismiss();
@@ -434,7 +395,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         rectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MyLog.d("button", "rect shape button click"); // fixme nayeon
+                MyLog.d("button", "rect shape button click");
 
                 de.setCurrentMode(Mode.DRAW);
                 de.setCurrentType(ComponentType.RECT);
@@ -447,7 +408,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         ovalBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MyLog.d("button", "oval shape button click"); // fixme nayeon
+                MyLog.d("button", "oval shape button click");
 
                 de.setCurrentMode(Mode.DRAW);
                 de.setCurrentType(ComponentType.OVAL);
@@ -469,17 +430,17 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             builder.setMessage("회의방을 나가시겠습니까?");
         }
         builder.setPositiveButton(android.R.string.ok, exitOnClickListener);
-        builder.setNeutralButton("저장 후 종료", new DialogInterface.OnClickListener() { // fixme nayeon
+        builder.setNeutralButton("저장 후 종료", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 drawingViewModel.clickSave();
                 exitOnClickListener.onClick(dialog, which);
             }
-        }); // fixme nayeon
+        });
         builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                MyLog.d("button", "exit dialog cancel button click"); // fixme nayeon
+                MyLog.d("button", "exit dialog cancel button click");
 
                 return;
             }
@@ -496,7 +457,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
                 .setMessage("앱을 종료하시겠습니까?")
                 .setPositiveButton(android.R.string.ok, exitOnClickListener)
-                .setNeutralButton("저장 후 종료", new DialogInterface.OnClickListener() { // fixme nayeon
+                .setNeutralButton("저장 후 종료", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         drawingViewModel.clickSave();
@@ -525,7 +486,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
 
             ConnectivityManager cm = (ConnectivityManager) MainActivity.context.getSystemService(Context.CONNECTIVITY_SERVICE);
             if (cm.getActiveNetwork() == null) {
-                Log.e("네트워크", "network disconnected");
+                MyLog.i("네트워크", "network disconnected");
 
                 if (rightBottomBackPressed) {
                     getActivity().finish();
@@ -538,8 +499,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                     return;
                 }
             }
-            else if (cm.getActiveNetwork() != null && client.getClient().isConnected()){  // fixme hyen[0825]
-                logger.uploadLogFile(ExitType.NORMAL); // fixme nayeon
+            else if (cm.getActiveNetwork() != null && client.getClient().isConnected()) {
+                logger.uploadLogFile(ExitType.NORMAL);
             }
 
             String mode = "";
@@ -560,7 +521,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                         exitProgressDialog.dismiss();
 
                         showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage());
-                        MyLog.e("transaction", error.getDetails());
+                        MyLog.i("transaction", error.getDetails());
                         return;
                     }
 
@@ -618,14 +579,9 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        MqttMessageFormat messageFormat;
-        /*if(de.getBackgroundImage() != null) { //fixme minj - 우선 배경 이미지는 하나만
-            binding.backgroundView.removeAllViews();
-        }*/ // fixme nayeon MQTT CALLBACK
-
         Bitmap imageBitmap = null;
 
-        // fixme jiyeon[0813] - 이미지는 바이너리 데이터 자체를 보내도록 변경
+        // fixme - 이미지는 바이너리 데이터 자체를 보내도록 변경
         switch (requestCode) {
             case PICK_FROM_GALLERY:
                 if (data == null) {
@@ -636,35 +592,20 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                     Uri uri = data.getData();
                     imageBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
                     String filePath = getRealPathFromURI(uri);
-                    MyLog.e("Image", "Before(Gallery) : " + new File(getRealPathFromURI(uri)).length() + " Bytes");
+                    MyLog.i("image", "Before(Gallery) : " + new File(getRealPathFromURI(uri)).length() + " Bytes");
 
                     imageBitmap = rotateBitmap(imageBitmap, filePath);
-
-//                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
-//                    imageBitmap = rotateBitmap(imageBitmap, filePath);
-//                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
-//                    // todo nayeon : check image file size
-//                    MyLog.e("gallery", "Gallery Image File Size = " + new File(getRealPathFromURI(uri)).length() + " Bytes");
-//                    MyLog.e("gallery", "Gallery Bitmap Byte Count = " + imageBitmap.getRowBytes() * imageBitmap.getHeight());
                 } catch(IOException e) {
                     e.printStackTrace();
                 }
                 break;
             case PICK_FROM_CAMERA:
                 try {
-                    // fixme jiyeon
                     File file = new File(drawingViewModel.getPhotoPath());
-                    MyLog.e("Image", "Before(Camera) : " + file.length() + " Bytes");
+                    MyLog.i("image", "Before(Camera) : " + file.length() + " Bytes");
 
                     imageBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file));
                     imageBitmap = rotateBitmap(imageBitmap, drawingViewModel.getPhotoPath());
-
-//                    // todo nayeon : check image file size
-//                    if(file.exists()) { MyLog.e("camera", "Camera File Size = " + file.length() + " Bytes"); }
-//                    imageBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file));
-//                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
-//                    imageBitmap = rotateBitmap(imageBitmap, drawingViewModel.getPhotoPath());
-//                    imageBitmap = decodeSampledBitmapFromBitmap(de.bitmapToByteArray(imageBitmap));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -678,24 +619,10 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
 
         byte[] mqttImageMessage = de.bitmapToByteArray(imageBitmap);
         client.publish(client.getTopic_image(), mqttImageMessage);
-        MyLog.e("Image", "After : " + mqttImageMessage.length + " Bytes");
+        MyLog.i("image", "After : " + mqttImageMessage.length + " Bytes");
         //
 
-//        setBackgroundImage(imageBitmap); // fixme nayeon
-//        messageFormat = new MqttMessageFormat(de.getMyUsername(), Mode.BACKGROUND_IMAGE, de.bitmapToByteArray(imageBitmap));
-//        client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
     }
-
-//    private void setBackgroundImage(Bitmap imageBitmap) {
-//        binding.backgroundView.removeAllViews(); // fixme nayeon 배경이미지 하나
-//
-//        de.setBackgroundImage(imageBitmap);
-//
-//        WarpingControlView imageView = new WarpingControlView(getContext());
-//        imageView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-//        imageView.setImage(de.getBackgroundImage()); // invalidate
-//        client.getBinding().backgroundView.addView(imageView);
-//    }
 
     @Override
     public void onResume() {
@@ -710,12 +637,10 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         inflater.inflate(R.menu.application_menu, menu);
     }
 
-    // fixme jiyeon
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
 
-            // fixme jiyeon[0428]
             case R.id.drawing_mic:
                 boolean click = drawingViewModel.clickMic();
                 if (click) {
@@ -734,31 +659,25 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                     item.setIcon(R.drawable.speaker3);
                 }
                 break;
-            //
             case R.id.gallery:
                 drawingViewModel.getImageFromGallery(DrawingFragment.this);
                 break;
             case R.id.camera:
                 drawingViewModel.getImageFromCamera(DrawingFragment.this);
                 break;
-//            case R.id.drawing_search:
-//                drawingViewModel.clickSearch(getView());
-//                break;
             case R.id.drawing_invite:
                 drawingViewModel.clickInvite();
                 break;
             case R.id.drawing_save:
                 drawingViewModel.clickSave();
-
                 break;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    // fixme jiyeon
     private Bitmap rotateBitmap(Bitmap bitmap, String path) {
-        MyLog.e("Image", "rotate bitmap start");
+        MyLog.i("image", "rotate bitmap start");
         ExifInterface exif = null;
         try {
             exif = new ExifInterface(path);
@@ -779,11 +698,11 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 matrix.setRotate(-90);
                 break;
             default:
-                MyLog.e("Image", "rotate bitmap end 1");
+                MyLog.i("image", "rotate bitmap end 1");
                 return bitmap;
         }
         try {
-            MyLog.e("Image", "rotate bitmap end 2");
+            MyLog.i("image", "rotate bitmap end 2");
             Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             bitmap.recycle();
             return bmRotated;
@@ -794,7 +713,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         }
     }
 
-    // fixme jiyeon
     private String getRealPathFromURI(Uri contentURI) {
         String result; Cursor cursor = getContext().getContentResolver().query(contentURI, null, null, null, null);
         if (cursor == null) {
@@ -807,10 +725,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         return result;
     }
 
-
-    // fixme nayeon
     public static int calculateInSampleSize(BitmapFactory.Options options) {
-        MyLog.e("image", "calculate image size start");
+        MyLog.i("image", "calculate image size start");
 
         // Raw height and width of image
         final int height = options.outHeight;
@@ -819,7 +735,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         final int reqWidth = 800;
         final int reqHeight = 1000;
 
-        MyLog.e("image", "option width = " + width + ", option height = " + height);
+        MyLog.i("image", "option width = " + width + ", option height = " + height);
 
         int inSampleSize = 1;
 
@@ -836,29 +752,10 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             }
         }
 
-        MyLog.e("image", "inSampleSize = " + inSampleSize);
+        MyLog.i("image", "inSampleSize = " + inSampleSize);
 
-        MyLog.e("image", "calculate image size end");
+        MyLog.i("image", "calculate image size end");
         return inSampleSize;
-    }
-
-    public Bitmap decodeSampledBitmapFromBitmap(byte[] bitmapArray/*, int reqWidth, int reqHeight*/) {
-
-        MyLog.e("image", "resize bitmap start");
-
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeByteArray(bitmapArray, 0, bitmapArray.length, options);
-
-        options.inSampleSize = calculateInSampleSize(options);
-        // options.inSampleSize = 2;
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-
-        MyLog.e("image", "resize bitmap end");
-        return BitmapFactory.decodeByteArray(bitmapArray, 0, bitmapArray.length, options);
     }
 
     @Override
@@ -877,9 +774,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     public void onDestroyView() {
         super.onDestroyView();
         MyLog.i("lifeCycle", "DrawingFragment onDestroyView()");
-//        if (exitOnClickListener != null) {
-//            exitOnClickListener = null;
-//        }
     }
 
     @Override
@@ -894,7 +788,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         client.setIsMid(true);
         client.getConnOpts().setAutomaticReconnect(false);
 
-        // fixme jiyeon[0826] - 오디오 처리
+        // fixme - Exit Or Close 시 오디오 처리
         if (drawingViewModel.isMicFlag()) {
             drawingViewModel.getRecThread().setFlag(false);
         }
@@ -928,7 +822,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
 
         if (client.getClient().isConnected()) {
             if (!client.isExitCompleteFlag()) {
-                MyLog.e("exit", "비정상 종료");
+                MyLog.i("exit", "비정상 종료");
                 client.exitTask();
             }
             try {

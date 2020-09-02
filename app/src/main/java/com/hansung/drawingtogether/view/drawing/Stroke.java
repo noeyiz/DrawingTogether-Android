@@ -34,7 +34,6 @@ public class Stroke extends DrawingComponent {
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStyle(Paint.Style.STROKE);*/
 
-        //fixme minj
         //Point from = (this.preSize == 0) ? this.points.get(preSize) : this.points.get(preSize-1);
         //Point to = this.points.get(preSize);
         /*Point from, to;

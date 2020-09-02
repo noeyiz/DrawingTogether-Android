@@ -53,7 +53,8 @@ public class MainViewModel extends BaseViewModel {
 
         MyLog.e("kkankkan", "메인뷰모델 생성자");
 
-        ip.setValue("54.180.154.63");//("192.168.0.36");
+        ip.setValue("54.180.154.63"); // 주농
+//        ip.setValue("192.168.0.36"); // 나연
         port.postValue("1883");
         setTopic("");
         setPassword("");
@@ -181,7 +182,7 @@ public class MainViewModel extends BaseViewModel {
 
         progressDialog = new ProgressDialog(view.getContext(), R.style.MyProgressDialogStyle);
         progressDialog.setMessage("Loading...");
-        progressDialog.setCanceledOnTouchOutside(true);    //fixme minj - master 없는 topic 의 경우 빠져나오지를 못해서 잠시 cancel 가능하게 수정
+        progressDialog.setCanceledOnTouchOutside(true);    //fixme - master 없는 topic 의 경우 빠져나오지를 못해서 잠시 cancel 가능하게 수정
         client.setProgressDialog(progressDialog);
         progressDialog.show();
 
@@ -212,7 +213,7 @@ public class MainViewModel extends BaseViewModel {
                     data.setTopic(topic.getValue());
                     data.setPassword(password.getValue());
                     data.setName(name.getValue());
-                    data.setMasterName(masterName);  // fixme hyeyeon
+                    data.setMasterName(masterName);
                     data.setMaster(true);
 
                     clearData();
@@ -248,7 +249,7 @@ public class MainViewModel extends BaseViewModel {
 
             progressDialog = new ProgressDialog(view.getContext(), R.style.MyProgressDialogStyle);
             progressDialog.setMessage("Loading...");
-            progressDialog.setCanceledOnTouchOutside(true);    //fixme minj - master 없는 topic 의 경우 빠져나오지를 못해서 잠시 cancel 가능하게 수정
+            progressDialog.setCanceledOnTouchOutside(true); // fixme - master 없는 topic 의 경우 빠져나오지를 못해서 잠시 cancel 가능하게 수정
             client.setProgressDialog(progressDialog);
             progressDialog.show();
 
@@ -285,7 +286,7 @@ public class MainViewModel extends BaseViewModel {
                         data.setTopic(topic.getValue());
                         data.setPassword(password.getValue());
                         data.setName(name.getValue());
-                        data.setMasterName(masterName);  // fixme hyeyeon
+                        data.setMasterName(masterName);
                         data.setMaster(false);
 
                         clearData();
@@ -439,9 +440,8 @@ public class MainViewModel extends BaseViewModel {
         this.nameError.postValue(text);
     }
 
-    // fixme hyeyeon[1]
     @Override
-    public void onCleared() {  // todo
+    public void onCleared() {
         super.onCleared();
         Log.i("lifeCycle", "MainViewModel onCleared()");
     }

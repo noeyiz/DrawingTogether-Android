@@ -24,7 +24,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
 
-        <!-- fixme nayeon [ android:name="" ] Registration LogApplication Class -->
+        <!-- fixme - [ android:name="" ] Registration LogApplication Class -->
         <activity android:name=".view.splash.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

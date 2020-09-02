@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-// fixme hyeyeon
 @Getter
 @Setter
 public class User {

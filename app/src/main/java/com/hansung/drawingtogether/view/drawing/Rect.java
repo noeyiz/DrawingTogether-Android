@@ -52,7 +52,7 @@ public class Rect extends DrawingComponent {
                 MyLog.w("catch", "parseColor");
             }
             paint.setAlpha(this.fillAlpha);
-            canvas.drawRect(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint); //fixme alpha 적용되면 strokeWidth/2만큼 작은 사각형
+            canvas.drawRect(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint); //fixme - alpha 적용되면 strokeWidth/2만큼 작은 사각형
 
             paint.setStyle(Paint.Style.STROKE);     //윤곽선
             try {

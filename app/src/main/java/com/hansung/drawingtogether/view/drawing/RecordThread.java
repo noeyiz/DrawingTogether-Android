@@ -10,7 +10,6 @@ import com.hansung.drawingtogether.data.remote.model.MyLog;
 import lombok.Getter;
 import lombok.Setter;
 
-//fixme jiyeon[0821]
 @Getter
 @Setter
 public class RecordThread extends Thread {
@@ -31,7 +30,7 @@ public class RecordThread extends Thread {
 
     private boolean flag = false;
 
-    private byte[] readData;
+    private byte[] readData; // 캡쳐한 오디오 데이터
 
     @Override
     public void run() {
@@ -48,13 +47,13 @@ public class RecordThread extends Thread {
                 .build();
 
         audioRecord.startRecording();
-        MyLog.e("Audio", "Start Recording");
+        MyLog.i("audio", "Start Recording");
 
         try {
             while (true) {
                 if (!flag) {
                     synchronized (audioRecord) {
-                        MyLog.e("Audio", "RecordThread Wait");
+                        MyLog.i("audio", "RecordThread Wait");
                         audioRecord.wait();
                     }
                     flag = true;
@@ -63,26 +62,26 @@ public class RecordThread extends Thread {
                 int ret = audioRecord.read(readData, 0, bufferSize);
 
                 publishAudioMessage(readData);
-                //            AudioMessage audioMessage = new AudioMessage(mqttClient.getMyName(), readData);
-                //            MqttMessageFormat messageFormat = new MqttMessageFormat(audioMessage);
-                //            mqttClient.publish(mqttClient.getTopic() + "_audio", JSONParser.getInstance().jsonWrite(messageFormat));
             }
         } catch (InterruptedException e) {
-            MyLog.e("Audio", "Record Thread is dead");
+            MyLog.i("audio", "Record Thread is dead");
         }
     }
 
+    // Record Thread 생성할 때 오디오 블록을 담을 오디오 버퍼의 사이즈 설정
     public void setBufferUnitSize(int n) {
         bufferSize = bufferUnit * n;
     }
 
+    // Exit Or Close 할 때 AudioRecord 리소스 해제해주기 위함
     public void stopRecording() {
         audioRecord.stop();
         audioRecord.release();
-        MyLog.e("Audio", "Stop Recording");
+        audioRecord = null;
+        MyLog.i("audio", "Stop Recording");
     }
 
-    // fixme jiyeon - 오디오 데이터 + 이름 (바이너리 데이터 자체를 보내도록 변경)
+    // fixme - 오디오 데이터 + 이름 (바이너리 데이터 자체를 보내도록 변경)
     public void publishAudioMessage(byte[] audioData) {
         byte[] audioMessage = new byte[audioData.length + nameByte.length];
 

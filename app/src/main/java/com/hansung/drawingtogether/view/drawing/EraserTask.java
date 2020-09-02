@@ -13,7 +13,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
     private Vector<Integer> erasedComponentIds;
     private Vector<DrawingComponent> components = new Vector<>();
 
-    private MQTTClient client = MQTTClient.getInstance(); // fixme nayeon
+    private MQTTClient client = MQTTClient.getInstance();
 
     public EraserTask(Vector<Integer> erasedComponentIds) {
         //de.setDrawingView(((MainActivity) de.getContext()).getDrawingView());
@@ -45,7 +45,6 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
                 comp.setSelected(false);
                 components.add(comp);
 
-                // fixme nayeon
                 if(client.isMaster()) {
                     switch (comp.getType()) {
                         case STROKE:

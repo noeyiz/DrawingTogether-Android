@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.Getter;
 
-// fixme hyeyeon-second초에 한번씩 topic_alive로 자신의 이름 publish
+// fixme - second초에 한번씩 topic_alive로 자신의 이름 publish
 @Getter
 public enum AliveThread implements Runnable {
     INSTANCE;

@@ -4,7 +4,6 @@ import android.graphics.Point;
 
 import com.hansung.drawingtogether.monitoring.ComponentCount;
 import com.hansung.drawingtogether.view.main.AliveMessage;
-import com.hansung.drawingtogether.view.main.AudioMessage;
 import com.hansung.drawingtogether.view.main.AutoDrawMessage;
 import com.hansung.drawingtogether.view.main.CloseMessage;
 import com.hansung.drawingtogether.view.main.ExitMessage;
@@ -49,13 +48,11 @@ public class MqttMessageFormat {
     private AliveMessage aliveMessage;
     private NotiMessage notiMessage;
 
-    private AudioMessage audioMessage;
-
     private WarpingMessage warpingMessage;
 
     private AutoDrawMessage autoDrawMessage;
 
-    // fixme nayeon 중간자 처리 시 필요한 변수 추가
+    // fixme - 중간자 처리 시 필요한 변수 추가
     private ArrayList<DrawingComponent> drawingComponents;
     private ArrayList<Text> texts;
     private ArrayList<DrawingItem> history;
@@ -145,8 +142,8 @@ public class MqttMessageFormat {
         this.bitmapByteArray = bitmapByteArray;
     }
 
-    //fixme nayeon 중간자 처리 시 필요한 생성자 3개 추가
-    //fixme minj - add history for undo, redo
+    // fixme - 중간자 처리 시 필요한 생성자 3개 추가
+    // fixme - add history for undo, redo
     public MqttMessageFormat(JoinAckMessage joinAckMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId, Integer maxComponentId, Integer maxTextId) {
         this.joinAckMessage = joinAckMessage;
         this.drawingComponents = drawingComponents;
@@ -192,7 +189,6 @@ public class MqttMessageFormat {
 
     public MqttMessageFormat(JoinAckMessage joinAckMessage) { this.joinAckMessage = joinAckMessage; }
 
-    // fixme hyeyeon
     public MqttMessageFormat(ExitMessage exitMessage) {
         this.exitMessage = exitMessage;
     }
@@ -207,11 +203,6 @@ public class MqttMessageFormat {
 
     public MqttMessageFormat(NotiMessage notiMessage) {
         this.notiMessage = notiMessage;
-    }
-
-    // fixme jiyeon
-    public MqttMessageFormat(AudioMessage audioMessage) {
-        this.audioMessage = audioMessage;
     }
 
 }

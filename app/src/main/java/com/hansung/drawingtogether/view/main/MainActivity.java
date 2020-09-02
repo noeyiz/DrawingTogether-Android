@@ -41,10 +41,10 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private TextView title;
 
-    public static Context context; // fixme nayeon
+    public static Context context;
 
     private DrawingEditor de = DrawingEditor.getInstance();
-    private Logger logger = Logger.getInstance(); // fixme nayeon ☆☆☆☆☆ 1. Log 기록에 사용할 클래스 참조
+    private Logger logger = Logger.getInstance(); // fixme - ☆☆☆☆☆ 1. Log 기록에 사용할 클래스 참조
 
     public interface OnLeftTopBackListener {  // 좌측 상단의 백버튼 리스너
         void onLeftTopBackPressed();
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         }
         //
 
-        context = this; // fixme nayeon
+        context = this;
 
         Log.i("kakao", "[key hash] " + getKeyHash(context));
 
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            MyLog.d("button", "back press ok button click"); // fixme nayeon
+                            MyLog.d("button", "back press ok button click");
 
                             MainActivity.super.onBackPressed();
                             android.os.Process.killProcess(android.os.Process.myPid());
@@ -136,11 +136,11 @@ public class MainActivity extends AppCompatActivity {
                             MainActivity.super.onBackPressed();
                             return;
                         }
-                    })*/ // todo nayeon - mOnKeyBackPressedListener 가 null 일 경우가 언제?
+                    })*/ // todo - mOnKeyBackPressedListener 가 null 일 경우가 언제?
                     .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            MyLog.d("button", "back press cancel button click"); // fixme nayeon
+                            MyLog.d("button", "back press cancel button click");
 
                             return;
                         }
@@ -173,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
         this.title.setText(title);
     }
 
-    // fixme nayeon - ToolBar Menu Item Visibility
+    // fixme - ToolBar Menu Item Visibility
     public void setVisibilityToolbarMenus(boolean visibility) {
         for( int i=0; i<toolbar.getMenu().size(); i++ ) {
             toolbar.getMenu().getItem(i).setVisible(visibility);
