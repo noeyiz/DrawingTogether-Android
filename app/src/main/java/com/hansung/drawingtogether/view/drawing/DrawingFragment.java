@@ -72,7 +72,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 
-
 @Getter
 public class DrawingFragment extends Fragment implements MainActivity.OnRightBottomBackListener {
 
@@ -113,14 +112,14 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        MyLog.i("lifeCycle", "DrawingFragment onCreateView()");
+        MyLog.i("LifeCycle", "DrawingFragment onCreateView()");
 
         exitOnClickListener = new ExitOnClickListener();
         exitOnClickListener.setRightBottomBackPressed(false);
 
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
-        JSONParser.getInstance().initJsonParser(this); // fixme - JSON Parser 초기화 (toss DrawingFragmenet)
+        JSONParser.getInstance().initJsonParser(this); // JSON Parser 초기화 (toss DrawingFragmenet)
         MyLog.i("monitoring", "check parser init");
 
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
@@ -128,7 +127,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         client.setDrawingFragment(this);
         de.setDrawingFragment(this);
 
-        de.setTextMoveBorderDrawable(getResources().getDrawable(R.drawable.text_move_border)); // fixme - 텍스트 테두리 설정
+        de.setTextMoveBorderDrawable(getResources().getDrawable(R.drawable.text_move_border)); // 텍스트 테두리 설정
         de.setTextFocusBorderDrawable(getResources().getDrawable(R.drawable.text_focus_border));
         de.setTextHighlightBorderDrawable(getResources().getDrawable(R.drawable.text_highlight_border));
 
@@ -166,15 +165,17 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         }
         MyLog.i("pre pub join message", this.getSize().x + ", " + this.getSize().y);
 
-        if(de.getDrawingBitmap() == null) { // join 메시지 publish
+        if(de.getDrawingBitmap() == null) {
 
-            JoinMessage joinMessage = new JoinMessage(data.getName(), this.getSize().x, this.getSize().y);
+            /* Join Message Publish */
+            JoinMessage joinMessage = new JoinMessage(data.getName());
             MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
             client.publish(data.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
-            MyLog.e("login", data.getName() + " join pub");
+            MyLog.i("Login", data.getName() + " Join Message Publish");
 
+            /* Alive Thread Start */
+            /* T초(예: 10초)에 한번씩 Alive Message Publish */
             aliveTh.setSecond(10000);
-            aliveTh.setCount(0);
             Thread th = new Thread(aliveTh);
             th.start();
             client.setThread(th);
@@ -418,11 +419,15 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         });
     }
 
-    public void exit() { // 좌측 상단 뒤로가기 버튼
-        MyLog.e("back", "left top back pressed");
+    /* 좌측 상단 백버튼 클릭 시 수행 */
+    public void exit() {
+
+        MyLog.i("Back Button", "Left Top Back Button Pressed");
 
         exitOnClickListener.setRightBottomBackPressed(false);
 
+        /* 마스터 - 회의방 종료 */
+        /* 마스터 제외 참가자 - 회의방 퇴장 */
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.context);
         if (client.isMaster()) {
             builder.setMessage("회의방을 종료하시겠습니까?");
@@ -441,7 +446,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 MyLog.d("button", "exit dialog cancel button click");
-
                 return;
             }
         });
@@ -449,11 +453,14 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     }
 
     @Override
-    public void onRightBottomBackPressed() {  // 우측 하단 뒤로가기 버튼
-        MyLog.e("back", "right bottom back pressed");
+    /* 우측 하단 백버튼 클릭 시 수행 */
+    public void onRightBottomBackPressed() {
+
+        MyLog.i("Back Button", "Right Bottom Back Button Pressed");
 
         exitOnClickListener.setRightBottomBackPressed(true);
 
+        /* 앱 종료 */
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
                 .setMessage("앱을 종료하시겠습니까?")
                 .setPositiveButton(android.R.string.ok, exitOnClickListener)
@@ -480,21 +487,25 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         private boolean rightBottomBackPressed;
 
         @Override
+        /* 백버튼 - 확인 클릭 시 */
         public void onClick(DialogInterface dialog, int which) {
 
             showExitProgressDialog();
 
+            /* 네트워크 연결 상태 확인 */
             ConnectivityManager cm = (ConnectivityManager) MainActivity.context.getSystemService(Context.CONNECTIVITY_SERVICE);
             if (cm.getActiveNetwork() == null) {
                 MyLog.i("네트워크", "network disconnected");
 
                 if (rightBottomBackPressed) {
+                    /* 앱 종료 */
                     getActivity().finish();
                     android.os.Process.killProcess(android.os.Process.myPid());
                     System.exit(10);
                     return;
                 }
                 else {
+                    /* 메인 화면으로 이동 */
                     drawingViewModel.back();
                     return;
                 }
@@ -510,6 +521,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             else {
                 mode = "joinMode";
             }
+            /* Firebase Realtime Database Transaction 수행 */
             DatabaseTransaction dt = new DatabaseTransaction() {
                 @Override
                 public void completeLogin(DatabaseError error, String masterName, boolean topicError, boolean passwordError, boolean nameError) {  }
@@ -519,9 +531,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
 
                     if (error != null) {
                         exitProgressDialog.dismiss();
-
                         showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage());
-                        MyLog.i("transaction", error.getDetails());
+                        MyLog.i("Database transaction", error.getDetails());
                         return;
                     }
 
@@ -529,12 +540,14 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                         client.exitTask();
                     }
                     if (rightBottomBackPressed) {
+                        /* 앱 종료 */
                         getActivity().finish();
                         android.os.Process.killProcess(android.os.Process.myPid());
                         System.exit(10);
                         return;
                     }
                     else {
+                        /* 메인 화면으로 이동 */
                         drawingViewModel.back();
                         return;
                     }
@@ -544,6 +557,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         }
     }
 
+    /* Firebase Realtime Database Transaction 수행 중 오류 발생 알림 */
     public void showDatabaseErrorAlert(String title, String message) {
 
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
@@ -581,7 +595,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Bitmap imageBitmap = null;
 
-        // fixme - 이미지는 바이너리 데이터 자체를 보내도록 변경
+        // 이미지는 바이너리 데이터 자체를 보내도록 변경
         switch (requestCode) {
             case PICK_FROM_GALLERY:
                 if (data == null) {
@@ -592,17 +606,17 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                     Uri uri = data.getData();
                     imageBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
                     String filePath = getRealPathFromURI(uri);
-                    MyLog.i("image", "Before(Gallery) : " + new File(getRealPathFromURI(uri)).length() + " Bytes");
+                    MyLog.i("Image", "Before(Gallery) : " + new File(getRealPathFromURI(uri)).length() + " Bytes");
 
                     imageBitmap = rotateBitmap(imageBitmap, filePath);
-                } catch(IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
                 break;
             case PICK_FROM_CAMERA:
                 try {
                     File file = new File(drawingViewModel.getPhotoPath());
-                    MyLog.i("image", "Before(Camera) : " + file.length() + " Bytes");
+                    MyLog.i("Image", "Before(Camera) : " + file.length() + " Bytes");
 
                     imageBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.fromFile(file));
                     imageBitmap = rotateBitmap(imageBitmap, drawingViewModel.getPhotoPath());
@@ -612,16 +626,15 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 break;
         }
 
-        if(imageBitmap == null) {
+        if (imageBitmap == null) {
             Toast.makeText(getContext(), "이미지 로딩을 실패했습니다", Toast.LENGTH_LONG).show();
             return;
         }
 
         byte[] mqttImageMessage = de.bitmapToByteArray(imageBitmap);
         client.publish(client.getTopic_image(), mqttImageMessage);
-        MyLog.i("image", "After : " + mqttImageMessage.length + " Bytes");
+        MyLog.i("Image", "After : " + mqttImageMessage.length + " Bytes");
         //
-
     }
 
     @Override
@@ -676,8 +689,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         return super.onOptionsItemSelected(item);
     }
 
+    /* Bitmap의 Orientation 정보에 따라 알맞게 회전 */
     private Bitmap rotateBitmap(Bitmap bitmap, String path) {
-        MyLog.i("image", "rotate bitmap start");
         ExifInterface exif = null;
         try {
             exif = new ExifInterface(path);
@@ -698,11 +711,9 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 matrix.setRotate(-90);
                 break;
             default:
-                MyLog.i("image", "rotate bitmap end 1");
                 return bitmap;
         }
         try {
-            MyLog.i("image", "rotate bitmap end 2");
             Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             bitmap.recycle();
             return bmRotated;
@@ -725,70 +736,38 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         return result;
     }
 
-    public static int calculateInSampleSize(BitmapFactory.Options options) {
-        MyLog.i("image", "calculate image size start");
-
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-
-        final int reqWidth = 800;
-        final int reqHeight = 1000;
-
-        MyLog.i("image", "option width = " + width + ", option height = " + height);
-
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) >= reqHeight
-                    && (halfWidth / inSampleSize) >= reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-
-        MyLog.i("image", "inSampleSize = " + inSampleSize);
-
-        MyLog.i("image", "calculate image size end");
-        return inSampleSize;
-    }
-
     @Override
     public void onStart() {
         super.onStart();
-        MyLog.i("lifeCycle", "DrawingFragment onStart()");
+        MyLog.i("LifeCycle", "DrawingFragment onStart()");
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        MyLog.i("lifeCycle", "DrawingFragment onPause()");
+        MyLog.i("LifeCycle", "DrawingFragment onPause()");
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        MyLog.i("lifeCycle", "DrawingFragment onDestroyView()");
+        MyLog.i("LifeCycle", "DrawingFragment onDestroyView()");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        MyLog.i("lifeCycle", "DrawingFragment onDestroy()");
+        MyLog.i("LifeCycle", "DrawingFragment onDestroy()");
 
-        // 꼭 여기서 처리 해줘야 하는 부분
+        /* 데이터 초기화 */
         client.getDe().removeAllDrawingData();
         client.getUserList().clear();
         client.getTh().interrupt();
         client.setIsMid(true);
         client.getConnOpts().setAutomaticReconnect(false);
 
-        // fixme - Exit Or Close 시 오디오 처리
+        /* 오디오 처리 */
+        /* Record Thread와 PlayThreadList에 있는 모든 Play Thread Interrupt */
         if (drawingViewModel.isMicFlag()) {
             drawingViewModel.getRecThread().setFlag(false);
         }
@@ -818,11 +797,11 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             audioPlayThread.interrupt();
         }
         client.getAudioPlayThreadList().clear();
-        //
 
+        /* MQTT 클라이언트 연결 해제 */
         if (client.getClient().isConnected()) {
             if (!client.isExitCompleteFlag()) {
-                MyLog.i("exit", "비정상 종료");
+                MyLog.i("Exit", "비정상 종료");
                 client.exitTask();
             }
             try {
@@ -843,7 +822,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     @Override
     public void onDetach() {
         super.onDetach();
-        MyLog.i("lifeCycle", "DrawingFragment onDetach()");
+        MyLog.i("LifeCycle", "DrawingFragment onDetach()");
         ((MainActivity)getContext()).setOnRightBottomBackListener(null);
     }
 }

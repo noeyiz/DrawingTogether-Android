@@ -1,14 +1,11 @@
 package com.hansung.drawingtogether.view.main;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -23,12 +20,9 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.Logger;
-import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 import com.hansung.drawingtogether.view.drawing.SendMqttMessage;
-
-import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -36,6 +30,7 @@ import java.security.NoSuchAlgorithmException;
 import static com.kakao.util.helper.Utility.getPackageInfo;
 
 public class MainActivity extends AppCompatActivity {
+
     private String topic;
     private String password;
     private Toolbar toolbar;
@@ -44,57 +39,54 @@ public class MainActivity extends AppCompatActivity {
     public static Context context;
 
     private DrawingEditor de = DrawingEditor.getInstance();
-    private Logger logger = Logger.getInstance(); // fixme - ☆☆☆☆☆ 1. Log 기록에 사용할 클래스 참조
+    private Logger logger = Logger.getInstance();
 
-    public interface OnLeftTopBackListener {  // 좌측 상단의 백버튼 리스너
-        void onLeftTopBackPressed();
-    }
+    /* 좌측 상단의 백버튼 리스너 */
+    public interface OnLeftTopBackListener { void onLeftTopBackPressed();}
     private OnLeftTopBackListener onLeftTopBackListener;
 
-    public interface OnRightBottomBackListener {  // 디바이스의 오른쪽 하단의 백버튼 리스너
-        void onRightBottomBackPressed();
-    }
+    /* 오른쪽 하단의 백버튼 리스너 */
+    public interface OnRightBottomBackListener { void onRightBottomBackPressed();}
     private OnRightBottomBackListener onRightBottomBackListener;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MyLog.i("lifeCycle", "MainActivity onCreate()");
+        MyLog.i("LifeCycle", "MainActivity onCreate()");
 
         setContentView(R.layout.activity_main);
 
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // 앱 실행 중 화면 사라지지 않도록
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // 앱 실행 중 화면이 꺼지지 않도록 설정
 
         SendMqttMessage sendMqttMessage = SendMqttMessage.getInstance();
         sendMqttMessage.startThread();
 
-        // kakaolink
+        /* SplashActivity로부터 전달 받은 topic, password 저장 */
         String kakaoTopic = getIntent().getStringExtra("kakaoTopic");
         String kakaoPassword = getIntent().getStringExtra("kakaoPassword");
 
-        if (!(kakaoTopic == null) && !(kakaoPassword == null)) {
+        if (kakaoTopic != null && kakaoPassword != null) {
             topic = kakaoTopic;
             password = kakaoPassword;
         }
-        //
 
         context = this;
 
-        Log.i("kakao", "[key hash] " + getKeyHash(context));
+        /* Kakao Debug Key Hash 값 출력 */
+        Log.i("KakaoLink", "[key hash] " + getKeyHash(context));
 
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         title = (TextView)findViewById(R.id.toolbar_title);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false); // 기본 title 안 보이게
+        getSupportActionBar().setDisplayShowTitleEnabled(false); // 기본 title이 안 보이도록 설정
 
     }
 
+    /* Kakao Debug Key Hash 값 구하기 */
     public String getKeyHash(final Context context) {
+
         PackageInfo info = getPackageInfo(context, PackageManager.GET_SIGNATURES);
-        if (info == null) {
-            return null;
-        }
+        if (info == null) { return null; }
 
         for (Signature signature: info.signatures) {
             try {
@@ -102,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
                 md.update(signature.toByteArray());
                 return Base64.encodeToString(md.digest(), Base64.NO_WRAP);
             } catch (NoSuchAlgorithmException e) {
-                Log.e("kkankkan", "Unable to get MessageDigest, sugnature = " + signature);
+                Log.e("KakaoLink", "Unable to get MessageDigest, sugnature = " + signature);
             }
         }
 
@@ -116,38 +108,27 @@ public class MainActivity extends AppCompatActivity {
             onRightBottomBackListener.onRightBottomBackPressed();
         }
         else {
-            MyLog.e("kkankkan", "메인엑티비티 onbackpressed");
+            MyLog.i("Back Button", "MainActivity onBackPressed()");
+
+            /* 메인 화면에서 오른쪽 하단의 백버튼 클릭 시 */
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setMessage("앱을 종료하시겠습니까?")
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            MyLog.d("button", "back press ok button click");
-
+                            /* 앱 종료 */
                             MainActivity.super.onBackPressed();
                             android.os.Process.killProcess(android.os.Process.myPid());
                             System.exit(10);
                             return;
                         }
                     })
-                    /*.setNeutralButton("save and exit", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            MainActivity.super.onBackPressed();
-                            return;
-                        }
-                    })*/ // todo - mOnKeyBackPressedListener 가 null 일 경우가 언제?
                     .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                         @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            MyLog.d("button", "back press cancel button click");
-
-                            return;
-                        }
+                        public void onClick(DialogInterface dialog, int which) { }
                     })
                     .create();
             dialog.show();
-
 
         }
     }
@@ -168,32 +149,16 @@ public class MainActivity extends AppCompatActivity {
         toolbar.setVisibility(View.GONE);
     }
 
-    // title 설정
+    /* title 설정 */
     public void setToolbarTitle(String title) {
         this.title.setText(title);
     }
 
-    // fixme - ToolBar Menu Item Visibility
+    /* ToolBar Menu Item Visibility */
     public void setVisibilityToolbarMenus(boolean visibility) {
         for( int i=0; i<toolbar.getMenu().size(); i++ ) {
             toolbar.getMenu().getItem(i).setVisible(visibility);
         }
-    }
-
-    public String getTopic() {
-        return topic;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     @Override
@@ -204,45 +169,50 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /* GETTER */
+    public String getTopic() { return topic; }
+
+    public String getPassword() { return password; }
+
+
+    /* SETTER */
+    public void setTopic(String topic) { this.topic = topic; }
+
+    public void setPassword(String password) { this.password = password; }
+
     @Override
     protected void onRestart() {
         super.onRestart();
-        MyLog.i("lifeCycle", "MainActivity onRestart()");
+        MyLog.i("LifeCycle", "MainActivity onRestart()");
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        MyLog.i("lifeCycle", "MainActivity onStart()");
+        MyLog.i("LifeCycle", "MainActivity onStart()");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        MyLog.i("lifeCycle", "MainActivity onResume()");
+        MyLog.i("LifeCycle", "MainActivity onResume()");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        MyLog.i("lifeCycle", "MainActivity onPause()");
+        MyLog.i("LifeCycle", "MainActivity onPause()");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        MyLog.i("lifeCycle", "MainActivity onStop()");
+        MyLog.i("LifeCycle", "MainActivity onStop()");
     }
 
     @Override
-    protected void onDestroy() {  // todo
+    protected void onDestroy() {
         super.onDestroy();
-        MyLog.i("lifeCycle", "MainActivity onDestroy()");
-        if (isFinishing()) {  // 앱 종료 시
-            MyLog.i("lifeCycle", "isFinishing() " + isFinishing());
-        }
-        else {  // 화면 회전 시
-            MyLog.i("lifeCycle", "isFinishing() " + isFinishing());
-        }
+        MyLog.i("LifeCycle", "MainActivity onDestroy()");
     }
 }
