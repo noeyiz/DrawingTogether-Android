@@ -162,13 +162,6 @@ public class DrawingView extends View {
         de.setDrawnCanvasHeight(canvasHeight);
         de.setMyCanvasWidth(canvasWidth);
         de.setMyCanvasHeight(canvasHeight);
-
-        /*
-        Random random = new Random();   //fixme nayeon
-        int color = Color.rgb(random.nextInt(128) +  128, random.nextInt(128) +  128, random.nextInt(128) +  128);
-        de.setStrokeColor(color);
-        de.setFillColor(color);
-        */
     }
 
     public void setDrawingComponentType() {
@@ -250,7 +243,7 @@ public class DrawingView extends View {
         de.addHistory(new DrawingItem(Mode.DRAW, dComponent/*, de.getDrawingBitmap()*/)); // 드로잉 컴포넌트가 생성되면 History 에 저장
         MyLog.i("drawing", "history.size()=" + de.getHistory().size() + ", id=" + dComponent.getId());
 
-        de.removeCurrentComponents(dComponent.getUsersComponentId());   //fixme
+        de.removeCurrentComponents(dComponent.getUsersComponentId()); // fixme
 
         if(de.getHistory().size() == 1)
             de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
@@ -319,7 +312,7 @@ public class DrawingView extends View {
                 //addPointAndDraw(dComponent, point);
 
                 //publish
-                //down에서는 DrawingComponent 자체를 보내고, move, up에서는 추가된 점에 관한 정보만 보낸다. fixme minj
+                //down에서는 DrawingComponent 자체를 보내고, move, up에서는 추가된 점에 관한 정보만 보낸다.
                 sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), dComponent, event.getAction()));
 
                 movable = true;

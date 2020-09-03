@@ -10,7 +10,7 @@ public class DrawingTogetherApplication extends Application {
         super.onCreate();
         MyLog.e("application", "DrawingTogether App is loaded");
 
-        // fixme nayen 애플리케이션 비정상 종료( 오류 발생 ) 시 처리되는 핸들러
+        // fixme - 애플리케이션 비정상 종료( 오류 발생 ) 시 처리되는 핸들러
         AbnormalTerminationHandler ath = new AbnormalTerminationHandler();
         Thread.setDefaultUncaughtExceptionHandler(ath);
     }

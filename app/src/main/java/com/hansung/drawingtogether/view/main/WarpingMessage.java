@@ -9,7 +9,6 @@ import java.util.List;
 
 import lombok.Getter;
 
-// fixme hyeyeon
 @Getter
 public class WarpingMessage {
     private int action;

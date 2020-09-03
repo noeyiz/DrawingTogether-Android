@@ -26,7 +26,7 @@ public enum AttributeManager {
         colorButtonClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MyLog.d("button", "color button click"); // fixme nayeon
+                MyLog.d("button", "color button click");
 
                 String hexColor = ((Button)view).getText().toString();
 

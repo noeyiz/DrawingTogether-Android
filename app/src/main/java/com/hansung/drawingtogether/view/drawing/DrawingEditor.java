@@ -65,14 +65,14 @@ public enum DrawingEditor {
     /* 텍스트에 필요한 객체 */
     private Drawable textMoveBorderDrawable; // 텍스트 움직일 때 테두리
     private Drawable textFocusBorderDrawable; // 다른 사용자 사용 텍스트 표시
-    private Drawable textHighlightBorderDrawble; // 텍스트 색상 변경 시 사용 표시 // fixme nayeon
+    private Drawable textHighlightBorderDrawble; // 텍스트 색상 변경 시 사용 표시
     private ArrayList<Text> texts = new ArrayList<>(); // 현재 부착된 모든 text 배열
     private Text currentText = null;
     private boolean isTextBeingEdited = false;
     private int textId = -1;
     private int maxTextId = -1;
 
-    private boolean isMidEntered = false; // fixme nayeon 텍스트 중간자 처리를 위한 플래그
+    private boolean isMidEntered = false; // fixme - 텍스트 중간자 처리를 위한 플래그
 
     /* UNDO, REDO 를 위한 객체 */
     private ArrayList<DrawingItem> history = new ArrayList<>();     //
@@ -151,6 +151,9 @@ public enum DrawingEditor {
 
         isIntercept = false;
         isMidEntered = false;
+
+        autoDrawImageList.clear();
+        autoDrawImageViewList.clear();
     }
 
     public void printDrawingData() {
@@ -625,7 +628,7 @@ public enum DrawingEditor {
         return null;
     }
 
-    //fixme nayeon - [ 텍스트 아이디 = "사용자이름-textCount" ] 동시성 처리 필요 X
+    //fixme - [ 텍스트 아이디 = "사용자이름-textCount" ] 동시성 처리 필요 X
     public String setTextStringId() { return myUsername + "-" + textIdCounter(); }
 
     public void removeAllTextViewToFrameLayout() {
@@ -636,7 +639,6 @@ public enum DrawingEditor {
 
     public void addAllTextViewToFrameLayoutForMid() {
         for (Text t: texts) {
-            // fixme nayeon
             // 다른 사용자(마스터)가 편집중일 텍스트일 경우 , TextAttribute 의 String text 는 계속해서 변하는 중
             // 그리고 텍스트 테두리 설정 안 되어 있음
             if(t.getTextAttribute().getUsername() != null) {
@@ -645,7 +647,6 @@ public enum DrawingEditor {
             }
             // 중간에 들어왔는데 색상
 
-            // fixme nayeon
             t.setTextViewInitialPlace(t.getTextAttribute());
             t.setTextViewProperties();
 
@@ -1165,8 +1166,6 @@ public enum DrawingEditor {
     }
 
     public void clearBackgroundImage() {
-
-        // fixme jiiyeon[0825]
         drawingFragment.getBinding().backgroundView.setImage(null);
     }
 
@@ -1210,7 +1209,7 @@ public enum DrawingEditor {
 
     public void setTextBeingEdited(Boolean bool) { this.isTextBeingEdited = bool; } // 하나의 텍스트 편집 시 다른 텍스트 포커싱 막기 위해
 
-    public void setMidEntered(Boolean bool) { this.isMidEntered = bool; } // fixme nayeon
+    public void setMidEntered(Boolean bool) { this.isMidEntered = bool; }
 
     public void setHistory(ArrayList<DrawingItem> history) {
         this.history = history;

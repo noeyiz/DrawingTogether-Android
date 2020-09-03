@@ -69,15 +69,14 @@ public class SearchFragment extends Fragment{
         ((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
-    // fixme hyeyeon[1]
     @Override
-    public void onPause() {  // todo
+    public void onPause() {
         super.onPause();
         MyLog.i("lifeCycle", "SearchFragment onPause()");
     }
 
     @Override
-    public void onDestroyView() {  // todo
+    public void onDestroyView() {
         super.onDestroyView();
         MyLog.i("lifeCycle", "SearchFragment onDestroyView()");
     }

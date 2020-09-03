@@ -50,6 +50,7 @@ public class Rect extends DrawingComponent {
                 MyLog.w("catch", "parseColor");
             }
             paint.setAlpha(this.fillAlpha);
+
             canvas.drawRect(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio, paint);
 
             paint.setStyle(Paint.Style.STROKE);     //윤곽선

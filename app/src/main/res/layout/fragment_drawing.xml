@@ -35,7 +35,6 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:contentDescription="10"
                 android:src="@drawable/pen"
                 android:scaleType="centerInside"
                 android:background="@android:color/transparent"
@@ -66,7 +65,7 @@
                 android:padding="15dp"
                 android:onClick="@{vm::clickText}"
                 android:text="text"
-                android:enabled = "true" /> <!-- fixme nayeon 텍스트 수정 전 까지 비활성화 -->
+                android:enabled = "true" /> <!-- fixme - 텍스트 수정 전 까지 비활성화 -->
 
             <ImageButton
                 android:id="@+id/eraseBtn"
@@ -109,7 +108,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:src="@drawable/auto_draw"
+                android:src="@drawable/auto_drawing"
                 android:scaleType="centerInside"
                 android:background="@android:color/transparent"
                 android:padding="15dp"
