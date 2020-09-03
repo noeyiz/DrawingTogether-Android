@@ -578,7 +578,7 @@ public enum MQTTClient {
                 }
 
                 /* TOPIC_DATA */
-                if (newTopic.equals(topic_data) && de.getDrawingBitmap() != null) {
+                if (newTopic.equals(topic_data) && de.getMainBitmap() != null) {
                     String msg = new String(message.getPayload());
 
                     //MyLog.i("drawMsg", msg);
@@ -1043,7 +1043,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
 
                                 de.clearMyCurrentBitmap();
                                 de.drawUnselectedComponents();
-                                de.getSelectedComponent().drawComponent(de.getMyCurrentCanvas());
+                                de.getSelectedComponent().drawComponent(de.getCurrentCanvas());
                                 de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
                             }
 
@@ -1163,7 +1163,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
 
                     MyLog.i("sendThread", "points[] = " + message.getMovePoints().toString());
                     for(Point point : message.getMovePoints()) {
-                         client.getDrawingView().addPointAndDraw(dComponent, point, de.getCurrentCanvas());
+                         client.getDrawingView().addPointAndDraw(dComponent, point, de.getReceiveCanvas());
                     }
                 }
 
@@ -1184,7 +1184,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                     }
                 } else {
                     MyLog.i("sendThread", "draw up");
-                    client.getDrawingView().addPointAndDraw(dComponent, point, de.getCurrentCanvas());
+                    client.getDrawingView().addPointAndDraw(dComponent, point, de.getReceiveCanvas());
                     //client.getDrawingView().redrawShape(dComponent);
                     client.getDrawingView().doInDrawActionUp(dComponent, myCanvasWidth, myCanvasHeight);
 

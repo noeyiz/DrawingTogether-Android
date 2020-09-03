@@ -1,16 +1,10 @@
 package com.hansung.drawingtogether.view.drawing;
 
-import android.graphics.Bitmap;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.MaskFilter;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Point;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Xfermode;
 
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 
@@ -25,10 +19,10 @@ public class Stroke extends DrawingComponent {
         //de.clearCurrentBitmap();
         //canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR); // Clear the canvas with a transparent color
 
-        if(canvas == de.getMyCurrentCanvas()) {
+        if(canvas == de.getCurrentCanvas()) {
             de.clearMyCurrentBitmap();
             drawComponent(canvas);
-        } else if(canvas == de.getCurrentCanvas()) {
+        } else if(canvas == de.getReceiveCanvas()) {
             de.clearCurrentBitmap();
             de.drawOthersCurrentComponent(null);
         }

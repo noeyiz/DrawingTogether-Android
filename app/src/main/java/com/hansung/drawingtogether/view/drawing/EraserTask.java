@@ -103,7 +103,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
                 de.setPreSelectedComponentsBitmap();
                 de.setPostSelectedComponentsBitmap();
 
-                de.getSelectedComponent().drawComponent(de.getMyCurrentCanvas());
+                de.getSelectedComponent().drawComponent(de.getCurrentCanvas());
                 de.drawUnselectedComponents();
                 de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
             }

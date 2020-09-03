@@ -68,17 +68,17 @@ public class DrawingView extends View {
         canvasWidth = w;
         canvasHeight = h;
 
-        if(de.getDrawingBitmap() == null) {
-            de.setDrawingBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
-            de.setCurrentBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
+        if(de.getMainBitmap() == null) {
+            de.setMainBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
+            de.setReceiveBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
 
             de.setPreSelectedComponentsBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
             de.setPostSelectedComponentsBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
-            de.setMyCurrentBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
+            de.setCurrentBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
 
-            de.setMainCanvas(new Canvas(de.getDrawingBitmap()));
+            de.setMainCanvas(new Canvas(de.getMainBitmap()));
+            de.setReceiveCanvas(new Canvas(de.getReceiveBitmap()));
             de.setCurrentCanvas(new Canvas(de.getCurrentBitmap()));
-            de.setMyCurrentCanvas(new Canvas(de.getMyCurrentBitmap()));
 
         }
         if(de.getDrawingBoardArray() == null) {
@@ -98,9 +98,9 @@ public class DrawingView extends View {
         drawingViewCanvas = canvas;
 
         try {   //중간자 들어오다가 브로커 연결 유실되면 NullPointerException 발생
-            canvas.drawBitmap(de.getDrawingBitmap(), 0, 0, null);
+            canvas.drawBitmap(de.getMainBitmap(), 0, 0, null);
+            canvas.drawBitmap(de.getReceiveBitmap(), 0, 0, null);
             canvas.drawBitmap(de.getCurrentBitmap(), 0, 0, null);
-            canvas.drawBitmap(de.getMyCurrentBitmap(), 0, 0, null);
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
@@ -171,11 +171,9 @@ public class DrawingView extends View {
                 break;
             case RECT:
                 dComponent = rect;
-                de.setDrawingShape(true);
                 break;
             case OVAL:
                 dComponent = oval;
-                de.setDrawingShape(true);
                 break;
         }
     }
@@ -274,7 +272,7 @@ public class DrawingView extends View {
                 return true;
 
             point = dComponent.getEndPoint();
-            addPointAndDraw(dComponent, point, de.getMyCurrentCanvas());
+            addPointAndDraw(dComponent, point, de.getCurrentCanvas());
 
             de.clearMyCurrentBitmap();
             dComponent.drawComponent(de.getMainCanvas());
@@ -321,7 +319,7 @@ public class DrawingView extends View {
 
             case MotionEvent.ACTION_MOVE:
                 point = new Point((int)event.getX(), (int)event.getY());
-                addPointAndDraw(dComponent, point, de.getMyCurrentCanvas());
+                addPointAndDraw(dComponent, point, de.getCurrentCanvas());
 
                 //publish
                 points.add(point);
@@ -339,7 +337,7 @@ public class DrawingView extends View {
 
             case MotionEvent.ACTION_UP:
                 point = new Point((int)event.getX(), (int)event.getY());
-                addPointAndDraw(dComponent, point, de.getMyCurrentCanvas());
+                addPointAndDraw(dComponent, point, de.getCurrentCanvas());
 
                 de.clearMyCurrentBitmap();
                 dComponent.drawComponent(de.getMainCanvas());
@@ -522,7 +520,7 @@ public class DrawingView extends View {
 
                     de.clearMyCurrentBitmap();
                     de.drawUnselectedComponents();
-                    de.getSelectedComponent().drawComponent(de.getMyCurrentCanvas());
+                    de.getSelectedComponent().drawComponent(de.getCurrentCanvas());
                     de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
                     invalidate();
 
@@ -564,7 +562,7 @@ public class DrawingView extends View {
 
                     de.clearMyCurrentBitmap();
                     de.moveSelectedComponent(de.getSelectedComponent(), moveX, moveY);
-                    de.getSelectedComponent().drawComponent(de.getMyCurrentCanvas());
+                    de.getSelectedComponent().drawComponent(de.getCurrentCanvas());
                     de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
                     invalidate();
 

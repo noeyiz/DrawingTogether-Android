@@ -16,10 +16,10 @@ public class Oval  extends DrawingComponent {
 
     @Override
     public void draw(Canvas canvas) {
-        if(canvas == de.getMyCurrentCanvas()) {
+        if(canvas == de.getCurrentCanvas()) {
             de.clearMyCurrentBitmap();
             drawComponent(canvas);
-        } else if(canvas == de.getCurrentCanvas()) {
+        } else if(canvas == de.getReceiveCanvas()) {
             de.clearCurrentBitmap();
             de.drawOthersCurrentComponent(null);
         }

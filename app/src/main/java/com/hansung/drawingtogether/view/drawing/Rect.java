@@ -18,10 +18,10 @@ public class Rect extends DrawingComponent {
         //canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR); // Clear the canvas with a transparent color
         //drawComponent(canvas);
 
-        if(canvas == de.getMyCurrentCanvas()) {
+        if(canvas == de.getCurrentCanvas()) {
             de.clearMyCurrentBitmap();
             drawComponent(canvas);
-        } else if(canvas == de.getCurrentCanvas()) {
+        } else if(canvas == de.getReceiveCanvas()) {
             de.clearCurrentBitmap();
             de.drawOthersCurrentComponent(null);
         }
