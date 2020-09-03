@@ -44,7 +44,7 @@ public class Eraser {
                 }
 
                 //if(dbArray[i][j].size() != 1 && !de.isContainsRemovedComponentIds(dbArray[i][j])) { //-1만 가지고 있으면 size() == 1
-                if(dbArray[i][j].size() != 0 && !de.isContainsRemovedComponentIds(dbArray[i][j])) { //-1만 가지고 있으면 size() == 1
+                if(dbArray[i][j].size() != 0 && !de.isContainsRemovedComponentIds(dbArray[i][j])) {
                     //erasedComponentIds = (dbArray[i][j]);
                     erasedComponentIds.addAll(de.getNotRemovedComponentIds(dbArray[i][j]));
                     de.addRemovedComponentIds(de.getNotRemovedComponentIds(dbArray[i][j]));

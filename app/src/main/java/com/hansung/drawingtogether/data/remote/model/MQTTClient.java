@@ -689,7 +689,7 @@ public enum MQTTClient {
                 if (newTopic.equals(topic_data) && de.getDrawingBitmap() != null) {
 
                     String msg = new String(message.getPayload());
-                    //MyLog.i("drawMsg", msg);
+                    MyLog.i("drawMsg", msg);
                     MqttMessageFormat messageFormat = (MqttMessageFormat) parser.jsonReader(msg);
 
                     // 중간 참여자가 입장했을 때 처리
@@ -1263,7 +1263,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 WarpData data = warpingMessage.getWarpData();
                 ((WarpingControlView)client.getBinding().backgroundView).warping2(data.getAction(), data.getPoints());
                 break;
-            case AURODRAW:
+            case AUTODRAW:
                 AutoDrawMessage autoDrawMessage = message.getAutoDrawMessage();
                 ImageView imageView = new ImageView(MainActivity.context);
                 imageView.setLayoutParams(new LinearLayout.LayoutParams(300, 300));
@@ -1344,7 +1344,7 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
 
                     de.clearCurrentBitmap();
                     de.drawOthersCurrentComponent(dComponent.getUsername());
-                    dComponent.drawComponent(de.getBackCanvas());
+                    dComponent.drawComponent(de.getMainCanvas());
                 }
                 client.updateUsersAction(username, action);
 

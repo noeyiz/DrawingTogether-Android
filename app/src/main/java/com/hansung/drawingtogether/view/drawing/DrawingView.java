@@ -76,7 +76,7 @@ public class DrawingView extends View {
             de.setPostSelectedComponentsBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
             de.setMyCurrentBitmap(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888));
 
-            de.setBackCanvas(new Canvas(de.getDrawingBitmap()));
+            de.setMainCanvas(new Canvas(de.getDrawingBitmap()));
             de.setCurrentCanvas(new Canvas(de.getCurrentBitmap()));
             de.setMyCurrentCanvas(new Canvas(de.getMyCurrentBitmap()));
 
@@ -205,18 +205,14 @@ public class DrawingView extends View {
     }
 
     public void addPointAndDraw(DrawingComponent dComponent, Point point, Canvas mCanvas) {
-        dComponent.setPreSize(dComponent.getPoints().size());
         dComponent.addPoint(point);
         dComponent.setBeginPoint(dComponent.getPoints().get(0));
         dComponent.setEndPoint(point);
 
         dComponent.draw(mCanvas);
-
-
     }
 
     public void addPoint(DrawingComponent dComponent, Point point) {
-        dComponent.setPreSize(dComponent.getPoints().size());
         dComponent.addPoint(point);
         dComponent.setBeginPoint(dComponent.getPoints().get(0));
         dComponent.setEndPoint(point);
@@ -288,7 +284,7 @@ public class DrawingView extends View {
             addPointAndDraw(dComponent, point, de.getMyCurrentCanvas());
 
             de.clearMyCurrentBitmap();
-            dComponent.drawComponent(de.getBackCanvas());
+            dComponent.drawComponent(de.getMainCanvas());
 
             //publish
             if(points.size() != 0) {
@@ -353,7 +349,7 @@ public class DrawingView extends View {
                 addPointAndDraw(dComponent, point, de.getMyCurrentCanvas());
 
                 de.clearMyCurrentBitmap();
-                dComponent.drawComponent(de.getBackCanvas());
+                dComponent.drawComponent(de.getMainCanvas());
 
                 //MyLog.i("drawing", "id=" + dComponent.getId() + ", username=" + dComponent.getUsername() + ", begin=" + dComponent.getBeginPoint() + ", end=" + dComponent.getEndPoint());
 

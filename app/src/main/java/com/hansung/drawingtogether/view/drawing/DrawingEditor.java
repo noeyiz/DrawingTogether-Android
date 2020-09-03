@@ -37,7 +37,7 @@ public enum DrawingEditor {
     private Bitmap currentBitmap;
     private Bitmap myCurrentBitmap;
 
-    private Canvas backCanvas;                  //미리 그려두기 위한 Canvas
+    private Canvas mainCanvas;                  //미리 그려두기 위한 Canvas
     private Canvas currentCanvas;
     private Canvas myCurrentCanvas;
 
@@ -50,8 +50,8 @@ public enum DrawingEditor {
     private Vector<Integer>[][] drawingBoardArray = null;
     private SparseArray<ArrayList<Point>> drawingBoardMap = new SparseArray<>();
 
-    private ArrayList<DrawingComponent> drawingComponents = new ArrayList<>();  //현재 그려져있는 모든 drawing component 배열
-    private ArrayList<DrawingComponent> currentComponents = new ArrayList<>();  //현재 그리기중인 drawing component 배열
+    private ArrayList<DrawingComponent> drawingComponents = new ArrayList<>();  //현재 그려져 있는 모든 drawing component 배열
+    private ArrayList<DrawingComponent> currentComponents = new ArrayList<>();  //현재 그리기 중인 drawing component 배열
 
     /* selector 에 필요한 객체 */
     private DrawingComponent selectedComponent = null;
@@ -178,7 +178,7 @@ public enum DrawingEditor {
 
     public void drawAllDrawingComponents() {   //drawingComponents draw
         for (DrawingComponent drawingComponent : drawingComponents) {
-            drawingComponent.drawComponent(getBackCanvas());
+            drawingComponent.drawComponent(getMainCanvas());
         }
         /*for (DrawingComponent currentComponent : currentComponents) {
             MyLog.i("drawing", "cc.size() = " + currentComponents.size());
@@ -189,7 +189,7 @@ public enum DrawingEditor {
     public void drawAllUnselectedDrawingComponents() {   //drawingComponents draw
         for (DrawingComponent drawingComponent : drawingComponents) {
             if(!drawingComponent.isSelected())
-                drawingComponent.drawComponent(getBackCanvas());
+                drawingComponent.drawComponent(getMainCanvas());
         }
         /*for (DrawingComponent currentComponent : currentComponents) {
             MyLog.i("drawing", "cc.size() = " + currentComponents.size());
@@ -225,7 +225,7 @@ public enum DrawingEditor {
         for (DrawingComponent component : drawingComponents) {
 
             component.calculateRatio(drawingBoardArray[0].length, drawingBoardArray.length);
-            component.drawComponent(getBackCanvas());
+            component.drawComponent(getMainCanvas());
 
             splitPoints(component, drawingBoardArray[0].length, drawingBoardArray.length);
         }
@@ -491,7 +491,7 @@ public enum DrawingEditor {
                 myCurrentBitmap.eraseColor(Color.TRANSPARENT);
                 myCurrentCanvas = new Canvas(myCurrentBitmap);
             }*/
-            getMyCurrentCanvas().drawRect(((float)datumPoint.x*component.getXRatio() - strokeWidth / 2 - 10), ((float)datumPoint.y*component.getYRatio() - strokeWidth / 2 - 10), ((float)datumPoint.x*component.getXRatio() + (float)width + strokeWidth / 2 + 10), ((float)datumPoint.y*component.getYRatio() + (float)height + strokeWidth / 2 + 10), paint);
+            getMyCurrentCanvas().drawRect(((int)((float)datumPoint.x*component.getXRatio()) - strokeWidth / 2 - 10), ((int)((float)datumPoint.y*component.getYRatio()) - strokeWidth / 2 - 10), ((int)((float)datumPoint.x*component.getXRatio()) + width + strokeWidth / 2 + 10), ((int)((float)datumPoint.y*component.getYRatio()) + height + strokeWidth / 2 + 10), paint);
 
         }catch(NullPointerException e) {
             e.printStackTrace();
@@ -525,8 +525,8 @@ public enum DrawingEditor {
     public void drawUnselectedComponents() {
         drawingBitmap.eraseColor(Color.TRANSPARENT);
         drawingBitmap = preSelectedComponentsBitmap.copy(preSelectedComponentsBitmap.getConfig(), true);
-        backCanvas.setBitmap(drawingBitmap);
-        backCanvas.drawBitmap(postSelectedComponentsBitmap, 0, 0, null);
+        mainCanvas.setBitmap(drawingBitmap);
+        mainCanvas.drawBitmap(postSelectedComponentsBitmap, 0, 0, null);
     }
 
     public void moveSelectedComponent(DrawingComponent selectedComponent, int moveX, int moveY) {
@@ -1069,7 +1069,7 @@ public enum DrawingEditor {
             MyLog.i("drawing", "findComponentsToErase id=" + component.getId());
 
             component.setErased(true);
-            component.drawComponent(getBackCanvas());
+            component.drawComponent(getMainCanvas());
         }
     }
 
@@ -1202,8 +1202,8 @@ public enum DrawingEditor {
         this.drawingBitmap = drawingBitmap;
     }
 
-    public void setBackCanvas(Canvas backCanvas) {
-        this.backCanvas = backCanvas;
+    public void setMainCanvas(Canvas mainCanvas) {
+        this.mainCanvas = mainCanvas;
     }
 
     public void setCurrentText(Text text) { this.currentText = text; }

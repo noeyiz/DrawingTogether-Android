@@ -42,7 +42,7 @@ public class Oval  extends DrawingComponent {
 
         try {
             RectF oval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);
-            RectF fillOval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);   //fixme alpha 적용되면 strokeWidth/2만큼 작은 사각형
+            RectF fillOval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);
 
             paint.setStyle(Paint.Style.FILL);       //채우기
             try {

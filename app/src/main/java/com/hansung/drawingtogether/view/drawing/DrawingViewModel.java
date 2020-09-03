@@ -353,7 +353,7 @@ public class DrawingViewModel extends BaseViewModel {
     public void clickAutoDraw(View view) {
         de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.INVISIBLE);
         changeClickedButtonBackground(view);
-        de.setCurrentMode(Mode.AURODRAW);
+        de.setCurrentMode(Mode.AUTODRAW);
 
         DialogAutoDrawBinding binding = DialogAutoDrawBinding.inflate(LayoutInflater.from(MainActivity.context));
         binding.webview.getSettings().setJavaScriptEnabled(true);
