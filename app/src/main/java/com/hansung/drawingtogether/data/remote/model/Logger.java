@@ -153,7 +153,7 @@ public enum Logger {
             builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    MyLog.d("button", "error dialog ok button click"); // fixme nayeon
+                    MyLog.d("button", "error dialog ok button click");
 
                     android.os.Process.killProcess(android.os.Process.myPid());
                     System.exit(10);
@@ -162,7 +162,7 @@ public enum Logger {
 
             AlertDialog alertDialog = builder.create();
             alertDialog.show();
-            MyLog.i("uncaught exception", "error dialog show"); // fixme nayeon
+            MyLog.i("uncaught exception", "error dialog show");
 
             Looper.loop();
         }

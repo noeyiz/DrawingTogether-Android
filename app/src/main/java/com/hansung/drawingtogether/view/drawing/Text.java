@@ -68,12 +68,12 @@ public class Text { // EditTextView
         this.textAttribute = textAttr;
 
 
-        // fixme nayeon [ TextView 가로 크기는 텍스트 편집 레이아웃 1/3, EditText 가로 크기는 텍스트 편집 레이아웃 3/4 ]
+        // fixme - [ TextView 가로 크기는 텍스트 편집 레이아웃 1/3, EditText 가로 크기는 텍스트 편집 레이아웃 3/4 ]
         this.textView = new TextView(drawingFragment.getActivity());
         /*this.textView.setPadding(20, 20, 20, 20);
         this.textView.setWidth(textEditLayout.getWidth()/3);*/ // addTextViewToFrameLayout
 
-        this.editText = this.binding.editText; // fixme nayeon - EditText 를 fragment_drawing.xml 에 정의
+        this.editText = this.binding.editText; // fixme - EditText 를 fragment_drawing.xml 에 정의
         //this.editText.setWidth((int)(textEditLayout.getWidth()*0.75));*/ // drawingFragment
 
         setTextViewAttribute();
@@ -104,7 +104,7 @@ public class Text { // EditTextView
         editText.setGravity(Gravity.CENTER);
         editText.setTypeface(null, textAttribute.getStyle());
 
-        editText.setSelection(editText.length()); // fixme nayeon - Edit Text 커서 뒤로
+        editText.setSelection(editText.length()); // fixme - Edit Text 커서 뒤로
     }
 
     // 중간자 또는 불러오기 시 텍스트의 좌표가 정해진 후 지정해서 레이아웃에 붙여야하는 경우
@@ -185,11 +185,15 @@ public class Text { // EditTextView
                     eraseText();
                     sendMqttMessage(TextMode.ERASE);
 
-                    MyLog.i("drawing", "text erase");
-                    de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme minj - addHistory
+                    if(client.isMaster()) {
+                        client.getComponentCount().decreaseText();
+                    }
 
-                    MyLog.i("drawing", "history.size()=" + de.getHistory().size());
-                    de.clearUndoArray();
+                    MyLog.i("drawing", "text erase");
+                    //de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme - addHistory
+
+                    //MyLog.i("drawing", "history.size()=" + de.getHistory().size());
+                    //de.clearUndoArray();
 
                     return true;
                 }
@@ -203,9 +207,6 @@ public class Text { // EditTextView
             }
         };
 
-
-
-        // fixme nayeon
         // EditText 를 하나만 두고 쓰다보니까 현재 편집중인 텍스트를 명확하게 잡아줘야함.
         TextWatcher textWatcher = new TextWatcher() {
 
@@ -217,7 +218,6 @@ public class Text { // EditTextView
 
             @Override
             public void afterTextChanged(Editable editable) {
-                // fixme nayeon
                 Text text = de.getCurrentText();
                 if(text != null) { text.getTextAttribute().setText(editable.toString()); }
             }
@@ -239,13 +239,13 @@ public class Text { // EditTextView
         de.removeTexts(this); // 텍스트 리스트에서 텍스트 제거
     }
 
-    // fixme nayeon Focusing - Edit Text 사용 시 포커스와 키보드 처리
+    // fixme Focusing - Edit Text 사용 시 포커스와 키보드 처리
     private void processFocusIn() {
         editText.requestFocus();
         inputMethodManager.showSoftInput(editText, 0);
     }
 
-    // todo nayeon - EditText 사용 종료 시 키보드 내리기
+    // todo - EditText 사용 종료 시 키보드 내리기
     public void processFocusOut() { inputMethodManager.hideSoftInputFromWindow(editText.getWindowToken(), 0); }
 
     public void calculateRatio(float myLayoutWidth, float myLayoutHeight) {
@@ -299,7 +299,7 @@ public class Text { // EditTextView
 
             deactivateTextEditing();
 
-            // set text view properties fixme nayeon
+            // set text view properties
             this.textView.setPadding(20, 20, 20, 20);
             this.textView.setWidth(frameLayout.getWidth()/3);
 
@@ -307,11 +307,11 @@ public class Text { // EditTextView
 
 
             MyLog.i("drawing", "text create");
-            de.addHistory(new DrawingItem(TextMode.CREATE, getTextAttribute())); //fixme minj - addHistory
+            /*de.addHistory(new DrawingItem(TextMode.CREATE, getTextAttribute())); //fixme minj - addHistory
             if(de.getHistory().size() == 1)
                 de.getDrawingFragment().getBinding().undoBtn.setEnabled(true);
             MyLog.i("drawing", "history.size()=" + de.getHistory().size());
-            de.clearUndoArray();
+            de.clearUndoArray();*/
 
             de.setCurrentMode(Mode.DRAW); // 텍스트 편집이 완료 되면 현재 모드는 기본 드로잉 모드로
             return;
@@ -341,9 +341,9 @@ public class Text { // EditTextView
         if(preText != null && !preText.equals(textAttribute.getText())) {   //modify 이전과 text 가 달라졌을 때만 history 에 저장
             textAttribute.setModified(true);
             MyLog.i("drawing", "text modify");
-            de.addHistory(new DrawingItem(TextMode.MODIFY, getTextAttribute()));   //fixme minj - addHistory
+            /*de.addHistory(new DrawingItem(TextMode.MODIFY, getTextAttribute()));   //fixme minj - addHistory
             MyLog.i("drawing", "history.size()=" + de.getHistory().size());
-            de.clearUndoArray();
+            de.clearUndoArray();*/
         }
 
         sendMqttMessage(TextMode.DONE); // 사용 종료를 알리기 위해 보내야함 ( 사용자이름 : null )
@@ -498,8 +498,8 @@ public class Text { // EditTextView
     public void addTextViewToFrameLayout() {
 
         // todo nayeon - 강제 오류 발생시키기
-        // frameLayout.addView(textView);
-        // frameLayout.addView(textView);
+//         frameLayout.addView(textView);
+//         frameLayout.addView(textView);
 
         try {
             frameLayout.addView(textView);

@@ -10,28 +10,28 @@ import com.hansung.drawingtogether.data.remote.model.MyLog;
 import lombok.Getter;
 import lombok.Setter;
 
-//fixme jiyeon[0821]
 @Getter
 @Setter
 public class RecordThread extends Thread {
 
-    // Input Settings
+    /* Input Settings */
     private int audioSource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
     private int sampleRate = 5000;
     private int channelCount = AudioFormat.CHANNEL_IN_STEREO;
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
     private int bufferUnit = 2500;
-
     private int bufferSize;
 
+    /* 오디오 샘플을 캡쳐하는 객체 */
     private AudioRecord audioRecord;
 
-    private MQTTClient mqttClient = MQTTClient.getInstance();
-    byte[] nameByte = mqttClient.getMyName().getBytes();
-
-    private boolean flag = false;
-
+    /* 캡쳐한 오디오 샘플들의 모음 (오디오 블록) */
     private byte[] readData;
+
+    private MQTTClient mqttClient = MQTTClient.getInstance();
+
+    byte[] nameByte = mqttClient.getMyName().getBytes();
+    private boolean flag = false;
 
     @Override
     public void run() {
@@ -48,13 +48,13 @@ public class RecordThread extends Thread {
                 .build();
 
         audioRecord.startRecording();
-        MyLog.e("Audio", "Start Recording");
+        MyLog.i("Audio", "Start Recording");
 
         try {
             while (true) {
                 if (!flag) {
                     synchronized (audioRecord) {
-                        MyLog.e("Audio", "RecordThread Wait");
+                        MyLog.i("Audio", "RecordThread Wait");
                         audioRecord.wait();
                     }
                     flag = true;
@@ -63,33 +63,33 @@ public class RecordThread extends Thread {
                 int ret = audioRecord.read(readData, 0, bufferSize);
 
                 publishAudioMessage(readData);
-                //            AudioMessage audioMessage = new AudioMessage(mqttClient.getMyName(), readData);
-                //            MqttMessageFormat messageFormat = new MqttMessageFormat(audioMessage);
-                //            mqttClient.publish(mqttClient.getTopic() + "_audio", JSONParser.getInstance().jsonWrite(messageFormat));
             }
         } catch (InterruptedException e) {
-            MyLog.e("Audio", "Record Thread is dead");
+            MyLog.i("Audio", "Record Thread is dead");
         }
     }
 
+    /* Record Thread 생성할 때 오디오 블록을 담을 오디오 버퍼의 사이즈 설정 */
     public void setBufferUnitSize(int n) {
         bufferSize = bufferUnit * n;
     }
 
+    /* Exit Or Close할 때 AudioRecord 리소스 해제해주기 위함 */
     public void stopRecording() {
         audioRecord.stop();
         audioRecord.release();
-        MyLog.e("Audio", "Stop Recording");
+        audioRecord = null;
+        MyLog.i("Audio", "Stop Recording");
     }
 
-    // fixme jiyeon - 오디오 데이터 + 이름 (바이너리 데이터 자체를 보내도록 변경)
+    /* 오디오 데이터 + 이름 (바이너리 데이터 자체를 보내도록 변경) */
     public void publishAudioMessage(byte[] audioData) {
         byte[] audioMessage = new byte[audioData.length + nameByte.length];
 
         System.arraycopy(audioData, 0, audioMessage, 0, audioData.length);
         System.arraycopy(nameByte, 0, audioMessage, audioData.length, nameByte.length);
 
-        mqttClient.publish(mqttClient.getTopic_audio(), audioMessage);
+//        mqttClient.publish(mqttClient.getTopic_audio(), audioMessage);
     }
 
 }

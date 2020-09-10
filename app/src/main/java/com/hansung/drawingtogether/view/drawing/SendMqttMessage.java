@@ -1,7 +1,5 @@
 package com.hansung.drawingtogether.view.drawing;
 
-import android.view.MotionEvent;
-
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 

@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.os.AsyncTask;
 
+import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 import java.util.Vector;
@@ -10,12 +11,14 @@ import java.util.Vector;
 public class EraserTask extends AsyncTask<Void, Void, Void> {
     private DrawingEditor de = DrawingEditor.getInstance();
     private Vector<Integer> erasedComponentIds;
-    private Vector<DrawingComponent> components;
+    private Vector<DrawingComponent> components = new Vector<>();
+
+    private MQTTClient client = MQTTClient.getInstance();
 
     public EraserTask(Vector<Integer> erasedComponentIds) {
         //de.setDrawingView(((MainActivity) de.getContext()).getDrawingView());
         this.erasedComponentIds = erasedComponentIds;
-        this.components = new Vector<>();
+        this.components.clear();
 
         de.printCurrentComponents("erase");
         de.printDrawingComponents("erase");
@@ -29,30 +32,47 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
         //de.redrawErasedDrawingComponent(erasedComponentIds);  //지워진 components 만 xfermode 로 그리기
         //de.getDrawingView().invalidate();
 
-        for(int i=1; i<erasedComponentIds.size(); i++) {
+        //for(int i=1; i<erasedComponentIds.size(); i++) {
+        for(int i=0; i<erasedComponentIds.size(); i++) {
             try {
                 DrawingComponent comp = de.findDrawingComponentById(erasedComponentIds.get(i));
                 if((comp != null) && comp.isSelected()) {
                     de.setDrawingComponentSelected(comp.getUsersComponentId(), false);
-                    de.clearSelectedBitmap();
+                    de.clearMyCurrentBitmap();
                     de.getDrawingFragment().getBinding().drawingView.setSelected(false);
                     MyLog.i("isSelected", comp.getUsersComponentId() + ", " + comp.isSelected);
                 }
                 comp.setSelected(false);
                 components.add(comp);
+
+                if(client.isMaster()) {
+                    switch (comp.getType()) {
+                        case STROKE:
+                            client.getComponentCount().decreaseStroke();
+                            break;
+                        case RECT:
+                            client.getComponentCount().decreaseRect();
+                            break;
+                        case OVAL:
+                            client.getComponentCount().decreaseOval();
+                            break;
+                    }
+                }
+
             } catch (NullPointerException e) {
                 MyLog.w("catch", "EraserTask.setSelected() | NullPointerException");
             }
         }
 
-        for(int i=1; i<erasedComponentIds.size(); i++) {
+        //for(int i=1; i<erasedComponentIds.size(); i++) {
+        for(int i=0; i<erasedComponentIds.size(); i++) {
             int id = erasedComponentIds.get(i);
             de.removeDrawingComponents(id);
         }
 
         de.drawAllDrawingComponents();
         //de.drawAllUnselectedDrawingComponents();
-        de.drawAllCurrentStrokes();
+        //de.drawAllCurrentStrokes();
         //de.getDrawingView().invalidate();
     }
 
@@ -78,18 +98,16 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
                 de.setPreSelectedComponents(id);
                 de.setPostSelectedComponents(id);
 
-                de.clearSelectedBitmap();
+                de.clearMyCurrentBitmap();
 
-                de.drawAllPreSelectedComponents();
-                de.drawAllPostSelectedComponents();
+                de.setPreSelectedComponentsBitmap();
+                de.setPostSelectedComponentsBitmap();
 
-                de.drawSelectedComponent();
-                de.drawSelectedBitmaps();
+                de.getSelectedComponent().drawComponent(de.getCurrentCanvas());
+                de.drawUnselectedComponents();
                 de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
             }
         }
-
-        de.setLastDrawingBitmap(de.getDrawingBitmap().copy(de.getDrawingBitmap().getConfig(), true));
 
         //de.clearUndoArray();
         //de.getDrawingView().invalidate();

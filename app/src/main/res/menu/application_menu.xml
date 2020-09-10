@@ -4,7 +4,7 @@
 
 <!--    <item-->
 <!--        android:id="@+id/drawing_mic"-->
-<!--        android:title="마이"-->
+<!--        android:title="마이크"-->
 <!--        app:showAsAction="always"-->
 <!--        android:icon="@drawable/mic_slash"/>-->
 
@@ -52,31 +52,4 @@
                 android:icon="@drawable/plus_person"/>
         </menu>
     </item>
-
-
-<!--    &lt;!&ndash; fixme nayeon &ndash;&gt;-->
-<!--    <item-->
-<!--        android:id="@+id/add_menu"-->
-<!--        android:title="더보기"-->
-<!--        app:showAsAction="never"-->
-<!--        android:icon="@drawable/more">-->
-<!--        <menu>-->
-<!--            <item-->
-<!--                android:id="@+id/drawing_plus"-->
-<!--                android:title="친구 초대"-->
-<!--                android:icon="@drawable/plus"/> &lt;!&ndash; android:icon="@drawable/plus" &ndash;&gt;-->
-
-<!--            <item-->
-<!--                android:id="@+id/drawing_search"-->
-<!--                android:title="검색"-->
-<!--                android:icon="@drawable/search"/> &lt;!&ndash; android:icon="@drawable/search" &ndash;&gt;-->
-
-<!--            <item-->
-<!--                android:id="@+id/drawing_save"-->
-<!--                android:title="저장하기"-->
-<!--                android:icon="@drawable/save_img"/>-->
-
-<!--        </menu>-->
-<!--    </item>-->
-
 </menu>
