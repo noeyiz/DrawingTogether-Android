@@ -89,7 +89,7 @@ public class RecordThread extends Thread {
         System.arraycopy(audioData, 0, audioMessage, 0, audioData.length);
         System.arraycopy(nameByte, 0, audioMessage, audioData.length, nameByte.length);
 
-        mqttClient.publish(mqttClient.getTopic_audio(), audioMessage);
+//        mqttClient.publish(mqttClient.getTopic_audio(), audioMessage);
     }
 
 }
