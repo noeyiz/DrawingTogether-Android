@@ -26,13 +26,13 @@ public enum MonitoringDataWriter {
     }
 
     public void write() {
-        receiveTimeWrite("csv");
+        //receiveTimeWrite("csv");
         displayTimeWrite("csv");
-        deliveryTimeWrite("csv");
+        //deliveryTimeWrite("csv");
 
-        receiveTimeWrite("txt");
+        //receiveTimeWrite("txt");
         displayTimeWrite("txt");
-        deliveryTimeWrite("txt");
+        //deliveryTimeWrite("txt");
     }
 
     public void receiveTimeWrite(String extension) {
@@ -77,7 +77,7 @@ public enum MonitoringDataWriter {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String nowTime = sdf.format(date) + "\n";
 
-            BufferedWriter buf = new BufferedWriter(new FileWriter(dir + "/receive_time"+ "." + extension, true));
+            BufferedWriter buf = new BufferedWriter(new FileWriter(dir + "/receive_time_100clients"+ "." + extension, true));
             buf.append(nowTime + " "); // 날짜 쓰기
             buf.append(data); // 파일 쓰기
             buf.newLine(); // 개행
@@ -100,7 +100,7 @@ public enum MonitoringDataWriter {
 
                 for(int i=0; i<MQTTClient.displayTimeList.size(); i++) {
                     if(MQTTClient.displayTimeList.get(i).getEnd() != 0) {
-                        data +=  MQTTClient.displayTimeList.get(i).getTime() + "\n";
+                        data += MQTTClient.displayTimeList.get(i).getComponent() + "," + MQTTClient.displayTimeList.get(i).getTime() + "\n";
                     }
                 }
 
@@ -132,7 +132,7 @@ public enum MonitoringDataWriter {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String nowTime = sdf.format(date) + "\n";
 
-            BufferedWriter buf = new BufferedWriter(new FileWriter(dir + "/display_time"+ "." + extension, true));
+            BufferedWriter buf = new BufferedWriter(new FileWriter(dir + "/display_time_test"+ "." + extension, true));
             buf.append(nowTime + " "); // 날짜 쓰기
             buf.append(data); // 파일 쓰기
             buf.newLine(); // 개행
@@ -186,7 +186,7 @@ public enum MonitoringDataWriter {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String nowTime = sdf.format(date) + "\n";
 
-            BufferedWriter buf = new BufferedWriter(new FileWriter(dir + "/delivery_time"+ "." + extension, true));
+            BufferedWriter buf = new BufferedWriter(new FileWriter(dir + "/delivery_time_500components"+ "." + extension, true));
             buf.append(nowTime + " "); // 날짜 쓰기
             buf.append(data); // 파일 쓰기
             buf.newLine(); // 개행

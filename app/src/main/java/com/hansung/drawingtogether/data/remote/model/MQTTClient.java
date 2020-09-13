@@ -121,7 +121,14 @@ public enum MQTTClient {
     private int networkTry = 0;
     //
 
+    // private ArrayList<MqttClient> clients = new ArrayList<MqttClient>();
+
     /* monitoring data structure */
+
+    public static long start;
+    private static long end;
+    private static double duration;
+    public static boolean ok;
 
     // [Key] UUID [Value] Velocity
     public static Vector<Velocity> receiveTimeList = new Vector<Velocity>();  // 메시지를 수신하는데 걸린 속도 데이터
@@ -235,6 +242,52 @@ public enum MQTTClient {
         }
     }
 
+    // fixme nayeon for performance
+    /*
+    public void monitoringClientSetting(MqttClient client, String topic) {
+        try {
+
+            // 드로잉 데이터를 전송하는 클라이언트일 경우
+            // 브로커 로그에 표시되는 client id를 지정
+
+            MqttConnectOptions connOpts = new MqttConnectOptions();
+
+            connOpts.setCleanSession(true);
+            connOpts.setKeepAliveInterval(1000);
+            connOpts.setMaxInflight(5000);   //?
+
+            connOpts.setAutomaticReconnect(true);
+
+            client.connect(connOpts);
+
+            // subscribeAllTopics(client);
+
+            // clients.add(client);
+
+            MyLog.e("kkankkan", topic + " subscribe");
+            MyLog.i("mqtt", "SUBSCRIBE topic: " + topic);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+     */
+
+    // fixme nayeon for performance
+    /*
+    public void subscribeAllTopics(MqttClient client) {
+        try {
+            client.subscribe(topic_join);
+            client.subscribe(topic_exit);
+            client.subscribe(topic_close);
+            client.subscribe(topic_data);
+            client.subscribe(topic_mid);
+            client.subscribe(topic_image);
+            client.subscribe(topic_alive);
+        }catch(MqttException e) { e.printStackTrace(); }
+
+    }
+     */
+
     public void publish(String newTopic, String payload) {
         try {
             client.publish(newTopic, new MqttMessage(payload.getBytes()));
@@ -247,7 +300,7 @@ public enum MQTTClient {
 //            networkTry++;
 //            if (networkTry == 5) {
 //                showNetworkAlert("네트워크 상태 불안정", "네트워크 상태를 확인해 주세요.");
-//            }
+//
         }
     }
 
@@ -321,7 +374,18 @@ public enum MQTTClient {
             client.unsubscribe(topic_mid);
             client.unsubscribe(topic_alive);
 
-
+            /*
+            for(int i=0; i<clients.size(); i++) {
+                MqttClient c = clients.get(i);
+                c.unsubscribe(topic_join);
+                c.unsubscribe(topic_exit);
+                c.unsubscribe(topic_close);
+                c.unsubscribe(topic_data);
+                c.unsubscribe(topic_image);
+                c.unsubscribe(topic_mid);
+                c.unsubscribe(topic_alive);
+            }
+             */ // fixme nayeon for performance
 
             isMid = true;
             /*
@@ -427,20 +491,20 @@ public enum MQTTClient {
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
 
-//                System.out.println("message arrived");
-//                System.out.println(message.toString());
-
                 if(!newTopic.equals(topic_image)) {
                     MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(new String(message.getPayload()));
 
-                    Log.e("monitoring", mmf.getUsername() + " ? " + myName);
+                    if(isMaster()) {
+                        Log.e("performance", "component count = " + de.getDrawingComponents().size());
+                    }
 
                     // fixme nayeon: monitoring
                     if (isMaster() && mmf.getAction() != null && mmf.getAction() == MotionEvent.ACTION_MOVE
                             && mmf.getType().equals(ComponentType.STROKE)) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
                         if (mmf.getUsername().equals(myName)) { // 자기 자신이 보낸 메시지일 경우 [메시지를 받는데 걸린 시간 측정]
+//                            System.out.println("here");
                             (receiveTimeList.lastElement()).calcTime(System.currentTimeMillis(), message.getPayload().length);
-                            printReceiveTimeList();
+                            // printReceiveTimeList();
                         }
                         else if (!mmf.getUsername().equals(myName)) { // 다른 사람이 보낸 메시지일 경우 [화면에 그리는 시간 측정]
                             displayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), message.getPayload().length));
@@ -526,7 +590,7 @@ public enum MQTTClient {
                                     String json = parser.jsonWrite(messageFormat);
 
                                     // fixme nayeon: monitoring
-                                    deliveryTimeList.add(new Velocity(System.currentTimeMillis(), name, json.getBytes().length));
+                                    deliveryTimeList.add(new Velocity(System.currentTimeMillis(), name, json.getBytes().length, de.getDrawingComponents().size()));
 
                                     client2.publish(topic_join, new MqttMessage(json.getBytes()));
 

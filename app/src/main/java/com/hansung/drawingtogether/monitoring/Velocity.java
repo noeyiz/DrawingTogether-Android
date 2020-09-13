@@ -27,10 +27,11 @@ public class Velocity {
         this.size = size;
     }
 
-    public Velocity(long start, String participant, int size) { // 중간 참여자에게 보낸 메시지 수신 시간 측정 시 사용하는 생성자
+    public Velocity(long start, String participant, int size, int component) { // 중간 참여자에게 보낸 메시지 수신 시간 측정 시 사용하는 생성자
         this.start = start;
         this.participant = participant;
         this.size = size;
+        this.component = component;
     }
 
     public void calcTime(long end, int size) {

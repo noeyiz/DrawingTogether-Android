@@ -57,6 +57,7 @@ import com.hansung.drawingtogether.monitoring.MonitoringDataWriter;
 import com.hansung.drawingtogether.monitoring.MonitoringRunnable;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
+import com.hansung.drawingtogether.monitoring.Velocity;
 import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.main.DatabaseTransaction;
 import com.hansung.drawingtogether.view.main.JoinMessage;
@@ -66,9 +67,11 @@ import com.hansung.drawingtogether.view.main.MainActivity;
 
 
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Objects;
 
 
@@ -107,6 +110,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     //private Button doneBtn;
 
     private ProgressDialog exitProgressDialog;
+
+    private boolean ok = false;
 
     @Override
     public void onAttach(Context context) {
@@ -221,6 +226,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 MyLog.e("alive", "alive publish 안함");
             }
             MyLog.e("alive", "DrawingFragment aliveBackground: " + data.isAliveBackground());*/
+
 
         }
 

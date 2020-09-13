@@ -42,7 +42,9 @@ import com.kakao.message.template.TextTemplate;
 import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
 
+import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -114,6 +116,16 @@ public class DrawingViewModel extends BaseViewModel {
         client.setCallback();
         client.subscribeAllTopics();
 
+        /*
+        for(int i=0; i<100; i++) {
+            try {
+                client.monitoringClientSetting(new MqttClient("tcp://" + ip + ":" + port, MqttClient.generateClientId(), new MemoryPersistence()), topic);
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+        }
+         */ // fixme nayeon for performance
+
         de.setCurrentType(ComponentType.STROKE);    //fixme minj
         de.setCurrentMode(Mode.DRAW);
 
@@ -122,6 +134,8 @@ public class DrawingViewModel extends BaseViewModel {
         recThread.setBufferUnitSize(2);
 //        recThread.start();
         //
+
+
     }
 
     public void clickUndo(View view) {

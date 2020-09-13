@@ -868,7 +868,7 @@ public enum DrawingEditor {
             int y = point.y;
             calcPoints.add(new Point((int)(x * component.getXRatio()), (int)(y * component.getYRatio())));
         }
-        MyLog.i("drawing", "calcPoints = " + calcPoints.toString());
+        // MyLog.i("drawing", "calcPoints = " + calcPoints.toString());
 
         ArrayList<Point> newPoints = new ArrayList<>();     //사이 점 채워진 Point 배열
         float slope;       //기울기
