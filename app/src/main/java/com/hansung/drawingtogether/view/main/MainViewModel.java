@@ -66,6 +66,7 @@ public class MainViewModel extends BaseViewModel {
         setName("");
 
         setIpError("");
+        setPortError("");
         setTopicError("");
         setPasswordError("");
         setNameError("");
@@ -82,7 +83,7 @@ public class MainViewModel extends BaseViewModel {
         }
 
         if (port.getValue().equals("")) {
-            setIpError("포트 번호를 입력해주세요");
+            setPortError("포트 번호를 입력해주세요");
             hasSpecialCharacterAndBlank = true;
         }
 
@@ -235,7 +236,6 @@ public class MainViewModel extends BaseViewModel {
 
     /* 조인 버튼 클릭 시 */
     public void joinClicked(View view) {
-
         setIpError("");
         setPortError("");
         setTopicError("");
@@ -334,10 +334,14 @@ public class MainViewModel extends BaseViewModel {
 
     /* 입력 데이터, 에러 출력 메시지 초기화 */
     public void clearData() {
+        setIp("");
+        setPort("");
         setTopic("");
         setPassword("");
         setName("");
 
+        setIpError("");
+        setPortError("");
         setTopicError("");
         setPasswordError("");
         setNameError("");
@@ -389,11 +393,19 @@ public class MainViewModel extends BaseViewModel {
     }
 
     /* GETTER */
+    public MutableLiveData<String> getIp() { return ip; }
+
+    public MutableLiveData<String> getPort() { return  port; }
+
     public MutableLiveData<String> getTopic() { return topic; }
 
     public MutableLiveData<String> getPassword() { return password; }
 
     public MutableLiveData<String> getName() { return name; }
+
+    public MutableLiveData<String> getIpError() { return ipError; }
+
+    public MutableLiveData<String> getPortError() { return portError; }
 
     public MutableLiveData<String> getTopicError() { return topicError; }
 
@@ -402,6 +414,10 @@ public class MainViewModel extends BaseViewModel {
     public MutableLiveData<String> getNameError() { return nameError; }
 
     /* SETTER */
+    public void setIp(String text) { this.ip.postValue(text); }
+
+    public void setPort(String text) { this.port.postValue(text); }
+
     public void setTopic(String text) { this.topic.postValue(text); }
 
     public void setPassword(String text) { this.password.postValue(text); }

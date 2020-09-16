@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.monitoring.ComponentCount;
+import com.hansung.drawingtogether.monitoring.Velocity;
 import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.drawing.AudioPlayThread;
 import com.hansung.drawingtogether.view.drawing.ComponentType;
@@ -122,6 +123,17 @@ public enum MQTTClient {
     private ComponentCount componentCount;
     private Thread monitoringThread;
 
+    /* monitoring data structure */
+    public static long start;
+    private static long end;
+    private static double duration;
+    public static boolean ok;
+
+    // [Key] UUID [Value] Velocity
+    public static Vector<Velocity> receiveTimeList = new Vector<Velocity>();  // 메시지를 수신하는데 걸린 속도 데이터
+    public static Vector<Velocity> displayTimeList = new Vector<Velocity>();  // 화면에 출력하는데 걸린 속도 데이터
+    public static Vector<Velocity> deliveryTimeList = new Vector<Velocity>(); // 중간 참여자에게 메시지를 전송하는데 걸린 속도 데이터
+
     public static MQTTClient getInstance() {
         return INSTANCE;
     }
@@ -212,6 +224,52 @@ public enum MQTTClient {
             e.printStackTrace();
         }
     }
+
+    // fixme nayeon for performance
+    /*
+    public void monitoringClientSetting(MqttClient client, String topic) {
+        try {
+
+            // 드로잉 데이터를 전송하는 클라이언트일 경우
+            // 브로커 로그에 표시되는 client id를 지정
+
+            MqttConnectOptions connOpts = new MqttConnectOptions();
+
+            connOpts.setCleanSession(true);
+            connOpts.setKeepAliveInterval(1000);
+            connOpts.setMaxInflight(5000);   //?
+
+            connOpts.setAutomaticReconnect(true);
+
+            client.connect(connOpts);
+
+            // subscribeAllTopics(client);
+
+            // clients.add(client);
+
+            MyLog.e("kkankkan", topic + " subscribe");
+            MyLog.i("mqtt", "SUBSCRIBE topic: " + topic);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+     */
+
+    // fixme nayeon for performance
+    /*
+    public void subscribeAllTopics(MqttClient client) {
+        try {
+            client.subscribe(topic_join);
+            client.subscribe(topic_exit);
+            client.subscribe(topic_close);
+            client.subscribe(topic_data);
+            client.subscribe(topic_mid);
+            client.subscribe(topic_image);
+            client.subscribe(topic_alive);
+        }catch(MqttException e) { e.printStackTrace(); }
+
+    }
+     */
 
     public void publish(String newTopic, String payload) {
         try {
@@ -335,6 +393,28 @@ public enum MQTTClient {
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
 
+                if(!newTopic.equals(topic_image)) {
+                    MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(new String(message.getPayload()));
+
+                    if(isMaster()) {
+                        Log.e("performance", "component count = " + de.getDrawingComponents().size());
+                    }
+
+                    // fixme nayeon: monitoring
+                    if (isMaster() && mmf.getAction() != null && mmf.getAction() == MotionEvent.ACTION_MOVE
+                            && mmf.getType().equals(ComponentType.STROKE)) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
+                        if (mmf.getUsername().equals(myName)) { // 자기 자신이 보낸 메시지일 경우 [메시지를 받는데 걸린 시간 측정]
+//                            System.out.println("here");
+                            (receiveTimeList.lastElement()).calcTime(System.currentTimeMillis(), message.getPayload().length);
+                            // printReceiveTimeList();
+                        }
+                        else if (!mmf.getUsername().equals(myName)) { // 다른 사람이 보낸 메시지일 경우 [화면에 그리는 시간 측정]
+                            displayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), message.getPayload().length));
+                        }
+                    }
+
+                }
+
                 /* TOPIC_JOIN */
                 if (newTopic.equals(topic_join)) {
 
@@ -401,6 +481,9 @@ public enum MQTTClient {
                                     /* 드로잉 데이터는 MqttMessageFormat, 이미지 데이터는 binary로 publish */
                                     MqttMessageFormat messageFormat = new MqttMessageFormat(joinAckMsgMaster, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId(), de.getMaxComponentId(), de.getMaxTextId());
                                     String json = parser.jsonWrite(messageFormat);
+
+                                    // fixme nayeon: monitoring
+                                    deliveryTimeList.add(new Velocity(System.currentTimeMillis(), name, json.getBytes().length, de.getDrawingComponents().size()));
 
                                     client2.publish(topic_join, new MqttMessage(json.getBytes()));
 

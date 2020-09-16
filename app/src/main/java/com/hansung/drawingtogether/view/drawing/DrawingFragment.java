@@ -59,9 +59,11 @@ import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import lombok.Getter;
@@ -98,6 +100,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     private ProgressDialog exitProgressDialog;
 
     float dX, dY;
+
+    private boolean ok = false;
 
     @Override
     public void onAttach(Context context) {
