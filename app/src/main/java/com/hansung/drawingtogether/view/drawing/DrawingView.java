@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -252,6 +253,23 @@ public class DrawingView extends View {
 
         de.printCurrentComponents("up");
         de.printDrawingComponents("up");
+
+//        // fixme nayeon for performance
+//        ArrayList<Point> points = new ArrayList<Point>();
+//
+//        Log.e("performane", "delivery time origin component points count = " + de.getDrawingComponents().get(0).getPoints().size());
+//
+//        for(int i=0; i<250; i++)
+//            points.add(new Point(de.getDrawingComponents().get(0).getPoints().get(i)));
+//
+//        de.getDrawingComponents().get(0).setPoints(points);
+//
+//        for(int i=0; i< 100; i++) {
+//            de.getDrawingComponents().add(de.getDrawingComponents().get(0));
+//        }
+//        Log.e("performane", "delivery time measurement component points count = " + de.getDrawingComponents().get(0).getPoints().size());
+//        Log.e("performane", "delivery time measurement component count = " + de.getDrawingComponents().size());
+
     }
 
     boolean isExit = false;
