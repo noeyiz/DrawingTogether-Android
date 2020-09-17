@@ -21,7 +21,9 @@ public enum JSONParser {
         //drawingComponentAdapter = new DrawingComponentAdapter();
         gsonBuilder.registerTypeAdapter(DrawingComponent.class, new DrawingComponentAdapter());
         gsonBuilder.registerTypeAdapter(Text.class, new TextAdapter(drawingFragment));
-        gson = gsonBuilder.create();
+        gson = gsonBuilder
+                .setLenient()
+                .create();
     }
 
     public /*synchronized*/ String jsonWrite(Object object) { return gson.toJson(object); }

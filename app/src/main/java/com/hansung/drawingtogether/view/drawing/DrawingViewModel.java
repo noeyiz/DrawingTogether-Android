@@ -43,7 +43,9 @@ import com.kakao.message.template.TextTemplate;
 import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
 
+import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -110,7 +112,8 @@ public class DrawingViewModel extends BaseViewModel {
         master = data.isMaster();
         masterName = data.getMasterName();
 
-        MyLog.i("MQTTSettingData", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master + "/" + masterName);
+        MyLog.i("MQTTSettingData", "ip : "
+                + ip + ", port : " + port + ", topic : " + topic + ", password : " + password + ", name : " + name + ", isMaster : " + master + ", master : " + masterName);
 
         client.init(topic, name, master, this, ip, port, masterName);
 
