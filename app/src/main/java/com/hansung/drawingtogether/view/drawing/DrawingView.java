@@ -148,8 +148,11 @@ public class DrawingView extends View {
 
                 case GROUP:
                     break;
+
                 case WARP:
                     return onTouchWarpMode(event);
+                case AUTODRAW:
+                    return true;
             }
         }
         return super.onTouchEvent(event);
@@ -238,7 +241,7 @@ public class DrawingView extends View {
     public void doInDrawActionUp(DrawingComponent dComponent, float canvasWidth, float canvasHeight) {
         de.splitPoints(dComponent, canvasWidth, canvasHeight);
         de.addDrawingComponents(dComponent);
-        de.addHistory(new DrawingItem(Mode.DRAW, dComponent/*, de.getDrawingBitmap()*/)); // 드로잉 컴포넌트가 생성되면 History 에 저장
+        de.addHistory(new DrawingItem(Mode.DRAW, dComponent.clone()/*, de.getDrawingBitmap()*/)); // 드로잉 컴포넌트가 생성되면 History 에 저장
         MyLog.i("drawing", "history.size()=" + de.getHistory().size() + ", id=" + dComponent.getId());
 
         de.removeCurrentComponents(dComponent.getUsersComponentId()); // fixme

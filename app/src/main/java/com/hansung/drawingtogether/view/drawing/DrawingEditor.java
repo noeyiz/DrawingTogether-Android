@@ -564,7 +564,6 @@ public enum DrawingEditor {
         if(component == null) return;
 
         Vector<Integer> id = new Vector<>();
-        id.add(-1);
         id.add(component.getId());
         eraseDrawingBoardArray(id);
 
@@ -766,7 +765,7 @@ public enum DrawingEditor {
 
                 } else {
                     MyLog.i("history", "redo history " + comp.getBeginPoint().toString() + ", " + lastItem.getMovePoint().toString());
-                    moveSelectedComponent(comp, 0, 0);
+                    moveSelectedComponent(comp, (lastItem.getMovePoint().x), (lastItem.getMovePoint().y));
                     MyLog.i("history", "redo history " + comp.getBeginPoint().toString());
                 }
                 comp.calculateRatio(myCanvasWidth, myCanvasHeight);
@@ -857,7 +856,6 @@ public enum DrawingEditor {
             for (int i=0; i<height; i++) {
                 for (int j=0; j<width; j++) {
                     drawingBoardArray[i][j] = new Vector<>();
-                    //drawingBoardArray[i][j].add(-1);
                 }
             }
         } catch(OutOfMemoryError e) {
@@ -870,9 +868,8 @@ public enum DrawingEditor {
         try {
             for (int i = 0; i < drawingBoardArray.length; i++) {
                 for (int j = 0; j < drawingBoardArray[i].length; j++) {
-                    if(drawingBoardArray[i][j].size() != 1) {
+                    if(drawingBoardArray[i][j].size() != 0) {
                         drawingBoardArray[i][j].removeAllElements();
-                        drawingBoardArray[i][j].add(-1);
                     }
                 }
             }
@@ -1006,7 +1003,6 @@ public enum DrawingEditor {
     Vector<Integer> erasedComponentIds = new Vector<>();
     public Vector<Integer> findEnclosingDrawingComponents(Point point) {
         erasedComponentIds.clear();
-        erasedComponentIds.add(-1);
         try {
             for (DrawingComponent component : drawingComponents) {
                 switch (component.getType()) { // todo nayeon [ int com.hansung.drawingtogether.view.drawing.ComponentType.ordinal() null ] -> DrawingComponent 배열에 ComponentType Null 이 들어가나 확인
@@ -1032,7 +1028,6 @@ public enum DrawingEditor {
 
     public Vector<Integer> findUnselectedEnclosingDrawingComponents(Point point) {
         Vector<Integer> erasedComponentIds = new Vector<>();
-        erasedComponentIds.add(-1);
         try {
             for (DrawingComponent component : drawingComponents) {
                 if(!component.isSelected()) {
@@ -1140,7 +1135,17 @@ public enum DrawingEditor {
     }
 
     public void clearDrawingComponents() {
+        selectedComponent = null;
+        preSelectedComponents.clear();
+        postSelectedComponents.clear();
+
         mainBitmap.eraseColor(Color.TRANSPARENT);
+        receiveBitmap.eraseColor(Color.TRANSPARENT);
+        currentBitmap.eraseColor(Color.TRANSPARENT);
+
+        preSelectedComponentsBitmap.eraseColor(Color.TRANSPARENT);
+        postSelectedComponentsBitmap.eraseColor(Color.TRANSPARENT);
+
         undoArray.clear();
         history.clear();
         drawingComponents.clear();

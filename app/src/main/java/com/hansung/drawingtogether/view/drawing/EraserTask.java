@@ -88,7 +88,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
-        de.addHistory(new DrawingItem(Mode.ERASE, components/*, de.getDrawingBitmap()*/));    //fixme
+        de.addHistory(new DrawingItem(Mode.ERASE, (Vector<DrawingComponent>)components.clone()/*, de.getDrawingBitmap()*/));    //fixme
         MyLog.i("drawing", "history.size()=" + de.getHistory().size());
 
         if(de.getCurrentMode() == Mode.SELECT && de.getDrawingFragment().getBinding().drawingView.isSelected() && de.getSelectedComponent() != null) {

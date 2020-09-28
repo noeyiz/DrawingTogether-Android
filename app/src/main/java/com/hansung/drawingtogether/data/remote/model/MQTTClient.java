@@ -227,6 +227,7 @@ public enum MQTTClient {
         try {
             client.publish(newTopic, new MqttMessage(payload));
         } catch (MqttException e) {
+            e.printStackTrace();
             /* 마이크 On 상태에서 Exit Or Close할 경우 Record Thread Interrupt 처리 */
             if (drawingViewModel.getRecThread().isAlive()) {
                 drawingViewModel.getRecThread().interrupt();
@@ -326,6 +327,7 @@ public enum MQTTClient {
             @Override
             public void connectionLost(Throwable cause) {
                 MyLog.i("modified mqtt", "CONNECTION LOST : " + cause.getCause().toString());
+                cause.printStackTrace();
                 try {
                     if(isMaster())
                         monitoringThread.wait();
@@ -591,11 +593,13 @@ public enum MQTTClient {
                             return;
                     }
 
+                    /* 모니터링 코드 (컴포넌트 개수 카운트) */
+                    /*
                     MyLog.i("> monitoring", "before check component count");
                     MyLog.i("> monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
                             + ", text mode = " + messageFormat.getTextMode());
 
-                    /* 컴포넌트 개수 저장 */
+                    // 컴포넌트 개수 저장
                     if( (messageFormat.getAction() != null && messageFormat.getAction() == MotionEvent.ACTION_DOWN)
                             || messageFormat.getMode() == Mode.TEXT || messageFormat.getMode() == Mode.ERASE) {
                         MyLog.i("< monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
@@ -604,6 +608,7 @@ public enum MQTTClient {
                     }
 
                     MyLog.i("< monitoring", "after check component count");
+                    */
 
                     /* 컴포넌트 처리 */
                     if (messageFormat.getMode() == Mode.TEXT) {  // TEXT 모드일 경우, username이 다른 경우만 task 생성
@@ -736,27 +741,27 @@ public enum MQTTClient {
     }
 
     public void checkComponentCount(Mode mode, ComponentType type, TextMode textMode) {
-        Log.e("monitoring", "execute check component count func.");
+        //Log.e("monitoring", "execute check component count func.");
 
 
         /* 마스터만 컴포넌트 개수 카운팅 */
         if(!isMaster()) {
-            Log.e("monitoring", "check component count func. i'am not master.");
+            //Log.e("monitoring", "check component count func. i'am not master.");
             return;
         }
 
         if(mode == Mode.TEXT && textMode == TextMode.CREATE) {
-            Log.e("monitoring", "check component count func. text count increase.");
+            //Log.e("monitoring", "check component count func. text count increase.");
 
             componentCount.increaseText();
             return;
         }
 
         if(mode != Mode.DRAW) {
-            Log.e("monitoring", "check component count func. mode is not DRAW");
+            //Log.e("monitoring", "check component count func. mode is not DRAW");
             return;
         }
-        Log.e("monitoring", "check component count func. mode is DRAW");
+        //Log.e("monitoring", "check component count func. mode is DRAW");
 
 
         switch (type) {

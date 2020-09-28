@@ -15,6 +15,7 @@ import android.media.AudioManager;
 import android.media.ExifInterface;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.Display;
@@ -672,6 +673,11 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 drawingViewModel.getImageFromGallery(DrawingFragment.this);
                 break;
             case R.id.camera:
+                /* 카메라에서 이미지 가져오기 - SDK 26이상에서만 작동 */
+                if (Build.VERSION.SDK_INT < 26) {
+                    Toast.makeText(getContext(), "API 26 이상 기기에서 사용 가능한 기능입니다.", Toast.LENGTH_SHORT).show();
+                    break;
+                }
                 drawingViewModel.getImageFromCamera(DrawingFragment.this);
                 break;
             case R.id.drawing_invite:
