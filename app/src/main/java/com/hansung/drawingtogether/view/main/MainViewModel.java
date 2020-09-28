@@ -58,9 +58,10 @@ public class MainViewModel extends BaseViewModel {
         MyLog.i("LifeCycle", "MainViewModel init()");
 
         /* 변수 초기화 */
-        ip.setValue("54.180.154.63"); // 클라우드
-//      ip.setValue("192.168.0.36"); // 모니터링
-        port.postValue("1883");
+        ip.setValue("183.111.206.213");
+        port.postValue("2219");
+//        ip.setValue("54.180.154.63");
+//        port.postValue("1883");
         setTopic("");
         setPassword("");
         setName("");
@@ -334,8 +335,6 @@ public class MainViewModel extends BaseViewModel {
 
     /* 입력 데이터, 에러 출력 메시지 초기화 */
     public void clearData() {
-        setIp("");
-        setPort("");
         setTopic("");
         setPassword("");
         setName("");

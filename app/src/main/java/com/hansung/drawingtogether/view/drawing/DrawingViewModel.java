@@ -340,6 +340,8 @@ public class DrawingViewModel extends BaseViewModel {
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        if (autoDrawImageUrl == null)
+                            return;
                         autoDrawImage.postValue(autoDrawImageUrl);
                     }
                 })
