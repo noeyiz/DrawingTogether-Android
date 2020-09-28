@@ -177,13 +177,14 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             th.start();
             client.setThread(th);
 
-            if(client.isMaster()) {
-                MyLog.i("monitoring", "mqtt client class init func. check master. i'am master.");
-                client.setComponentCount(new ComponentCount(client.getTopic()));
-                Thread monitoringThread = new Thread(monitoringRunnable);
-                monitoringThread.start();
-                client.setMonitoringThread(monitoringThread);
-            }
+            // fixme nayeon for monitoring
+//            if(client.isMaster()) {
+//                MyLog.i("monitoring", "mqtt client class init func. check master. i'am master.");
+//                client.setComponentCount(new ComponentCount(client.getTopic()));
+//                Thread monitoringThread = new Thread(monitoringRunnable);
+//                monitoringThread.start();
+//                client.setMonitoringThread(monitoringThread);
+//            }
         }
 
         drawingViewModel.drawingCommands.observe(getViewLifecycleOwner(), new Observer<DrawingCommand>() {
