@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
         startTime = System.currentTimeMillis();
         if (de.getMainBitmap() != null && startTime - stopTime > 60000) {
             AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setTitle("회의방 나가기")
+                    .setTitle("시간 경과")
                     .setMessage("1분 이상 접속하지 않아 메인 화면으로 이동합니다.")
                     .setCancelable(false)
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
