@@ -554,25 +554,27 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
-
-//            case R.id.drawing_mic:
-//                boolean click = drawingViewModel.clickMic();
-//                if (click) {
-//                    item.setIcon(R.drawable.mic);
-//                } else {
-//                    item.setIcon(R.drawable.mic_slash);
-//                }
-//                break;
-//            case R.id.drawing_speaker:
-//                int mode = drawingViewModel.clickSpeaker();
-//                if (mode == 0) { // speaker off
-//                    item.setIcon(R.drawable.speakerslash);
-//                } else if (mode == 1) { // speaker on
-//                    item.setIcon(R.drawable.speaker1);
-//                } else if (mode == 2) { // speaker loud
-//                    item.setIcon(R.drawable.speaker3);
-//                }
-//                break;
+            // fixme nayeon[1005]: 오디오 주석
+            /*
+            case R.id.drawing_mic:
+                boolean click = drawingViewModel.clickMic();
+                if (click) {
+                    item.setIcon(R.drawable.mic);
+                } else {
+                    item.setIcon(R.drawable.mic_slash);
+                }
+                break;
+            case R.id.drawing_speaker:
+                int mode = drawingViewModel.clickSpeaker();
+                if (mode == 0) { // speaker off
+                    item.setIcon(R.drawable.speakerslash);
+                } else if (mode == 1) { // speaker on
+                    item.setIcon(R.drawable.speaker1);
+                } else if (mode == 2) { // speaker loud
+                    item.setIcon(R.drawable.speaker3);
+                }
+                break;
+             */
             case R.id.gallery:
                 drawingViewModel.getImageFromGallery(DrawingFragment.this);
                 break;

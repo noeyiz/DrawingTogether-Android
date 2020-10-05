@@ -185,6 +185,7 @@ public class Text { // EditTextView
                     eraseText();
                     sendMqttMessage(TextMode.ERASE);
 
+                    // fixme nayeon for monitoring
 //                    if(client.isMaster()) {
 //                        client.getComponentCount().decreaseText();
 //                    }
