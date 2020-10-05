@@ -11,8 +11,10 @@ public class AbnormalTerminationHandler
     public void uncaughtException(Thread thread, Throwable e) {
         MyLog.e("Exception", "UncaughtException");
 
+        /*
         logger.loggingUncaughtException(thread, e.getStackTrace()); // 발생한 오류에 대한 메시지 로그에 기록
         logger.uploadLogFile(ExitType.ABNORMAL);
+        */
 
     }
 }

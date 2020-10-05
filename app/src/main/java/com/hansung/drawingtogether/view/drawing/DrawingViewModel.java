@@ -346,6 +346,8 @@ public class DrawingViewModel extends BaseViewModel {
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        if (autoDrawImageUrl == null)
+                            return;
                     }
                 })
                 .create();

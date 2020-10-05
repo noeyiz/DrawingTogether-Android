@@ -21,6 +21,7 @@ public enum MonitoringRunnable implements Runnable {
 
     @Override
     public void run() {
+        /*
         String topic_monitoring = client.getTopic_monitoring();  // 복사
 
         while (true) {
@@ -42,5 +43,6 @@ public enum MonitoringRunnable implements Runnable {
             }
 
         }
+        */
     }
 }
