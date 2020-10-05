@@ -408,17 +408,17 @@ public enum MQTTClient {
                     }
 
                     // fixme nayeon: monitoring
-                    if (isMaster() && mmf.getAction() != null && mmf.getAction() == MotionEvent.ACTION_MOVE
-                            && mmf.getType().equals(ComponentType.STROKE)) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
-                        if (mmf.getUsername().equals(myName)) { // 자기 자신이 보낸 메시지일 경우 [메시지를 받는데 걸린 시간 측정]
+//                    if (isMaster() && mmf.getAction() != null && mmf.getAction() == MotionEvent.ACTION_MOVE
+//                            && mmf.getType().equals(ComponentType.STROKE)) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
+//                        if (mmf.getUsername().equals(myName)) { // 자기 자신이 보낸 메시지일 경우 [메시지를 받는데 걸린 시간 측정]
 //                            System.out.println("here");
-                            (receiveTimeList.lastElement()).calcTime(System.currentTimeMillis(), message.getPayload().length);
-                            // printReceiveTimeList();
-                        }
-                        else if (!mmf.getUsername().equals(myName)) { // 다른 사람이 보낸 메시지일 경우 [화면에 그리는 시간 측정]
-                            displayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), message.getPayload().length));
-                        }
-                    }
+//                            (receiveTimeList.lastElement()).calcTime(System.currentTimeMillis(), message.getPayload().length);
+//                            // printReceiveTimeList();
+//                        }
+//                        else if (!mmf.getUsername().equals(myName)) { // 다른 사람이 보낸 메시지일 경우 [화면에 그리는 시간 측정]
+//                            displayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), message.getPayload().length));
+//                        }
+//                    }
 
                 }
 

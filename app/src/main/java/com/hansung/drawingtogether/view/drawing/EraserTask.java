@@ -45,19 +45,19 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
                 comp.setSelected(false);
                 components.add(comp);
 
-                if(client.isMaster()) {
-                    switch (comp.getType()) {
-                        case STROKE:
-                            client.getComponentCount().decreaseStroke();
-                            break;
-                        case RECT:
-                            client.getComponentCount().decreaseRect();
-                            break;
-                        case OVAL:
-                            client.getComponentCount().decreaseOval();
-                            break;
-                    }
-                }
+//                if(client.isMaster()) {
+//                    switch (comp.getType()) {
+//                        case STROKE:
+//                            client.getComponentCount().decreaseStroke();
+//                            break;
+//                        case RECT:
+//                            client.getComponentCount().decreaseRect();
+//                            break;
+//                        case OVAL:
+//                            client.getComponentCount().decreaseOval();
+//                            break;
+//                    }
+//                }
 
             } catch (NullPointerException e) {
                 MyLog.w("catch", "EraserTask.setSelected() | NullPointerException");
