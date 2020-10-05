@@ -313,11 +313,11 @@ public class MainViewModel extends BaseViewModel {
         }
     }
 
-    /* 앱 사용 방법 설명창 */
+    /* 앱 사용 방법 알림 */
     public void infoClicked(View view) {
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
-                .setTitle("사용 방법 및 설명")
-                .setMessage("hello")
+                .setTitle(R.string.info_title)
+                .setMessage(R.string.info)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {}
