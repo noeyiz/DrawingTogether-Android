@@ -28,6 +28,20 @@
             app:layout_constraintGuide_percent="0.75"/>
 
         <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/logo_start_guide"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.15"/>
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/logo_end_guide"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.85"/>
+
+        <androidx.constraintlayout.widget.Guideline
             android:id="@+id/view_top_guide"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -45,92 +59,92 @@
             android:id="@+id/logo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@id/view_start_guide"
-            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
+            app:layout_constraintStart_toStartOf="@id/logo_start_guide"
+            app:layout_constraintEnd_toEndOf="@id/logo_end_guide"
             app:layout_constraintTop_toTopOf="@id/view_top_guide"
-            app:layout_constraintBottom_toTopOf="@id/ip"
+            app:layout_constraintBottom_toTopOf="@id/topic"
             android:layout_marginHorizontal="10dp"
             android:layout_marginBottom="30dp"
-            android:src="@drawable/logo"/>
+            android:src="@drawable/drawingtogether_logo"/>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/ip"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            style="@style/TextInputLayoutStyle"
-            app:hintEnabled="false"
-            app:boxStrokeColor="#00000000"
-            app:errorEnabled="false"
-            app:helperTextEnabled="false"
-            app:boxStrokeWidth="0.1dp"
-            app:layout_constraintStart_toStartOf="@id/view_start_guide"
-            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/logo"
-            app:layout_constraintBottom_toTopOf="@id/ip_error">
+<!--        <com.google.android.material.textfield.TextInputLayout-->
+<!--            android:id="@+id/ip"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            style="@style/TextInputLayoutStyle"-->
+<!--            app:hintEnabled="false"-->
+<!--            app:boxStrokeColor="#00000000"-->
+<!--            app:errorEnabled="false"-->
+<!--            app:helperTextEnabled="false"-->
+<!--            app:boxStrokeWidth="0.1dp"-->
+<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
+<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/logo"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/ip_error">-->
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:singleLine="true"
-                android:imeOptions="actionNext"
-                android:hint="브로커 아이피 주소"
-                android:text="@={vm.ip}"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"/>
+<!--            <com.google.android.material.textfield.TextInputEditText-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:singleLine="true"-->
+<!--                android:imeOptions="actionNext"-->
+<!--                android:hint="브로커 아이피 주소"-->
+<!--                android:text="@={vm.ip}"-->
+<!--                android:paddingTop="8dp"-->
+<!--                android:paddingBottom="8dp"/>-->
 
-        </com.google.android.material.textfield.TextInputLayout>
+<!--        </com.google.android.material.textfield.TextInputLayout>-->
 
-        <TextView
-            android:id="@+id/ip_error"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@id/view_start_guide"
-            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/ip"
-            app:layout_constraintBottom_toTopOf="@id/port"
-            android:text="@={vm.ipError}"
-            android:textSize="12dp"
-            android:textColor="@color/colorPrimary"/>
+<!--        <TextView-->
+<!--            android:id="@+id/ip_error"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
+<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/ip"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/port"-->
+<!--            android:text="@={vm.ipError}"-->
+<!--            android:textSize="12dp"-->
+<!--            android:textColor="@color/colorPrimary"/>-->
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/port"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            style="@style/TextInputLayoutStyle"
-            app:hintEnabled="false"
-            app:boxStrokeColor="#00000000"
-            app:errorEnabled="false"
-            app:helperTextEnabled="false"
-            app:boxStrokeWidth="0.1dp"
-            app:layout_constraintStart_toStartOf="@id/view_start_guide"
-            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/ip_error"
-            app:layout_constraintBottom_toTopOf="@id/port_error">
+<!--        <com.google.android.material.textfield.TextInputLayout-->
+<!--            android:id="@+id/port"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            style="@style/TextInputLayoutStyle"-->
+<!--            app:hintEnabled="false"-->
+<!--            app:boxStrokeColor="#00000000"-->
+<!--            app:errorEnabled="false"-->
+<!--            app:helperTextEnabled="false"-->
+<!--            app:boxStrokeWidth="0.1dp"-->
+<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
+<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/ip_error"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/port_error">-->
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:singleLine="true"
-                android:imeOptions="actionNext"
-                android:hint="포트번호"
-                android:text="@={vm.port}"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"/>
+<!--            <com.google.android.material.textfield.TextInputEditText-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:singleLine="true"-->
+<!--                android:imeOptions="actionNext"-->
+<!--                android:hint="포트번호"-->
+<!--                android:text="@={vm.port}"-->
+<!--                android:paddingTop="8dp"-->
+<!--                android:paddingBottom="8dp"/>-->
 
-        </com.google.android.material.textfield.TextInputLayout>
+<!--        </com.google.android.material.textfield.TextInputLayout>-->
 
-        <TextView
-            android:id="@+id/port_error"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@id/view_start_guide"
-            app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/port"
-            app:layout_constraintBottom_toTopOf="@id/topic"
-            android:layout_marginBottom="15dp"
-            android:text="@={vm.portError}"
-            android:textSize="12dp"
-            android:textColor="@color/colorPrimary"/>
+<!--        <TextView-->
+<!--            android:id="@+id/port_error"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:layout_constraintStart_toStartOf="@id/view_start_guide"-->
+<!--            app:layout_constraintEnd_toEndOf="@id/view_end_guide"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/port"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/topic"-->
+<!--            android:layout_marginBottom="15dp"-->
+<!--            android:text="@={vm.portError}"-->
+<!--            android:textSize="12dp"-->
+<!--            android:textColor="@color/colorPrimary"/>-->
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/topic"
@@ -144,7 +158,7 @@
             app:boxStrokeWidth="0.1dp"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
-            app:layout_constraintTop_toBottomOf="@id/port_error"
+            app:layout_constraintTop_toBottomOf="@id/logo"
             app:layout_constraintBottom_toTopOf="@id/topic_error">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -258,7 +272,7 @@
             app:layout_constraintTop_toBottomOf="@id/name_error"
             app:layout_constraintBottom_toTopOf="@id/join"
             android:layout_marginTop="10dp"
-            android:src="@drawable/master_login"
+            android:src="@drawable/start_meeting"
             android:scaleType="centerInside"
             android:background="@android:color/transparent"
             android:onClick="@{vm::masterLoginClicked}"/>
@@ -272,20 +286,19 @@
             app:layout_constraintTop_toBottomOf="@id/master_login"
             app:layout_constraintBottom_toBottomOf="@id/view_bottom_guide"
             android:layout_marginTop="10dp"
-            android:src="@drawable/join"
+            android:src="@drawable/join_meeting"
             android:scaleType="centerInside"
             android:background="@android:color/transparent"
             android:onClick="@{vm::joinClicked}"/>
 
         <ImageView
             android:id="@+id/info"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginLeft="10dp"
-            android:padding="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/info"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/help"
             android:onClick="@{vm::infoClicked}"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
