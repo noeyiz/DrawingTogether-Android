@@ -395,7 +395,7 @@ public class MainViewModel extends BaseViewModel {
             }
         };
 
-        // fixme nayeon [1005]: 오디오 권한 주
+        // fixme nayeon [1005]: 오디오 권한 주석
         TedPermission.with(context)
                 .setPermissionListener(permissionListener)
                 .setDeniedMessage(context.getResources().getString(R.string.permission))
