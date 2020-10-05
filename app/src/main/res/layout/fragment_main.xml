@@ -221,7 +221,7 @@
         <ImageButton
             android:id="@+id/master_login"
             android:layout_width="0dp"
-            android:layout_height="40dp"
+            android:layout_height="60dp"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/name_error"
@@ -234,7 +234,7 @@
         <ImageButton
             android:id="@+id/join"
             android:layout_width="0dp"
-            android:layout_height="40dp"
+            android:layout_height="60dp"
             app:layout_constraintStart_toStartOf="@id/view_start_guide"
             app:layout_constraintEnd_toEndOf="@id/view_end_guide"
             app:layout_constraintTop_toBottomOf="@id/master_login"

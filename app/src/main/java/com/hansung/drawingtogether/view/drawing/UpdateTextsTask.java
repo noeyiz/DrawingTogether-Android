@@ -42,7 +42,7 @@ public class UpdateTextsTask extends AsyncTask<DrawingItem, Void, DrawingItem> {
                 } else {
                     Text newText = new Text(de.getDrawingFragment(), textAttr); //create
                     newText.getTextAttribute().setTextInited(true);
-                    newText.setTextViewProperties(); // fixme nayeon
+                    newText.setTextViewProperties();
                     newText.addTextViewToFrameLayout();
                     de.addTexts(newText);
                     newText.createGestureDetector();

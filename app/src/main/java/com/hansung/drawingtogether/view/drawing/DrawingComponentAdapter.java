@@ -24,7 +24,7 @@ public class DrawingComponentAdapter
         JsonObject result = new JsonObject();
         result.add(CLASSNAME, new JsonPrimitive(src.getClass().getSimpleName()));
         JsonElement je = context.serialize(src, src.getClass());    //****
-        result.add(OBJECT, je);      //fixme min
+        result.add(OBJECT, je);
 
         return result;
     }

@@ -7,6 +7,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+/* Task가 종료되는 시점을 감지하기 위한 클래스 */
 public class TaskService extends Service {
 
     @Nullable
@@ -17,9 +18,7 @@ public class TaskService extends Service {
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        Log.e("task", "task removed");
-        // 최근에 실행한 앱에서 지울 때
-
+        Log.i("TaskService", "Task Service Removed");
         stopSelf();
     }
 }

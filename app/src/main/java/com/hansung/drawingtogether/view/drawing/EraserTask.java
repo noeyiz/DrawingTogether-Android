@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.os.AsyncTask;
 
+import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 
 import java.util.Vector;
@@ -10,12 +11,14 @@ import java.util.Vector;
 public class EraserTask extends AsyncTask<Void, Void, Void> {
     private DrawingEditor de = DrawingEditor.getInstance();
     private Vector<Integer> erasedComponentIds;
-    private Vector<DrawingComponent> components;
+    private Vector<DrawingComponent> components = new Vector<>();
+
+    private MQTTClient client = MQTTClient.getInstance();
 
     public EraserTask(Vector<Integer> erasedComponentIds) {
         //de.setDrawingView(((MainActivity) de.getContext()).getDrawingView());
         this.erasedComponentIds = erasedComponentIds;
-        this.components = new Vector<>();
+        this.components.clear();
 
         de.printCurrentComponents("erase");
         de.printDrawingComponents("erase");
@@ -29,7 +32,8 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
         //de.redrawErasedDrawingComponent(erasedComponentIds);  //지워진 components 만 xfermode 로 그리기
         //de.getDrawingView().invalidate();
 
-        for(int i=1; i<erasedComponentIds.size(); i++) {
+        //for(int i=1; i<erasedComponentIds.size(); i++) {
+        for(int i=0; i<erasedComponentIds.size(); i++) {
             try {
                 DrawingComponent comp = de.findDrawingComponentById(erasedComponentIds.get(i));
                 if((comp != null) && comp.isSelected()) {
@@ -40,12 +44,29 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
                 }
                 comp.setSelected(false);
                 components.add(comp);
+
+                // fixme nayeon for monitoring
+//                if(client.isMaster()) {
+//                    switch (comp.getType()) {
+//                        case STROKE:
+//                            client.getComponentCount().decreaseStroke();
+//                            break;
+//                        case RECT:
+//                            client.getComponentCount().decreaseRect();
+//                            break;
+//                        case OVAL:
+//                            client.getComponentCount().decreaseOval();
+//                            break;
+//                    }
+//                }
+
             } catch (NullPointerException e) {
                 MyLog.w("catch", "EraserTask.setSelected() | NullPointerException");
             }
         }
 
-        for(int i=1; i<erasedComponentIds.size(); i++) {
+        //for(int i=1; i<erasedComponentIds.size(); i++) {
+        for(int i=0; i<erasedComponentIds.size(); i++) {
             int id = erasedComponentIds.get(i);
             de.removeDrawingComponents(id);
         }
@@ -68,7 +89,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
-        de.addHistory(new DrawingItem(Mode.ERASE, components/*, de.getDrawingBitmap()*/));    //fixme
+        de.addHistory(new DrawingItem(Mode.ERASE, (Vector<DrawingComponent>)components.clone()/*, de.getDrawingBitmap()*/));    //fixme
         MyLog.i("drawing", "history.size()=" + de.getHistory().size());
 
         if(de.getCurrentMode() == Mode.SELECT && de.getDrawingFragment().getBinding().drawingView.isSelected() && de.getSelectedComponent() != null) {
@@ -83,7 +104,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
                 de.setPreSelectedComponentsBitmap();
                 de.setPostSelectedComponentsBitmap();
 
-                de.getSelectedComponent().drawComponent(de.getMyCurrentCanvas());
+                de.getSelectedComponent().drawComponent(de.getCurrentCanvas());
                 de.drawUnselectedComponents();
                 de.drawSelectedComponentBorder(de.getSelectedComponent(), de.getMySelectedBorderColor());
             }
