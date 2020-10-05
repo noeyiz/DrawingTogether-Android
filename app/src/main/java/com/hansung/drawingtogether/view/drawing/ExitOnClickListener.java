@@ -19,6 +19,8 @@ import lombok.Setter;
 
 @Setter
 @Getter
+
+/* 회의방 종료, 퇴장시 수행 */
 public class ExitOnClickListener implements DialogInterface.OnClickListener {
 
     private MainActivity mainActivity = (MainActivity) MainActivity.context;
