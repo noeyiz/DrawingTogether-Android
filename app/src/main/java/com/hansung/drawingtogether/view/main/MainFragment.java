@@ -17,7 +17,6 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.google.android.material.textfield.TextInputLayout;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentMainBinding;
 import com.hansung.drawingtogether.view.NavigationCommand;
@@ -69,10 +68,9 @@ public class MainFragment extends Fragment {
         binding.setVm(mainViewModel);
         binding.setLifecycleOwner(this);
 
-        // set kakaolink parameter (topic, password)
+        /* 카카오링크로 전달 받은 topic, password를 textField에 setting */
         MainActivity mainActivity = (MainActivity)getActivity();
         if ((mainActivity.getTopic() != null && mainActivity.getPassword() != null)) {
-            MyLog.e("kakao", "메인프레그먼트");
             String topic = mainActivity.getTopic();
             String password = mainActivity.getPassword();
 
@@ -93,37 +91,37 @@ public class MainFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        MyLog.i("lifeCycle", "MainFragment onStart()");
+        MyLog.i("LifeCycle", "MainFragment onStart()");
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        MyLog.i("lifeCycle", "MainFragment onPause()");
+        MyLog.i("LifeCycle", "MainFragment onPause()");
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        MyLog.i("lifeCycle", "MainFragment onPause()");
+        MyLog.i("LifeCycle", "MainFragment onPause()");
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        MyLog.i("lifeCycle", "MainFragment onStop()");
+        MyLog.i("LifeCycle", "MainFragment onStop()");
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        MyLog.i("lifeCycle", "MainFragment onDestroyView()");
+        MyLog.i("LifeCycle", "MainFragment onDestroyView()");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        MyLog.i("lifeCycle", "MainFragment onDestroy()");
+        MyLog.i("LifeCycle", "MainFragment onDestroy()");
     }
 
 }

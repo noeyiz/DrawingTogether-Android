@@ -14,17 +14,17 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <application
-        android:name=".data.remote.model.DrawingTogetherApplication"
+        android:name=".data.remote.model.SeeSeeCallCallApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/seeseecallcall_icon"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/seeseecallcall_icon_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
 
-        <!-- fixme nayeon [ android:name="" ] Registration LogApplication Class -->
+        <!-- fixme - [ android:name="" ] Registration LogApplication Class -->
         <activity android:name=".view.splash.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

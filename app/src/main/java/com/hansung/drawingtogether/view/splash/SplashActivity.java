@@ -24,6 +24,7 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        /* 앱 중복 실행 검사 */
         if (MainActivity.context != null) {
             Log.e("스플래쉬 액티비티", "context exist");
             showRunningAlert("앱 중복 실행", "이미 실행 중인 앱이 존재합니다.\n" +
@@ -31,8 +32,10 @@ public class SplashActivity extends AppCompatActivity {
             return;
         }
 
+        /* Task Service 실행 */
         startService(new Intent(this, TaskService.class));
 
+        /* Splash Animation */
         LottieAnimationView animationView = findViewById(R.id.intro);
         animationView.addAnimatorListener(new Animator.AnimatorListener() {
             @Override
@@ -42,6 +45,8 @@ public class SplashActivity extends AppCompatActivity {
 
             @Override
             public void onAnimationEnd(Animator animation) {
+
+                /* 카카오 링크를 통해 앱이 실행되었는지 검사 */
                 Intent kakaoIntent = getIntent();
                 Uri uri = null;
                 String kakaoTopic = null, kakaoPassword = null;
@@ -54,14 +59,18 @@ public class SplashActivity extends AppCompatActivity {
                     }
                 }
 
-                MyLog.e("kakao", "스플레시 " + kakaoTopic + "/" + kakaoPassword);
-
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 intent.putExtra("state", "launch");
-                if (!(kakaoTopic == null) && !(kakaoPassword == null)) {
+
+                /* 카카오 링크를 통해 앱을 실행한 경우 */
+                if (kakaoTopic != null && kakaoPassword != null) {
                     intent.putExtra("kakaoTopic", kakaoTopic);
                     intent.putExtra("kakaoPassword", kakaoPassword);
+
+                    MyLog.i("KakaoLink", "SplashActivity " + kakaoTopic + "/" + kakaoPassword);
                 }
+
+                /* MainActivity로 topic, password 전달 */
                 startActivity(intent);
                 finish();
             }

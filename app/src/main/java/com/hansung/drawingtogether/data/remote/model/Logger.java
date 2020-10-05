@@ -59,7 +59,8 @@ public enum Logger {
 
         uncaughtException += "\n\n" + "[ Thread Name ]\n" + thread.getName() + "\n\n";
 
-        uncaughtException += "[ Print Stack Trace ]\n";
+        uncaughtException += "[ Print Stack Trace ]\n\n";
+
         for(int i=0; i< ste.length; i++)
             uncaughtException += ste[i].toString() + "\n";
 
@@ -122,9 +123,9 @@ public enum Logger {
         // new UploadProgressDialogDismissThread(progressDialog).start(); // 다이얼로그 끝내기
 
         if(exitType == ExitType.ABNORMAL) {
-            new ErrorAlertDialogThread().start(); // 오류 메시지를 보여주는 알림창 띄우기
-            //android.os.Process.killProcess(android.os.Process.myPid());
-            //System.exit(10);
+            //new ErrorAlertDialogThread().start(); // 오류 메시지를 보여주는 알림창 띄우기
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(10);
         }
     }
 
@@ -153,7 +154,7 @@ public enum Logger {
             builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    MyLog.d("button", "error dialog ok button click"); // fixme nayeon
+                    MyLog.d("button", "error dialog ok button click");
 
                     android.os.Process.killProcess(android.os.Process.myPid());
                     System.exit(10);
@@ -162,7 +163,7 @@ public enum Logger {
 
             AlertDialog alertDialog = builder.create();
             alertDialog.show();
-            MyLog.i("uncaught exception", "error dialog show"); // fixme nayeon
+            MyLog.i("uncaught exception", "error dialog show");
 
             Looper.loop();
         }

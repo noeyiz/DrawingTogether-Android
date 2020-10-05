@@ -72,13 +72,13 @@ public class SendMqttMessage {    //consumer  //queue 가 비어있을때까지 
                         MqttMessageFormat messageFormat = queue.take();
                         //MyLog.i("sendThread", "active thread count: " + Thread.activeCount() + ", current: " + Thread.currentThread().getName());
 
-                        // fixme nayeon: monitoring
+                        // fixme nayeon for performance
                         if(client.isMaster()
-                                && messageFormat.getAction() != null && messageFormat.getAction() == MotionEvent.ACTION_MOVE
-                                && messageFormat.getType().equals(ComponentType.STROKE)) {
+                                &&  messageFormat.getMode().equals(Mode.DRAW) /* && messageFormat.getAction() != null
+                                && messageFormat.getAction() == MotionEvent.ACTION_MOVE
+                            && messageFormat.getType().equals(ComponentType.STROKE)*/) {
                             MQTTClient.receiveTimeList.add(new Velocity(System.currentTimeMillis()));
                         }
-
 
                         client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
                         takeCnt++;

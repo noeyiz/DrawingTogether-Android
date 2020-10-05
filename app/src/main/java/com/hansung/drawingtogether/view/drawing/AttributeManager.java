@@ -26,16 +26,16 @@ public enum AttributeManager {
         colorButtonClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MyLog.d("button", "color button click"); // fixme nayeon
+                MyLog.d("button", "color button click");
 
                 String hexColor = ((Button)view).getText().toString();
-                //int color = Color.parseColor(hexColor);
 
                 switch (de.getCurrentMode()) {
                     case DRAW:
                     case ERASE:
                     case SELECT:
                     case WARP:
+                    case AUTODRAW:
                         de.setStrokeColor(hexColor);
                         de.setFillColor(hexColor);
                         break;

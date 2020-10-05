@@ -18,11 +18,9 @@ public class AliveBackgroundService extends Service {
         super.onCreate();
         aliveThread = AliveThread.getInstance();
         aliveThread.setSecond(2000);
-        aliveThread.setCount(0);
         thread = new Thread(aliveThread);
         thread.start();
         client.setThread(thread);
-        Log.e("alive", "AliveBackgroundService start, alive thread start");
     }
 
     @Override
@@ -30,7 +28,6 @@ public class AliveBackgroundService extends Service {
         super.onDestroy();
         thread.interrupt();
         stopSelf();
-        Log.e("alive", "AliveBackgroundService dead, alive thread dead");
     }
 
     @Nullable

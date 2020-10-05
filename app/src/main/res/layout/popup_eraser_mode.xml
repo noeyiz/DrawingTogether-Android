@@ -1,44 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#FFFFFF">
 
-    <!--<Button
-        android:id="@+id/targetEraserBtn"
-        android:layout_width="200dp"
-        android:layout_height="50dp"
-        android:gravity="center"
-        android:background="@null"
-        android:text="대상 지우개" />-->
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/backgroundEraserBtn"
-        android:layout_width="200dp"
-        android:layout_height="50dp"
-        android:gravity="center"
-        android:background="@null"
-        android:backgroundTint="#fff"
-        android:textColor="#000000"
-        android:text="배경 초기화"
-        android:elevation="0dp"
-        android:insetTop="0dp"
-        android:insetRight="0dp"
-        android:insetLeft="0dp"
-        android:insetBottom="0dp"/>
-
-    <com.google.android.material.button.MaterialButton
+    <Button
         android:id="@+id/clearBtn"
-        android:layout_width="200dp"
+        android:layout_width="150dp"
         android:layout_height="50dp"
         android:gravity="center"
-        android:background="@null"
-        android:backgroundTint="#fff"
+        android:background="@android:color/transparent"
         android:textColor="#000000"
-        android:text="화면 초기화"
-        android:insetTop="0dp"
-        android:insetRight="0dp"
-        android:insetLeft="0dp"
-        android:insetBottom="0dp"/>
+        android:text="전체 초기화"/>
+
+    <View
+        android:layout_width="140dp"
+        android:layout_height="1dp"
+        android:background="#eeeeee"
+        android:layout_marginHorizontal="5dp"/>
+
+    <Button
+        android:id="@+id/backgroundEraserBtn"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:gravity="center"
+        android:background="@android:color/transparent"
+        android:textColor="#000000"
+        android:text="배경 초기화"/>
+
+    <View
+        android:layout_width="140dp"
+        android:layout_height="1dp"
+        android:background="#eeeeee"
+        android:layout_marginHorizontal="5dp"/>
+
+    <Button
+        android:id="@+id/viewEraserBtn"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:gravity="center"
+        android:background="@android:color/transparent"
+        android:textColor="#000000"
+        android:text="화면 초기화"/>
 
 </LinearLayout>

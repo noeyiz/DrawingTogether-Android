@@ -16,10 +16,10 @@ public class Oval  extends DrawingComponent {
 
     @Override
     public void draw(Canvas canvas) {
-        if(canvas == de.getMyCurrentCanvas()) {
+        if(canvas == de.getCurrentCanvas()) {
             de.clearMyCurrentBitmap();
             drawComponent(canvas);
-        } else if(canvas == de.getCurrentCanvas()) {
+        } else if(canvas == de.getReceiveCanvas()) {
             de.clearCurrentBitmap();
             de.drawOthersCurrentComponent(null);
         }
@@ -42,7 +42,7 @@ public class Oval  extends DrawingComponent {
 
         try {
             RectF oval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);
-            RectF fillOval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);   //fixme alpha 적용되면 strokeWidth/2만큼 작은 사각형
+            RectF fillOval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);
 
             paint.setStyle(Paint.Style.FILL);       //채우기
             try {

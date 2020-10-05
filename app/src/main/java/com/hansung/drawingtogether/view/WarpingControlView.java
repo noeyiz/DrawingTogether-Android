@@ -3,6 +3,7 @@ package com.hansung.drawingtogether.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -79,7 +80,7 @@ public class WarpingControlView extends AppCompatImageView {
 
 	public boolean onTouchEvent(MotionEvent event) {
 		warping(event);
-		sendDrawMqttMessage(event.getAction(), new WarpingMessage(event));
+		sendDrawMqttMessage(event.getAction(), new WarpingMessage(event, getWidth(), getHeight()));
 		return true;
 	}
 
@@ -175,4 +176,79 @@ public class WarpingControlView extends AppCompatImageView {
 				break;
 		}
 	}
+
+	public void warping2(int action, Point[] points) {
+		switch (action & MotionEvent.ACTION_MASK){
+			case MotionEvent.ACTION_DOWN:
+				touchX[0] = points[0].x;
+				touchY[0] = points[0].y;
+				flag = false;
+				flag2 = false;
+				break;
+			case MotionEvent.ACTION_POINTER_DOWN:
+				flag = false;
+				flag2 = false;
+				for (int i = 0; i < points.length; i++) {
+					touchX[i] = points[i].x;
+					touchY[i] = points[i].y;
+				}
+				flag2 = Math.abs(touchX[0] - touchX[1]) > Math.abs(touchY[0] - touchY[1]);
+				if (Math.abs(touchX[0] - touchX[1]) > Math.abs(touchY[0] - touchY[1]))
+					limit = (touchX[0] + touchX[1])/2;
+				else
+					limit = (touchY[0] + touchY[1])/2;
+				break;
+			case MotionEvent.ACTION_MOVE:
+				for (int i = 0; i < points.length; i++) {
+					touchUpX[i] = points[i].x;
+					touchUpY[i] = points[i].y;
+				}
+				Vector<DoublePoint> vector = new Vector<DoublePoint>();
+				vector.add(new DoublePoint(0, 0));
+				vector.add(new DoublePoint(this.getWidth()-1,0));
+				vector.add(new DoublePoint(this.getWidth()-1,this.getHeight()-1));
+				vector.add(new DoublePoint(0,this.getHeight()-1));
+				for (int i = 0; i < points.length; i++) {
+					vector.add(new DoublePoint(touchX[i], touchY[i], points[i].x, points[i].y));
+					if (Math.abs(touchX[i] - touchUpX[i]) > 50 || Math.abs(touchY[i] - touchUpY[i]) > 50) {
+						flag = true;
+					}
+				}
+				if (points.length > 1) {
+					if (flag2) {
+						if (touchX[0] < touchX[1])
+							flag = !(limit < touchUpX[0] || limit > touchUpX[1]);
+						else
+							flag = !(limit > touchUpX[0] || limit < touchUpX[1]);
+					} else {
+						if (touchY[0] < touchY[1])
+							flag = !(limit < touchUpY[0] || limit > touchUpY[1]);
+						else
+							flag = !(limit > touchUpY[0] || limit < touchUpY[1]);
+					}
+				}
+				if (flag) {
+					pointerCount = 1;
+					Triangle srcTriangle = new Triangle();
+					Triangle dstTriangle = new Triangle();
+					DelaunayTriangulation dt = new DelaunayTriangulation(vector, srcTriangle, dstTriangle);
+					dt.Triangulation();
+
+//					undo = Bitmap.createBitmap(image);
+					image = BitmapProcess.warping(image, srcTriangle, dstTriangle);
+					invalidate();
+					for (int i = 0; i < points.length; i++) {
+						touchX[i] = points[i].x;
+						touchY[i] = points[i].y;
+					}
+					flag = false;
+				}
+				break;
+			case MotionEvent.ACTION_UP:
+				flag = false;
+				flag2 = false;
+				break;
+		}
+	}
+
 }

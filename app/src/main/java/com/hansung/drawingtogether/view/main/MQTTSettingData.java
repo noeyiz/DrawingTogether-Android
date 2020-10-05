@@ -5,24 +5,18 @@ import lombok.Setter;
 
 @Getter
 @Setter
-// fixme hyeyeon - mainviewmodel에서 drawingviewmodel로 넘겨줄 데이터들
+/* MQTTClient init에 필요한 데이터들 */
 public class MQTTSettingData {
+
     private static final MQTTSettingData data = new MQTTSettingData();
     private String ip;
     private String port;
     private String topic;
     private String name;
     private String password;
+    private String masterName;
     private boolean master;
-    private String masterName;  // fixme hyeyeon
 
-//    private boolean aliveThreadMode;
-//    private boolean aliveBackground;
+    public static MQTTSettingData getInstance() { return data; }
 
-    public static MQTTSettingData getInstance() {
-        return data;
-    }
-
-    private MQTTSettingData() {
-    }
 }
