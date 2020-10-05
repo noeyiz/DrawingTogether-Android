@@ -302,6 +302,20 @@ public class MainViewModel extends BaseViewModel {
         }
     }
 
+    /* 앱 사용 방법 설명창 */
+    public void infoClicked(View view) {
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
+                .setTitle("사용 방법 및 설명")
+                .setMessage("hello")
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {}
+                })
+                .create();
+
+        dialog.show();
+    }
+
     public void showNetworkAlert(String title, String message) {
 
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
@@ -364,10 +378,11 @@ public class MainViewModel extends BaseViewModel {
             }
         };
 
+        // fixme nayeon [1005]: 오디오 권한 주
         TedPermission.with(context)
                 .setPermissionListener(permissionListener)
                 .setDeniedMessage(context.getResources().getString(R.string.permission))
-                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO)
+                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE/*, Manifest.permission.RECORD_AUDIO*/)
                 .check();
     }
 

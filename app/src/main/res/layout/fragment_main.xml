@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="vm"
             type="com.hansung.drawingtogether.view.main.MainViewModel"/>
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FFFFFF"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        android:background="#FFFFFF">
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/view_start_guide"
@@ -243,6 +244,17 @@
             android:scaleType="centerInside"
             android:background="@android:color/transparent"
             android:onClick="@{vm::joinClicked}"/>
+
+        <ImageView
+            android:id="@+id/info"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginLeft="10dp"
+            android:padding="5dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/info"
+            android:onClick="@{vm::infoClicked}"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
