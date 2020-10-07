@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">시시콜콜</string>
+    <string name="app_name">드로잉투게더</string>
 
     <!-- Ted Permission -->
     <string name="permission">[설정]-[애플리케이션]-[시시콜콜]-[권한]에서 권한을 허용할 수 있습니다.</string>
