@@ -16,7 +16,7 @@
     <application
         android:name=".data.remote.model.DrawingTogetherApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/seeseecallcall_icon"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/seeseecallcall_icon_round"
@@ -25,7 +25,8 @@
         android:usesCleartextTraffic="true">
 
         <!-- fixme - [ android:name="" ] Registration LogApplication Class -->
-        <activity android:name=".view.splash.SplashActivity">
+        <activity android:name=".view.splash.SplashActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -42,7 +43,8 @@
                     android:scheme="@string/kakao_scheme" />
             </intent-filter>
         </activity>
-        <activity android:name=".view.main.MainActivity" />
+        <activity android:name=".view.main.MainActivity"
+            android:screenOrientation="portrait"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"

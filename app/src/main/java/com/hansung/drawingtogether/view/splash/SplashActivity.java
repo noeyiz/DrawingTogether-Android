@@ -36,55 +36,93 @@ public class SplashActivity extends AppCompatActivity {
         startService(new Intent(this, TaskService.class));
 
         /* Splash Animation */
-        LottieAnimationView animationView = findViewById(R.id.intro);
-        animationView.addAnimatorListener(new Animator.AnimatorListener() {
+//        LottieAnimationView animationView = findViewById(R.id.intro);
+//        animationView.addAnimatorListener(new Animator.AnimatorListener() {
+//            @Override
+//            public void onAnimationStart(Animator animation) {
+//
+//            }
+//
+//            @Override
+//            public void onAnimationEnd(Animator animation) {
+//
+//                /* 카카오 링크를 통해 앱이 실행되었는지 검사 */
+//                Intent kakaoIntent = getIntent();
+//                Uri uri = null;
+//                String kakaoTopic = null, kakaoPassword = null;
+//                if (kakaoIntent != null) {
+//                    uri = kakaoIntent.getData();
+//
+//                    if (uri != null) {
+//                        kakaoTopic = uri.getQueryParameter("topic");
+//                        kakaoPassword = uri.getQueryParameter("password");
+//                    }
+//                }
+//
+//                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+//                intent.putExtra("state", "launch");
+//
+//                /* 카카오 링크를 통해 앱을 실행한 경우 */
+//                if (kakaoTopic != null && kakaoPassword != null) {
+//                    intent.putExtra("kakaoTopic", kakaoTopic);
+//                    intent.putExtra("kakaoPassword", kakaoPassword);
+//
+//                    MyLog.i("KakaoLink", "SplashActivity " + kakaoTopic + "/" + kakaoPassword);
+//                }
+//
+//                /* MainActivity로 topic, password 전달 */
+//                startActivity(intent);
+//                finish();
+//            }
+//
+//            @Override
+//            public void onAnimationCancel(Animator animation) {
+//
+//            }
+//
+//            @Override
+//            public void onAnimationRepeat(Animator animation) {
+//
+//            }
+//        });
+
+        new Thread(new Runnable() {
             @Override
-            public void onAnimationStart(Animator animation) {
+            public void run() {
+                try {
+                    Thread.sleep(3000);
+                    /* 카카오 링크를 통해 앱이 실행되었는지 검사 */
+                    Intent kakaoIntent = getIntent();
+                    Uri uri = null;
+                    String kakaoTopic = null, kakaoPassword = null;
+                    if (kakaoIntent != null) {
+                        uri = kakaoIntent.getData();
 
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-
-                /* 카카오 링크를 통해 앱이 실행되었는지 검사 */
-                Intent kakaoIntent = getIntent();
-                Uri uri = null;
-                String kakaoTopic = null, kakaoPassword = null;
-                if (kakaoIntent != null) {
-                    uri = kakaoIntent.getData();
-
-                    if (uri != null) {
-                        kakaoTopic = uri.getQueryParameter("topic");
-                        kakaoPassword = uri.getQueryParameter("password");
+                        if (uri != null) {
+                            kakaoTopic = uri.getQueryParameter("topic");
+                            kakaoPassword = uri.getQueryParameter("password");
+                        }
                     }
+
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    intent.putExtra("state", "launch");
+
+                    /* 카카오 링크를 통해 앱을 실행한 경우 */
+                    if (kakaoTopic != null && kakaoPassword != null) {
+                        intent.putExtra("kakaoTopic", kakaoTopic);
+                        intent.putExtra("kakaoPassword", kakaoPassword);
+
+                        MyLog.i("KakaoLink", "SplashActivity " + kakaoTopic + "/" + kakaoPassword);
+                    }
+
+                    /* MainActivity로 topic, password 전달 */
+                    startActivity(intent);
+                    finish();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.putExtra("state", "launch");
-
-                /* 카카오 링크를 통해 앱을 실행한 경우 */
-                if (kakaoTopic != null && kakaoPassword != null) {
-                    intent.putExtra("kakaoTopic", kakaoTopic);
-                    intent.putExtra("kakaoPassword", kakaoPassword);
-
-                    MyLog.i("KakaoLink", "SplashActivity " + kakaoTopic + "/" + kakaoPassword);
-                }
-
-                /* MainActivity로 topic, password 전달 */
-                startActivity(intent);
-                finish();
             }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
+        }).start();
     }
 
     public void showRunningAlert(String title, String message) {

@@ -29,4 +29,9 @@
         app:lottie_autoPlay="true"
         app:lottie_rawRes="@raw/intro"/>
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/drawingtogether_splash"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
