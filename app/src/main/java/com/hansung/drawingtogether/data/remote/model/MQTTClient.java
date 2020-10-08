@@ -400,14 +400,14 @@ public enum MQTTClient {
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
 
-                if(!newTopic.equals(topic_image)) {
-                    MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(new String(message.getPayload()));
-
-                    if(isMaster()) {
-                        Log.e("performance", "component count = " + de.getDrawingComponents().size());
-                    }
-
-                    // fixme nayeon: monitoring
+//                if(!newTopic.equals(topic_image)) {
+//                    MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(new String(message.getPayload()));
+//
+//                    if(isMaster()) {
+//                        Log.e("performance", "component count = " + de.getDrawingComponents().size());
+//                    }
+//
+//                    // fixme nayeon: monitoring
 //                    if (isMaster() && mmf.getAction() != null && mmf.getAction() == MotionEvent.ACTION_MOVE
 //                            && mmf.getType().equals(ComponentType.STROKE)) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
 //                        if (mmf.getUsername().equals(myName)) { // 자기 자신이 보낸 메시지일 경우 [메시지를 받는데 걸린 시간 측정]
@@ -419,8 +419,8 @@ public enum MQTTClient {
 //                            displayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), message.getPayload().length));
 //                        }
 //                    }
-
-                }
+//
+//                }
 
                 /* TOPIC_JOIN */
                 if (newTopic.equals(topic_join)) {

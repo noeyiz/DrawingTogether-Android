@@ -151,7 +151,7 @@ public class MainViewModel extends BaseViewModel {
 
         hasSpecialCharacterAndBlank();
 
-        MyLog.i("Input Data", topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
+        MyLog.i("Input Data", hasSpecialCharacterAndBlank + " / " + topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
 
         if (!hasSpecialCharacterAndBlank) {
 
@@ -348,8 +348,6 @@ public class MainViewModel extends BaseViewModel {
 
     /* 입력 데이터, 에러 출력 메시지 초기화 */
     public void clearData() {
-        setIp("");
-        setPort("");
         setTopic("");
         setPassword("");
         setName("");
