@@ -28,12 +28,12 @@ public enum MonitoringDataWriter {
     }
 
     public void write() {
-//        receiveTimeWrite("csv");
-//        displayTimeWrite("csv");
+        receiveTimeWrite("csv");
+        displayTimeWrite("csv");
         //deliveryTimeWrite("csv");
 
-//        receiveTimeWrite("txt");
-//        displayTimeWrite("txt");
+        receiveTimeWrite("txt");
+        displayTimeWrite("txt");
         //deliveryTimeWrite("txt");
 
         // myDisplayTimeWrite("csv");
@@ -69,7 +69,7 @@ public enum MonitoringDataWriter {
                 break;
         }
 
-        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/performance0928"); // 저장 경로
+        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/performance1015"); // 저장 경로
 
         Log.e("monitoring", "performance data save path = " + dir);
 
@@ -127,7 +127,7 @@ public enum MonitoringDataWriter {
                 break;
         }
 
-        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/performance0928"); // 저장 경로
+        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/performance1015"); // 저장 경로
 
         Log.e("monitoring", "performance data save path = " + dir);
 
@@ -185,7 +185,7 @@ public enum MonitoringDataWriter {
                 break;
         }
 
-        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/performance0924"); // 저장 경로
+        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/performance"); // 저장 경로
 
         Log.e("monitoring", "performance data save path = " + dir);
 
@@ -256,7 +256,7 @@ public enum MonitoringDataWriter {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String nowTime = sdf.format(date) + "\n";
 
-            BufferedWriter buf = new BufferedWriter(new FileWriter(dir + "/delivery_time_500components"+ "." + extension, true));
+            BufferedWriter buf = new BufferedWriter(new FileWriter(dir + "/delivery_time_n_components"+ "." + extension, true));
             buf.append(nowTime + " "); // 날짜 쓰기
             buf.append(data); // 파일 쓰기
             buf.newLine(); // 개행

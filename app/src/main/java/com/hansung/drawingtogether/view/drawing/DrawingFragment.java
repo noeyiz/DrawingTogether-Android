@@ -720,9 +720,9 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 client.exitTask();
 
                 // fixme nayeon for performance
-//                if(client.isMaster()) {
-//                    MonitoringDataWriter.getInstance().write();
-//                }
+                if(client.isMaster()) {
+                    MonitoringDataWriter.getInstance().write();
+                }
 
             }
             try {

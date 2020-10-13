@@ -2,6 +2,7 @@ package com.hansung.drawingtogether.view.drawing;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
+import com.hansung.drawingtogether.monitoring.Velocity;
 
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -69,13 +70,13 @@ public class SendMqttMessage {    //consumer  //queue 가 비어있을때까지 
                         MqttMessageFormat messageFormat = queue.take();
                         //MyLog.i("sendThread", "active thread count: " + Thread.activeCount() + ", current: " + Thread.currentThread().getName());
 
-//                        // fixme nayeon for performance
-//                        if(client.isMaster()
-//                                &&  messageFormat.getMode().equals(Mode.DRAW) /* && messageFormat.getAction() != null
-//                                && messageFormat.getAction() == MotionEvent.ACTION_MOVE
-//                            && messageFormat.getType().equals(ComponentType.STROKE)*/) {
-//                            MQTTClient.receiveTimeList.add(new Velocity(System.currentTimeMillis()));
-//                        }
+                        // fixme nayeon for performance
+                        if(client.isMaster()
+                                &&  messageFormat.getMode().equals(Mode.DRAW) /* && messageFormat.getAction() != null
+                                && messageFormat.getAction() == MotionEvent.ACTION_MOVE
+                            && messageFormat.getType().equals(ComponentType.STROKE)*/) {
+                            MQTTClient.receiveTimeList.add(new Velocity(System.currentTimeMillis()));
+                        }
 
                         client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
                         takeCnt++;

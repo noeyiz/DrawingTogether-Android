@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.monitoring.ComponentCount;
+import com.hansung.drawingtogether.monitoring.MonitoringDataWriter;
 import com.hansung.drawingtogether.monitoring.Velocity;
 import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.drawing.AudioPlayThread;
@@ -403,27 +404,22 @@ public enum MQTTClient {
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
 
                 // fixme nayeon for performance
-//                if(!newTopic.equals(topic_image)) {
-//                    MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(new String(message.getPayload()));
-//
-//                    if(isMaster()) {
-//                        Log.e("performance", "component count = " + de.getDrawingComponents().size());
-//                    }
-//
-//
-//                    if (isMaster() && mmf.getAction() != null && mmf.getAction() == MotionEvent.ACTION_MOVE
-//                            && mmf.getType().equals(ComponentType.STROKE)) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
-//                        if (mmf.getUsername().equals(myName)) { // 자기 자신이 보낸 메시지일 경우 [메시지를 받는데 걸린 시간 측정]
-//                            System.out.println("here");
-//                            (receiveTimeList.lastElement()).calcTime(System.currentTimeMillis(), message.getPayload().length);
-//                            // printReceiveTimeList();
-//                        }
-//                        else if (!mmf.getUsername().equals(myName)) { // 다른 사람이 보낸 메시지일 경우 [화면에 그리는 시간 측정]
-//                            displayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), message.getPayload().length));
-//                        }
-//                    }
-//
-//                }
+                if(!newTopic.equals(topic_image)) {
+                    MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(new String(message.getPayload()));
+
+                    if (isMaster() && mmf.getAction() != null && mmf.getMode().equals(Mode.DRAW) /*&& mmf.getAction() == MotionEvent.ACTION_MOVE
+                            && mmf.getType().equals(ComponentType.STROKE*/) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
+                        if (mmf.getUsername().equals(myName)) { // 자기 자신이 보낸 메시지일 경우 [메시지를 받는데 걸린 시간 측정]
+                            System.out.println("here");
+                            (receiveTimeList.lastElement()).calcTime(System.currentTimeMillis(), message.getPayload().length);
+                            // printReceiveTimeList();
+                        }
+                        else if (!mmf.getUsername().equals(myName)) { // 다른 사람이 보낸 메시지일 경우 [화면에 그리는 시간 측정]
+                            displayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), message.getPayload().length));
+                        }
+                    }
+
+                }
 
                 /* TOPIC_JOIN */
                 if (newTopic.equals(topic_join)) {
@@ -956,9 +952,9 @@ public enum MQTTClient {
                                     exitTask();
 
                                     // fixme nayeon for performance
-//                                    if(isMaster()) {
-//                                        MonitoringDataWriter.getInstance().write();
-//                                    }
+                                    if(isMaster()) {
+                                        MonitoringDataWriter.getInstance().write();
+                                    }
 
                                 }
                                 if (progressDialog.isShowing())
@@ -974,9 +970,9 @@ public enum MQTTClient {
                                     exitTask();
 
                                     // fixme nayeon for performance
-//                                    if(isMaster()) {
-//                                        MonitoringDataWriter.getInstance().write();
-//                                    }
+                                    if(isMaster()) {
+                                        MonitoringDataWriter.getInstance().write();
+                                    }
 
                                 }
                                 if (progressDialog.isShowing())
@@ -1115,13 +1111,13 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
 
 
                 // fixme nayeon for performance ( draw point )
-//                if (client.isMaster() && /*message.getAction() == MotionEvent.ACTION_MOVE
-//                        && messageFormat.getType().equals(ComponentType.STROKE)*/ message.getMode().equals(Mode.DRAW)
-//                        && !message.getUsername().equals(de.getMyUsername())) { // 다른 사람이 보낸 메시지일 경우 [마스터가 자신의 화면에 그리는 시간 측정]
-//
-//                    (MQTTClient.displayTimeList.lastElement()).calcTime(System.currentTimeMillis());
-//                    //client.printDisplayTimeList();
-//                }
+                if (client.isMaster() && /*message.getAction() == MotionEvent.ACTION_MOVE
+                        && messageFormat.getType().equals(ComponentType.STROKE)*/ message.getMode().equals(Mode.DRAW)
+                        && !message.getUsername().equals(de.getMyUsername())) { // 다른 사람이 보낸 메시지일 경우 [마스터가 자신의 화면에 그리는 시간 측정]
+
+                    (MQTTClient.displayTimeList.lastElement()).calcTime(System.currentTimeMillis());
+                    //client.printDisplayTimeList();
+                }
 
 
 
