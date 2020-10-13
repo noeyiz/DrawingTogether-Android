@@ -1,6 +1,7 @@
 package com.hansung.drawingtogether.view.main;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
@@ -13,19 +14,24 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
 
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
+import com.hansung.drawingtogether.view.drawing.ExitOnClickListener;
 import com.hansung.drawingtogether.view.drawing.SendMqttMessage;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import static com.kakao.util.helper.Utility.getPackageInfo;
 
@@ -48,6 +54,13 @@ public class MainActivity extends AppCompatActivity {
     /* 오른쪽 하단의 백버튼 리스너 */
     public interface OnRightBottomBackListener { void onRightBottomBackPressed();}
     private OnRightBottomBackListener onRightBottomBackListener;
+
+
+    /* start, stop 시간 */
+    private long startTime;
+    private long stopTime;
+
+    private ExitOnClickListener exitOnClickListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -190,12 +203,34 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         MyLog.i("LifeCycle", "MainActivity onStart()");
+
+        startTime = System.currentTimeMillis();
+        if (de.getMainBitmap() != null && startTime - stopTime > 60000) {
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle("시간 경과")
+                    .setMessage("1분 이상 접속하지 않아 메인 화면으로 이동합니다.")
+                    .setCancelable(false)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            exitOnClickListener = new ExitOnClickListener();
+                            exitOnClickListener.setRightBottomBackPressed(false);
+                            exitOnClickListener.setDrawingViewModel(de.getDrawingFragment().getDrawingViewModel());
+                            exitOnClickListener.onClick(dialog, which);
+                        }
+                    }).create();
+            dialog.show();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         MyLog.i("LifeCycle", "MainActivity onResume()");
+
+        if (exitOnClickListener != null && exitOnClickListener.getProgressDialog().isShowing()) {
+            exitOnClickListener.getProgressDialog().dismiss();
+        }
     }
 
     @Override
@@ -208,6 +243,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         MyLog.i("LifeCycle", "MainActivity onStop()");
+
+        stopTime = System.currentTimeMillis();
     }
 
     @Override

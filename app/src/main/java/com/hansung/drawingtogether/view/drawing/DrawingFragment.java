@@ -15,6 +15,7 @@ import android.media.AudioManager;
 import android.media.ExifInterface;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.Display;
@@ -55,6 +56,7 @@ import com.hansung.drawingtogether.monitoring.Velocity;
 import com.hansung.drawingtogether.monitoring.ComponentCount;
 import com.hansung.drawingtogether.monitoring.MonitoringRunnable;
 
+import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.main.AutoDrawMessage;
 import com.hansung.drawingtogether.view.main.DatabaseTransaction;
 import com.hansung.drawingtogether.view.main.JoinMessage;
@@ -117,15 +119,16 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         MyLog.i("LifeCycle", "DrawingFragment onCreateView()");
 
-        exitOnClickListener = new ExitOnClickListener();
-        exitOnClickListener.setRightBottomBackPressed(false);
-
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
         JSONParser.getInstance().initJsonParser(this); // JSON Parser 초기화 (toss DrawingFragmenet)
         MyLog.i("monitoring", "check parser init");
 
         drawingViewModel = ViewModelProviders.of(this).get(DrawingViewModel.class);
+
+        exitOnClickListener = new ExitOnClickListener();
+        exitOnClickListener.setRightBottomBackPressed(false);
+        exitOnClickListener.setDrawingViewModel(drawingViewModel);
 
         client.setDrawingFragment(this);
         de.setDrawingFragment(this);
@@ -168,6 +171,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         }
         MyLog.i("pre pub join message", this.getSize().x + ", " + this.getSize().y);
 
+
         if(de.getMainBitmap() == null) {
 
             /* Join Message Publish */
@@ -183,6 +187,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             th.start();
             client.setThread(th);
 
+            // fixme nayeon for monitoring
             if(client.isMaster()) {
                 MyLog.i("monitoring", "mqtt client class init func. check master. i'am master.");
                 client.setComponentCount(new ComponentCount(client.getTopic()));
@@ -190,28 +195,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 monitoringThread.start();
                 client.setMonitoringThread(monitoringThread);
             }
-
-//            intent = new Intent(MainActivity.context, AliveBackgroundService.class);
-//            MainActivity.context.startService(intent);
-
-            /*if (data.isAliveThreadMode() && !data.isAliveBackground()) {
-                MyLog.e("alive", "DrawingFragment: " + data.isAliveThreadMode());
-                // fixme hyeyeon
-                aliveTh.setSecond(2000);
-                aliveTh.setCount(0);
-                Thread th = new Thread(aliveTh);
-                th.start();
-                client.setThread(th);
-            }
-            else if (data.isAliveThreadMode() && data.isAliveBackground()) {
-                intent = new Intent(MainActivity.context, AliveBackgroundService.class);
-                MainActivity.context.startService(intent);
-            }
-            else {
-                MyLog.e("alive", "alive publish 안함");
-            }
-            MyLog.e("alive", "DrawingFragment aliveBackground: " + data.isAliveBackground());
-            */
 
         }
 
@@ -507,117 +490,12 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         dialog.show();
     }
 
-    @Setter
-    class ExitOnClickListener implements DialogInterface.OnClickListener {
-
-        private boolean rightBottomBackPressed;
-
-        @Override
-        /* 백버튼 - 확인 클릭 시 */
-        public void onClick(DialogInterface dialog, int which) {
-
-            showExitProgressDialog();
-
-            /* 네트워크 연결 상태 확인 */
-            ConnectivityManager cm = (ConnectivityManager) MainActivity.context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (cm.getActiveNetwork() == null) {
-                MyLog.i("네트워크", "network disconnected");
-
-                if (rightBottomBackPressed) {
-                    /* 앱 종료 */
-                    getActivity().finish();
-                    android.os.Process.killProcess(android.os.Process.myPid());
-                    System.exit(10);
-                    return;
-                }
-                else {
-                    /* 메인 화면으로 이동 */
-                    drawingViewModel.back();
-                    return;
-                }
-            }
-            else if (cm.getActiveNetwork() != null && client.getClient().isConnected()) {
-                logger.uploadLogFile(ExitType.NORMAL); // 정상종료일때 로그 올리기
-            }
-
-            String mode = "";
-            if (data.isMaster()) {
-                mode = "masterMode";
-            }
-            else {
-                mode = "joinMode";
-            }
-            /* Firebase Realtime Database Transaction 수행 */
-            DatabaseTransaction dt = new DatabaseTransaction() {
-                @Override
-                public void completeLogin(DatabaseError error, String masterName, boolean topicError, boolean passwordError, boolean nameError) {  }
-
-                @Override
-                public void completeExit(DatabaseError error) {
-
-                    if (error != null) {
-                        exitProgressDialog.dismiss();
-                        showDatabaseErrorAlert("데이터베이스 오류 발생", error.getMessage());
-                        MyLog.i("Database transaction", error.getDetails());
-                        return;
-                    }
-
-                    if (client.getClient().isConnected()) {
-                        client.exitTask();
-                        if(client.isMaster()) {
-                            MonitoringDataWriter.getInstance().write();
-                        }
-                    }
-                    if (rightBottomBackPressed) {
-                        /* 앱 종료 */
-                        getActivity().finish();
-                        android.os.Process.killProcess(android.os.Process.myPid());
-                        System.exit(10);
-                        return;
-                    }
-                    else {
-                        /* 메인 화면으로 이동 */
-                        drawingViewModel.back();
-                        return;
-                    }
-                }
-            };
-            dt.runTransactionExit(data.getTopic(), data.getName(), mode);
-        }
-    }
-
-    /* Firebase Realtime Database Transaction 수행 중 오류 발생 알림 */
-    public void showDatabaseErrorAlert(String title, String message) {
-
-        AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
-                .setTitle(title)
-                .setMessage(message)
-                .setCancelable(false)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
-                })
-                .create();
-
-        dialog.show();
-
-    }
-
     private void setProgressDialog() {
         progressDialog = new ProgressDialog(MainActivity.context);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.setTitle("오류 발생");
         progressDialog.setMessage("로그 파일 업로드 중");
         progressDialog.setCancelable(false);
-    }
-
-    public void showExitProgressDialog() {
-        exitProgressDialog = new ProgressDialog(MainActivity.context, R.style.MyProgressDialogStyle);
-        exitProgressDialog.setMessage("Loading...");
-        exitProgressDialog.setCanceledOnTouchOutside(false);
-        exitProgressDialog.show();
     }
 
     @Override
@@ -683,28 +561,36 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
 
-//            case R.id.drawing_mic:
-//                boolean click = drawingViewModel.clickMic();
-//                if (click) {
-//                    item.setIcon(R.drawable.mic);
-//                } else {
-//                    item.setIcon(R.drawable.mic_slash);
-//                }
-//                break;
-//            case R.id.drawing_speaker:
-//                int mode = drawingViewModel.clickSpeaker();
-//                if (mode == 0) { // speaker off
-//                    item.setIcon(R.drawable.speakerslash);
-//                } else if (mode == 1) { // speaker on
-//                    item.setIcon(R.drawable.speaker1);
-//                } else if (mode == 2) { // speaker loud
-//                    item.setIcon(R.drawable.speaker3);
-//                }
-//                break;
+            // fixme nayeon[1005]: 오디오 주석
+            /*
+            case R.id.drawing_mic:
+                boolean click = drawingViewModel.clickMic();
+                if (click) {
+                    item.setIcon(R.drawable.mic);
+                } else {
+                    item.setIcon(R.drawable.mic_slash);
+                }
+                break;
+            case R.id.drawing_speaker:
+                int mode = drawingViewModel.clickSpeaker();
+                if (mode == 0) { // speaker off
+                    item.setIcon(R.drawable.speakerslash);
+                } else if (mode == 1) { // speaker on
+                    item.setIcon(R.drawable.speaker1);
+                } else if (mode == 2) { // speaker loud
+                    item.setIcon(R.drawable.speaker3);
+                }
+                break;
+             */
             case R.id.gallery:
                 drawingViewModel.getImageFromGallery(DrawingFragment.this);
                 break;
             case R.id.camera:
+                /* 카메라에서 이미지 가져오기 - SDK 26이상에서만 작동 */
+                if (Build.VERSION.SDK_INT < 26) {
+                    Toast.makeText(getContext(), "API 26 이상 기기에서 사용 가능한 기능입니다.", Toast.LENGTH_SHORT).show();
+                    break;
+                }
                 drawingViewModel.getImageFromCamera(DrawingFragment.this);
                 break;
             case R.id.drawing_invite:
@@ -832,9 +718,12 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             if (!client.isExitCompleteFlag()) {
                 MyLog.i("Exit", "비정상 종료");
                 client.exitTask();
-                if(client.isMaster()) {
-                    MonitoringDataWriter.getInstance().write();
-                }
+
+                // fixme nayeon for performance
+//                if(client.isMaster()) {
+//                    MonitoringDataWriter.getInstance().write();
+//                }
+
             }
             try {
                 client.getClient().disconnect();
@@ -846,8 +735,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             }
         }
 
-        if (exitProgressDialog != null && exitProgressDialog.isShowing()) {
-            exitProgressDialog.dismiss();
+        if (exitOnClickListener.getProgressDialog() != null && exitOnClickListener.getProgressDialog().isShowing()) {
+            exitOnClickListener.getProgressDialog().dismiss();
         }
     }
 

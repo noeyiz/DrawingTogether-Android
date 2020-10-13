@@ -60,13 +60,14 @@ public class MainViewModel extends BaseViewModel {
 
         /* 변수 초기화 */
         ip.setValue("54.180.154.63"); // 클라우드
-//        ip.setValue("192.168.0.36"); // 모니터링
+//      ip.setValue("192.168.0.36"); // 모니터링
         port.postValue("1883");
         setTopic("");
         setPassword("");
         setName("");
 
         setIpError("");
+        setPortError("");
         setTopicError("");
         setPasswordError("");
         setNameError("");
@@ -83,7 +84,7 @@ public class MainViewModel extends BaseViewModel {
         }
 
         if (port.getValue().equals("")) {
-            setIpError("포트 번호를 입력해주세요");
+            setPortError("포트 번호를 입력해주세요");
             hasSpecialCharacterAndBlank = true;
         }
 
@@ -151,7 +152,8 @@ public class MainViewModel extends BaseViewModel {
 
         hasSpecialCharacterAndBlank();
 
-        MyLog.i("Input Data", topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
+
+        MyLog.i("Input Data", hasSpecialCharacterAndBlank + " / " + topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
 
         if (!hasSpecialCharacterAndBlank) {
 
@@ -236,7 +238,6 @@ public class MainViewModel extends BaseViewModel {
 
     /* 조인 버튼 클릭 시 */
     public void joinClicked(View view) {
-
         setIpError("");
         setPortError("");
         setTopicError("");
@@ -314,6 +315,21 @@ public class MainViewModel extends BaseViewModel {
         }
     }
 
+
+    /* 앱 사용 방법 알림 */
+    public void infoClicked(View view) {
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
+                .setTitle(R.string.info_title)
+                .setMessage(R.string.info)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {}
+                })
+                .create();
+
+        dialog.show();
+    }
+
     /* 네트워크 연결 상태 불안정 알림 */
     public void showNetworkAlert(String title, String message) {
 
@@ -338,7 +354,8 @@ public class MainViewModel extends BaseViewModel {
         setTopic("");
         setPassword("");
         setName("");
-
+        setIpError("");
+        setPortError("");
         setTopicError("");
         setPasswordError("");
         setNameError("");
@@ -378,10 +395,11 @@ public class MainViewModel extends BaseViewModel {
             }
         };
 
+        // fixme nayeon [1005]: 오디오 권한 주석
         TedPermission.with(context)
                 .setPermissionListener(permissionListener)
                 .setDeniedMessage(context.getResources().getString(R.string.permission))
-                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO)
+                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE/*, Manifest.permission.RECORD_AUDIO*/)
                 .check();
     }
 
@@ -390,11 +408,20 @@ public class MainViewModel extends BaseViewModel {
     }
 
     /* GETTER */
+
+    public MutableLiveData<String> getIp() { return ip; }
+
+    public MutableLiveData<String> getPort() { return  port; }
+
     public MutableLiveData<String> getTopic() { return topic; }
 
     public MutableLiveData<String> getPassword() { return password; }
 
     public MutableLiveData<String> getName() { return name; }
+
+    public MutableLiveData<String> getIpError() { return ipError; }
+
+    public MutableLiveData<String> getPortError() { return portError; }
 
     public MutableLiveData<String> getTopicError() { return topicError; }
 
@@ -403,6 +430,10 @@ public class MainViewModel extends BaseViewModel {
     public MutableLiveData<String> getNameError() { return nameError; }
 
     /* SETTER */
+    public void setIp(String text) { this.ip.postValue(text); }
+
+    public void setPort(String text) { this.port.postValue(text); }
+
     public void setTopic(String text) { this.topic.postValue(text); }
 
     public void setPassword(String text) { this.password.postValue(text); }

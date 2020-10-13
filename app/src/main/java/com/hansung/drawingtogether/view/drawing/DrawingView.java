@@ -152,8 +152,11 @@ public class DrawingView extends View {
 
                 case GROUP:
                     break;
+
                 case WARP:
                     return onTouchWarpMode(event);
+                case AUTODRAW:
+                    return true;
             }
         }
         return super.onTouchEvent(event);

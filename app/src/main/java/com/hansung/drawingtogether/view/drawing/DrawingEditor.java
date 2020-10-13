@@ -856,7 +856,6 @@ public enum DrawingEditor {
             for (int i=0; i<height; i++) {
                 for (int j=0; j<width; j++) {
                     drawingBoardArray[i][j] = new Vector<>();
-                    //drawingBoardArray[i][j].add(-1);
                 }
             }
         } catch(OutOfMemoryError e) {
@@ -1137,19 +1136,16 @@ public enum DrawingEditor {
 
     public void clearDrawingComponents() {
 
-        backgroundImage.eraseColor(Color.TRANSPARENT);
-        mainBitmap.eraseColor(Color.TRANSPARENT);
-
-        //deselect(false);
         selectedComponent = null;
         preSelectedComponents.clear();
         postSelectedComponents.clear();
 
-        preSelectedComponentsBitmap.eraseColor(Color.TRANSPARENT);
-        postSelectedComponentsBitmap.eraseColor(Color.TRANSPARENT);
-
+        mainBitmap.eraseColor(Color.TRANSPARENT);
         receiveBitmap.eraseColor(Color.TRANSPARENT);
         currentBitmap.eraseColor(Color.TRANSPARENT);
+
+        preSelectedComponentsBitmap.eraseColor(Color.TRANSPARENT);
+        postSelectedComponentsBitmap.eraseColor(Color.TRANSPARENT);
 
         undoArray.clear();
         history.clear();

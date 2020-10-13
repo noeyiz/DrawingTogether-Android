@@ -112,7 +112,9 @@ public class DrawingViewModel extends BaseViewModel {
         master = data.isMaster();
         masterName = data.getMasterName();
 
-        MyLog.i("MQTTSettingData", "MQTTSettingData : "  + topic + " / " + password + " / " + name + " / " + master + "/" + masterName);
+
+        MyLog.i("MQTTSettingData", "ip : "
+                + ip + ", port : " + port + ", topic : " + topic + ", password : " + password + ", name : " + name + ", isMaster : " + master + ", master : " + masterName);
 
         client.init(topic, name, master, this, ip, port, masterName);
 
@@ -120,18 +122,19 @@ public class DrawingViewModel extends BaseViewModel {
         client.setCallback();
         client.subscribeAllTopics();
 
-        /*
-        for(int i=0; i<100; i++) {
-            try {
-                client.monitoringClientSetting(new MqttClient("tcp://" + ip + ":" + port, MqttClient.generateClientId(), new MemoryPersistence()), topic);
-            } catch (MqttException e) {
-                e.printStackTrace();
-            }
-        }
-         */ // fixme nayeon for performance
+
+        // fixme nayeon for performance
+
+//        for(int i=0; i<100; i++) {
+//            try {
+//                client.monitoringClientSetting(new MqttClient("tcp://" + ip + ":" + port, MqttClient.generateClientId(), new MemoryPersistence()), topic);
+//            } catch (MqttException e) {
+//                e.printStackTrace();
+//            }
+//        }
+
 
         de.setCurrentType(ComponentType.STROKE);    //fixme minj
-
         de.setCurrentMode(Mode.DRAW);
 
 //        /* Record Thread는 DrawingViewModel 생성 시 하나만 생성 */
@@ -357,6 +360,8 @@ public class DrawingViewModel extends BaseViewModel {
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        if (autoDrawImageUrl == null)
+                            return;
                     }
                 })
                 .create();

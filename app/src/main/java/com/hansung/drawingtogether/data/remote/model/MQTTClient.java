@@ -17,7 +17,7 @@ import android.widget.Toast;
 import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 import com.hansung.drawingtogether.monitoring.ComponentCount;
-import com.hansung.drawingtogether.monitoring.MonitoringDataWriter;
+import com.hansung.drawingtogether.monitoring.Velocity;
 import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.drawing.AudioPlayThread;
 import com.hansung.drawingtogether.view.drawing.ComponentType;
@@ -119,20 +119,12 @@ public enum MQTTClient {
 
     private boolean exitCompleteFlag = false;
 
-/*
-    // fixme hyen[0825]
-    private int networkTry = 0;
-    //
+    private ProgressDialog progressDialog;
 
-    // private ArrayList<MqttClient> clients = new ArrayList<MqttClient>();
-
-    // monitoring data structure
-
-    public static long start;
-    private static long end;
-    private static double duration;
-    public static boolean ok;
-*/
+    // fixme nayeon for monitoring
+    /* 모니터링 관련 변수 */
+    private ComponentCount componentCount;
+    private Thread monitoringThread;
 
     // [Key] UUID [Value] Velocity
     public static Vector<Velocity> receiveTimeList = new Vector<Velocity>();  // 메시지를 수신하는데 걸린 시간
@@ -141,11 +133,6 @@ public enum MQTTClient {
     public static Vector<Velocity> mDisplayTimeList = new Vector<Velocity>();  // 내 화면에 출력하는 데 걸린 시간
 
 
-    private ProgressDialog progressDialog;
-
-    /* 모니터링 관련 변수 */
-    private ComponentCount componentCount;
-    private Thread monitoringThread;
 
 
     public static MQTTClient getInstance() {
@@ -291,13 +278,6 @@ public enum MQTTClient {
         } catch (MqttException e) {
             e.printStackTrace();
             showTimerAlertDialog("메시지 전송 실패", "메인 화면으로 이동합니다");
-
-//            setToastMsg("네트워크 상태 불안정");
-//            networkTry++;
-//            if (networkTry == 5) {
-//                showNetworkAlert("네트워크 상태 불안정", "네트워크 상태를 확인해 주세요.");
-//
-
         }
     }
 
@@ -305,7 +285,8 @@ public enum MQTTClient {
         try {
             client.publish(newTopic, new MqttMessage(payload));
         } catch (MqttException e) {
-//            /* 마이크 On 상태에서 Exit Or Close할 경우 Record Thread Interrupt 처리 */
+            e.printStackTrace();
+            /* 마이크 On 상태에서 Exit Or Close할 경우 Record Thread Interrupt 처리 */
 //            if (drawingViewModel.getRecThread().isAlive()) {
 //                drawingViewModel.getRecThread().interrupt();
 //            }
@@ -329,6 +310,7 @@ public enum MQTTClient {
 
             th.interrupt(); // Alive Thread Interrupt
 
+            // fixme nayeon for monitoring
             if(isMaster())
                 monitoringThread.interrupt();
 
@@ -354,19 +336,6 @@ public enum MQTTClient {
             client.unsubscribe(topic_image);
             client.unsubscribe(topic_mid);
             client.unsubscribe(topic_alive);
-
-            /*
-            for(int i=0; i<clients.size(); i++) {
-                MqttClient c = clients.get(i);
-                c.unsubscribe(topic_join);
-                c.unsubscribe(topic_exit);
-                c.unsubscribe(topic_close);
-                c.unsubscribe(topic_data);
-                c.unsubscribe(topic_image);
-                c.unsubscribe(topic_mid);
-                c.unsubscribe(topic_alive);
-            }
-             */ // fixme nayeon for performance
 
             isMid = true;
             exitCompleteFlag = true;
@@ -402,8 +371,10 @@ public enum MQTTClient {
                     MyLog.i("modified mqtt", "RECONNECT");
                     subscribeAllTopics();
 
+                    // fixme nayeon for monitoring
                     if(isMaster())
                         monitoringThread.notify();
+
 
 //                    /* 스피커 On(오디오 subscribe 중)이었다면 다시 subscribe */
 //                    if (drawingViewModel.isSpeakerFlag())
@@ -417,41 +388,43 @@ public enum MQTTClient {
             public void connectionLost(Throwable cause) {
                 MyLog.i("modified mqtt", "CONNECTION LOST : " + cause.getCause().toString());
                 cause.printStackTrace();
+
+                // fixme nayeon for monitoring
                 try {
                     if(isMaster())
                         monitoringThread.wait();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
             }
 
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
 
+                // fixme nayeon for performance
+//                if(!newTopic.equals(topic_image)) {
+//                    MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(new String(message.getPayload()));
+//
+//                    if(isMaster()) {
+//                        Log.e("performance", "component count = " + de.getDrawingComponents().size());
+//                    }
+//
+//
+//                    if (isMaster() && mmf.getAction() != null && mmf.getAction() == MotionEvent.ACTION_MOVE
+//                            && mmf.getType().equals(ComponentType.STROKE)) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
+//                        if (mmf.getUsername().equals(myName)) { // 자기 자신이 보낸 메시지일 경우 [메시지를 받는데 걸린 시간 측정]
+//                            System.out.println("here");
+//                            (receiveTimeList.lastElement()).calcTime(System.currentTimeMillis(), message.getPayload().length);
+//                            // printReceiveTimeList();
+//                        }
+//                        else if (!mmf.getUsername().equals(myName)) { // 다른 사람이 보낸 메시지일 경우 [화면에 그리는 시간 측정]
+//                            displayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), message.getPayload().length));
+//                        }
+//                    }
+//
+//                }
 
-                if(!newTopic.equals(topic_image)) {
-                    MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(new String(message.getPayload()));
-
-                    if(isMaster()) {
-                        Log.e("performance", "component count = " + de.getDrawingComponents().size());
-                    }
-
-                    // fixme nayeon for performance
-                    if (isMaster() && mmf.getAction() != null && /*mmf.getAction() == MotionEvent.ACTION_MOVE
-                            && messageFormat.getType().equals(ComponentType.STROKE)*/ mmf.getMode().equals(Mode.DRAW)) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
-                        if (mmf.getUsername().equals(myName)) { // 자기 자신이 보낸 메시지일 경우 [메시지를 받는데 걸린 시간 측정]
-                            (receiveTimeList.lastElement()).calcTime(System.currentTimeMillis(), message.getPayload().length);
-                            // printReceiveTimeList();
-                        }
-                        else if (!mmf.getUsername().equals(myName)) { // 다른 사람이 보낸 메시지일 경우 [화면에 그리는 시간 측정]
-                            displayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), message.getPayload().length));
-                        }
-                    }
-
-                }
-
-
-                // [ 중간자 ]
                 /* TOPIC_JOIN */
                 if (newTopic.equals(topic_join)) {
 
@@ -711,6 +684,10 @@ public enum MQTTClient {
                             return;
                     }
 
+
+                    // fixme nayeon for monitoring
+                    /* 모니터링 코드 (컴포넌트 개수 카운트) */
+
                     MyLog.i("> monitoring", "before check component count");
                     MyLog.i("> monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
                             + ", text mode = " + messageFormat.getTextMode());
@@ -724,6 +701,7 @@ public enum MQTTClient {
                     }
 
                     MyLog.i("< monitoring", "after check component count");
+
 
                     /* 컴포넌트 처리 */
                     if (messageFormat.getMode() == Mode.TEXT) {  // TEXT 모드일 경우, username이 다른 경우만 task 생성
@@ -786,9 +764,11 @@ public enum MQTTClient {
                     binding.backgroundView.setImage(de.getBackgroundImage());
                     MyLog.i("Image", "set image");
 
+                    // fixme nayeon for monitoring
                     if(isMaster()) { // 전송한 이미지 개수 카운팅 (모니터링)
                         componentCount.increaseImage();
                     }
+
                 }
             }
 
@@ -855,28 +835,29 @@ public enum MQTTClient {
         return false;
     }
 
+    // fixme nayeon for monitoring
     public void checkComponentCount(Mode mode, ComponentType type, TextMode textMode) {
-        Log.e("monitoring", "execute check component count func.");
+        //Log.e("monitoring", "execute check component count func.");
 
 
         /* 마스터만 컴포넌트 개수 카운팅 */
         if(!isMaster()) {
-            Log.e("monitoring", "check component count func. i'am not master.");
+            //Log.e("monitoring", "check component count func. i'am not master.");
             return;
         }
 
         if(mode == Mode.TEXT && textMode == TextMode.CREATE) {
-            Log.e("monitoring", "check component count func. text count increase.");
+            //Log.e("monitoring", "check component count func. text count increase.");
 
             componentCount.increaseText();
             return;
         }
 
         if(mode != Mode.DRAW) {
-            Log.e("monitoring", "check component count func. mode is not DRAW");
+            //Log.e("monitoring", "check component count func. mode is not DRAW");
             return;
         }
-        Log.e("monitoring", "check component count func. mode is DRAW");
+        //Log.e("monitoring", "check component count func. mode is DRAW");
 
 
         switch (type) {
@@ -895,8 +876,10 @@ public enum MQTTClient {
     public void doInBack() {
         th.interrupt();
 
+        // fixme nayeon for monitoring
         if(isMaster())
             monitoringThread.interrupt();
+
 
         isMid = true;
         de.removeAllDrawingData();
@@ -971,9 +954,12 @@ public enum MQTTClient {
                                 MyLog.d("button", "exit dialog ok button click");
                                 if (client.isConnected()) {
                                     exitTask();
-                                    if(isMaster()) {
-                                        MonitoringDataWriter.getInstance().write();
-                                    }
+
+                                    // fixme nayeon for performance
+//                                    if(isMaster()) {
+//                                        MonitoringDataWriter.getInstance().write();
+//                                    }
+
                                 }
                                 if (progressDialog.isShowing())
                                     progressDialog.dismiss();
@@ -986,9 +972,12 @@ public enum MQTTClient {
                                 if(!exitCompleteFlag) drawingViewModel.clickSave();
                                 if (client.isConnected()) {
                                     exitTask();
-                                    if(isMaster()) {
-                                        MonitoringDataWriter.getInstance().write();
-                                    }
+
+                                    // fixme nayeon for performance
+//                                    if(isMaster()) {
+//                                        MonitoringDataWriter.getInstance().write();
+//                                    }
+
                                 }
                                 if (progressDialog.isShowing())
                                     progressDialog.dismiss();
@@ -1029,11 +1018,6 @@ public enum MQTTClient {
         this.th = th;
     }
 
-    public void setMonitoringThread(Thread monitoringThread) {
-        this.monitoringThread = monitoringThread;
-    }
-
-    public void setComponentCount(ComponentCount componentCount) { this.componentCount = componentCount; }
 
     public void setIsMid(boolean mid) {
         this.isMid = mid;
@@ -1045,13 +1029,21 @@ public enum MQTTClient {
 
     public int getSavedFileCount() { return ++savedFileCount; }
 
-
     public void setTotalMovePoint(int x, int y) {
         this.totalMoveX = x;
         this.totalMoveY = y;
     }
 
-    /* monitoring function */
+    /* monitoring variable setting function */
+    // fixme nayeon for monitoring
+    public void setMonitoringThread(Thread monitoringThread) {
+        this.monitoringThread = monitoringThread;
+    }
+
+    // fixme nayeon for monitoring
+    public void setComponentCount(ComponentCount componentCount) { this.componentCount = componentCount; }
+
+    /* monitoring print function */
 
     public void printReceiveTimeList() {
         System.out.println("-------------------- Receive Time List --------------------");
@@ -1072,7 +1064,6 @@ public enum MQTTClient {
 
         for(int i=0; i<deliveryTimeList.size(); i++)
             System.out.println(i + ". " + deliveryTimeList.get(i).toString());
-
     }
 
 }
@@ -1124,13 +1115,14 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
 
 
                 // fixme nayeon for performance ( draw point )
-                if (client.isMaster() && /*message.getAction() == MotionEvent.ACTION_MOVE
-                        && messageFormat.getType().equals(ComponentType.STROKE)*/ message.getMode().equals(Mode.DRAW)
-                        && !message.getUsername().equals(de.getMyUsername())) { // 다른 사람이 보낸 메시지일 경우 [마스터가 자신의 화면에 그리는 시간 측정]
-                    Log.e("performance", "******************** start recording ********************");
-                    (MQTTClient.displayTimeList.lastElement()).calcTime(System.currentTimeMillis());
-                    //client.printDisplayTimeList();
-                }
+//                if (client.isMaster() && /*message.getAction() == MotionEvent.ACTION_MOVE
+//                        && messageFormat.getType().equals(ComponentType.STROKE)*/ message.getMode().equals(Mode.DRAW)
+//                        && !message.getUsername().equals(de.getMyUsername())) { // 다른 사람이 보낸 메시지일 경우 [마스터가 자신의 화면에 그리는 시간 측정]
+//
+//                    (MQTTClient.displayTimeList.lastElement()).calcTime(System.currentTimeMillis());
+//                    //client.printDisplayTimeList();
+//                }
+
 
 
                 break;

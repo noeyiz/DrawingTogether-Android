@@ -45,6 +45,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
                 comp.setSelected(false);
                 components.add(comp);
 
+                // fixme nayeon for monitoring
                 if(client.isMaster()) {
                     switch (comp.getType()) {
                         case STROKE:
@@ -58,6 +59,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
                             break;
                     }
                 }
+
 
             } catch (NullPointerException e) {
                 MyLog.w("catch", "EraserTask.setSelected() | NullPointerException");

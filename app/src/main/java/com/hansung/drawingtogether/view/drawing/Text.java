@@ -185,9 +185,10 @@ public class Text { // EditTextView
                     eraseText();
                     sendMqttMessage(TextMode.ERASE);
 
-                    if(client.isMaster()) {
-                        client.getComponentCount().decreaseText();
-                    }
+                    // fixme nayeon for monitoring
+//                    if(client.isMaster()) {
+//                        client.getComponentCount().decreaseText();
+//                    }
 
                     MyLog.i("drawing", "text erase");
                     //de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme - addHistory
@@ -401,7 +402,7 @@ public class Text { // EditTextView
     private void startTextColorChange() {
         de.setCurrentText(this); // 현재 텍스트 지정
         setTextAttribute(); // 텍스트 편집 전 사용자 이름 지정
-        //textAttribute.setTextChangedColor(true); // 텍스트 컬러 변경중임을 나타내는 플래그 (중간자 처리 위해) todo nayeon 필요?
+        textAttribute.setTextChangedColor(true); // 텍스트 컬러 변경중임을 나타내는 플래그 (텍스트 색상 변경 중에 움직이지 않도록)
 
         sendMqttMessage(TextMode.START_COLOR_CHANGE); // 다른 사용자의 텍스트 동시 처리 막기 위해 ( 이름, 테두리 설정 )
 
@@ -414,7 +415,7 @@ public class Text { // EditTextView
 
     public void finishTextColorChange() {
         textAttribute.setUsername(null);
-        //textAttribute.setTextChangedColor(false);
+        textAttribute.setTextChangedColor(false);
 
         sendMqttMessage(TextMode.FINISH_COLOR_CHANGE);
 
