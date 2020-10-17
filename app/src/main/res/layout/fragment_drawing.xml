@@ -165,8 +165,8 @@
                 android:id="@+id/currentColorLayout"
                 android:layout_width="40dp"
                 android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:layout_marginRight="10dp">
+                android:layout_marginRight="0dp"
+                android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/currentColorBtn"
