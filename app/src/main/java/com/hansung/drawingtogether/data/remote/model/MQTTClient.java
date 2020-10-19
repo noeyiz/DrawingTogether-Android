@@ -463,7 +463,10 @@ public enum MQTTClient {
 
                                 /* 다른 사용자가 들어왔다는 메시지를 받았을 경우 */
                                 /* 텍스트 비활성화를 위해 플래그 설정 */
+                                Log.e("mid", "before mid enter true");
                                 de.setMidEntered(true);
+                                Log.e("mid", "after mid enter true, isMidEntered = " + de.isMidEntered());
+
 
                                 //if (de.getCurrentMode() == Mode.DRAW) {  // current mode 가 DRAW 이면, 그리기 중이던 component 까지만 그리고 touch intercept   // todo 다른 모드에서도 intercept 하도록 추가
                                     de.setIntercept(true);
@@ -822,6 +825,7 @@ public enum MQTTClient {
 
         for (Text t : de.getTexts()) {
             if (t.getTextAttribute().getUsername() != null) {
+                Log.e("text", "text in use id = " + t.getTextAttribute().getId());
                 return true;
             }
         }

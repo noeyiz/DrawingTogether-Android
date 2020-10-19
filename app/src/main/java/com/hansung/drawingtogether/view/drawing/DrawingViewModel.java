@@ -239,9 +239,9 @@ public class DrawingViewModel extends BaseViewModel {
             return;
         }
         //if(de.isTextBeingEdited()) return; // 다른 텍스트 편집 중일 때 텍스트 클릭 못하도록
-        /* 텍스트 모드가 끝날 때 까지 (Done Button 누르기 전 까지) 다른 버튼들 비활성화 */
+        /* 텍스트 모드가 끝날 때 까지 (Done Button 누르기 전 까지) 다른 버튼들 비활성화 & 못 누르는 버튼 표시 (회색으로 표시) */
         enableDrawingMenuButton(false);
-        changeClickedButtonBackground(view);
+//        changeClickedButtonBackground(view);
 
         de.setCurrentMode(Mode.TEXT);
         MyLog.i("drawing", "mode = " + de.getCurrentMode().toString());
@@ -266,15 +266,20 @@ public class DrawingViewModel extends BaseViewModel {
     public void clickDone(View view) {
         MyLog.d("button", "done button click");
 
-        if(de.isMidEntered() /* && !de.getCurrentText().getTextAttribute().isTextInited() */) { // 텍스트 중간자 처리
-            showToastMsg("다른 사용자가 접속 중 입니다 잠시만 기다려주세요");
+        // 현재 편집중인 텍스트가 새로 생성하는 텍스트가 아니라, 생성된 후 편집하는 텍스트인 경우 done 버튼 클릭 가능 (username == null 로 세팅하기 위해)
+        // 텍스트를 새로 생성하는 경우에 아직 다른 참가자들에게 텍스트 정보가 없기 때문에, 중간 참여자 접속을 기다린 후 생성 가능하도록 처리
+        if(de.isMidEntered()
+                && de.getCurrentText() != null && !de.getCurrentText().getTextAttribute().isTextInited()) { // 텍스트 중간자 처리
+                showToastMsg("다른 참가자가 접속 중 입니다. 잠시만 기다려주세요.");
             return;
         }
 
         /* 텍스트 모드가 끝나면 다른 버튼들 활성화 */
         enableDrawingMenuButton(true);
+        changeClickedButtonBackground(preMenuButton); // 텍스트 편집 후 기본 모드인 드로잉 - 펜 버튼 눌림 표시
 
-        changeClickedButtonBackground(preMenuButton); // 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해
+        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.VISIBLE); // 펜 종류 보이도록
+
 
         Text text = de.getCurrentText();
         text.changeEditTextToTextView();
@@ -290,7 +295,7 @@ public class DrawingViewModel extends BaseViewModel {
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.RECT);
 
-        preMenuButton = (ImageButton)view; // 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
+//        preMenuButton = (ImageButton)view; // 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
 
         drawingCommands.postValue(new DrawingCommand.ShapeMode(view));
     }
@@ -370,12 +375,13 @@ public class DrawingViewModel extends BaseViewModel {
         de.initSelectedBitmap();
     }
 
-    /* 텍스트 편집 시 키보드가 내려가면 하단 메뉴 보임, 이들을 비활성화 : 추후에 키보드 내려가는 이벤트 처리로 바꿀 예정 */
+    /* 텍스트 편집 시 키보드가 내려가면 하단 메뉴 보임, 이들을 비활성화 */
     public void enableDrawingMenuButton(Boolean bool) {
         LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
 
         for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
             drawingMenuLayout.getChildAt(i).setEnabled(bool);
+            drawingMenuLayout.getChildAt(i).setBackgroundColor(Color.rgb(233, 233, 233));
         }
     }
 

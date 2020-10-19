@@ -443,6 +443,7 @@
         </LinearLayout>
 
         <FrameLayout
+            android:id="@+id/drawingLayout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:layout_constraintBottom_toTopOf="@+id/palette_menu_guideline"
@@ -468,7 +469,7 @@
                         <com.hansung.drawingtogether.view.WarpingControlView
                             android:id="@+id/background_view"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"/>
+                            android:layout_height="match_parent" />
 
                     </LinearLayout>
 
@@ -543,8 +544,8 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
                 android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -578,7 +579,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:background="#F6F6F6"
-                        android:text="@={vm.userPrint}"/>
+                        android:text="@={vm.userPrint}" />
 
                 </ScrollView>
 
@@ -588,38 +589,38 @@
                 android:id="@+id/penModeLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="10dp">
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
 
                 <ImageButton
                     android:id="@+id/pencilBtn"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:src="@drawable/pencil_1"
                     android:layout_marginRight="15dp"
-                    android:scaleType="centerInside"
                     android:background="@android:color/transparent"
-                    android:onClick="@{vm::clickPencil}"/>
+                    android:onClick="@{vm::clickPencil}"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/pencil_1" />
 
                 <ImageButton
                     android:id="@+id/highlightBtn"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:src="@drawable/highlight_0"
                     android:layout_marginRight="15dp"
-                    android:scaleType="centerInside"
                     android:background="@android:color/transparent"
-                    android:onClick="@{vm::clickHighlight}"/>
+                    android:onClick="@{vm::clickHighlight}"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/highlight_0" />
 
                 <ImageButton
                     android:id="@+id/neonBtn"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:src="@drawable/neon_0"
-                    android:scaleType="centerInside"
                     android:background="@android:color/transparent"
-                    android:onClick="@{vm::clickNeon}"/>
+                    android:onClick="@{vm::clickNeon}"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/neon_0" />
 
             </LinearLayout>
 
@@ -661,7 +662,7 @@
                     android:text="redo" />
             </LinearLayout>
 
-                <!--<TextView
+            <!--<TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="right"
