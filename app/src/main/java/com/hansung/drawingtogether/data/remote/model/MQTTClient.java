@@ -686,22 +686,22 @@ public enum MQTTClient {
 
 
                     // fixme nayeon for monitoring
-                    /* 모니터링 코드 (컴포넌트 개수 카운트) */
+                    /* 모니터링 코드 (컴포넌트 개수 카운트) Only Master */
+                    if(isMaster()) {
+                        MyLog.i("> monitoring", "before check component count");
+                        MyLog.i("> monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
+                                + ", text mode = " + messageFormat.getTextMode());
 
-                    MyLog.i("> monitoring", "before check component count");
-                    MyLog.i("> monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
-                            + ", text mode = " + messageFormat.getTextMode());
+                        /* 컴포넌트 개수 저장 */
+                        if ((messageFormat.getAction() != null && messageFormat.getAction() == MotionEvent.ACTION_DOWN)
+                                || messageFormat.getMode() == Mode.TEXT || messageFormat.getMode() == Mode.ERASE) {
+                            MyLog.i("< monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
+                                    + ", text mode = " + messageFormat.getTextMode());
+                            checkComponentCount(messageFormat.getMode(), messageFormat.getType(), messageFormat.getTextMode());
+                        }
 
-                    /* 컴포넌트 개수 저장 */
-                    if( (messageFormat.getAction() != null && messageFormat.getAction() == MotionEvent.ACTION_DOWN)
-                            || messageFormat.getMode() == Mode.TEXT || messageFormat.getMode() == Mode.ERASE) {
-                        MyLog.i("< monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
-                        + ", text mode = " + messageFormat.getTextMode());
-                        checkComponentCount(messageFormat.getMode(), messageFormat.getType(), messageFormat.getTextMode());
+                        MyLog.i("< monitoring", "after check component count");
                     }
-
-                    MyLog.i("< monitoring", "after check component count");
-
 
                     /* 컴포넌트 처리 */
                     if (messageFormat.getMode() == Mode.TEXT) {  // TEXT 모드일 경우, username이 다른 경우만 task 생성
@@ -837,14 +837,7 @@ public enum MQTTClient {
 
     // fixme nayeon for monitoring
     public void checkComponentCount(Mode mode, ComponentType type, TextMode textMode) {
-        //Log.e("monitoring", "execute check component count func.");
-
-
-        /* 마스터만 컴포넌트 개수 카운팅 */
-        if(!isMaster()) {
-            //Log.e("monitoring", "check component count func. i'am not master.");
-            return;
-        }
+        Log.i("monitoring", "execute check component count func.");
 
         if(mode == Mode.TEXT && textMode == TextMode.CREATE) {
             //Log.e("monitoring", "check component count func. text count increase.");

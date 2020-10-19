@@ -681,6 +681,11 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         client.setIsMid(true);
         client.getConnOpts().setAutomaticReconnect(false);
 
+        // fixme nayeon for monitoring
+        if(client.isMaster()) {
+            client.getMonitoringThread().interrupt();
+        }
+
 //        /* 오디오 처리 */
 //        /* Record Thread와 PlayThreadList에 있는 모든 Play Thread Interrupt */
 //        if (drawingViewModel.isMicFlag()) {

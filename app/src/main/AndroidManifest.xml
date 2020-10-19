@@ -25,12 +25,8 @@
         android:usesCleartextTraffic="true">
 
         <!-- fixme - [ android:name="" ] Registration LogApplication Class -->
-<<<<<<< HEAD
-        <activity android:name=".view.splash.SplashActivity">
-=======
         <activity android:name=".view.splash.SplashActivity"
             android:screenOrientation="portrait">
->>>>>>> 333ebce2536683dccde41fc069d878d5a9b61452
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
