@@ -645,8 +645,9 @@ public enum DrawingEditor {
             }
             // 중간에 들어왔는데 색상
 
+            t.setTextViewProperties(); // fixme nayeon 1019
             t.setTextViewInitialPlace(t.getTextAttribute());
-            t.setTextViewProperties();
+
 
             t.addTextViewToFrameLayout();
             t.createGestureDetector(); // 텍스트 모두 붙이기를 중간자 처리, 재접속 시에만 한다고 가정했을 때.

@@ -72,8 +72,8 @@ public class Text { // EditTextView
 
         // fixme - [ TextView 가로 크기는 텍스트 편집 레이아웃 1/3, EditText 가로 크기는 텍스트 편집 레이아웃 3/4 ]
         this.textView = new TextView(drawingFragment.getActivity());
-        /*this.textView.setPadding(20, 20, 20, 20);
-        this.textView.setWidth(textEditLayout.getWidth()/3);*/ // addTextViewToFrameLayout
+        this.textView.setPadding(20, 20, 20, 20);
+        this.textView.setWidth(textEditLayout.getWidth()/3);
 
 //        this.editText = this.binding.editText; // fixme - EditText 를 fragment_drawing.xml 에 정의
         this.editText = drawingFragment.getTextEditingLayout().findViewById(R.id.editText);
