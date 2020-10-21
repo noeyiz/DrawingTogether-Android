@@ -645,16 +645,16 @@ public enum DrawingEditor {
             }
             // 중간에 들어왔는데 색상
 
-            t.setTextViewProperties(); // fixme nayeon 1019
+            t.setTextViewProperties(); // fixme nayeon - (1) set view properties (2) set initial place 순서 중요 !!
             t.setTextViewInitialPlace(t.getTextAttribute());
 
 
             t.addTextViewToFrameLayout();
             t.createGestureDetector(); // 텍스트 모두 붙이기를 중간자 처리, 재접속 시에만 한다고 가정했을 때.
 
-            MyLog.e("texts size, text id", texts.size() + ", " + t.getTextAttribute().getId());
-            MyLog.e("text view size", t.getTextView().getWidth() + ", " + t.getTextView().getHeight());
-            MyLog.e("text view location", t.getTextView().getX() + ", " + t.getTextView().getY());
+//            MyLog.i("texts size, text id", texts.size() + ", " + t.getTextAttribute().getId());
+//            MyLog.i("text view size", t.getTextView().getWidth() + ", " + t.getTextView().getHeight());
+//            MyLog.i("text view location", t.getTextView().getX() + ", " + t.getTextView().getY());
         }
     }
 

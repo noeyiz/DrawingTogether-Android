@@ -240,7 +240,7 @@ public class DrawingViewModel extends BaseViewModel {
         }
         //if(de.isTextBeingEdited()) return; // 다른 텍스트 편집 중일 때 텍스트 클릭 못하도록
         /* 텍스트 모드가 끝날 때 까지 (Done Button 누르기 전 까지) 다른 버튼들 비활성화 & 못 누르는 버튼 표시 (회색으로 표시) */
-        enableDrawingMenuButton(false);
+//        enableDrawingMenuButton(false);
 //        changeClickedButtonBackground(view);
 
         de.setCurrentMode(Mode.TEXT);
@@ -275,14 +275,20 @@ public class DrawingViewModel extends BaseViewModel {
         }
 
         /* 텍스트 모드가 끝나면 다른 버튼들 활성화 */
-        enableDrawingMenuButton(true);
-        changeClickedButtonBackground(preMenuButton); // 텍스트 편집 후 기본 모드인 드로잉 - 펜 버튼 눌림 표시
-
-        de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.VISIBLE); // 펜 종류 보이도록
-
+//        enableDrawingMenuButton(true);
+//        changeClickedButtonBackground(preMenuButton); // 텍스트 편집 후 기본 모드인 드로잉 - 펜 버튼 눌림 표시
 
         Text text = de.getCurrentText();
         text.changeEditTextToTextView();
+
+        changeClickedButtonBackground(preMenuButton); // 텍스트 편집 후 기본 모드인 드로잉 - 펜 버튼 눌림 표시
+
+//        if(preMenuButton.equals(de.getDrawingFragment().getBinding().drawBtn)) // Draw Btn 인 경우에만 펜 종류 표시
+        if(preMenuButton == de.getDrawingFragment().getBinding().drawBtn) // Draw Btn 인 경우에만 펜 종류 표시
+
+            de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.VISIBLE); // 펜 종류 보이도록
+
+
 
         ((MainActivity)de.getDrawingFragment().getActivity()).setVisibilityToolbarMenus(true);
     }
@@ -295,7 +301,7 @@ public class DrawingViewModel extends BaseViewModel {
         de.setCurrentMode(Mode.DRAW);
         de.setCurrentType(ComponentType.RECT);
 
-//        preMenuButton = (ImageButton)view; // 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
+        preMenuButton = (ImageButton)view; // 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해 (텍스트 편집 전에 선택했던 드로잉 모드로)
 
         drawingCommands.postValue(new DrawingCommand.ShapeMode(view));
     }
@@ -376,14 +382,16 @@ public class DrawingViewModel extends BaseViewModel {
     }
 
     /* 텍스트 편집 시 키보드가 내려가면 하단 메뉴 보임, 이들을 비활성화 */
-    public void enableDrawingMenuButton(Boolean bool) {
-        LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
-
-        for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
-            drawingMenuLayout.getChildAt(i).setEnabled(bool);
-            drawingMenuLayout.getChildAt(i).setBackgroundColor(Color.rgb(233, 233, 233));
-        }
-    }
+//    public void enableDrawingMenuButton(Boolean bool) {
+//        LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
+//        drawingMenuLayout.setBackgroundColor(Color.TRANSPARENT);
+//        drawingMenuLayout.setEnabled(bool);
+//
+////        for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
+////            drawingMenuLayout.getChildAt(i).setEnabled(bool);
+////            drawingMenuLayout.getChildAt(i).setBackgroundColor(Color.rgb(233, 233, 233));
+////        }
+//    }
 
 //    public boolean clickMic() {
 //        if (!micFlag) { // Record Start

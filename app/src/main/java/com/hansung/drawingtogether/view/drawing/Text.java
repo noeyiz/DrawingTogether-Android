@@ -274,6 +274,8 @@ public class Text { // EditTextView
         textAttribute.setText(textView.getText().toString()); // TextView 에 쓰여져 있던 내용을 TextAttribute 에 저장
         setEditTextAttribute(); // 앞서 변경한 TextAttribute 로 (텍스트 내용) EditText 에 설정 [ 색 굵기 등등 ]
 
+//        enableDrawingMenuButton(false);
+
         activeTextEditing();
     }
 
@@ -482,6 +484,7 @@ public class Text { // EditTextView
 
         for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
             drawingMenuLayout.getChildAt(i).setEnabled(bool);
+            drawingMenuLayout.getChildAt(i).setBackgroundColor(Color.argb(80, 255, 255, 255));
         }
     }
 
@@ -558,7 +561,7 @@ public class Text { // EditTextView
 
         @Override
         public boolean onDown(MotionEvent motionEvent) {
-            MyLog.e("text", "on down");
+//            MyLog.e("text", "on down");
 
 //            if(de.getCurrentMode().equals(Mode.ERASE)) {
 //                eraseText();
@@ -582,13 +585,13 @@ public class Text { // EditTextView
 
         @Override
         public void onShowPress(MotionEvent motionEvent) {
-            MyLog.e("text", "on show press");
+//            MyLog.e("text", "on show press");
             //textView.setBackground(de.getTextMoveBorderDrawable());
         }
 
         @Override
         public boolean onSingleTapUp(MotionEvent motionEvent) {
-            MyLog.e("text", "on single tap up");
+//            MyLog.e("text", "on single tap up");
 
             //textView.setBackground(null); //
 
@@ -603,7 +606,7 @@ public class Text { // EditTextView
 
         @Override
         public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
-            MyLog.e("text", "on scroll");
+//            MyLog.e("text", "on scroll");
 
             de.setCurrentMode(Mode.TEXT);
 
@@ -624,7 +627,7 @@ public class Text { // EditTextView
         // fixme nayeon - 텍스트 길게 누를 시 색상 선택
         @Override
         public void onLongPress(MotionEvent motionEvent) {
-            MyLog.e("text", "on long press");
+//            MyLog.e("text", "on long press");
 
             startTextColorChange();
 
@@ -633,7 +636,7 @@ public class Text { // EditTextView
 
         @Override
         public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
-            MyLog.e("text", "on fling");
+//            MyLog.e("text", "on fling");
             return true;
         }
     }

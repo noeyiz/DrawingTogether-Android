@@ -703,7 +703,7 @@ public enum MQTTClient {
                     /* 컴포넌트 처리 */
                     if (messageFormat.getMode() == Mode.TEXT) {  // TEXT 모드일 경우, username이 다른 경우만 task 생성
                         if (!messageFormat.getUsername().equals(de.getMyUsername())) {
-                            MyLog.i("drawing", "username = " + messageFormat.getUsername() + ", text id = " + messageFormat.getTextAttr().getId() + ", mode = " + messageFormat.getMode() + ", text mode = " + messageFormat.getTextMode());
+//                            MyLog.i("drawing", "username = " + messageFormat.getUsername() + ", text id = " + messageFormat.getTextAttr().getId() + ", mode = " + messageFormat.getMode() + ", text mode = " + messageFormat.getTextMode());
                             new TextTask().execute(messageFormat);
                         }
                     } else {
