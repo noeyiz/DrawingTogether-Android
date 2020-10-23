@@ -398,12 +398,8 @@ public class MainViewModel extends BaseViewModel {
         TedPermission.with(context)
                 .setPermissionListener(permissionListener)
                 .setDeniedMessage(context.getResources().getString(R.string.permission))
-                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE/*, Manifest.permission.RECORD_AUDIO*/)
+                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO)
                 .check();
-    }
-
-    public void showLocalHistory(View view) {
-        navigate(R.id.action_mainFragment_to_historyFragment);
     }
 
     /* GETTER */

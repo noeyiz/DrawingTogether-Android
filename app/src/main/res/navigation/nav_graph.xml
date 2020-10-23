@@ -11,30 +11,11 @@
         android:label="MainFragment"
         tools:layout="@layout/fragment_main">
         <action
-            android:id="@+id/action_mainFragment_to_historyFragment"
-            app:destination="@id/historyFragment" />
-        <action
             android:id="@+id/action_mainFragment_to_drawingFragment"
             app:destination="@id/drawingFragment" />
     </fragment>
     <fragment
         android:id="@+id/drawingFragment"
         android:name="com.hansung.drawingtogether.view.drawing.DrawingFragment"
-        android:label="DrawingFragment" >
-        <action
-            android:id="@+id/action_drawingFragment_to_searchFragment"
-            app:destination="@id/searchFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/historyFragment"
-        android:name="com.hansung.drawingtogether.view.history.HistoryFragment"
-        android:label="HistoryFragment" >
-        <action
-            android:id="@+id/action_historyFragment_to_drawingFragment"
-            app:destination="@id/drawingFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/searchFragment"
-        android:name="com.hansung.drawingtogether.view.search.SearchFragment"
-        android:label="SearchFragment" />
+        android:label="DrawingFragment" />
 </navigation>

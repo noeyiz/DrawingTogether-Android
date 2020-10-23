@@ -87,12 +87,12 @@ public class DrawingViewModel extends BaseViewModel {
     private final int PICK_FROM_CAMERA = 1;
     private String photoPath;
 
-//    /* 오디오 관련 변수 */
-//    private boolean micFlag = false;
-//    private boolean speakerFlag = false;
-//    private int speakerMode = 0; // 0: mute, 1: speaker on, 2: speaker loud
-//    private RecordThread recThread;
-//    private AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
+    /* 오디오 관련 변수 */
+    private boolean micFlag = false;
+    private boolean speakerFlag = false;
+    private int speakerMode = 0; // 0: mute, 1: speaker on, 2: speaker loud
+    private RecordThread recThread;
+    private AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
 
     private ImageButton preMenuButton;
 
@@ -124,10 +124,10 @@ public class DrawingViewModel extends BaseViewModel {
         de.setCurrentType(ComponentType.STROKE);
         de.setCurrentMode(Mode.DRAW);
 
-//        /* Record Thread는 DrawingViewModel 생성 시 하나만 생성 */
-//        recThread = new RecordThread();
-//        recThread.setBufferUnitSize(2);
-//        recThread.start();
+        /* Record Thread는 DrawingViewModel 생성 시 하나만 생성 */
+        recThread = new RecordThread();
+        recThread.setBufferUnitSize(2);
+        recThread.start();
     }
 
     public void clickUndo(View view) {
@@ -393,56 +393,56 @@ public class DrawingViewModel extends BaseViewModel {
 ////        }
 //    }
 
-//    public boolean clickMic() {
-//        if (!micFlag) { // Record Start
-//            micFlag = true;
-//            synchronized (recThread.getAudioRecord()) {
-//                recThread.getAudioRecord().notify();
-//                MyLog.i("Audio", "Mic On - RecordThread Notify");
-//            }
-//
-//            return true;
-//        } else { // Record Stop
-//            micFlag = false;
-//            recThread.setFlag(micFlag);
-//            MyLog.i("Audio", "Mic  Off");
-//
-//            return false;
-//        }
-//    }
-//
-//    public int clickSpeaker() {
-//        speakerMode = (speakerMode + 1) % 3; // 0, 1, 2, 0, 1, 2, ...
-//
-//        if (speakerMode == 0) { // SPEAKER MUTE
-//            audioManager.setSpeakerphoneOn(false);
-//            speakerFlag = false;
-//            try {
-//                if (client.getClient().isConnected()) {
-//                    client.getClient().unsubscribe(client.getTopic_audio());
-//                }
-//            } catch (MqttException e) {
-//                MyLog.i("Audio", "Topic Audio Unsubscribe error : " + e.getMessage());
-//            }
-//            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
-//                audioPlayThread.setFlag(speakerFlag);
-//                audioPlayThread.getBuffer().clear();
-//                MyLog.i("Audio", audioPlayThread.getUserName() + " buffer clear");
-//            }
-//        } else if (speakerMode == 1) { // SPEAKER ON
-//            speakerFlag = true;
-//            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
-//                synchronized (audioPlayThread.getAudioTrack()) {
-//                    audioPlayThread.getAudioTrack().notify();
-//                }
-//            }
-//            client.subscribe(client.getTopic_audio());
-//        } else if (speakerMode == 2) { // SPEAKER LOUD
-//            audioManager.setSpeakerphoneOn(true);
-//        }
-//
-//        return speakerMode;
-//    }
+    public boolean clickMic() {
+        if (!micFlag) { // Record Start
+            micFlag = true;
+            synchronized (recThread.getAudioRecord()) {
+                recThread.getAudioRecord().notify();
+                MyLog.i("Audio", "Mic On - RecordThread Notify");
+            }
+
+            return true;
+        } else { // Record Stop
+            micFlag = false;
+            recThread.setFlag(micFlag);
+            MyLog.i("Audio", "Mic  Off");
+
+            return false;
+        }
+    }
+
+    public int clickSpeaker() {
+        speakerMode = (speakerMode + 1) % 3; // 0, 1, 2, 0, 1, 2, ...
+
+        if (speakerMode == 0) { // SPEAKER MUTE
+            audioManager.setSpeakerphoneOn(false);
+            speakerFlag = false;
+            try {
+                if (client.getClient().isConnected()) {
+                    client.getClient().unsubscribe(client.getTopic_audio());
+                }
+            } catch (MqttException e) {
+                MyLog.i("Audio", "Topic Audio Unsubscribe error : " + e.getMessage());
+            }
+            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+                audioPlayThread.setFlag(speakerFlag);
+                audioPlayThread.getBuffer().clear();
+                MyLog.i("Audio", audioPlayThread.getUserName() + " buffer clear");
+            }
+        } else if (speakerMode == 1) { // SPEAKER ON
+            speakerFlag = true;
+            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+                synchronized (audioPlayThread.getAudioTrack()) {
+                    audioPlayThread.getAudioTrack().notify();
+                }
+            }
+            client.subscribe(client.getTopic_audio());
+        } else if (speakerMode == 2) { // SPEAKER LOUD
+            audioManager.setSpeakerphoneOn(true);
+        }
+
+        return speakerMode;
+    }
 
     public void getImageFromGallery(Fragment fragment) {
         Intent galleryIntent = new Intent(Intent.ACTION_PICK);
