@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Layout;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -29,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -90,6 +92,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     private DrawingViewModel drawingViewModel;
     private InputMethodManager inputMethodManager;
 
+    private FrameLayout textEditingLayout;
+
     private ExitOnClickListener exitOnClickListener;
 
     private AliveThread aliveTh = AliveThread.getInstance();
@@ -117,6 +121,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
 
         binding = FragmentDrawingBinding.inflate(inflater, container, false);
 
+
         JSONParser.getInstance().initJsonParser(this); // JSON Parser 초기화 (toss DrawingFragmenet)
         MyLog.i("monitoring", "check parser init");
 
@@ -133,7 +138,18 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         de.setTextFocusBorderDrawable(getResources().getDrawable(R.drawable.text_focus_border));
         de.setTextHighlightBorderDrawable(getResources().getDrawable(R.drawable.text_highlight_border));
 
+        /* 텍스트 편집 레이아웃 생성 */
+        LayoutInflater layoutInflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        textEditingLayout = (FrameLayout) layoutInflater.inflate(R.layout.layout_text_editing, null);
+        textEditingLayout.findViewById(R.id.doneBtn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                drawingViewModel.clickDone(view); // fixme nayeon
+            }
+        });
+
         am.setBinding(binding); // Palette Manager 의 FragmentDrawingBinding 변수 초기화
+        am.setTextEditingLayout(textEditingLayout); // 텍스트 편집 레이아웃의 size bar 이벤트 리스너 달기 위해 변수 초기화
         am.setListener(); // 리스너 초기화
         am.showCurrentColor(Color.parseColor(de.getStrokeColor())); // 현재 색상 보여주기
 
@@ -554,8 +570,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
-            // fixme nayeon[1005]: 오디오 주석
-            /*
             case R.id.drawing_mic:
                 boolean click = drawingViewModel.clickMic();
                 if (click) {
@@ -574,7 +588,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                     item.setIcon(R.drawable.speaker3);
                 }
                 break;
-             */
             case R.id.gallery:
                 drawingViewModel.getImageFromGallery(DrawingFragment.this);
                 break;
@@ -674,37 +687,37 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         client.setIsMid(true);
         client.getConnOpts().setAutomaticReconnect(false);
 
-//        /* 오디오 처리 */
-//        /* Record Thread와 PlayThreadList에 있는 모든 Play Thread Interrupt */
-//        if (drawingViewModel.isMicFlag()) {
-//            drawingViewModel.getRecThread().setFlag(false);
-//        }
-//
-//        drawingViewModel.getRecThread().stopRecording();
-//        drawingViewModel.getRecThread().interrupt();
-//
-//        try {
-//            if (client.getClient().isConnected()) {
-//                client.getClient().unsubscribe(client.getTopic_audio());
-//            }
-//        } catch (MqttException e) {
-//            e.printStackTrace();
-//        }
-//
-//        for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
-//            if (drawingViewModel.isSpeakerFlag()) {
-//                audioPlayThread.setFlag(false);
-//                AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
-//                audioManager.setSpeakerphoneOn(false);
-//            }
-//
-//            audioPlayThread.stopPlaying();
-//            synchronized (audioPlayThread.getBuffer()) {
-//                audioPlayThread.getBuffer().clear();
-//            }
-//            audioPlayThread.interrupt();
-//        }
-//        client.getAudioPlayThreadList().clear();
+        /* 오디오 처리 */
+        /* Record Thread와 PlayThreadList에 있는 모든 Play Thread Interrupt */
+        if (drawingViewModel.isMicFlag()) {
+            drawingViewModel.getRecThread().setFlag(false);
+        }
+
+        drawingViewModel.getRecThread().stopRecording();
+        drawingViewModel.getRecThread().interrupt();
+
+        try {
+            if (client.getClient().isConnected()) {
+                client.getClient().unsubscribe(client.getTopic_audio());
+            }
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+        for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+            if (drawingViewModel.isSpeakerFlag()) {
+                audioPlayThread.setFlag(false);
+                AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
+                audioManager.setSpeakerphoneOn(false);
+            }
+
+            audioPlayThread.stopPlaying();
+            synchronized (audioPlayThread.getBuffer()) {
+                audioPlayThread.getBuffer().clear();
+            }
+            audioPlayThread.interrupt();
+        }
+        client.getAudioPlayThreadList().clear();
 
         /* MQTT 클라이언트 연결 해제 */
         if (client.getClient().isConnected()) {

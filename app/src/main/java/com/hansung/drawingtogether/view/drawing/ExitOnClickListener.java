@@ -103,7 +103,14 @@ public class ExitOnClickListener implements DialogInterface.OnClickListener {
 
     public void showExitProgressDialog() {
         progressDialog = new ProgressDialog(MainActivity.context, R.style.MyProgressDialogStyle);
-        progressDialog.setMessage("Loading...");
+//        progressDialog.setMessage("Loading...");
+
+        // fixme nayeon
+        if(client.isMaster())
+            progressDialog.setMessage("Closing...");
+        else
+            progressDialog.setMessage("Exiting...");
+
         progressDialog.setCanceledOnTouchOutside(false);
         progressDialog.show();
     }

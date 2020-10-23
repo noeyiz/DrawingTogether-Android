@@ -87,12 +87,12 @@ public class DrawingViewModel extends BaseViewModel {
     private final int PICK_FROM_CAMERA = 1;
     private String photoPath;
 
-//    /* 오디오 관련 변수 */
-//    private boolean micFlag = false;
-//    private boolean speakerFlag = false;
-//    private int speakerMode = 0; // 0: mute, 1: speaker on, 2: speaker loud
-//    private RecordThread recThread;
-//    private AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
+    /* 오디오 관련 변수 */
+    private boolean micFlag = false;
+    private boolean speakerFlag = false;
+    private int speakerMode = 0; // 0: mute, 1: speaker on, 2: speaker loud
+    private RecordThread recThread;
+    private AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
 
     private ImageButton preMenuButton;
 
@@ -124,10 +124,10 @@ public class DrawingViewModel extends BaseViewModel {
         de.setCurrentType(ComponentType.STROKE);
         de.setCurrentMode(Mode.DRAW);
 
-//        /* Record Thread는 DrawingViewModel 생성 시 하나만 생성 */
-//        recThread = new RecordThread();
-//        recThread.setBufferUnitSize(2);
-//        recThread.start();
+        /* Record Thread는 DrawingViewModel 생성 시 하나만 생성 */
+        recThread = new RecordThread();
+        recThread.setBufferUnitSize(2);
+        recThread.start();
     }
 
     public void clickUndo(View view) {
@@ -239,9 +239,9 @@ public class DrawingViewModel extends BaseViewModel {
             return;
         }
         //if(de.isTextBeingEdited()) return; // 다른 텍스트 편집 중일 때 텍스트 클릭 못하도록
-        /* 텍스트 모드가 끝날 때 까지 (Done Button 누르기 전 까지) 다른 버튼들 비활성화 */
-        enableDrawingMenuButton(false);
-        changeClickedButtonBackground(view);
+        /* 텍스트 모드가 끝날 때 까지 (Done Button 누르기 전 까지) 다른 버튼들 비활성화 & 못 누르는 버튼 표시 (회색으로 표시) */
+//        enableDrawingMenuButton(false);
+//        changeClickedButtonBackground(view);
 
         de.setCurrentMode(Mode.TEXT);
         MyLog.i("drawing", "mode = " + de.getCurrentMode().toString());
@@ -266,18 +266,29 @@ public class DrawingViewModel extends BaseViewModel {
     public void clickDone(View view) {
         MyLog.d("button", "done button click");
 
-        if(de.isMidEntered() /* && !de.getCurrentText().getTextAttribute().isTextInited() */) { // 텍스트 중간자 처리
-            showToastMsg("다른 사용자가 접속 중 입니다 잠시만 기다려주세요");
+        // 현재 편집중인 텍스트가 새로 생성하는 텍스트가 아니라, 생성된 후 편집하는 텍스트인 경우 done 버튼 클릭 가능 (username == null 로 세팅하기 위해)
+        // 텍스트를 새로 생성하는 경우에 아직 다른 참가자들에게 텍스트 정보가 없기 때문에, 중간 참여자 접속을 기다린 후 생성 가능하도록 처리
+        if(de.isMidEntered()
+                && de.getCurrentText() != null && !de.getCurrentText().getTextAttribute().isTextInited()) { // 텍스트 중간자 처리
+                showToastMsg("다른 참가자가 접속 중 입니다. 잠시만 기다려주세요.");
             return;
         }
 
         /* 텍스트 모드가 끝나면 다른 버튼들 활성화 */
-        enableDrawingMenuButton(true);
-
-        changeClickedButtonBackground(preMenuButton); // 텍스트 편집 후 기본 모드인 드로잉으로 돌아가기 위해
+//        enableDrawingMenuButton(true);
+//        changeClickedButtonBackground(preMenuButton); // 텍스트 편집 후 기본 모드인 드로잉 - 펜 버튼 눌림 표시
 
         Text text = de.getCurrentText();
         text.changeEditTextToTextView();
+
+        changeClickedButtonBackground(preMenuButton); // 텍스트 편집 후 기본 모드인 드로잉 - 펜 버튼 눌림 표시
+
+//        if(preMenuButton.equals(de.getDrawingFragment().getBinding().drawBtn)) // Draw Btn 인 경우에만 펜 종류 표시
+        if(preMenuButton == de.getDrawingFragment().getBinding().drawBtn) // Draw Btn 인 경우에만 펜 종류 표시
+
+            de.getDrawingFragment().getBinding().penModeLayout.setVisibility(View.VISIBLE); // 펜 종류 보이도록
+
+
 
         ((MainActivity)de.getDrawingFragment().getActivity()).setVisibilityToolbarMenus(true);
     }
@@ -370,65 +381,68 @@ public class DrawingViewModel extends BaseViewModel {
         de.initSelectedBitmap();
     }
 
-    /* 텍스트 편집 시 키보드가 내려가면 하단 메뉴 보임, 이들을 비활성화 : 추후에 키보드 내려가는 이벤트 처리로 바꿀 예정 */
-    public void enableDrawingMenuButton(Boolean bool) {
-        LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
+    /* 텍스트 편집 시 키보드가 내려가면 하단 메뉴 보임, 이들을 비활성화 */
+//    public void enableDrawingMenuButton(Boolean bool) {
+//        LinearLayout drawingMenuLayout = de.getDrawingFragment().getBinding().drawingMenuLayout;
+//        drawingMenuLayout.setBackgroundColor(Color.TRANSPARENT);
+//        drawingMenuLayout.setEnabled(bool);
+//
+////        for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
+////            drawingMenuLayout.getChildAt(i).setEnabled(bool);
+////            drawingMenuLayout.getChildAt(i).setBackgroundColor(Color.rgb(233, 233, 233));
+////        }
+//    }
 
-        for(int i=0; i<drawingMenuLayout.getChildCount(); i++) {
-            drawingMenuLayout.getChildAt(i).setEnabled(bool);
+    public boolean clickMic() {
+        if (!micFlag) { // Record Start
+            micFlag = true;
+            synchronized (recThread.getAudioRecord()) {
+                recThread.getAudioRecord().notify();
+                MyLog.i("Audio", "Mic On - RecordThread Notify");
+            }
+
+            return true;
+        } else { // Record Stop
+            micFlag = false;
+            recThread.setFlag(micFlag);
+            MyLog.i("Audio", "Mic  Off");
+
+            return false;
         }
     }
 
-//    public boolean clickMic() {
-//        if (!micFlag) { // Record Start
-//            micFlag = true;
-//            synchronized (recThread.getAudioRecord()) {
-//                recThread.getAudioRecord().notify();
-//                MyLog.i("Audio", "Mic On - RecordThread Notify");
-//            }
-//
-//            return true;
-//        } else { // Record Stop
-//            micFlag = false;
-//            recThread.setFlag(micFlag);
-//            MyLog.i("Audio", "Mic  Off");
-//
-//            return false;
-//        }
-//    }
-//
-//    public int clickSpeaker() {
-//        speakerMode = (speakerMode + 1) % 3; // 0, 1, 2, 0, 1, 2, ...
-//
-//        if (speakerMode == 0) { // SPEAKER MUTE
-//            audioManager.setSpeakerphoneOn(false);
-//            speakerFlag = false;
-//            try {
-//                if (client.getClient().isConnected()) {
-//                    client.getClient().unsubscribe(client.getTopic_audio());
-//                }
-//            } catch (MqttException e) {
-//                MyLog.i("Audio", "Topic Audio Unsubscribe error : " + e.getMessage());
-//            }
-//            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
-//                audioPlayThread.setFlag(speakerFlag);
-//                audioPlayThread.getBuffer().clear();
-//                MyLog.i("Audio", audioPlayThread.getUserName() + " buffer clear");
-//            }
-//        } else if (speakerMode == 1) { // SPEAKER ON
-//            speakerFlag = true;
-//            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
-//                synchronized (audioPlayThread.getAudioTrack()) {
-//                    audioPlayThread.getAudioTrack().notify();
-//                }
-//            }
-//            client.subscribe(client.getTopic_audio());
-//        } else if (speakerMode == 2) { // SPEAKER LOUD
-//            audioManager.setSpeakerphoneOn(true);
-//        }
-//
-//        return speakerMode;
-//    }
+    public int clickSpeaker() {
+        speakerMode = (speakerMode + 1) % 3; // 0, 1, 2, 0, 1, 2, ...
+
+        if (speakerMode == 0) { // SPEAKER MUTE
+            audioManager.setSpeakerphoneOn(false);
+            speakerFlag = false;
+            try {
+                if (client.getClient().isConnected()) {
+                    client.getClient().unsubscribe(client.getTopic_audio());
+                }
+            } catch (MqttException e) {
+                MyLog.i("Audio", "Topic Audio Unsubscribe error : " + e.getMessage());
+            }
+            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+                audioPlayThread.setFlag(speakerFlag);
+                audioPlayThread.getBuffer().clear();
+                MyLog.i("Audio", audioPlayThread.getUserName() + " buffer clear");
+            }
+        } else if (speakerMode == 1) { // SPEAKER ON
+            speakerFlag = true;
+            for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+                synchronized (audioPlayThread.getAudioTrack()) {
+                    audioPlayThread.getAudioTrack().notify();
+                }
+            }
+            client.subscribe(client.getTopic_audio());
+        } else if (speakerMode == 2) { // SPEAKER LOUD
+            audioManager.setSpeakerphoneOn(true);
+        }
+
+        return speakerMode;
+    }
 
     public void getImageFromGallery(Fragment fragment) {
         Intent galleryIntent = new Intent(Intent.ACTION_PICK);
