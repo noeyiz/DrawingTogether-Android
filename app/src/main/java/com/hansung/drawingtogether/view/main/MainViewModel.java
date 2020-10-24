@@ -59,8 +59,9 @@ public class MainViewModel extends BaseViewModel {
 
 
         /* 변수 초기화 */
-//        ip.setValue("54.180.154.63"); // 클라우드
-        ip.setValue("192.168.0.101"); // 모니터링
+        ip.setValue("54.180.154.63"); // 클라우드
+//        ip.setValue("54.180.55.246"); // 클라우드 [나연]
+//        ip.setValue("192.168.0.101"); // 모니터링
         port.postValue("1883");
         setTopic("");
         setPassword("");

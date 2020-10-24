@@ -3,9 +3,11 @@ package com.hansung.drawingtogether.view.drawing;
 import android.graphics.Color;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
+import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
@@ -16,6 +18,8 @@ public enum AttributeManager {
     private FragmentDrawingBinding binding;
     private DrawingEditor de = DrawingEditor.getInstance();
     private Logger logger = Logger.getInstance();
+
+    private FrameLayout textEditingLayout; // 텍스트 편집 레이아웃
 
     private View.OnClickListener colorButtonClickListener;
     private SeekBar.OnSeekBarChangeListener sizeBarChangeListener;
@@ -80,7 +84,7 @@ public enum AttributeManager {
         };
 
         setPaletteButtonListener();
-        binding.sizeBar.setOnSeekBarChangeListener(sizeBarChangeListener);
+        ((SeekBar)textEditingLayout.findViewById(R.id.sizeBar)).setOnSeekBarChangeListener(sizeBarChangeListener);
     }
 
 
@@ -101,4 +105,6 @@ public enum AttributeManager {
     public static AttributeManager getInstance() { return INSTANCE; }
 
     public void setBinding(FragmentDrawingBinding binding) { this.binding = binding; }
+
+    public void setTextEditingLayout(FrameLayout textEditingLayout) { this.textEditingLayout = textEditingLayout; }
 }

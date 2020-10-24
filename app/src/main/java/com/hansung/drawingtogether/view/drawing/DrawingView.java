@@ -661,6 +661,11 @@ public class DrawingView extends View {
                 de.getDrawingFragment().getBinding().undoBtn.setEnabled(false);
                 invalidate();
 
+                // fixme nayeon for monitoring - 모든 컴포넌트 개수 0으로 초기화
+                if(client.isMaster()) {
+                    client.getComponentCount().clearCount();
+                }
+
                 MyLog.i("drawing", "history.size()=" + de.getHistory().size());
                 MyLog.i("drawing", "clear");
             }

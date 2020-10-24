@@ -36,4 +36,12 @@ public class ComponentCount {
     public void decreaseOval() { oval--; }
 
     public void decreaseText() { text--; }
+
+    public void clearCount() {
+        this.stroke = 0;
+        this.rect = 0;
+        this.oval = 0;
+        this.text = 0;
+    }
+
 }
