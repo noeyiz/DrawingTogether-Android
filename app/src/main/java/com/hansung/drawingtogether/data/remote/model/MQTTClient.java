@@ -131,9 +131,9 @@ public enum MQTTClient {
     public static boolean ok;
 
     // [Key] UUID [Value] Velocity
-    public static Vector<Velocity> receiveTimeList = new Vector<Velocity>();  // 메시지를 수신하는데 걸린 속도 데이터
-    public static Vector<Velocity> displayTimeList = new Vector<Velocity>();  // 화면에 출력하는데 걸린 속도 데이터
-    public static Vector<Velocity> deliveryTimeList = new Vector<Velocity>(); // 중간 참여자에게 메시지를 전송하는데 걸린 속도 데이터
+//    public static Vector<Velocity> receiveTimeList = new Vector<Velocity>();  // 메시지를 수신하는데 걸린 속도 데이터
+//    public static Vector<Velocity> displayTimeList = new Vector<Velocity>();  // 화면에 출력하는데 걸린 속도 데이터
+//    public static Vector<Velocity> deliveryTimeList = new Vector<Velocity>(); // 중간 참여자에게 메시지를 전송하는데 걸린 속도 데이터
 
     public static MQTTClient getInstance() {
         return INSTANCE;
@@ -492,8 +492,8 @@ public enum MQTTClient {
                                     MqttMessageFormat messageFormat = new MqttMessageFormat(joinAckMsgMaster, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId(), de.getMaxComponentId(), de.getMaxTextId());
                                     String json = parser.jsonWrite(messageFormat);
 
-                                    // fixme nayeon: monitoring
-                                    deliveryTimeList.add(new Velocity(System.currentTimeMillis(), name, json.getBytes().length, de.getDrawingComponents().size()));
+                                    // fixme nayeon for performance
+                                    // deliveryTimeList.add(new Velocity(System.currentTimeMillis(), name, json.getBytes().length, de.getDrawingComponents().size()));
 
                                     client2.publish(topic_join, new MqttMessage(json.getBytes()));
 
@@ -824,7 +824,7 @@ public enum MQTTClient {
         MyLog.i("text", "inTextInUse func");
 
         for (Text t : de.getTexts()) {
-            if (t.getTextAttribute().getUsername() != null) {
+            if (/*t.getTextAttribute().getUsername() != null*/ t.getTextAttribute().isDragging()) {
                 Log.e("text", "text in use id = " + t.getTextAttribute().getId());
                 return true;
             }
@@ -1348,10 +1348,6 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
                 publishProgress(message);
                 return null;
             case DONE:
-                if(textAttr.isModified()) {
-                    //de.addHistory(new DrawingItem(TextMode.MODIFY, textAttr));
-                    MyLog.i("drawing", "isModified mqtt= " + textAttr.isModified());
-                }
                 publishProgress(message);
                 return null;
             case DRAG_ENDED:
@@ -1393,7 +1389,6 @@ class TextTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
             case DONE:
                 text.getTextView().setBackground(null); // 테두리 설정 해제
                 text.setTextViewAttribute();
-                if(textAttr.isModified()) { de.clearUndoArray(); }
                 break;
             case ERASE:
                 text.removeTextViewToFrameLayout();
