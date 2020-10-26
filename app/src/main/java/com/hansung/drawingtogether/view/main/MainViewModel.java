@@ -319,7 +319,7 @@ public class MainViewModel extends BaseViewModel {
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
                 .setTitle(R.string.info_title)
                 .setMessage(R.string.info)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {}
                 })
