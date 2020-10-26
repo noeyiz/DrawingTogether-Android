@@ -250,12 +250,9 @@ public class DrawingViewModel extends BaseViewModel {
 
         ((MainActivity)de.getDrawingFragment().getActivity()).setVisibilityToolbarMenus(false);
 
-        // 텍스트 속성 설정 ( 기본 도구에서 설정할 것인지 텍스트 도구에서 설정할 것인지? )
+        // 텍스트 속성 설정
         TextAttribute textAttribute = new TextAttribute(de.setTextStringId(), de.getMyUsername(),
-                de.getTextSize(), de.getTextColor(), de.getTextBackground(),
-                de.getFontStyle(),
-
-                frameLayout.getWidth(), frameLayout.getHeight());
+                de.getTextSize(), de.getTextColor(), frameLayout.getWidth(), frameLayout.getHeight());
 
         Text text = new Text(de.getDrawingFragment(), textAttribute);
         text.createGestureDetector(); // Set Gesture ( Single Tap Up )

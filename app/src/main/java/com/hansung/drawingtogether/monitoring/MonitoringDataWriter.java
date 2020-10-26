@@ -21,6 +21,7 @@ import java.util.Vector;
 public enum MonitoringDataWriter {
     INSTANCE;
 
+    /*
     public static MonitoringDataWriter getInstance() {
         return INSTANCE;
     }
@@ -196,5 +197,6 @@ public enum MonitoringDataWriter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+    }å
+     */
 }
