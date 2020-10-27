@@ -47,17 +47,18 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
 
                 // fixme nayeon for monitoring
                 if(client.isMaster()) {
-                    switch (comp.getType()) {
-                        case STROKE:
-                            client.getComponentCount().decreaseStroke();
-                            break;
-                        case RECT:
-                            client.getComponentCount().decreaseRect();
-                            break;
-                        case OVAL:
-                            client.getComponentCount().decreaseOval();
-                            break;
-                    }
+//                    switch (comp.getType()) {
+//                        case STROKE:
+//                            client.getComponentCount().decreaseStroke();
+//                            break;
+//                        case RECT:
+//                            client.getComponentCount().decreaseRect();
+//                            break;
+//                        case OVAL:
+//                            client.getComponentCount().decreaseOval();
+//                            break;
+//                    }
+                    client.getComponentCount().increaseErase();
                 }
 
 

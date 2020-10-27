@@ -9,6 +9,7 @@ public class ComponentCount {
     private int oval;
     private int text;
     private int image;
+    private int erase;
 
     public ComponentCount(String topic) {
         this.topic = topic;
@@ -17,6 +18,7 @@ public class ComponentCount {
         this.oval = 0;
         this.text = 0;
         this.image = 0;
+        this.erase = 0;
     }
 
     public void increaseStroke() { stroke++; }
@@ -29,19 +31,21 @@ public class ComponentCount {
 
     public void increaseImage() { image++; }
 
-    public void decreaseStroke() { stroke--; }
+    public void increaseErase() { erase++; }
 
-    public void decreaseRect() { rect--; }
-
-    public void decreaseOval() { oval--; }
-
-    public void decreaseText() { text--; }
-
-    public void clearCount() {
-        this.stroke = 0;
-        this.rect = 0;
-        this.oval = 0;
-        this.text = 0;
-    }
+//    public void decreaseStroke() { stroke--; }
+//
+//    public void decreaseRect() { rect--; }
+//
+//    public void decreaseOval() { oval--; }
+//
+//    public void decreaseText() { text--; }
+//
+//    public void clearCount() {
+//        this.stroke = 0;
+//        this.rect = 0;
+//        this.oval = 0;
+//        this.text = 0;
+//    }
 
 }

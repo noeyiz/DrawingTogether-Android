@@ -189,9 +189,9 @@ public class Text { // EditTextView
                     sendMqttMessage(TextMode.ERASE);
 
                     // fixme nayeon for monitoring
-                    if(client.isMaster()) {
-                        client.getComponentCount().decreaseText();
-                    }
+//                    if(client.isMaster()) {
+//                        client.getComponentCount().decreaseText();
+//                    }
 
                     MyLog.i("drawing", "text erase");
                     //de.addHistory(new DrawingItem(TextMode.ERASE, getTextAttribute()));    //fixme - addHistory
