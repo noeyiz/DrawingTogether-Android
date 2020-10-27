@@ -38,6 +38,9 @@ import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
+import com.kakao.message.template.ButtonObject;
+import com.kakao.message.template.ContentObject;
+import com.kakao.message.template.FeedTemplate;
 import com.kakao.message.template.LinkObject;
 import com.kakao.message.template.TextTemplate;
 import com.kakao.network.ErrorResult;
@@ -468,18 +471,66 @@ public class DrawingViewModel extends BaseViewModel {
     public void clickInvite() {
         MyLog.i("KakaoLink", "Click KakaoLink Invite");
 
-        /* 카카오링크에 회의명, 비밀번호 전달 */
-        TextTemplate params = TextTemplate.newBuilder("시시콜콜!",
-                LinkObject.newBuilder()
-                        .setAndroidExecutionParams("topic=" + topic + "&password=" + password)
-                        .setIosExecutionParams("topic=" + topic + "&password=" + password)
-                        .build())
-                .setButtonTitle("앱으로 이동").build();
+        /* 카카오 이미지 서버로 업로드 */
+//        Bitmap bitmap = BitmapFactory.decodeResource(MainActivity.context.getResources(), R.drawable.kakao_link_img);
+//        File file = new File(MainActivity.context.getCacheDir(), "kakao_link_img.png");
+//        try {
+//            FileOutputStream stream = new FileOutputStream(file);
+//            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//
+//          KakaoLinkService.getInstance().uploadImage(MainActivity.context, false, file, new ResponseCallback<ImageUploadResponse>() {
+//              @Override
+//              public void onFailure(ErrorResult errorResult) {
+//                  MyLog.e("KakaoLink", errorResult.getErrorMessage());
+//              }
+//
+//              @Override
+//              public void onSuccess(ImageUploadResponse result) {
+//                  MyLog.i("KakaoLink", result.getOriginal().getUrl());  // 여기서 얻은 url 사용
+//              }
+//          });
 
-        KakaoLinkService.getInstance().sendDefault(MainActivity.context, params, new ResponseCallback<KakaoLinkResponse>() {
+        /* 카카오링크에 회의명, 비밀번호 전달 - 피드 메시지 */
+        FeedTemplate feedTemplate = FeedTemplate.newBuilder(
+                ContentObject.newBuilder(
+                        "♥︎드로잉투게더♥︎" + " - 회의명 [" + topic + "]",
+                        "http://k.kakaocdn.net/dn/bftFB6/bl2J1T0qwdk/RxMA99bZEhHkQIUxQDBkgk/kakaolink40_original.png",
+                        LinkObject.newBuilder()
+                                .setAndroidExecutionParams("topic=" + topic + "&password=" + password)
+                                .setIosExecutionParams("topic=" + topic + "&password=" + password)
+                                .build())
+                        .setDescrption("#공유 #드로잉 #실시간 #회의")
+                        .build())
+//                .setSocial(SocialObject.newBuilder()
+//                        .setLikeCount(286)
+//                        .setCommentCount(45)
+//                        .setSharedCount(845)
+//                .build())
+                .addButton(new ButtonObject(
+                        "앱으로 이동",
+                        LinkObject.newBuilder()
+                                .setAndroidExecutionParams("topic=" + topic + "&password=" + password)
+                                .setIosExecutionParams("topic=" + topic + "&password=" + password)
+                                .build()))
+                .build();
+
+
+        /* 카카오링크에 회의명, 비밀번호 전달 - 텍스트 메시지 */
+//        TextTemplate textTemplate = TextTemplate.newBuilder("드로잉투게더",
+//                LinkObject.newBuilder()
+//                        .setAndroidExecutionParams("topic=" + topic + "&password=" + password)
+//                        .setIosExecutionParams("topic=" + topic + "&password=" + password)
+//                        .build())
+//                .setButtonTitle("앱으로 이동").build();
+
+        /* 카카오톡 API로 메시지 보내기 */
+        KakaoLinkService.getInstance().sendDefault(MainActivity.context, feedTemplate, new ResponseCallback<KakaoLinkResponse>() {
             @Override
             public void onFailure(ErrorResult errorResult) {
-                MyLog.i("KakaoLink", "Failure: " + errorResult.getErrorMessage());
+                MyLog.e("KakaoLink", "Failure: " + errorResult.getErrorMessage());
                 showKakaogAlert("카카오링크 에러", errorResult.getErrorMessage());
             }
 
