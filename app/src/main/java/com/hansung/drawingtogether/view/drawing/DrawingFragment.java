@@ -257,14 +257,14 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                                 break;
                             case MotionEvent.ACTION_MOVE:
                                 view.animate()
-                                        .x(event.getRawX() + dX - (view.getWidth() / 2))
-                                        .y(event.getRawY() + dY - (view.getHeight() / 2))
+                                        .x(event.getRawX() + dX)
+                                        .y(event.getRawY() + dY)
                                         .setDuration(0)
                                         .start();
                                 break;
                             case MotionEvent.ACTION_UP:
                                 imageView.setOnTouchListener(null);
-                                AutoDrawMessage autoDrawMessage = new AutoDrawMessage(data.getName(), url, view.getX(), view.getY());
+                                AutoDrawMessage autoDrawMessage = new AutoDrawMessage(data.getName(), url, view.getX(), view.getY(), de.getMyCanvasWidth(), de.getMyCanvasHeight());
                                 MqttMessageFormat messageFormat = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), de.getCurrentType(), autoDrawMessage);
                                 client.publish(client.getTopic_data(), JSONParser.getInstance().jsonWrite(messageFormat));
                                 de.addAutoDraw(autoDrawMessage.getUrl(), imageView);

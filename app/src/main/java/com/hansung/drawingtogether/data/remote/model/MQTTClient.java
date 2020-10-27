@@ -506,7 +506,7 @@ public enum MQTTClient {
                                     for (int i = 0; i < de.getAutoDrawImageList().size(); i++) {
                                         String url = de.getAutoDrawImageList().get(i);
                                         ImageView view = de.getAutoDrawImageViewList().get(i);
-                                        AutoDrawMessage autoDrawMessage = new AutoDrawMessage(data.getName(), url, view.getX(), view.getY());
+                                        AutoDrawMessage autoDrawMessage = new AutoDrawMessage(data.getName(), url, view.getX(), view.getY(), de.getMyCanvasWidth(), de.getMyCanvasHeight());
                                         MqttMessageFormat messageFormat2 = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), de.getCurrentType(), autoDrawMessage);
                                         String json2 = parser.jsonWrite(messageFormat2);
                                         client2.publish(topic_data, new MqttMessage(json2.getBytes()));
@@ -1211,15 +1211,15 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 break;
             case WARP:
                 this.warpingMessage = message.getWarpingMessage();
-                WarpData data = warpingMessage.getWarpData();
-                ((WarpingControlView)client.getBinding().backgroundView).warping2(data.getAction(), data.getPoints());
+//                WarpData data = warpingMessage.getWarpData();
+                ((WarpingControlView)client.getBinding().backgroundView).warping2(warpingMessage);
                 break;
             case AUTODRAW:
                 AutoDrawMessage autoDrawMessage = message.getAutoDrawMessage();
                 ImageView imageView = new ImageView(MainActivity.context);
                 imageView.setLayoutParams(new LinearLayout.LayoutParams(300, 300));
-                imageView.setX(autoDrawMessage.getX());
-                imageView.setY(autoDrawMessage.getY());
+                imageView.setX(autoDrawMessage.getX() * de.getMyCanvasWidth() / autoDrawMessage.getWidth());
+                imageView.setY(autoDrawMessage.getY() * de.getMyCanvasHeight() / autoDrawMessage.getHeight());
                 client.getBinding().drawingViewContainer.addView(imageView);
                 GlideToVectorYou.init().with(MainActivity.context).load(Uri.parse(autoDrawMessage.getUrl()),imageView);
                 de.addAutoDraw(autoDrawMessage.getUrl(), imageView);
