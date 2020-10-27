@@ -126,7 +126,7 @@ public class DrawingViewModel extends BaseViewModel {
 
         /* Record Thread는 DrawingViewModel 생성 시 하나만 생성 */
         recThread = new RecordThread();
-        recThread.setBufferUnitSize(2);
+        recThread.setBufferUnitSize(4);
         recThread.start();
     }
 

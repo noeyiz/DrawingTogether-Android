@@ -39,7 +39,7 @@ public class Eraser {
                 if(de.findEnclosingDrawingComponents(eraserPoint).size() != 0 && !de.isContainsRemovedComponentIds(de.findEnclosingDrawingComponents(eraserPoint))) {
                     erasedComponentIds.addAll(de.findEnclosingDrawingComponents(eraserPoint));
                     de.addRemovedComponentIds(de.findEnclosingDrawingComponents(eraserPoint));
-                    MyLog.i("drawing", "erased shape ids = " + erasedComponentIds.toString());
+                    //MyLog.i("drawing", "erased shape ids = " + erasedComponentIds.toString());
                     //erase(erasedComponentIds);
                 }
 
@@ -48,7 +48,7 @@ public class Eraser {
                     //erasedComponentIds = (dbArray[i][j]);
                     erasedComponentIds.addAll(de.getNotRemovedComponentIds(dbArray[i][j]));
                     de.addRemovedComponentIds(de.getNotRemovedComponentIds(dbArray[i][j]));
-                    MyLog.i("drawing", "erased stroke ids = " + erasedComponentIds.toString());
+                    //MyLog.i("drawing", "erased stroke ids = " + erasedComponentIds.toString());
 
                     /*if(de.findEnclosingDrawingComponents(eraserPoint).size() != 1) {
                         erasedComponentIds.addAll(de.findEnclosingDrawingComponents(eraserPoint));

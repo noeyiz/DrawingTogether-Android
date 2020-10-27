@@ -694,7 +694,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         }
 
         drawingViewModel.getRecThread().stopRecording();
-        drawingViewModel.getRecThread().interrupt();
+        //drawingViewModel.getRecThread().interrupt();    //fixme minj
+        drawingViewModel.getRecThread().getExecutor().shutdown();
 
         try {
             if (client.getClient().isConnected()) {
@@ -715,7 +716,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             synchronized (audioPlayThread.getBuffer()) {
                 audioPlayThread.getBuffer().clear();
             }
-            audioPlayThread.interrupt();
+            //audioPlayThread.interrupt(); //fixme minj
+            audioPlayThread.getExecutor().shutdown();
         }
         client.getAudioPlayThreadList().clear();
 

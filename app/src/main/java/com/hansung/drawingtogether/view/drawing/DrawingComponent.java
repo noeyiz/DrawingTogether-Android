@@ -1,6 +1,8 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Point;
 
 import java.util.ArrayList;

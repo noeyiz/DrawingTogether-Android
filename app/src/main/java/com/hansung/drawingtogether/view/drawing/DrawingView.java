@@ -254,8 +254,8 @@ public class DrawingView extends View {
 
         //if(de.isIntercept()) this.isIntercept = true;   //**
 
-        de.printCurrentComponents("up");
-        de.printDrawingComponents("up");
+        //de.printCurrentComponents("up");
+        //de.printDrawingComponents("up");
 
 //        // fixme nayeon for performance
 //        ArrayList<Point> points = new ArrayList<Point>();
@@ -300,7 +300,7 @@ public class DrawingView extends View {
 
             //publish
             if(points.size() != 0) {
-                MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
+                //MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
                 sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), (ArrayList<Point>)points.clone()/*points.toString()*/, MotionEvent.ACTION_MOVE));
                 points.clear();
             }
@@ -323,7 +323,8 @@ public class DrawingView extends View {
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 isExit = false;
-                MyLog.i("mqtt", "isExit3 = " + isExit);
+                //MyLog.i("mqtt", "isExit3 = " + isExit);
+                MyLog.i("drawing", "draw down");
 
                 setComponentAttribute(dComponent);
                 point = new Point((int)event.getX(), (int)event.getY());
@@ -347,7 +348,7 @@ public class DrawingView extends View {
                 //MyLog.i("sendThread", points.size() + "");
 
                 if(points.size() == msgChunkSize) {
-                    MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
+                    //MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
                     sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), (ArrayList<Point>) points.clone()/*points.toString()*/, event.getAction()));
                     points.clear();
                 }
@@ -367,7 +368,7 @@ public class DrawingView extends View {
 
                 //publish
                 if(points.size() != 0) {
-                    MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
+                    //MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
                     sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), (ArrayList<Point>) points.clone()/*points.toString()*/, MotionEvent.ACTION_MOVE));
                     points.clear();
                 }
