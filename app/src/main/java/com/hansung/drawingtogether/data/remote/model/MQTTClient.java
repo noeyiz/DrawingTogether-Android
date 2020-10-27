@@ -20,6 +20,7 @@ import com.hansung.drawingtogether.monitoring.ComponentCount;
 import com.hansung.drawingtogether.monitoring.Velocity;
 import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.drawing.AudioPlayThread;
+import com.hansung.drawingtogether.view.drawing.AutoDraw;
 import com.hansung.drawingtogether.view.drawing.ComponentType;
 import com.hansung.drawingtogether.view.drawing.DrawingComponent;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
@@ -489,7 +490,7 @@ public enum MQTTClient {
 
                                     /* 현재까지 공유된 컴포넌트 리스트 전송 */
                                     /* 드로잉 데이터는 MqttMessageFormat, 이미지 데이터는 binary로 publish */
-                                    MqttMessageFormat messageFormat = new MqttMessageFormat(joinAckMsgMaster, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId(), de.getMaxComponentId(), de.getMaxTextId());
+                                    MqttMessageFormat messageFormat = new MqttMessageFormat(joinAckMsgMaster, de.getDrawingComponents(), de.getTexts(), de.getHistory(), de.getUndoArray(), de.getRemovedComponentId(), de.getMaxComponentId(), de.getMaxTextId(), de.getAutoDrawList());
                                     String json = parser.jsonWrite(messageFormat);
 
                                     // fixme nayeon for performance
@@ -503,14 +504,14 @@ public enum MQTTClient {
                                         client2.publish(topic_image, new MqttMessage(backgroundImage));
                                     }
 
-                                    for (int i = 0; i < de.getAutoDrawImageList().size(); i++) {
-                                        String url = de.getAutoDrawImageList().get(i);
-                                        ImageView view = de.getAutoDrawImageViewList().get(i);
-                                        AutoDrawMessage autoDrawMessage = new AutoDrawMessage(data.getName(), url, view.getX(), view.getY(), de.getMyCanvasWidth(), de.getMyCanvasHeight());
-                                        MqttMessageFormat messageFormat2 = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), de.getCurrentType(), autoDrawMessage);
-                                        String json2 = parser.jsonWrite(messageFormat2);
-                                        client2.publish(topic_data, new MqttMessage(json2.getBytes()));
-                                    }
+//                                    for (int i = 0; i < de.getAutoDrawImageList().size(); i++) {
+//                                        String url = de.getAutoDrawImageList().get(i);
+//                                        ImageView view = de.getAutoDrawImageViewList().get(i);
+//                                        AutoDrawMessage autoDrawMessage = new AutoDrawMessage(data.getName(), url, view.getX(), view.getY(), de.getMyCanvasWidth(), de.getMyCanvasHeight());
+//                                        MqttMessageFormat messageFormat2 = new MqttMessageFormat(de.getMyUsername(), de.getCurrentMode(), de.getCurrentType(), autoDrawMessage);
+//                                        String json2 = parser.jsonWrite(messageFormat2);
+////                                        client2.publish(topic_data, new MqttMessage(json2.getBytes()));
+//                                    }
 
                                     setToastMsg("[ " + name + " ] 님에게 데이터 전송을 완료했습니다");
 
@@ -542,6 +543,7 @@ public enum MQTTClient {
                                 de.setHistory(mqttMessageFormat.getHistory());
                                 de.setUndoArray(mqttMessageFormat.getUndoArray());
                                 de.setRemovedComponentId(mqttMessageFormat.getRemovedComponentId());
+                                de.setAutoDrawList(mqttMessageFormat.getAutoDrawList());
 
                                 de.setTexts(mqttMessageFormat.getTexts());
                                 if (mqttMessageFormat.getBitmapByteArray() != null) {
@@ -1218,11 +1220,21 @@ class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> 
                 AutoDrawMessage autoDrawMessage = message.getAutoDrawMessage();
                 ImageView imageView = new ImageView(MainActivity.context);
                 imageView.setLayoutParams(new LinearLayout.LayoutParams(300, 300));
-                imageView.setX(autoDrawMessage.getX() * de.getMyCanvasWidth() / autoDrawMessage.getWidth());
-                imageView.setY(autoDrawMessage.getY() * de.getMyCanvasHeight() / autoDrawMessage.getHeight());
+
+                Point point = new Point();
+                point.x = (int)(autoDrawMessage.getX() * myCanvasWidth / autoDrawMessage.getWidth());
+                point.y = (int)(autoDrawMessage.getY() * myCanvasHeight / autoDrawMessage.getHeight());
+
+                imageView.setX(point.x);
+                imageView.setY(point.y);
+
+                AutoDraw autoDraw = new AutoDraw(myCanvasWidth, myCanvasHeight, point, autoDrawMessage.getUrl());
+                de.addAutoDraw(autoDraw);
+                de.addAutoDrawImageView(imageView);
+
+                String url = autoDrawMessage.getUrl();
                 client.getBinding().drawingViewContainer.addView(imageView);
-                GlideToVectorYou.init().with(MainActivity.context).load(Uri.parse(autoDrawMessage.getUrl()),imageView);
-                de.addAutoDraw(autoDrawMessage.getUrl(), imageView);
+                GlideToVectorYou.init().with(MainActivity.context).load(Uri.parse(url), imageView);
                 break;
         }
     }
@@ -1452,6 +1464,21 @@ class MidTask extends AsyncTask<Void, Void, Void> {
         de.drawAllDrawingComponentsForMid();
         de.addAllTextViewToFrameLayoutForMid();
         client.getDrawingView().invalidate();
+
+        for (int i = 0; i < de.getAutoDrawList().size(); i++) {
+            ImageView imageView = new ImageView(MainActivity.context);
+            imageView.setLayoutParams(new LinearLayout.LayoutParams(300, 300));
+            AutoDraw autoDraw = de.getAutoDrawList().get(i);
+
+            int x = (int)(autoDraw.getPoint().x * client.getDrawingView().getCanvasWidth() / autoDraw.getWidth());
+            int y = (int)(autoDraw.getPoint().y * client.getDrawingView().getCanvasHeight() / autoDraw.getHeight());
+
+            imageView.setX(x);
+            imageView.setY(y);
+            client.getBinding().drawingViewContainer.addView(imageView);
+            GlideToVectorYou.init().with(MainActivity.context).load(Uri.parse(autoDraw.getUrl()), imageView);
+            de.addAutoDrawImageView(imageView);
+        }
 
         client.getProgressDialog().dismiss();
         MyLog.i("mqtt", "mid progressDialog dismiss");

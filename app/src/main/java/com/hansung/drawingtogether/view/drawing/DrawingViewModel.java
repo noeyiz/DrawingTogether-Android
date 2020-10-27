@@ -98,7 +98,7 @@ public class DrawingViewModel extends BaseViewModel {
 
     /* 오토드로우 관련 변수 */
     private MutableLiveData<String> autoDrawImage = new MutableLiveData<>();
-    private String autoDrawImageUrl;
+    private String autoDrawImageUrl = "";
 
     public DrawingViewModel() {
         setUserNum(0);
@@ -348,7 +348,10 @@ public class DrawingViewModel extends BaseViewModel {
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        autoDrawImage.postValue(autoDrawImageUrl);
+                        if (!autoDrawImageUrl.isEmpty()) {
+                            autoDrawImage.postValue(autoDrawImageUrl);
+                        }
+                        autoDrawImageUrl = "";
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {

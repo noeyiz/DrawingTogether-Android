@@ -106,8 +106,8 @@ public enum DrawingEditor {
     private int textBackground = Color.TRANSPARENT;
 
     /* Auto Draw */
-    private ArrayList<String> autoDrawImageList = new ArrayList<>();
-    private ArrayList<ImageView> autoDrawImageViewList = new ArrayList<>();
+    private ArrayList<AutoDraw> autoDrawList = new ArrayList<>();
+    private ArrayList<ImageView> autoDrawImageList = new ArrayList<>();
 
     // 드로잉 하는동안 저장되는 모든 데이터들 지우기 [나가기 버튼 눌렀을 때 처리 필요 - MQTTClient.java if(topic_exit, topic_delete) 부분에서 호출]
     public void removeAllDrawingData() {
@@ -152,8 +152,8 @@ public enum DrawingEditor {
         isIntercept = false;
         isMidEntered = false;
 
+        autoDrawList.clear();
         autoDrawImageList.clear();
-        autoDrawImageViewList.clear();
     }
 
     public void printDrawingData() {
@@ -1157,12 +1157,13 @@ public enum DrawingEditor {
         clearDrawingBoardArray();
         removedComponentId.clear();
         drawingBoardMap.clear();
-        for (int i = 0; i < autoDrawImageViewList.size(); i++) {
-            ImageView view = autoDrawImageViewList.get(i);
+
+        for (int i = 0; i < autoDrawImageList.size(); i++) {
+            ImageView view = autoDrawImageList.get(i);
             ((ViewManager) view.getParent()).removeView(view);
         }
+        autoDrawList.clear();
         autoDrawImageList.clear();
-        autoDrawImageViewList.clear();
     }
 
     public void clearTexts() {
@@ -1324,9 +1325,16 @@ public enum DrawingEditor {
         this.postSelectedComponentsBitmap = postSelectedComponentsBitmap;
     }
 
-    public void addAutoDraw(String image, ImageView view) {
+    public void addAutoDraw(AutoDraw autoDraw) {
+        this.autoDrawList.add(autoDraw);
+    }
+
+    public void addAutoDrawImageView(ImageView image) {
         this.autoDrawImageList.add(image);
-        this.autoDrawImageViewList.add(view);
+    }
+
+    public void setAutoDrawList(ArrayList<AutoDraw> autoDrawList) {
+        this.autoDrawList.addAll(autoDrawList);
     }
 
     public void setReceiveBitmap(Bitmap receiveBitmap) { this.receiveBitmap = receiveBitmap; }
