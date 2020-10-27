@@ -21,19 +21,24 @@ public enum MonitoringRunnable implements Runnable {
 
     @Override
     public void run() {
-        /*
         String topic_monitoring = client.getTopic_monitoring();  // 복사
+
+        try {
+            Log.i("monitoring", "wait... topic record save");
+            Thread.sleep(second);
+            Log.i("monitoring", "enable monitoring thread!!");
+        } catch (InterruptedException ie) {
+            ie.printStackTrace();
+        }
 
         while (true) {
             try {
 
                 MqttMessageFormat mqttMessageFormat = new MqttMessageFormat(client.getComponentCount());
 
-                Log.e("monitoring", "mqtt message format\n" + JSONParser.getInstance().jsonWrite(mqttMessageFormat));
+                Log.i("monitoring", "mqtt message format\n" + JSONParser.getInstance().jsonWrite(mqttMessageFormat));
 
                 client.publish(topic_monitoring, JSONParser.getInstance().jsonWrite(mqttMessageFormat));
-
-                Log.e("monitoring", "publish monitoring message");
 
                 Thread.sleep(second);
 
@@ -43,6 +48,6 @@ public enum MonitoringRunnable implements Runnable {
             }
 
         }
-        */
+
     }
 }
