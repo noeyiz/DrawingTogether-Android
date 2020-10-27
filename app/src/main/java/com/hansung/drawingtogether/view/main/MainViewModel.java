@@ -57,10 +57,11 @@ public class MainViewModel extends BaseViewModel {
 
         MyLog.i("LifeCycle", "MainViewModel init()");
 
+
         /* 변수 초기화 */
-        ip.setValue("54.180.154.63"); // 클라우드
+//        ip.setValue("54.180.154.63"); // 클라우드
 //        ip.setValue("54.180.55.246"); // 클라우드 [나연]
-//        ip.setValue("192.168.0.101"); // 모니터링
+        ip.setValue("192.168.0.36"); // 모니터링
         port.postValue("1883");
         setTopic("");
         setPassword("");
@@ -151,6 +152,7 @@ public class MainViewModel extends BaseViewModel {
         hasSpecialCharacterAndBlank = false;
 
         hasSpecialCharacterAndBlank();
+
 
         MyLog.i("Input Data", hasSpecialCharacterAndBlank + " / " + topic.getValue() + " / " + password.getValue() + " / " + name.getValue());
 
@@ -314,6 +316,7 @@ public class MainViewModel extends BaseViewModel {
         }
     }
 
+
     /* 앱 사용 방법 알림 */
     public void infoClicked(View view) {
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
@@ -352,7 +355,6 @@ public class MainViewModel extends BaseViewModel {
         setTopic("");
         setPassword("");
         setName("");
-
         setIpError("");
         setPortError("");
         setTopicError("");
@@ -403,6 +405,7 @@ public class MainViewModel extends BaseViewModel {
     }
 
     /* GETTER */
+
     public MutableLiveData<String> getIp() { return ip; }
 
     public MutableLiveData<String> getPort() { return  port; }

@@ -52,14 +52,20 @@ import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
+
+import com.hansung.drawingtogether.monitoring.MonitoringDataWriter;
+import com.hansung.drawingtogether.monitoring.Velocity;
 import com.hansung.drawingtogether.monitoring.ComponentCount;
 import com.hansung.drawingtogether.monitoring.MonitoringRunnable;
+
 import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.main.AutoDrawMessage;
 import com.hansung.drawingtogether.view.main.DatabaseTransaction;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
+
+import com.hansung.drawingtogether.view.NavigationCommand;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -105,8 +111,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     private ProgressDialog exitProgressDialog;
 
     float dX, dY;
-
-    private boolean ok = false;
 
     @Override
     public void onAttach(Context context) {
@@ -183,6 +187,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         }
         MyLog.i("pre pub join message", this.getSize().x + ", " + this.getSize().y);
 
+
         if(de.getMainBitmap() == null) {
 
             /* Join Message Publish */
@@ -199,13 +204,14 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             client.setThread(th);
 
             // fixme nayeon for monitoring
-//            if(client.isMaster()) {
-//                MyLog.i("monitoring", "mqtt client class init func. check master. i'am master.");
-//                client.setComponentCount(new ComponentCount(client.getTopic()));
-//                Thread monitoringThread = new Thread(monitoringRunnable);
-//                monitoringThread.start();
-//                client.setMonitoringThread(monitoringThread);
-//            }
+            if(client.isMaster()) {
+                MyLog.i("monitoring", "mqtt client class init func. check master. i'am master.");
+                client.setComponentCount(new ComponentCount(client.getTopic()));
+                Thread monitoringThread = new Thread(monitoringRunnable);
+                monitoringThread.start();
+                client.setMonitoringThread(monitoringThread);
+            }
+
         }
 
         drawingViewModel.drawingCommands.observe(getViewLifecycleOwner(), new Observer<DrawingCommand>() {
@@ -693,6 +699,12 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         client.setIsMid(true);
         client.getConnOpts().setAutomaticReconnect(false);
 
+
+        // fixme nayeon for monitoring
+        if(client.isMaster()) {
+            client.getMonitoringThread().interrupt();
+        }
+
         /* 오디오 처리 */
         /* Record Thread와 PlayThreadList에 있는 모든 Play Thread Interrupt */
         if (drawingViewModel.isMicFlag()) {
@@ -730,6 +742,12 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             if (!client.isExitCompleteFlag()) {
                 MyLog.i("Exit", "비정상 종료");
                 client.exitTask();
+
+                // fixme nayeon for performance
+//                if(client.isMaster()) {
+//                    MonitoringDataWriter.getInstance().write();
+//                }
+
             }
             try {
                 client.getClient().disconnect();

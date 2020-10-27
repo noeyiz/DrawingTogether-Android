@@ -36,6 +36,7 @@ public class SplashActivity extends AppCompatActivity {
         startService(new Intent(this, TaskService.class));
 
         /* Splash Animation */
+
 //        LottieAnimationView animationView = findViewById(R.id.intro);
 //        animationView.addAnimatorListener(new Animator.AnimatorListener() {
 //            @Override

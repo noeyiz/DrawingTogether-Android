@@ -1137,6 +1137,7 @@ public enum DrawingEditor {
     }
 
     public void clearDrawingComponents() {
+
         selectedComponent = null;
         preSelectedComponents.clear();
         postSelectedComponents.clear();

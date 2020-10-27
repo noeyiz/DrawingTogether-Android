@@ -59,7 +59,8 @@ public enum Logger {
 
         uncaughtException += "\n\n" + "[ Thread Name ]\n" + thread.getName() + "\n\n";
 
-        uncaughtException += "[ Print Stack Trace ]\n";
+        uncaughtException += "[ Print Stack Trace ]\n\n";
+
         for(int i=0; i< ste.length; i++)
             uncaughtException += ste[i].toString() + "\n";
 
