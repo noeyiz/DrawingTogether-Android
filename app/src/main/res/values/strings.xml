@@ -5,8 +5,8 @@
     <string name="permission">[설정]-[애플리케이션]-[시시콜콜]-[권한]에서 권한을 허용할 수 있습니다.</string>
 
     <!-- Kakao App Key -->
-    <string name="kakao_app_key">668d7864167c674522a55e0db88fb304</string>
-    <string name="kakao_scheme">kakao668d7864167c674522a55e0db88fb304</string>
+    <string name="kakao_app_key">1c67e4a427399c4e4f83d2bd9ff1ba48</string>
+    <string name="kakao_scheme">kakao1c67e4a427399c4e4f83d2bd9ff1ba48</string>
     <string name="kakaolink_host">kakaolink</string>
 
     <string name="master_exit">종료하시겠습니까?</string>
@@ -20,7 +20,7 @@
         <font color='#15A0E8'><b>step1</b></font> 회의명, 비밀번호, 이름을 입력합니다. \n
         (카카오톡 초대 링크로 앱을 실행한 경우, 회의명과 비밀번호는 자동으로 입력됩니다.) \n\n
 
-        <font color='#15A0E8'><b>step2</b></font> <u>회의 시작하기</u> 또는 <u>회의 참가하기</u> 버튼들 눌러서 회의에 입장합니다. \n\n
+        <font color='#15A0E8'><b>step2</b></font> <u>회의 시작하기</u> 또는 <u>회의 참가하기</u> 버튼을 눌러서 회의에 입장합니다. \n\n
 
         <u>회의 시작하기</u>는 입력한 회의명으로 새로운 회의방을 개설하는 것을 의미합니다. \n
 

@@ -55,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     public interface OnRightBottomBackListener { void onRightBottomBackPressed();}
     private OnRightBottomBackListener onRightBottomBackListener;
 
+
     /* start, stop 시간 */
     private long startTime;
     private long stopTime;

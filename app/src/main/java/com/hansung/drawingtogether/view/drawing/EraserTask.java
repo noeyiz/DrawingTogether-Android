@@ -49,7 +49,7 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
                 }
 
                 // fixme nayeon for monitoring
-//                if(client.isMaster()) {
+                if(client.isMaster()) {
 //                    switch (comp.getType()) {
 //                        case STROKE:
 //                            client.getComponentCount().decreaseStroke();
@@ -61,7 +61,9 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
 //                            client.getComponentCount().decreaseOval();
 //                            break;
 //                    }
-//                }
+                    client.getComponentCount().increaseErase();
+                }
+
 
             } catch (NullPointerException e) {
                 MyLog.w("catch", "EraserTask.setSelected() | NullPointerException");

@@ -46,11 +46,11 @@ public class DrawingItem {
     }
 
 
-    public DrawingItem(TextMode textMode, TextAttribute textAttribute) {
-        this.textMode = textMode;
-        this.textAttribute = new TextAttribute(textAttribute);
-        MyLog.i("drawing", "preText=" + textAttribute.getPreText() + ", text=" + textAttribute.getText());
-    }
+//    public DrawingItem(TextMode textMode, TextAttribute textAttribute) {
+//        this.textMode = textMode;
+//        this.textAttribute = new TextAttribute(textAttribute);
+//        MyLog.i("drawing", "preText=" + textAttribute.getPreText() + ", text=" + textAttribute.getText());
+//    }
 
 
     public Vector<DrawingComponent> getComponents() {

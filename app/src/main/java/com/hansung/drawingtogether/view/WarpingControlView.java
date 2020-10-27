@@ -13,6 +13,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 
 import com.hansung.drawingtogether.BitmapProcess;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.data.remote.model.WarpData;
 import com.hansung.drawingtogether.util.DelaunayTriangulation;
 import com.hansung.drawingtogether.util.DoublePoint;
 import com.hansung.drawingtogether.util.Triangle;
@@ -79,8 +80,9 @@ public class WarpingControlView extends AppCompatImageView {
 	}
 
 	public boolean onTouchEvent(MotionEvent event) {
-		warping(event);
-		sendDrawMqttMessage(event.getAction(), new WarpingMessage(event, getWidth(), getHeight()));
+		if (warping(event)) {
+			sendDrawMqttMessage(event.getAction(), new WarpingMessage(event, getWidth(), getHeight()));
+		}
 		return true;
 	}
 
@@ -92,15 +94,16 @@ public class WarpingControlView extends AppCompatImageView {
 		this.cancel = cancel;
 	}
 
-	public void warping(MotionEvent event) {
+	public Boolean warping(MotionEvent event) {
 		if (image == null)
-			return;
+			return false;
 		int pointer_count = event.getPointerCount(); //현재 터치 발생한 포인트 수를 얻는다.
 		if(pointer_count >= 2) {
 			pointer_count = 2; //2개 이상의 포인트를 터치했더라도 2개까지만 처리를 한다.
 			pointerCount = 2;
 		}
 		Log.e("count", pointer_count + " ");
+
 
 		int action = event.getAction();
 		switch (action & MotionEvent.ACTION_MASK){
@@ -134,6 +137,10 @@ public class WarpingControlView extends AppCompatImageView {
 				vector.add(new DoublePoint(this.getWidth()-1,this.getHeight()-1));
 				vector.add(new DoublePoint(0,this.getHeight()-1));
 				for (int i = 0; i < pointer_count; i++) {
+					if (touchX[i] < 1 || touchX[i] > getWidth() - 2 || touchY[i] < 1 || touchY[i] > getHeight() - 2)
+						return false;
+					else if ((int)event.getX(i) < 1 || (int)event.getX(i) > getWidth() - 2 || (int)event.getY(i) < 1 || (int)event.getY(i) > getHeight() - 2)
+						return false;
 					vector.add(new DoublePoint(touchX[i], touchY[i], (int)event.getX(i), (int)event.getY(i)));
 					if (Math.abs(touchX[i] - touchUpX[i]) > 50 || Math.abs(touchY[i] - touchUpY[i]) > 50) {
 						flag = true;
@@ -175,9 +182,22 @@ public class WarpingControlView extends AppCompatImageView {
 				cancel = false;
 				break;
 		}
+		return true;
 	}
 
-	public void warping2(int action, Point[] points) {
+	public void warping2(WarpingMessage message) {
+		if (message.getWarpData() == null)
+			return;
+		WarpData data = message.getWarpData();
+		int action = data.getAction();
+		Point[] points = data.getPoints();
+		for (int i = 0; i < points.length; i++) {
+			points[i].x = points[i].x * getWidth() / message.getWidth();
+			points[i].y = points[i].y * getHeight() / message.getHeight();
+			if (points[i].x < 0 || points[i].x > getWidth() - 1 || points[i].y < 0 || points[i].y > getHeight() - 1)
+				return;
+		}
+
 		switch (action & MotionEvent.ACTION_MASK){
 			case MotionEvent.ACTION_DOWN:
 				touchX[0] = points[0].x;

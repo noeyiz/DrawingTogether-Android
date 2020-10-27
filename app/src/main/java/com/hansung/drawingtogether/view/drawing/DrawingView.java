@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
+import com.hansung.drawingtogether.monitoring.Velocity;
 
 import androidx.annotation.Nullable;
 
@@ -47,6 +48,8 @@ public class DrawingView extends View {
     private Stroke stroke = new Stroke();
     private Rect rect = new Rect();
     private Oval oval = new Oval();
+
+    private boolean flag = true; // fixme nayeon performance
 
     public DrawingView(Context context) {
         super(context);
@@ -257,22 +260,26 @@ public class DrawingView extends View {
         //de.printCurrentComponents("up");
         //de.printDrawingComponents("up");
 
-//        // fixme nayeon for performance
-//        ArrayList<Point> points = new ArrayList<Point>();
-//
-//        Log.e("performane", "delivery time origin component points count = " + de.getDrawingComponents().get(0).getPoints().size());
-//
-//        for(int i=0; i<250; i++)
-//            points.add(new Point(de.getDrawingComponents().get(0).getPoints().get(i)));
-//
-//        de.getDrawingComponents().get(0).setPoints(points);
-//
-//        for(int i=0; i< 100; i++) {
-//            de.getDrawingComponents().add(de.getDrawingComponents().get(0));
-//        }
-//        Log.e("performane", "delivery time measurement component points count = " + de.getDrawingComponents().get(0).getPoints().size());
-//        Log.e("performane", "delivery time measurement component count = " + de.getDrawingComponents().size());
+/*        // fixme nayeon for performance - 동일한 선 하나를 여러개 만들어서 컴포넌트 생성 [ 중간 참여자에게 전달하는 시간 측정 ]
+        if(flag) {
+            ArrayList<Point> points = new ArrayList<Point>();
 
+            Log.e("performane", "delivery time origin component points count = " + de.getDrawingComponents().get(0).getPoints().size());
+
+            for (int i = 0; i < 250; i++)
+                points.add(new Point(de.getDrawingComponents().get(0).getPoints().get(i)));
+
+            de.getDrawingComponents().get(0).setPoints(points);
+
+            for (int i = 0; i < 1000; i++) {
+                de.getDrawingComponents().add(de.getDrawingComponents().get(0));
+            }
+            Log.e("performane", "delivery time measurement component points count = " + de.getDrawingComponents().get(0).getPoints().size());
+            Log.e("performane", "delivery time measurement component count = " + de.getDrawingComponents().size());
+
+            flag = false;
+        }
+ */
     }
 
     boolean isExit = false;
@@ -319,6 +326,8 @@ public class DrawingView extends View {
             invalidate();
             return true;
         }
+
+        // MQTTClient.mDisplayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), 0)); // fixme nayeon for performance
 
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -386,6 +395,7 @@ public class DrawingView extends View {
                 MyLog.i("drawing", "action = " + MotionEvent.actionToString(event.getAction()));
         }
         invalidate();
+        // (MQTTClient.mDisplayTimeList.lastElement()).calcTime(System.currentTimeMillis()); // fixme nayeon for performance
         return true;
     }
 
@@ -651,6 +661,11 @@ public class DrawingView extends View {
                 de.getDrawingFragment().getBinding().redoBtn.setEnabled(false);
                 de.getDrawingFragment().getBinding().undoBtn.setEnabled(false);
                 invalidate();
+
+                // fixme nayeon for monitoring - 모든 컴포넌트 개수 0으로 초기화
+//                if(client.isMaster()) {
+//                    client.getComponentCount().clearCount();
+//                }
 
                 MyLog.i("drawing", "history.size()=" + de.getHistory().size());
                 MyLog.i("drawing", "clear");

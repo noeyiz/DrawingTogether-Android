@@ -47,7 +47,6 @@ class FrameLayoutDragListener implements View.OnDragListener {
             case DragEvent.ACTION_DRAG_STARTED:
                 textAttribute.setTextMoved(true);
 
-                textAttribute.setPreCoordinates(x, y);
                 textAttribute.setCoordinates(x, y);
                 text.sendMqttMessage(TextMode.DRAG_STARTED);
                 break;
@@ -75,7 +74,7 @@ class FrameLayoutDragListener implements View.OnDragListener {
             case DragEvent.ACTION_DRAG_ENDED:
                 textView.setVisibility(View.VISIBLE);
 
-                de.getCurrentText().setDragging(false);
+                de.getCurrentText().getTextAttribute().setDragging(false);
                 de.setCurrentText(null);
                 textAttribute.setUsername(null);
 

@@ -3,7 +3,7 @@ package com.hansung.drawingtogether.data.remote.model;
 import android.app.Application;
 
 
-public class DrawingTogetherApplication extends Application {
+public class SeeSeeCallCallApplication extends Application {
 
     @Override
     public void onCreate() {

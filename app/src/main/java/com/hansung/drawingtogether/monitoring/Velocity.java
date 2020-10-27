@@ -1,16 +1,19 @@
 package com.hansung.drawingtogether.monitoring;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import lombok.Getter;
 
 @Getter
 public class Velocity {
-    private int id;
-
     private long start;
     private long end;
     private double time;
 
-    private int users;
+    private String date;
+    private SimpleDateFormat df = new SimpleDateFormat("HH:mm");
+
     private int component;
 
     private int size;
@@ -32,30 +35,32 @@ public class Velocity {
         this.participant = participant;
         this.size = size;
         this.component = component;
+        this.date = df.format(new Date());
     }
 
     public void calcTime(long end, int size) {
         this.end = end;
         this.time = ( this.end - this.start )/1000.0;
         this.size = size;
+        this.date = df.format(new Date());
     }
 
     public void calcTime(long end) {
         this.end = end;
         this.time = ( this.end - this.start )/1000.0;
+        this.date = df.format(new Date());
     }
 
     @Override
     public String toString() {
         return "Velocity{" +
-                "id=" + id +
-                ", start=" + start +
+                "start=" + start +
                 ", end=" + end +
                 ", time=" + time +
+                ", date='" + date + '\'' +
                 ", component=" + component +
                 ", size=" + size +
                 ", participant='" + participant + '\'' +
                 '}';
     }
-
 }
