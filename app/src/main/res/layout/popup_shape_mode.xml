@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:background="#FFFFFF">
 
@@ -9,10 +10,12 @@
         android:id="@+id/rectBtn"
         android:layout_width="150dp"
         android:layout_height="50dp"
-        android:gravity="center"
         android:background="@android:color/transparent"
+        app:icon="@drawable/rect"
+        app:iconTint="#000000"
+        app:iconSize="25dp"
         android:textColor="#000000"
-        android:text="RECT"/>
+        android:text="사각형"/>
 
     <View
         android:layout_width="140dp"
@@ -24,10 +27,12 @@
         android:id="@+id/ovalBtn"
         android:layout_width="150dp"
         android:layout_height="50dp"
-        android:gravity="center"
         android:background="@android:color/transparent"
+        app:icon="@drawable/oval"
+        app:iconTint="#000000"
+        app:iconSize="25dp"
         android:textColor="#000000"
-        android:text="OVAL"/>
+        android:text="원형"/>
 
 
 </LinearLayout>

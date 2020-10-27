@@ -31,6 +31,7 @@ public class UpdateTextsTask extends AsyncTask<DrawingItem, Void, DrawingItem> {
         TextAttribute textAttr = lastItem.getTextAttribute();
         Text text = de.findTextById(textAttr.getId());
 
+        /*
         switch(lastItem.getTextMode()) {
             case CREATE:
             case ERASE:
@@ -88,5 +89,6 @@ public class UpdateTextsTask extends AsyncTask<DrawingItem, Void, DrawingItem> {
 
                 break;
         }
+         */
     }
 }
