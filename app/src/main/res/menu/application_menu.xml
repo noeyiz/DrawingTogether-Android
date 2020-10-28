@@ -1,31 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
-        android:id="@+id/drawing_search"
-        android:title="검색"
-        app:showAsAction="ifRoom"
-        android:icon="@drawable/search"/>
+        android:id="@+id/drawing_mic"
+        android:title="마이크"
+        app:showAsAction="always"
+        android:icon="@drawable/mic_slash"/>
+
+    <item
+        android:id="@+id/drawing_speaker"
+        android:title="스피커"
+        app:showAsAction="always"
+        android:icon="@drawable/speakerslash"/>
+
     <item
         android:id="@+id/drawing_image"
         android:title="이미지"
-        app:showAsAction="ifRoom"
-        android:icon="@drawable/image">
+        app:showAsAction="always"
+        android:icon="@drawable/photo">
         <menu>
             <item
                 android:id="@+id/gallery"
-                android:title="갤러리"/>
+                android:title="갤러리"
+                app:showAsAction="withText"
+                android:icon="@drawable/gallery_img"/>
             <item
                 android:id="@+id/camera"
-                android:title="카메라"/>
-            <item
-                android:id="@+id/delete"
-                android:title="지우기"/>
+                android:title="카메라"
+                app:showAsAction="withText"
+                android:icon="@drawable/camera_img"/>
         </menu>
     </item>
+
     <item
-        android:id="@+id/drawing_plus"
-        android:title="친구 초대"
-        app:showAsAction="ifRoom"
-        android:icon="@drawable/plus"/>
+        android:id="@+id/drawing_more"
+        android:title="더보기"
+        app:showAsAction="always"
+        android:icon="@drawable/more">
+        <menu>
+            <item
+                android:id="@+id/drawing_save"
+                android:title="저장하기"
+                app:showAsAction="withText"
+                android:icon="@drawable/save_img"/>
+
+            <item
+                android:id="@+id/drawing_invite"
+                android:title="친구 초대"
+                app:showAsAction="withText"
+                android:icon="@drawable/plus_person"/>
+        </menu>
+    </item>
 </menu>

@@ -156,6 +156,7 @@ obj/
 .idea/dynamic.xml
 .idea/uiDesigner.xml
 
+
 # OS-specific files
 .DS_Store
 .DS_Store?
@@ -191,6 +192,9 @@ atlassian-ide-plugin.xml
 
 # Mongo Explorer plugin
 .idea/mongoSettings.xml
+
+# CMakeList
+app/src/main/cpp/CMakeLists.txt
 
 # Crashlytics plugin (for Android Studio and IntelliJ)
 com_crashlytics_export_strings.xml

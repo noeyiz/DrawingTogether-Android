@@ -1,6 +1,7 @@
 package com.hansung.drawingtogether.view.drawing;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
@@ -8,13 +9,20 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.Xfermode;
 
+import com.hansung.drawingtogether.data.remote.model.MyLog;
+
 public class Oval  extends DrawingComponent {
     DrawingEditor de = DrawingEditor.getInstance();
 
     @Override
     public void draw(Canvas canvas) {
-        de.redraw();
-        this.drawComponent(canvas);
+        if(canvas == de.getCurrentCanvas()) {
+            de.clearMyCurrentBitmap();
+            drawComponent(canvas);
+        } else if(canvas == de.getReceiveCanvas()) {
+            de.clearCurrentBitmap();
+            de.drawOthersCurrentComponent(null);
+        }
     }
 
     @Override
@@ -34,15 +42,23 @@ public class Oval  extends DrawingComponent {
 
         try {
             RectF oval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);
-            RectF fillOval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);   //fixme alpha 적용되면 strokeWidth/2만큼 작은 사각형
+            RectF fillOval = new RectF(from.x * xRatio, from.y * yRatio, to.x * xRatio, to.y * yRatio);
 
             paint.setStyle(Paint.Style.FILL);       //채우기
-            paint.setColor(this.fillColor);
+            try {
+                paint.setColor(Color.parseColor(this.fillColor));
+            } catch(NullPointerException e) {
+                MyLog.w("catch", "parseColor");
+            }
             paint.setAlpha(this.fillAlpha);
             canvas.drawOval(oval, paint);
 
             paint.setStyle(Paint.Style.STROKE);     //윤곽선
-            paint.setColor(this.strokeColor);
+            try {
+                paint.setColor(Color.parseColor(this.strokeColor));
+            } catch(NullPointerException e) {
+                MyLog.w("catch", "parseColor");
+            }
             paint.setAlpha(this.strokeAlpha);
             canvas.drawOval(fillOval, paint);
         }catch(NullPointerException e) {
