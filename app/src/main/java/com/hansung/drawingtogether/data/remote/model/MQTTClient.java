@@ -691,9 +691,9 @@ public enum MQTTClient {
                     // fixme nayeon for monitoring
                     /* 모니터링 코드 (컴포넌트 개수 카운트) Only Master */
                     if(isMaster()) {
-                        MyLog.i("> monitoring", "before check component count");
-                        MyLog.i("> monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
-                                + ", text mode = " + messageFormat.getTextMode());
+                        //MyLog.i("> monitoring", "before check component count");
+                        //MyLog.i("> monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
+                        //        + ", text mode = " + messageFormat.getTextMode());
 
                         /* 컴포넌트 개수 저장 */
                         if ((messageFormat.getAction() != null && messageFormat.getAction() == MotionEvent.ACTION_DOWN)
@@ -703,7 +703,7 @@ public enum MQTTClient {
                             checkComponentCount(messageFormat.getMode(), messageFormat.getType(), messageFormat.getTextMode());
                         }
 
-                        MyLog.i("< monitoring", "after check component count");
+                        //MyLog.i("< monitoring", "after check component count");
                     }
 
                     /* 컴포넌트 처리 */

@@ -107,6 +107,8 @@ public class SendMqttMessage {    //consumer  //queue 가 비어있을때까지 
                         MqttMessageFormat messageFormat = queue.take();
                         //MyLog.i("sendThread", "active thread count: " + Thread.activeCount() + ", current: " + Thread.currentThread().getName());
 
+
+     */
 //                        // fixme nayeon for performance
 //                        if(client.isMaster()
 //                                &&  messageFormat.getMode().equals(Mode.DRAW) /* && messageFormat.getAction() != null
@@ -115,7 +117,7 @@ public class SendMqttMessage {    //consumer  //queue 가 비어있을때까지 
 //                            MQTTClient.receiveTimeList.add(new Velocity(System.currentTimeMillis()));
 //                        }
 
-                        client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
+                        /*client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
                         takeCnt++;
                         MyLog.i("sendThread", messageFormat.getUsersComponentId() + ", poll success " + takeCnt + ", size() = " + queue.size());
                     } catch (ConcurrentModificationException e) {
