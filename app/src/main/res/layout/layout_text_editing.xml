@@ -40,5 +40,5 @@
         android:layout_marginTop="5dp"
         android:layout_marginEnd="5dp"
         android:background="@null"
-        android:text="done" />
+        android:text="완료" />
 </FrameLayout>

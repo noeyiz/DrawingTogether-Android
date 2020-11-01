@@ -21,6 +21,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class MqttMessageFormat {
+
     private Mode mode;
     private ComponentType type;
     private DrawingComponent component;
