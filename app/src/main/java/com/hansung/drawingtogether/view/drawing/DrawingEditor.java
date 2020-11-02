@@ -68,6 +68,7 @@ public enum DrawingEditor {
     private ArrayList<Text> texts = new ArrayList<>(); // 현재 부착된 모든 text 배열
     private Text currentText = null;
     private boolean isTextBeingEdited = false;
+    private boolean isTextSizeBeingChanged = false;
     private int textId = -1;
     private int maxTextId = -1;
 
@@ -105,8 +106,8 @@ public enum DrawingEditor {
     private int textBackground = Color.TRANSPARENT;
 
     /* Auto Draw */
-    private ArrayList<String> autoDrawImageList = new ArrayList<>();
-    private ArrayList<ImageView> autoDrawImageViewList = new ArrayList<>();
+    private ArrayList<AutoDraw> autoDrawList = new ArrayList<>();
+    private ArrayList<ImageView> autoDrawImageList = new ArrayList<>();
 
     // 드로잉 하는동안 저장되는 모든 데이터들 지우기 [나가기 버튼 눌렀을 때 처리 필요 - MQTTClient.java if(topic_exit, topic_delete) 부분에서 호출]
     public void removeAllDrawingData() {
@@ -151,8 +152,8 @@ public enum DrawingEditor {
         isIntercept = false;
         isMidEntered = false;
 
+        autoDrawList.clear();
         autoDrawImageList.clear();
-        autoDrawImageViewList.clear();
     }
 
     public void printDrawingData() {
@@ -640,20 +641,21 @@ public enum DrawingEditor {
             // 다른 사용자(마스터)가 편집중일 텍스트일 경우 , TextAttribute 의 String text 는 계속해서 변하는 중
             // 그리고 텍스트 테두리 설정 안 되어 있음
             if(t.getTextAttribute().getUsername() != null) {
-                t.getTextView().setText(t.getTextAttribute().getPreText()); // 이전 텍스트로 설정
+//                t.getTextView().setText(t.getTextAttribute().getPreText()); // 이전 텍스트로 설정
                 t.getTextView().setBackground(this.textFocusBorderDrawable); // 테두리 설정
             }
             // 중간에 들어왔는데 색상
 
-            t.setTextViewInitialPlace(t.getTextAttribute());
-            t.setTextViewProperties();
+            t.setTextViewProperties(); // fixme nayeon - (1) set view properties (2) set initial place 순서 중요 !!
+            t.setTextViewInitialLocation(t.getTextAttribute());
+
 
             t.addTextViewToFrameLayout();
             t.createGestureDetector(); // 텍스트 모두 붙이기를 중간자 처리, 재접속 시에만 한다고 가정했을 때.
 
-            MyLog.e("texts size, text id", texts.size() + ", " + t.getTextAttribute().getId());
-            MyLog.e("text view size", t.getTextView().getWidth() + ", " + t.getTextView().getHeight());
-            MyLog.e("text view location", t.getTextView().getX() + ", " + t.getTextView().getY());
+//            MyLog.i("texts size, text id", texts.size() + ", " + t.getTextAttribute().getId());
+//            MyLog.i("text view size", t.getTextView().getWidth() + ", " + t.getTextView().getHeight());
+//            MyLog.i("text view location", t.getTextView().getX() + ", " + t.getTextView().getY());
         }
     }
 
@@ -1156,12 +1158,13 @@ public enum DrawingEditor {
         clearDrawingBoardArray();
         removedComponentId.clear();
         drawingBoardMap.clear();
-        for (int i = 0; i < autoDrawImageViewList.size(); i++) {
-            ImageView view = autoDrawImageViewList.get(i);
+
+        for (int i = 0; i < autoDrawImageList.size(); i++) {
+            ImageView view = autoDrawImageList.get(i);
             ((ViewManager) view.getParent()).removeView(view);
         }
+        autoDrawList.clear();
         autoDrawImageList.clear();
-        autoDrawImageViewList.clear();
     }
 
     public void clearTexts() {
@@ -1213,6 +1216,8 @@ public enum DrawingEditor {
     public void setCurrentText(Text text) { this.currentText = text; }
 
     public void setTextBeingEdited(Boolean bool) { this.isTextBeingEdited = bool; } // 하나의 텍스트 편집 시 다른 텍스트 포커싱 막기 위해
+
+    public void setTextSizeBeingChanged(Boolean bool) { this.isTextSizeBeingChanged = bool; } // 텍스트 크기 변경 중 토스트 창 뜨는 것을 막기 위해 (MAX_LENGTH)
 
     public void setMidEntered(Boolean bool) { this.isMidEntered = bool; }
 
@@ -1321,9 +1326,16 @@ public enum DrawingEditor {
         this.postSelectedComponentsBitmap = postSelectedComponentsBitmap;
     }
 
-    public void addAutoDraw(String image, ImageView view) {
+    public void addAutoDraw(AutoDraw autoDraw) {
+        this.autoDrawList.add(autoDraw);
+    }
+
+    public void addAutoDrawImageView(ImageView image) {
         this.autoDrawImageList.add(image);
-        this.autoDrawImageViewList.add(view);
+    }
+
+    public void setAutoDrawList(ArrayList<AutoDraw> autoDrawList) {
+        this.autoDrawList.addAll(autoDrawList);
     }
 
     public void setReceiveBitmap(Bitmap receiveBitmap) { this.receiveBitmap = receiveBitmap; }

@@ -60,7 +60,8 @@ public class MainViewModel extends BaseViewModel {
 
         /* 변수 초기화 */
         ip.setValue("54.180.154.63"); // 클라우드
-//      ip.setValue("192.168.0.36"); // 모니터링
+//        ip.setValue("54.180.55.246"); // 클라우드 [나연]
+//        ip.setValue("192.168.0.36"); // 모니터링
         port.postValue("1883");
         setTopic("");
         setPassword("");
@@ -321,7 +322,7 @@ public class MainViewModel extends BaseViewModel {
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.context)
                 .setTitle(R.string.info_title)
                 .setMessage(R.string.info)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {}
                 })
@@ -399,12 +400,8 @@ public class MainViewModel extends BaseViewModel {
         TedPermission.with(context)
                 .setPermissionListener(permissionListener)
                 .setDeniedMessage(context.getResources().getString(R.string.permission))
-                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE/*, Manifest.permission.RECORD_AUDIO*/)
+                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO)
                 .check();
-    }
-
-    public void showLocalHistory(View view) {
-        navigate(R.id.action_mainFragment_to_historyFragment);
     }
 
     /* GETTER */

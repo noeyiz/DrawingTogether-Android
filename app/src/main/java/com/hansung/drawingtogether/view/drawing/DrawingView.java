@@ -257,8 +257,8 @@ public class DrawingView extends View {
 
         //if(de.isIntercept()) this.isIntercept = true;   //**
 
-        de.printCurrentComponents("up");
-        de.printDrawingComponents("up");
+        //de.printCurrentComponents("up");
+        //de.printDrawingComponents("up");
 
 /*        // fixme nayeon for performance - 동일한 선 하나를 여러개 만들어서 컴포넌트 생성 [ 중간 참여자에게 전달하는 시간 측정 ]
         if(flag) {
@@ -307,7 +307,7 @@ public class DrawingView extends View {
 
             //publish
             if(points.size() != 0) {
-                MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
+                //MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
                 sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), (ArrayList<Point>)points.clone()/*points.toString()*/, MotionEvent.ACTION_MOVE));
                 points.clear();
             }
@@ -332,7 +332,8 @@ public class DrawingView extends View {
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 isExit = false;
-                MyLog.i("mqtt", "isExit3 = " + isExit);
+                //MyLog.i("mqtt", "isExit3 = " + isExit);
+                MyLog.i("drawing", "draw down");
 
                 setComponentAttribute(dComponent);
                 point = new Point((int)event.getX(), (int)event.getY());
@@ -356,7 +357,7 @@ public class DrawingView extends View {
                 //MyLog.i("sendThread", points.size() + "");
 
                 if(points.size() == msgChunkSize) {
-                    MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
+                    //MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
                     sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), (ArrayList<Point>) points.clone()/*points.toString()*/, event.getAction()));
                     points.clear();
                 }
@@ -376,7 +377,7 @@ public class DrawingView extends View {
 
                 //publish
                 if(points.size() != 0) {
-                    MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
+                    //MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
                     sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), (ArrayList<Point>) points.clone()/*points.toString()*/, MotionEvent.ACTION_MOVE));
                     points.clear();
                 }
@@ -660,6 +661,11 @@ public class DrawingView extends View {
                 de.getDrawingFragment().getBinding().redoBtn.setEnabled(false);
                 de.getDrawingFragment().getBinding().undoBtn.setEnabled(false);
                 invalidate();
+
+                // fixme nayeon for monitoring - 모든 컴포넌트 개수 0으로 초기화
+//                if(client.isMaster()) {
+//                    client.getComponentCount().clearCount();
+//                }
 
                 MyLog.i("drawing", "history.size()=" + de.getHistory().size());
                 MyLog.i("drawing", "clear");

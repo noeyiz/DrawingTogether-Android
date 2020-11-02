@@ -21,6 +21,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class MqttMessageFormat {
+
     private Mode mode;
     private ComponentType type;
     private DrawingComponent component;
@@ -56,6 +57,10 @@ public class MqttMessageFormat {
     private byte[] bitmapByteArray;
 
     private ComponentCount componentCount;
+
+    private ArrayList<AutoDraw> autoDrawList;
+
+    private float width, height;
 
     /* Draw - Action Down */
     public MqttMessageFormat(String username, String usersComponentId, Mode mode, ComponentType type, DrawingComponent component, int action) {
@@ -137,7 +142,7 @@ public class MqttMessageFormat {
     }
 
     /* 중간자 처리시 필요한 생성자 */
-    public MqttMessageFormat(JoinAckMessage joinAckMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId, Integer maxComponentId, Integer maxTextId) {
+    public MqttMessageFormat(JoinAckMessage joinAckMessage, ArrayList<DrawingComponent> drawingComponents, ArrayList<Text> texts, ArrayList<DrawingItem> history, ArrayList<DrawingItem> undoArray, Vector<Integer> removedComponentId, Integer maxComponentId, Integer maxTextId, ArrayList<AutoDraw> autoDrawList) {
         this.joinAckMessage = joinAckMessage;
         this.drawingComponents = drawingComponents;
         this.texts = texts;
@@ -146,6 +151,7 @@ public class MqttMessageFormat {
         this.removedComponentId = removedComponentId;
         this.maxComponentId = maxComponentId;
         this.maxTextId = maxTextId;
+        this.autoDrawList = autoDrawList;
     }
 
     /* 중간자 처리시 필요한 생성자 (BitmapByteArray 포함) */

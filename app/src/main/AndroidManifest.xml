@@ -16,21 +16,17 @@
     <application
         android:name=".data.remote.model.SeeSeeCallCallApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/seeseecallcall_icon"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
-        android:roundIcon="@mipmap/seeseecallcall_icon_round"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
 
         <!-- fixme - [ android:name="" ] Registration LogApplication Class -->
-<<<<<<< HEAD
-        <activity android:name=".view.splash.SplashActivity">
-=======
         <activity android:name=".view.splash.SplashActivity"
             android:screenOrientation="portrait">
->>>>>>> 333ebce2536683dccde41fc069d878d5a9b61452
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

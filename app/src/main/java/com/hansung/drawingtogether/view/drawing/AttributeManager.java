@@ -3,9 +3,11 @@ package com.hansung.drawingtogether.view.drawing;
 import android.graphics.Color;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
+import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
@@ -16,6 +18,8 @@ public enum AttributeManager {
     private FragmentDrawingBinding binding;
     private DrawingEditor de = DrawingEditor.getInstance();
     private Logger logger = Logger.getInstance();
+
+    private FrameLayout textEditingLayout; // 텍스트 편집 레이아웃
 
     private View.OnClickListener colorButtonClickListener;
     private SeekBar.OnSeekBarChangeListener sizeBarChangeListener;
@@ -53,17 +57,17 @@ public enum AttributeManager {
         };
 
         sizeBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
-            int stepOfProgress;
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                stepOfProgress = progress / 10 * 10;
+
+                if(progress % 10 != 0) return; // text size only 10, 20, 30
 
                 switch(de.getCurrentMode()) {
                     case TEXT:
                         Text text = de.getCurrentText();
 
-                        text.getTextAttribute().setTextSize(stepOfProgress);
+                        text.getTextAttribute().setTextSize(progress);
                         text.setEditTextAttribute(); // edit text 에 텍스트 크기 적용
                         break;
                     /*case DRAW:
@@ -73,14 +77,18 @@ public enum AttributeManager {
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) { }
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                de.setTextSizeBeingChanged(true);
+            }
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) { }
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                de.setTextSizeBeingChanged(false);
+            }
         };
 
         setPaletteButtonListener();
-        binding.sizeBar.setOnSeekBarChangeListener(sizeBarChangeListener);
+        ((SeekBar)textEditingLayout.findViewById(R.id.sizeBar)).setOnSeekBarChangeListener(sizeBarChangeListener);
     }
 
 
@@ -101,4 +109,6 @@ public enum AttributeManager {
     public static AttributeManager getInstance() { return INSTANCE; }
 
     public void setBinding(FragmentDrawingBinding binding) { this.binding = binding; }
+
+    public void setTextEditingLayout(FrameLayout textEditingLayout) { this.textEditingLayout = textEditingLayout; }
 }

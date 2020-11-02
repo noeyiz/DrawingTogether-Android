@@ -20,8 +20,8 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
         this.erasedComponentIds = erasedComponentIds;
         this.components.clear();
 
-        de.printCurrentComponents("erase");
-        de.printDrawingComponents("erase");
+        //de.printCurrentComponents("erase");
+        //de.printDrawingComponents("erase");
     }
 
     @Override
@@ -36,28 +36,32 @@ public class EraserTask extends AsyncTask<Void, Void, Void> {
         for(int i=0; i<erasedComponentIds.size(); i++) {
             try {
                 DrawingComponent comp = de.findDrawingComponentById(erasedComponentIds.get(i));
-                if((comp != null) && comp.isSelected()) {
-                    de.setDrawingComponentSelected(comp.getUsersComponentId(), false);
-                    de.clearMyCurrentBitmap();
-                    de.getDrawingFragment().getBinding().drawingView.setSelected(false);
-                    MyLog.i("isSelected", comp.getUsersComponentId() + ", " + comp.isSelected);
+                if(comp != null) {
+                    if (comp.isSelected()) {
+                        de.setDrawingComponentSelected(comp.getUsersComponentId(), false);
+                        de.clearMyCurrentBitmap();
+                        de.getDrawingFragment().getBinding().drawingView.setSelected(false);
+                        MyLog.i("isSelected", comp.getUsersComponentId() + ", " + comp.isSelected);
+                    } else {
+                        comp.setSelected(false);
+                        components.add(comp);
+                    }
                 }
-                comp.setSelected(false);
-                components.add(comp);
 
                 // fixme nayeon for monitoring
                 if(client.isMaster()) {
-                    switch (comp.getType()) {
-                        case STROKE:
-                            client.getComponentCount().decreaseStroke();
-                            break;
-                        case RECT:
-                            client.getComponentCount().decreaseRect();
-                            break;
-                        case OVAL:
-                            client.getComponentCount().decreaseOval();
-                            break;
-                    }
+//                    switch (comp.getType()) {
+//                        case STROKE:
+//                            client.getComponentCount().decreaseStroke();
+//                            break;
+//                        case RECT:
+//                            client.getComponentCount().decreaseRect();
+//                            break;
+//                        case OVAL:
+//                            client.getComponentCount().decreaseOval();
+//                            break;
+//                    }
+                    client.getComponentCount().increaseErase();
                 }
 
 

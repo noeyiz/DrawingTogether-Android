@@ -23,6 +23,7 @@ import java.util.Vector;
 public enum MonitoringDataWriter {
     INSTANCE;
 
+
     public static MonitoringDataWriter getInstance() {
         return INSTANCE;
     }
@@ -153,6 +154,7 @@ public enum MonitoringDataWriter {
         }
     }
 
+    /*
     public void myDisplayTimeWrite(String extension) {
 
         String data = "";
@@ -210,6 +212,7 @@ public enum MonitoringDataWriter {
             e.printStackTrace();
         }
     }
+     */
 
     public void deliveryTimeWrite(String extension) {
         String data = "";

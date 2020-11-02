@@ -62,7 +62,6 @@ public class Stroke extends DrawingComponent {
             path.lineTo(mX, mY);
         }
 
-
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         /*if(isErased) {

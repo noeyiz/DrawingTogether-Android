@@ -47,7 +47,6 @@ class FrameLayoutDragListener implements View.OnDragListener {
             case DragEvent.ACTION_DRAG_STARTED:
                 textAttribute.setTextMoved(true);
 
-                textAttribute.setPreCoordinates(x, y);
                 textAttribute.setCoordinates(x, y);
                 text.sendMqttMessage(TextMode.DRAG_STARTED);
                 break;
@@ -67,15 +66,12 @@ class FrameLayoutDragListener implements View.OnDragListener {
 
                 text.sendMqttMessage(TextMode.DROP);
                 MyLog.i("drawing", "text drop");
-                //de.addHistory(new DrawingItem(TextMode.DROP, textAttribute)); //fixme minj - addHistory
-                //MyLog.i("drawing", "history.size()=" + de.getHistory().size());
-                //de.clearUndoArray();
 
                 break;
             case DragEvent.ACTION_DRAG_ENDED:
                 textView.setVisibility(View.VISIBLE);
 
-                de.getCurrentText().setDragging(false);
+                de.getCurrentText().getTextAttribute().setDragging(false);
                 de.setCurrentText(null);
                 textAttribute.setUsername(null);
 
