@@ -32,20 +32,20 @@ public enum MonitoringRunnable implements Runnable {
         }
 
         while (true) {
-            try {
-
-                MqttMessageFormat mqttMessageFormat = new MqttMessageFormat(client.getComponentCount());
-
-                //Log.i("monitoring", "mqtt message format\n" + JSONParser.getInstance().jsonWrite(mqttMessageFormat));
-
-                client.publish(topic_monitoring, JSONParser.getInstance().jsonWrite(mqttMessageFormat));
-
-                Thread.sleep(second);
-
-            } catch (InterruptedException e) {
-                Log.e("monitoring", "monitoring thread is dead");
-                break;
-            }
+//            try {
+//
+//                MqttMessageFormat mqttMessageFormat = new MqttMessageFormat(client.getComponentCount());
+//
+//                //Log.i("monitoring", "mqtt message format\n" + JSONParser.getInstance().jsonWrite(mqttMessageFormat));
+//
+//                client.publish(topic_monitoring, JSONParser.getInstance().jsonWrite(mqttMessageFormat));
+//
+//                Thread.sleep(second);
+//
+//            } catch (InterruptedException e) {
+//                Log.e("monitoring", "monitoring thread is dead");
+//                break;
+//            }
 
         }
 

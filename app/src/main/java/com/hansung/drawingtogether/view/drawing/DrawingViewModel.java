@@ -588,7 +588,7 @@ public class DrawingViewModel extends BaseViewModel {
         return image;
     }
 
-    private void showToastMsg(final String message) { Toast.makeText(de.getDrawingFragment().getActivity(), message, Toast.LENGTH_SHORT).show(); }
+    public void showToastMsg(final String message) { Toast.makeText(de.getDrawingFragment().getActivity(), message, Toast.LENGTH_SHORT).show(); }
 
     public String getPhotoPath() {
         return photoPath;
