@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.Layout;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -99,6 +100,7 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     private InputMethodManager inputMethodManager;
 
     private FrameLayout textEditingLayout;
+//    private TextEditingLayout textEditingLayout;
 
     private ExitOnClickListener exitOnClickListener;
 
@@ -145,12 +147,23 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         /* 텍스트 편집 레이아웃 생성 */
         LayoutInflater layoutInflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         textEditingLayout = (FrameLayout) layoutInflater.inflate(R.layout.layout_text_editing, null);
+        textEditingLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                Log.e("text", "on touch");
+                return false;
+            }
+        });
         textEditingLayout.findViewById(R.id.doneBtn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 drawingViewModel.clickDone(view); // fixme nayeon
             }
         });
+
+        /* 텍스트 편집 레이아웃 생성 */
+//        textEditingLayout = new TextEditingLayout(getContext());
+//        textEditingLayout.initialize(drawingViewModel);
 
         am.setBinding(binding); // Palette Manager 의 FragmentDrawingBinding 변수 초기화
         am.setTextEditingLayout(textEditingLayout); // 텍스트 편집 레이아웃의 size bar 이벤트 리스너 달기 위해 변수 초기화
@@ -204,13 +217,13 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             client.setThread(th);
 
             // fixme nayeon for monitoring
-            if(client.isMaster()) {
-                MyLog.i("monitoring", "mqtt client class init func. check master. i'am master.");
-                client.setComponentCount(new ComponentCount(client.getTopic()));
-                Thread monitoringThread = new Thread(monitoringRunnable);
-                monitoringThread.start();
-                client.setMonitoringThread(monitoringThread);
-            }
+//            if(client.isMaster()) {
+//                MyLog.i("monitoring", "mqtt client class init func. check master. i'am master.");
+//                client.setComponentCount(new ComponentCount(client.getTopic()));
+//                Thread monitoringThread = new Thread(monitoringRunnable);
+//                monitoringThread.start();
+//                client.setMonitoringThread(monitoringThread);
+//            }
 
         }
 
@@ -701,9 +714,9 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
 
 
         // fixme nayeon for monitoring
-        if(client.isMaster()) {
-            client.getMonitoringThread().interrupt();
-        }
+//        if(client.isMaster()) {
+//            client.getMonitoringThread().interrupt();
+//        }
 
         /* 오디오 처리 */
         /* Record Thread와 PlayThreadList에 있는 모든 Play Thread Interrupt */

@@ -56,7 +56,7 @@ public class MqttMessageFormat {
     private Integer maxTextId;
     private byte[] bitmapByteArray;
 
-    private ComponentCount componentCount;
+//    private ComponentCount componentCount;
 
     private ArrayList<AutoDraw> autoDrawList;
 
@@ -181,9 +181,9 @@ public class MqttMessageFormat {
         this.type = type;
         this.autoDrawMessage = autoDrawMessage;
     }
-    public MqttMessageFormat(ComponentCount componentCount) {
-        this.componentCount = componentCount;
-    }
+//    public MqttMessageFormat(ComponentCount componentCount) {
+//        this.componentCount = componentCount;
+//    }
 
     public MqttMessageFormat(JoinMessage joinMessage) {
         this.joinMessage = joinMessage;
