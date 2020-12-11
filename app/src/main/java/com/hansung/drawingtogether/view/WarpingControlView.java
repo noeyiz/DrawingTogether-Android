@@ -19,6 +19,7 @@ import com.hansung.drawingtogether.util.DoublePoint;
 import com.hansung.drawingtogether.util.Triangle;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 import com.hansung.drawingtogether.view.drawing.JSONParser;
+import com.hansung.drawingtogether.view.drawing.Mode;
 import com.hansung.drawingtogether.view.drawing.MqttMessageFormat;
 import com.hansung.drawingtogether.view.main.WarpingMessage;
 
@@ -96,6 +97,8 @@ public class WarpingControlView extends AppCompatImageView {
 
 	public Boolean warping(MotionEvent event) {
 		if (image == null)
+			return false;
+		if (de.getCurrentMode() == Mode.TEXT) // fixme nayeon: (배경 이미지가 있을 경우) 텍스트 편집 창 터치 시 와핑 수행되는 문제
 			return false;
 		int pointer_count = event.getPointerCount(); //현재 터치 발생한 포인트 수를 얻는다.
 		if(pointer_count >= 2) {

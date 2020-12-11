@@ -124,8 +124,8 @@ public enum MQTTClient {
 
     // fixme nayeon for monitoring
     /* 모니터링 관련 변수 */
-    private ComponentCount componentCount;
-    private Thread monitoringThread;
+//    private ComponentCount componentCount;
+//    private Thread monitoringThread;
 
     // [Key] UUID [Value] Velocity
 //    public static Vector<Velocity> receiveTimeList = new Vector<Velocity>();  // 메시지를 수신하는데 걸린 속도 데이터
@@ -309,8 +309,8 @@ public enum MQTTClient {
             th.interrupt(); // Alive Thread Interrupt
 
             // fixme nayeon for monitoring
-            if(isMaster())
-                monitoringThread.interrupt();
+//            if(isMaster())
+//                monitoringThread.interrupt();
 
             if (isMaster()) {
                 CloseMessage closeMessage = new CloseMessage(myName);
@@ -370,8 +370,8 @@ public enum MQTTClient {
                     subscribeAllTopics();
 
                     // fixme nayeon for monitoring
-                    if(isMaster())
-                        monitoringThread.notify();
+//                    if(isMaster())
+//                        monitoringThread.notify();
 
 
                     /* 스피커 On(오디오 subscribe 중)이었다면 다시 subscribe */
@@ -388,12 +388,12 @@ public enum MQTTClient {
                 cause.printStackTrace();
 
                 // fixme nayeon for monitoring
-                try {
-                    if(isMaster())
-                        monitoringThread.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    if(isMaster())
+//                        monitoringThread.wait();
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
 
             }
 
@@ -690,21 +690,21 @@ public enum MQTTClient {
 
                     // fixme nayeon for monitoring
                     /* 모니터링 코드 (컴포넌트 개수 카운트) Only Master */
-                    if(isMaster()) {
-                        //MyLog.i("> monitoring", "before check component count");
-                        //MyLog.i("> monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
-                        //        + ", text mode = " + messageFormat.getTextMode());
-
-                        /* 컴포넌트 개수 저장 */
-                        if ((messageFormat.getAction() != null && messageFormat.getAction() == MotionEvent.ACTION_DOWN)
-                                || messageFormat.getMode() == Mode.TEXT || messageFormat.getMode() == Mode.ERASE) {
-                            MyLog.i("< monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
-                                    + ", text mode = " + messageFormat.getTextMode());
-                            checkComponentCount(messageFormat.getMode(), messageFormat.getType(), messageFormat.getTextMode());
-                        }
-
-                        //MyLog.i("< monitoring", "after check component count");
-                    }
+//                    if(isMaster()) {
+//                        //MyLog.i("> monitoring", "before check component count");
+//                        //MyLog.i("> monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
+//                        //        + ", text mode = " + messageFormat.getTextMode());
+//
+//                        /* 컴포넌트 개수 저장 */
+//                        if ((messageFormat.getAction() != null && messageFormat.getAction() == MotionEvent.ACTION_DOWN)
+//                                || messageFormat.getMode() == Mode.TEXT || messageFormat.getMode() == Mode.ERASE) {
+//                            MyLog.i("< monitoring", "mode = " + messageFormat.getMode() + ", type = " + messageFormat.getType()
+//                                    + ", text mode = " + messageFormat.getTextMode());
+//                            checkComponentCount(messageFormat.getMode(), messageFormat.getType(), messageFormat.getTextMode());
+//                        }
+//
+//                        //MyLog.i("< monitoring", "after check component count");
+//                    }
 
                     /* 컴포넌트 처리 */
                     if (messageFormat.getMode() == Mode.TEXT) {  // TEXT 모드일 경우, username이 다른 경우만 task 생성
@@ -772,9 +772,9 @@ public enum MQTTClient {
                     MyLog.i("Image", "set image");
 
                     // fixme nayeon for monitoring
-                    if(isMaster()) { // 전송한 이미지 개수 카운팅 (모니터링)
-                        componentCount.increaseImage();
-                    }
+//                    if(isMaster()) { // 전송한 이미지 개수 카운팅 (모니터링)
+//                        componentCount.increaseImage();
+//                    }
 
                 }
             }
@@ -844,42 +844,42 @@ public enum MQTTClient {
     }
 
     // fixme nayeon for monitoring
-    public void checkComponentCount(Mode mode, ComponentType type, TextMode textMode) {
-        Log.i("monitoring", "execute check component count func.");
-
-        if(mode == Mode.TEXT && textMode == TextMode.CREATE) {
-            //Log.e("monitoring", "check component count func. text count increase.");
-
-            componentCount.increaseText();
-            return;
-        }
-
-        if(mode != Mode.DRAW) {
-            //Log.e("monitoring", "check component count func. mode is not DRAW");
-            return;
-        }
-        //Log.e("monitoring", "check component count func. mode is DRAW");
-
-
-        switch (type) {
-            case STROKE:
-                componentCount.increaseStroke();
-                break;
-            case RECT:
-                componentCount.increaseRect();
-                break;
-            case OVAL:
-                componentCount.increaseOval();
-                break;
-        }
-    }
+//    public void checkComponentCount(Mode mode, ComponentType type, TextMode textMode) {
+//        Log.i("monitoring", "execute check component count func.");
+//
+//        if(mode == Mode.TEXT && textMode == TextMode.CREATE) {
+//            //Log.e("monitoring", "check component count func. text count increase.");
+//
+//            componentCount.increaseText();
+//            return;
+//        }
+//
+//        if(mode != Mode.DRAW) {
+//            //Log.e("monitoring", "check component count func. mode is not DRAW");
+//            return;
+//        }
+//        //Log.e("monitoring", "check component count func. mode is DRAW");
+//
+//
+//        switch (type) {
+//            case STROKE:
+//                componentCount.increaseStroke();
+//                break;
+//            case RECT:
+//                componentCount.increaseRect();
+//                break;
+//            case OVAL:
+//                componentCount.increaseOval();
+//                break;
+//        }
+//    }
 
     public void doInBack() {
         th.interrupt();
 
         // fixme nayeon for monitoring
-        if(isMaster())
-            monitoringThread.interrupt();
+//        if(isMaster())
+//            monitoringThread.interrupt();
 
 
         isMid = true;
@@ -1037,12 +1037,12 @@ public enum MQTTClient {
 
     /* monitoring variable setting function */
     // fixme nayeon for monitoring
-    public void setMonitoringThread(Thread monitoringThread) {
-        this.monitoringThread = monitoringThread;
-    }
+//    public void setMonitoringThread(Thread monitoringThread) {
+//        this.monitoringThread = monitoringThread;
+//    }
 
     // fixme nayeon for monitoring
-    public void setComponentCount(ComponentCount componentCount) { this.componentCount = componentCount; }
+//    public void setComponentCount(ComponentCount componentCount) { this.componentCount = componentCount; }
 
     // fixme nayeon for performance
     /* monitoring print function */
