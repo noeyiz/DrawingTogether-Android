@@ -108,7 +108,7 @@ public enum MQTTClient {
     private DrawingView drawingView;
 
     private List<User> userList = new ArrayList<>(100);  // Member List
-    private List<AudioPlayThread> audioPlayThreadList = new ArrayList<>(100);
+//    private List<AudioPlayThread> audioPlayThreadList = new ArrayList<>(100);
 
     private Thread th;
     private int aliveLimitCount = 5;
@@ -146,19 +146,19 @@ public enum MQTTClient {
         this.masterName = masterName;
 
         userList.clear();
-        audioPlayThreadList.clear();
+//        audioPlayThreadList.clear();
 
         if (!isMaster()) {
             User mUser = new User(masterName, 0, MotionEvent.ACTION_UP, false);
             userList.add(mUser);
 
             /* 마스터의 PlayThread 생성 */
-            AudioPlayThread audioPlayThread = new AudioPlayThread();
-            audioPlayThread.setUserName(masterName);
-            audioPlayThread.setBufferUnitSize(4);
-            audioPlayThread.start();
-            audioPlayThreadList.add(audioPlayThread);
-            MyLog.i("Audio", masterName + " 추가 후 : " + audioPlayThreadList.size());
+//            AudioPlayThread audioPlayThread = new AudioPlayThread();
+//            audioPlayThread.setUserName(masterName);
+//            audioPlayThread.setBufferUnitSize(4);
+//            audioPlayThread.start();
+//            audioPlayThreadList.add(audioPlayThread);
+//            MyLog.i("Audio", masterName + " 추가 후 : " + audioPlayThreadList.size());
         }
 
         User user = new User(myName, 0, MotionEvent.ACTION_UP, false);
@@ -287,7 +287,7 @@ public enum MQTTClient {
             /*if (drawingViewModel.getRecThread().isAlive()) {  //fixme minj
                 drawingViewModel.getRecThread().interrupt();
             }*/
-            drawingViewModel.getRecThread().getExecutor().shutdown();
+//            drawingViewModel.getRecThread().getExecutor().shutdown();
         }
     }
 
@@ -375,8 +375,8 @@ public enum MQTTClient {
 
 
                     /* 스피커 On(오디오 subscribe 중)이었다면 다시 subscribe */
-                    if (drawingViewModel.isSpeakerFlag())
-                        subscribe(topic_audio);
+//                    if (drawingViewModel.isSpeakerFlag())
+//                        subscribe(topic_audio);
                 } else {
                     MyLog.i("modified mqtt", "CONNECT");
                 }
@@ -455,14 +455,14 @@ public enum MQTTClient {
                                 }
 
                                 /* 중간 참여자의 Play Thread 생성 */
-                                AudioPlayThread audioPlayThread = new AudioPlayThread();
-                                audioPlayThread.setUserName(name);
-                                audioPlayThread.setBufferUnitSize(4);
-                                if (drawingViewModel.isSpeakerFlag())
-                                    audioPlayThread.setFlag(true);
-                                audioPlayThread.start();
-                                audioPlayThreadList.add(audioPlayThread);
-                                MyLog.i("Audio", name + " 추가 후 : " + audioPlayThreadList.size());
+//                                AudioPlayThread audioPlayThread = new AudioPlayThread();
+//                                audioPlayThread.setUserName(name);
+//                                audioPlayThread.setBufferUnitSize(4);
+//                                if (drawingViewModel.isSpeakerFlag())
+//                                    audioPlayThread.setFlag(true);
+//                                audioPlayThread.start();
+//                                audioPlayThreadList.add(audioPlayThread);
+//                                MyLog.i("Audio", name + " 추가 후 : " + audioPlayThreadList.size());
 
                                 /* 다른 사용자가 들어왔다는 메시지를 받았을 경우 */
                                 /* 텍스트 비활성화를 위해 플래그 설정 */
@@ -566,12 +566,12 @@ public enum MQTTClient {
                                 userList.add(user);
 
                                 /* 기존 참여자의 Play Thread 생성 */
-                                AudioPlayThread audioPlayThread = new AudioPlayThread();
-                                audioPlayThread.setUserName(name);
-                                audioPlayThread.setBufferUnitSize(4);
-                                audioPlayThread.start();
-                                audioPlayThreadList.add(audioPlayThread);
-                                MyLog.i("audio", name + " 추가 후 : " + audioPlayThreadList.size());
+//                                AudioPlayThread audioPlayThread = new AudioPlayThread();
+//                                audioPlayThread.setUserName(name);
+//                                audioPlayThread.setBufferUnitSize(4);
+//                                audioPlayThread.start();
+//                                audioPlayThreadList.add(audioPlayThread);
+//                                MyLog.i("audio", name + " 추가 후 : " + audioPlayThreadList.size());
 
                                 /* 멤버 리스트 출력 */
                                 drawingViewModel.setUserNum(userList.size());
@@ -606,18 +606,18 @@ public enum MQTTClient {
                         }
 
                         /* 해당 멤버의 Play Thread Interrupt, PlayThreadList에서 제거 */
-                        for (int i=0; i<audioPlayThreadList.size(); i++) {
-                            if (audioPlayThreadList.get(i).getUserName().equals(name)) {
-                                audioPlayThreadList.get(i).setFlag(false);
-                                audioPlayThreadList.get(i).getBuffer().clear();
-                                audioPlayThreadList.get(i).stopPlaying();
-                                //audioPlayThreadList.get(i).interrupt(); //fixme minj
-                                audioPlayThreadList.get(i).getExecutor().shutdown();
-                                MyLog.i("Audio", name + " remove 전 : " + audioPlayThreadList.size());
-                                audioPlayThreadList.remove(i);
-                                MyLog.i("Audio", name + " remove 후 : " + audioPlayThreadList.size());
-                            }
-                        }
+//                        for (int i=0; i<audioPlayThreadList.size(); i++) {
+//                            if (audioPlayThreadList.get(i).getUserName().equals(name)) {
+//                                audioPlayThreadList.get(i).setFlag(false);
+//                                audioPlayThreadList.get(i).getBuffer().clear();
+//                                audioPlayThreadList.get(i).stopPlaying();
+//                                //audioPlayThreadList.get(i).interrupt(); //fixme minj
+//                                audioPlayThreadList.get(i).getExecutor().shutdown();
+//                                MyLog.i("Audio", name + " remove 전 : " + audioPlayThreadList.size());
+//                                audioPlayThreadList.remove(i);
+//                                MyLog.i("Audio", name + " remove 후 : " + audioPlayThreadList.size());
+//                            }
+//                        }
                     }
                 }
 
@@ -740,25 +740,25 @@ public enum MQTTClient {
 
                 /* TOPIC_AUDIO */
                 if (newTopic.equals(topic_audio)) {
-                    byte[] audioMessage = message.getPayload();
-
-                    byte[] nameByte = Arrays.copyOfRange(audioMessage, 10000, audioMessage.length);
-                    String name = new String(nameByte);
-
-                    if (myName.equals(name)) return; // 자신의 데이터는 받지 않음
-
-                    byte[] audioData = Arrays.copyOfRange(audioMessage, 0, audioMessage.length - nameByte.length);
-
-                    /* username을 검사하여 해당 PlayThread의 오디오 큐에 오디오 데이터 삽입 */
-                    for (AudioPlayThread audioPlayThread : audioPlayThreadList) {
-                        if (audioPlayThread.getUserName().equals(name)) {
-                            if (audioPlayThread.getBuffer().size() >= 5) {
-                                audioPlayThread.getBuffer().clear();
-                            }
-                            audioPlayThread.getBuffer().add(audioData);
-                            break;
-                        }
-                    }
+//                    byte[] audioMessage = message.getPayload();
+//
+//                    byte[] nameByte = Arrays.copyOfRange(audioMessage, 10000, audioMessage.length);
+//                    String name = new String(nameByte);
+//
+//                    if (myName.equals(name)) return; // 자신의 데이터는 받지 않음
+//
+//                    byte[] audioData = Arrays.copyOfRange(audioMessage, 0, audioMessage.length - nameByte.length);
+//
+//                    /* username을 검사하여 해당 PlayThread의 오디오 큐에 오디오 데이터 삽입 */
+//                    for (AudioPlayThread audioPlayThread : audioPlayThreadList) {
+//                        if (audioPlayThread.getUserName().equals(name)) {
+//                            if (audioPlayThread.getBuffer().size() >= 5) {
+//                                audioPlayThread.getBuffer().clear();
+//                            }
+//                            audioPlayThread.getBuffer().add(audioData);
+//                            break;
+//                        }
+//                    }
                 }
 
                 /* TOPIC_IMAGE */

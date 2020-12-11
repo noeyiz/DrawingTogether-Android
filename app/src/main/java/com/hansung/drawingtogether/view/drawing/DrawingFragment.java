@@ -595,24 +595,24 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
-            case R.id.drawing_mic:
-                boolean click = drawingViewModel.clickMic();
-                if (click) {
-                    item.setIcon(R.drawable.mic);
-                } else {
-                    item.setIcon(R.drawable.mic_slash);
-                }
-                break;
-            case R.id.drawing_speaker:
-                int mode = drawingViewModel.clickSpeaker();
-                if (mode == 0) { // speaker off
-                    item.setIcon(R.drawable.speakerslash);
-                } else if (mode == 1) { // speaker on
-                    item.setIcon(R.drawable.speaker1);
-                } else if (mode == 2) { // speaker loud
-                    item.setIcon(R.drawable.speaker3);
-                }
-                break;
+//            case R.id.drawing_mic:
+//                boolean click = drawingViewModel.clickMic();
+//                if (click) {
+//                    item.setIcon(R.drawable.mic);
+//                } else {
+//                    item.setIcon(R.drawable.mic_slash);
+//                }
+//                break;
+//            case R.id.drawing_speaker:
+//                int mode = drawingViewModel.clickSpeaker();
+//                if (mode == 0) { // speaker off
+//                    item.setIcon(R.drawable.speakerslash);
+//                } else if (mode == 1) { // speaker on
+//                    item.setIcon(R.drawable.speaker1);
+//                } else if (mode == 2) { // speaker loud
+//                    item.setIcon(R.drawable.speaker3);
+//                }
+//                break;
             case R.id.gallery:
                 drawingViewModel.getImageFromGallery(DrawingFragment.this);
                 break;
@@ -720,13 +720,13 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
 
         /* 오디오 처리 */
         /* Record Thread와 PlayThreadList에 있는 모든 Play Thread Interrupt */
-        if (drawingViewModel.isMicFlag()) {
-            drawingViewModel.getRecThread().setFlag(false);
-        }
+//        if (drawingViewModel.isMicFlag()) {
+//            drawingViewModel.getRecThread().setFlag(false);
+//        }
 
-        drawingViewModel.getRecThread().stopRecording();
-        //drawingViewModel.getRecThread().interrupt();    //fixme minj
-        drawingViewModel.getRecThread().getExecutor().shutdown();
+//        drawingViewModel.getRecThread().stopRecording();
+//        //drawingViewModel.getRecThread().interrupt();    //fixme minj
+//        drawingViewModel.getRecThread().getExecutor().shutdown();
 
         try {
             if (client.getClient().isConnected()) {
@@ -736,21 +736,21 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             e.printStackTrace();
         }
 
-        for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
-            if (drawingViewModel.isSpeakerFlag()) {
-                audioPlayThread.setFlag(false);
-                AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
-                audioManager.setSpeakerphoneOn(false);
-            }
-
-            audioPlayThread.stopPlaying();
-            synchronized (audioPlayThread.getBuffer()) {
-                audioPlayThread.getBuffer().clear();
-            }
-            //audioPlayThread.interrupt(); //fixme minj
-            audioPlayThread.getExecutor().shutdown();
-        }
-        client.getAudioPlayThreadList().clear();
+//        for (AudioPlayThread audioPlayThread : client.getAudioPlayThreadList()) {
+//            if (drawingViewModel.isSpeakerFlag()) {
+//                audioPlayThread.setFlag(false);
+//                AudioManager audioManager = (AudioManager) MainActivity.context.getSystemService(Service.AUDIO_SERVICE);
+//                audioManager.setSpeakerphoneOn(false);
+//            }
+//
+//            audioPlayThread.stopPlaying();
+//            synchronized (audioPlayThread.getBuffer()) {
+//                audioPlayThread.getBuffer().clear();
+//            }
+//            //audioPlayThread.interrupt(); //fixme minj
+//            audioPlayThread.getExecutor().shutdown();
+//        }
+//        client.getAudioPlayThreadList().clear();
 
         /* MQTT 클라이언트 연결 해제 */
         if (client.getClient().isConnected()) {
