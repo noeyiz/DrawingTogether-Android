@@ -59,7 +59,7 @@ public class MainViewModel extends BaseViewModel {
 
 
         /* 변수 초기화 */
-        ip.setValue("broker.hivemq.com"); // 클라우드
+        ip.setValue("183.111.206.208"); // h2o broker
 //        ip.setValue("54.180.55.246"); // 클라우드 [나연]
 //        ip.setValue("192.168.0.36"); // 모니터링
         port.postValue("1883");
