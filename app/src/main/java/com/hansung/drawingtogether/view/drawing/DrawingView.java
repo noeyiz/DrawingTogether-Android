@@ -282,6 +282,7 @@ public class DrawingView extends View {
  */
     }
 
+    int segment = 0;    //스트로크 당 세그먼트 측정 변수
     boolean isExit = false;
     public boolean onTouchDrawMode(MotionEvent event/*, DrawingComponent dComponent*/) {
         Point point;
@@ -310,8 +311,10 @@ public class DrawingView extends View {
                 //MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
                 sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), (ArrayList<Point>)points.clone()/*points.toString()*/, MotionEvent.ACTION_MOVE));
                 points.clear();
+                segment++;
             }
             sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, MotionEvent.ACTION_UP));
+            MyLog.i("segment", dComponent.getUsersComponentId() + " | " + segment);
 
             isExit = true;
             MyLog.i("mqtt", "isExit2 = " + isExit);
@@ -344,6 +347,7 @@ public class DrawingView extends View {
                 //down에서는 DrawingComponent 자체를 보내고, move, up에서는 추가된 점에 관한 정보만 보낸다.
                 sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), dComponent, event.getAction()));
 
+                segment = 0;
                 movable = true;
 
                 break;
@@ -360,6 +364,7 @@ public class DrawingView extends View {
                     //MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
                     sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), (ArrayList<Point>) points.clone()/*points.toString()*/, event.getAction()));
                     points.clear();
+                    segment++;
                 }
 
                 movable = true;
@@ -380,8 +385,10 @@ public class DrawingView extends View {
                     //MyLog.i("sendThread", "send move chunk " + points.size() + ", " + points.toString());
                     sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), (ArrayList<Point>) points.clone()/*points.toString()*/, MotionEvent.ACTION_MOVE));
                     points.clear();
+                    segment++;
                 }
                 sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, event.getAction()));
+                MyLog.i("segment", dComponent.getUsersComponentId() + " | " + segment);
 
                 if(de.isIntercept()) {
                     this.isIntercept = true;

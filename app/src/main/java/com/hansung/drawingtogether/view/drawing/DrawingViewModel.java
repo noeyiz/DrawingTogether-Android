@@ -69,6 +69,7 @@ public class DrawingViewModel extends BaseViewModel {
 
     private DrawingEditor de = DrawingEditor.getInstance();
     private Logger logger = Logger.getInstance();
+    private final JSONParser parser = JSONParser.getInstance();
 
     /* MQTT 관련 변수 */
     private MQTTClient client = MQTTClient.getInstance();
@@ -587,6 +588,37 @@ public class DrawingViewModel extends BaseViewModel {
 
         return image;
     }
+
+    /**
+     * drawing performance
+     * 저장된 stroke 메시지 반복적으로 publish
+     */
+
+    //stroke 메시지 저장하기
+    public void clickSaveStroke(View view) {
+        if(!client.isSaveStroke()) {
+            de.getDrawingFragment().getBinding().saveStrokeBtn.setText("저장 완료");
+            client.setSaveStroke(true);
+        } else {
+            de.getDrawingFragment().getBinding().saveStrokeBtn.setText("저장 시작");
+            for(MqttMessageFormat messageFormat : client.getStrokeMessages()) {
+                MyLog.i("segment", parser.jsonWrite(messageFormat));
+            }
+
+            client.setSaveStroke(false);
+        }
+    }
+
+    //저장된 stroke 메시지 배열 1개 publish
+    public void clickDrawOneStroke(View view) {
+
+    }
+
+    //저장된 stroke 메시지 배열 100개 publish
+    public void clickDrawHundredStroke(View view) {
+
+    }
+
 
     public void showToastMsg(final String message) { Toast.makeText(de.getDrawingFragment().getActivity(), message, Toast.LENGTH_SHORT).show(); }
 

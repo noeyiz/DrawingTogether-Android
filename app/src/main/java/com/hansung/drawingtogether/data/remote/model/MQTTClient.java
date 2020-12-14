@@ -132,6 +132,11 @@ public enum MQTTClient {
 //    public static Vector<Velocity> displayTimeList = new Vector<Velocity>();  // 화면에 출력하는데 걸린 속도 데이터
 //    public static Vector<Velocity> deliveryTimeList = new Vector<Velocity>(); // 중간 참여자에게 메시지를 전송하는데 걸린 속도 데이터
 
+    /* drawing performance 관련 변수 */
+    private boolean isSaveStroke = false;
+    private ArrayList<MqttMessageFormat> strokeMessages = new ArrayList<>();
+
+
     public static MQTTClient getInstance() {
         return INSTANCE;
     }
@@ -714,6 +719,9 @@ public enum MQTTClient {
                         }
                     } else {
                         //new DrawingTask().execute(messageFormat);
+                        if(isSaveStroke) {
+                            strokeMessages.add(messageFormat);
+                        }
                         new DrawingTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, messageFormat);
                     }
                 }
@@ -1068,6 +1076,15 @@ public enum MQTTClient {
             System.out.println(i + ". " + deliveryTimeList.get(i).toString());
     }
      */
+
+    /* drawing performance */
+    public void setSaveStroke(boolean isSaveStroke) {
+        this.isSaveStroke = isSaveStroke;
+        if(!isSaveStroke) {
+            strokeMessages.clear();
+        }
+    }
+
 
     static class DrawingTask extends AsyncTask<MqttMessageFormat, MqttMessageFormat, Void> {
         private String username;
