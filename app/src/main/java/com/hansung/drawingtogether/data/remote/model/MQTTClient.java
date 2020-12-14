@@ -531,6 +531,17 @@ public enum MQTTClient {
                         String name = joinAckMessage.getName();
                         String target = joinAckMessage.getTarget();
 
+                        // fixme nayeon for performance [ *** calc delivery time for intermediate participant]
+                        if(isMaster()) {
+                            for(Velocity v: deliveryTimeList) { // 해당 중간 참여자에게 메시지를 보낼때 생성한 속도
+                                if(v.getParticipant().equals(target)) {
+                                    v.calcTime(System.currentTimeMillis());
+//                                    printDeliveryTimeList();
+                                    break;
+                                }
+                            }
+                        }
+
                         if (target.equals(myName)) {
                             if (name.equals(masterName)) {
                                 /* master가 보낸 메시지인 경우 */
