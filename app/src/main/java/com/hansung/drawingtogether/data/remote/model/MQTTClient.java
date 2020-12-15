@@ -135,7 +135,7 @@ public enum MQTTClient {
 
     /* drawing performance 관련 변수 */
     private boolean isSaveStroke = false;
-    private ArrayList<MqttMessageFormat> strokeMessages = new ArrayList<>();
+//    private ArrayList<MqttMessageFormat> strokeMessages = new ArrayList<>();
 
 
     public static MQTTClient getInstance() {
@@ -730,9 +730,9 @@ public enum MQTTClient {
                         }
                     } else {
                         //new DrawingTask().execute(messageFormat);
-                        if(isSaveStroke) {
-                            strokeMessages.add(messageFormat);
-                        }
+//                        if(isSaveStroke) {
+//                            strokeMessages.add(messageFormat);
+//                        }
                         new DrawingTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, messageFormat);
                     }
                 }
@@ -1091,9 +1091,9 @@ public enum MQTTClient {
     /* drawing performance */
     public void setSaveStroke(boolean isSaveStroke) {
         this.isSaveStroke = isSaveStroke;
-        if(!isSaveStroke) {
-            strokeMessages.clear();
-        }
+//        if(!isSaveStroke) {
+//            strokeMessages.clear();
+//        }
     }
 
 

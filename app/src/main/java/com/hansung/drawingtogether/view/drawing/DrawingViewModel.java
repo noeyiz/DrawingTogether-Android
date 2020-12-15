@@ -14,6 +14,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -595,27 +596,52 @@ public class DrawingViewModel extends BaseViewModel {
      */
 
     //stroke 메시지 저장하기
-    public void clickSaveStroke(View view) {
+    public void clickCountSegment(MenuItem menuItem) {
+//        if(!client.isSaveStroke()) {
+//            de.getDrawingFragment().getBinding().saveStrokeBtn.setText("저장 완료");
+//            client.setSaveStroke(true);
+//
+//        } else {
+//            de.getDrawingFragment().getBinding().saveStrokeBtn.setText("저장 시작");
+//            for(MqttMessageFormat messageFormat : client.getStrokeMessages()) {
+//                MyLog.i("segment", parser.jsonWrite(messageFormat));
+//            }
+//
+//            client.setSaveStroke(false);
+//        }
+
         if(!client.isSaveStroke()) {
-            de.getDrawingFragment().getBinding().saveStrokeBtn.setText("저장 완료");
+            menuItem.setTitle("세그먼트 개수 측정 완료");
             client.setSaveStroke(true);
+
         } else {
-            de.getDrawingFragment().getBinding().saveStrokeBtn.setText("저장 시작");
-            for(MqttMessageFormat messageFormat : client.getStrokeMessages()) {
-                MyLog.i("segment", parser.jsonWrite(messageFormat));
+            menuItem.setTitle("세그먼트 개수 측정 시작");
+            int sum = 0;
+            for(Integer segment : DrawingView.segmentCountArray) {
+                sum += segment;
             }
+
+            try {
+                // segment count array size = stroke count drawn on drawing view
+                Log.e("segment", "average = " + (sum / DrawingView.segmentCountArray.size()) + ", total segment count = " + sum
+                        + ", stroke count = " + DrawingView.segmentCountArray.size());
+            } catch (ArithmeticException ae) {
+                Log.e("segment", "average = 0");
+            }
+
+            DrawingView.segmentCountArray.clear();
 
             client.setSaveStroke(false);
         }
     }
 
     //저장된 stroke 메시지 배열 1개 publish
-    public void clickDrawOneStroke(View view) {
+    public void clickDrawOneStroke() {
 
     }
 
-    //저장된 stroke 메시지 배열 100개 publish
-    public void clickDrawHundredStroke(View view) {
+    //저장된 stroke 메시지 배열 N개 publish
+    public void clickDrawNStroke() {
 
     }
 

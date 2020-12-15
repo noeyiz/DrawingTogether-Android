@@ -630,6 +630,17 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             case R.id.drawing_save:
                 drawingViewModel.clickSave();
                 break;
+
+                // fixme nayeon for performance
+            case R.id.count_segment:
+                drawingViewModel.clickCountSegment(item);
+                break;
+            case R.id.n_stroke:
+                drawingViewModel.clickDrawNStroke();
+                break;
+            case R.id.one_stroke:
+                drawingViewModel.clickDrawOneStroke();
+                break;
         }
 
         return super.onOptionsItemSelected(item);

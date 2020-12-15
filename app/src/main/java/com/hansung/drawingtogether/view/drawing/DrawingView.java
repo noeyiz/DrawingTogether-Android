@@ -49,7 +49,7 @@ public class DrawingView extends View {
     private Rect rect = new Rect();
     private Oval oval = new Oval();
 
-    private boolean flag = true; // fixme nayeon performance
+    public static ArrayList<Integer> segmentCountArray = new ArrayList<Integer>(); // fixme nayeon performance
 
     public DrawingView(Context context) {
         super(context);
@@ -386,6 +386,14 @@ public class DrawingView extends View {
                     sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), (ArrayList<Point>) points.clone()/*points.toString()*/, MotionEvent.ACTION_MOVE));
                     points.clear();
                     segment++;
+
+                    // fixme nayeon
+                    if(client.isSaveStroke()) {
+                        segmentCountArray.add(segment); // 스트로크들의 세그먼트 개수 저장
+                    }
+
+                    Log.e("segment", "count = " + segment);
+
                 }
                 sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, event.getAction()));
                 MyLog.i("segment", dComponent.getUsersComponentId() + " | " + segment);
