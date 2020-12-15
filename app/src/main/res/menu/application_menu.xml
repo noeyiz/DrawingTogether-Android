@@ -50,6 +50,17 @@
                 android:title="친구 초대"
                 app:showAsAction="withText"
                 android:icon="@drawable/plus_person"/>
+
+            <item
+                android:id="@+id/drawing_hide"
+                android:title="숨기기"
+                app:showAsAction="withText"/>
+
+            <item
+                android:id="@+id/drawing_show"
+                android:title="보이기"
+                app:showAsAction="withText"/>
+
         </menu>
     </item>
 </menu>

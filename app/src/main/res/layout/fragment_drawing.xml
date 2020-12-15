@@ -613,6 +613,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/drawStrokeLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
@@ -633,15 +634,17 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:onClick="@{vm::clickDrawOneStroke}"
+                    android:enabled="false"
                     android:text="1개" />
 
                 <Button
-                    android:id="@+id/drawHundredStrokeBtn"
+                    android:id="@+id/drawStrokesBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:onClick="@{vm::clickDrawHundredStroke}"
-                    android:text="100개" />
+                    android:onClick="@{vm::clickDrawStrokes}"
+                    android:enabled="false"
+                    android:text="반복" />
             </LinearLayout>
 
             <!--<TextView

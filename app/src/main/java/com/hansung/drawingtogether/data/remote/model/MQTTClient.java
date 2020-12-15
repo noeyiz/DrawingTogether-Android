@@ -1080,7 +1080,7 @@ public enum MQTTClient {
     /* drawing performance */
     public void setSaveStroke(boolean isSaveStroke) {
         this.isSaveStroke = isSaveStroke;
-        if(!isSaveStroke) {
+        if(isSaveStroke) {
             strokeMessages.clear();
         }
     }
@@ -1316,6 +1316,12 @@ public enum MQTTClient {
                 case MotionEvent.ACTION_DOWN:
                     dComponent.clearPoints();
                     dComponent.setId(de.componentIdCounter());
+
+                    if(dComponent.getUsersComponentId() == null) {
+                        MyLog.i("segment", "***");
+                    } else {
+                        MyLog.i("segment", "***" + dComponent.getUsersComponentId());
+                    }
 
                     de.addCurrentComponents(dComponent);
                     de.printCurrentComponents("down");
