@@ -71,7 +71,6 @@ public class DrawingViewModel extends BaseViewModel {
 
     private DrawingEditor de = DrawingEditor.getInstance();
     private Logger logger = Logger.getInstance();
-    private final JSONParser parser = JSONParser.getInstance();
 
     /* MQTT 관련 변수 */
     private MQTTClient client = MQTTClient.getInstance();
@@ -613,8 +612,8 @@ public class DrawingViewModel extends BaseViewModel {
             de.getDrawingFragment().getBinding().drawStrokesBtn.setEnabled(true);
 
             usersComponentId = de.getUsersComponentId();
-            for(MqttMessageFormat messageFormat : client.getStrokeMessages()) {
-                MyLog.i("segment", parser.jsonWrite(messageFormat));
+            for(String message : client.getStrokeMessages()) {
+                MyLog.i("segment", message);
             }
         }
     }
@@ -623,7 +622,7 @@ public class DrawingViewModel extends BaseViewModel {
     public void clickDrawOneStroke(View view) {
         String newUsersComponentId = de.usersComponentIdCounter();
 
-        String str = parser.jsonWrite(client.getStrokeMessages().get(0)).replaceAll(usersComponentId, newUsersComponentId);
+        String str = client.getStrokeMessages().get(0).replaceAll(usersComponentId, newUsersComponentId);
         str = str.replaceAll(strokeColor, "\"strokeColor\":\"" + de.generateRandomHexCode() + "\"");
         client.publish(client.getTopic_data(), str);
 
@@ -633,7 +632,7 @@ public class DrawingViewModel extends BaseViewModel {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            str = parser.jsonWrite(client.getStrokeMessages().get(i)).replaceAll(usersComponentId, newUsersComponentId);
+            str = client.getStrokeMessages().get(i).replaceAll(usersComponentId, newUsersComponentId);
             client.publish(client.getTopic_data(), str);
         }
     }

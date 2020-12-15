@@ -92,6 +92,41 @@ public abstract class DrawingComponent {
         return dComponent;
     }
 
+    public DrawingComponent cloneAttribute() {
+        if (this.type == null) { return null; }
+
+        DrawingComponent dComponent = null;
+
+        switch (this.type) {
+            case STROKE:
+                dComponent = new Stroke();
+                break;
+            case RECT:
+                dComponent = new Rect();
+                break;
+            case OVAL:
+                dComponent = new Oval();
+                break;
+        }
+
+
+        dComponent.username = this.username;
+        dComponent.usersComponentId = this.usersComponentId;
+        dComponent.type = this.type;
+        dComponent.penMode = this.penMode;
+        dComponent.strokeColor = this.strokeColor;
+        dComponent.fillColor = this.fillColor;
+        dComponent.strokeAlpha = this.strokeAlpha;
+        dComponent.fillAlpha = this.fillAlpha;
+        dComponent.strokeWidth = this.strokeWidth;
+        dComponent.drawnCanvasWidth = this.drawnCanvasWidth;
+        dComponent.drawnCanvasHeight = this.drawnCanvasHeight;
+        dComponent.calculateRatio(dComponent.drawnCanvasWidth, dComponent.drawnCanvasHeight);   //화면 비율 계산
+
+
+        return dComponent;
+    }
+
     public abstract void draw(Canvas canvas);
     public abstract void drawComponent(Canvas canvas);
 
