@@ -134,8 +134,10 @@ public enum MQTTClient {
     public static Vector<Velocity> deliveryTimeList = new Vector<Velocity>(); // 중간 참여자에게 메시지를 전송하는데 걸린 속도 데이터
 
     /* drawing performance 관련 변수 */
+    private boolean checkSegmentCount = false;
     private boolean isSaveStroke = false;
-//    private ArrayList<MqttMessageFormat> strokeMessages = new ArrayList<>();
+    private ArrayList<MqttMessageFormat> strokeMessages = new ArrayList<>();
+
 
 
     public static MQTTClient getInstance() {
@@ -426,6 +428,7 @@ public enum MQTTClient {
 
                 // 메시지 내용 출력
                 System.out.println(new String(message.getPayload()));
+//                Log.e("performance", "message size = " + message.getPayload());
 
 
                 /* TOPIC_JOIN */
@@ -730,9 +733,9 @@ public enum MQTTClient {
                         }
                     } else {
                         //new DrawingTask().execute(messageFormat);
-//                        if(isSaveStroke) {
-//                            strokeMessages.add(messageFormat);
-//                        }
+                        if(isSaveStroke) {
+                            strokeMessages.add(messageFormat);
+                        }
                         new DrawingTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, messageFormat);
                     }
                 }
@@ -1089,11 +1092,18 @@ public enum MQTTClient {
      */
 
     /* drawing performance */
+    // 세그먼트 개수 측정 플래그
+    public void setCheckSegmentCount(boolean bool) {
+        this.checkSegmentCount = bool;
+    }
+
+    // 스트로크 저장 플레그
     public void setSaveStroke(boolean isSaveStroke) {
         this.isSaveStroke = isSaveStroke;
-//        if(!isSaveStroke) {
-//            strokeMessages.clear();
-//        }
+
+        if(isSaveStroke) {
+            strokeMessages.clear();
+        }
     }
 
 
@@ -1324,6 +1334,12 @@ public enum MQTTClient {
                 case MotionEvent.ACTION_DOWN:
                     dComponent.clearPoints();
                     dComponent.setId(de.componentIdCounter());
+
+                    if(dComponent.getUsersComponentId() == null) {
+                        MyLog.i("segment", "***");
+                    } else {
+                        MyLog.i("segment", "***" + dComponent.getUsersComponentId());
+                    }
 
                     de.addCurrentComponents(dComponent);
                     de.printCurrentComponents("down");

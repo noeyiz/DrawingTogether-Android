@@ -60,7 +60,7 @@ public class MqttMessageFormat {
 
     private ArrayList<AutoDraw> autoDrawList;
 
-    private float width, height;
+    //private float width, height;
 
     /* Draw - Action Down */
     public MqttMessageFormat(String username, String usersComponentId, Mode mode, ComponentType type, DrawingComponent component, int action) {

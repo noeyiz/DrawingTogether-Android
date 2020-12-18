@@ -11,13 +11,16 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 
+import android.text.InputType;
 import android.util.Log;
 
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -594,29 +597,18 @@ public class DrawingViewModel extends BaseViewModel {
      * drawing performance
      * 저장된 stroke 메시지 반복적으로 publish
      */
+    String usersComponentId = "";
+    String strokeColor = "\"strokeColor\":\"#000000\"";
+    int delay = 50;
 
-    //stroke 메시지 저장하기
+    // segment 개수 측정하기
     public void clickCountSegment(MenuItem menuItem) {
-//        if(!client.isSaveStroke()) {
-//            de.getDrawingFragment().getBinding().saveStrokeBtn.setText("저장 완료");
-//            client.setSaveStroke(true);
-//
-//        } else {
-//            de.getDrawingFragment().getBinding().saveStrokeBtn.setText("저장 시작");
-//            for(MqttMessageFormat messageFormat : client.getStrokeMessages()) {
-//                MyLog.i("segment", parser.jsonWrite(messageFormat));
-//            }
-//
-//            client.setSaveStroke(false);
-//        }
-
-        if(!client.isSaveStroke()) {
+        if(!client.isCheckSegmentCount()) {
             menuItem.setTitle("세그먼트 개수 측정 완료");
-            client.setSaveStroke(true);
-
+            client.setCheckSegmentCount(true);
         } else {
             menuItem.setTitle("세그먼트 개수 측정 시작");
-            int sum = 0;
+            double sum = 0;
             for(Integer segment : DrawingView.segmentCountArray) {
                 sum += segment;
             }
@@ -630,20 +622,90 @@ public class DrawingViewModel extends BaseViewModel {
             }
 
             DrawingView.segmentCountArray.clear();
+            client.setCheckSegmentCount(false);
 
+        }
+    }
+
+    //stroke 메시지 저장하기
+    public void clickSaveStroke(MenuItem menuItem) {
+        if(!client.isSaveStroke()) {
+            menuItem.setTitle("스트로크 저장 완료");
+            client.setSaveStroke(true);
+        } else {
+            menuItem.setTitle("스트로크 저장 시작");
             client.setSaveStroke(false);
+
+            usersComponentId = de.getUsersComponentId();
+            for(MqttMessageFormat messageFormat : client.getStrokeMessages()) {
+                MyLog.i("segment", parser.jsonWrite(messageFormat));
+            }
         }
     }
 
     //저장된 stroke 메시지 배열 1개 publish
-    public void clickDrawOneStroke() {
+    public void clickDrawOneStroke(MenuItem menuItem) {
+        String newUsersComponentId = de.usersComponentIdCounter();
 
+        String str = parser.jsonWrite(client.getStrokeMessages().get(0)).replaceAll(usersComponentId, newUsersComponentId);
+        str = str.replaceAll(strokeColor, "\"strokeColor\":\"" + de.generateRandomHexCode() + "\"");
+        client.publish(client.getTopic_data(), str);
+
+        for(int i=1; i<client.getStrokeMessages().size(); i++) {
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            str = parser.jsonWrite(client.getStrokeMessages().get(i)).replaceAll(usersComponentId, newUsersComponentId);
+            client.publish(client.getTopic_data(), str);
+        }
     }
 
-    //저장된 stroke 메시지 배열 N개 publish
-    public void clickDrawNStroke() {
 
+    //저장된 stroke 메시지 배열 다이얼로그 입력값만큼 publish
+    public void clickDrawNStrokes(MenuItem menuItem) {
+
+        final EditText input = new EditText(de.getDrawingFragment().getActivity());
+        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+
+        AlertDialog dialog = new AlertDialog.Builder(de.getDrawingFragment().getActivity())
+                .setTitle("반복할 개수")
+                .setView(input)
+                .setCancelable(true)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        MyLog.i("segment", input.getText() + "개 반복 시작 ");
+                        for(int i=0; i<Integer.parseInt(input.getText().toString()); i++) {
+                            clickDrawOneStroke(null);
+                            try {
+                                Thread.sleep(delay);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        MyLog.i("segment", input.getText() + "개 반복 완료 ");
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) { }
+                })
+                .create();
+
+        dialog.show();
     }
+
+//    public void clickHide() {
+//        de.getDrawingFragment().getBinding().drawStrokeLayout.setVisibility(View.INVISIBLE);
+//    }
+//
+//    public void clickShow() {
+//        de.getDrawingFragment().getBinding().drawStrokeLayout.setVisibility(View.VISIBLE);
+//    }
+
 
 
     public void showToastMsg(final String message) { Toast.makeText(de.getDrawingFragment().getActivity(), message, Toast.LENGTH_SHORT).show(); }

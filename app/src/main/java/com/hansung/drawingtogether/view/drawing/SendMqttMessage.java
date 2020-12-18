@@ -90,6 +90,7 @@ public class SendMqttMessage {    //consumer  //queue 가 비어있을때까지 
 //                            }
 
                             client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
+                            //MyLog.i("segment", "publish | " + parser.jsonWrite(messageFormat));
                             takeCnt++;
                             //MyLog.i("sendThread", messageFormat.getUsersComponentId() + ", poll success " + takeCnt + ", size() = " + queue.size());
                         } catch (ConcurrentModificationException e) {

@@ -631,16 +631,31 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 drawingViewModel.clickSave();
                 break;
 
+
                 // fixme nayeon for performance
-            case R.id.count_segment:
+            case R.id.count_segment: // 내가 그린 스트로크의 세그먼트 개수 측정 버튼
                 drawingViewModel.clickCountSegment(item);
                 break;
-            case R.id.n_stroke:
-                drawingViewModel.clickDrawNStroke();
+            case R.id.save_stroke: // 하나의 스트로크를 저장하는 버튼
+                drawingViewModel.clickSaveStroke(item);
                 break;
-            case R.id.one_stroke:
-                drawingViewModel.clickDrawOneStroke();
+            case R.id.one_stroke: // 하나의 스트로크를 전송하는 버튼
+                drawingViewModel.clickDrawOneStroke(item);
                 break;
+            case R.id.n_stroke: // 여러개의 스트로크를 저장하는 버튼 [클릭 시 스트로크 입력 다이얼로그 출력]
+                drawingViewModel.clickDrawNStrokes(item);
+                break;
+
+
+//            /**
+//             * drawing performance
+//             */
+//            case R.id.drawing_hide:
+//                drawingViewModel.clickHide();
+//                break;
+//            case R.id.drawing_show:
+//                drawingViewModel.clickShow();
+//                break;
         }
 
         return super.onOptionsItemSelected(item);

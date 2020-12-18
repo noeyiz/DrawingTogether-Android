@@ -612,6 +612,43 @@
 
             </LinearLayout>
 
+<!--
+            <LinearLayout
+                android:id="@+id/drawStrokeLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="50dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/saveStrokeBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="@{vm::clickSaveStroke}"
+                    android:text="저장 시작" />
+
+                <Button
+                    android:id="@+id/drawOneStrokeBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="@{vm::clickDrawOneStroke}"
+                    android:enabled="false"
+                    android:text="1개" />
+
+                <Button
+                    android:id="@+id/drawStrokesBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="@{vm::clickDrawStrokes}"
+                    android:enabled="false"
+                    android:text="반복" />
+            </LinearLayout>
+-->
+
             <!--<TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

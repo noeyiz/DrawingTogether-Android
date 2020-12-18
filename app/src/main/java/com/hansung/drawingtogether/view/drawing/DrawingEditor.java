@@ -846,7 +846,10 @@ public enum DrawingEditor {
     }
 
     public String usersComponentIdCounter() {
-        componentId = ++componentId;
+        return this.username + "-" + ++componentId;
+    }
+
+    public String getUsersComponentId() {
         return this.username + "-" + componentId;
     }
 
@@ -1188,6 +1191,15 @@ public enum DrawingEditor {
         return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
     }
 
+    public String generateRandomHexCode(){
+        String[] digits = {"0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"};
+        String hexCode = "#";
+
+        while(hexCode.length() < 7){
+            hexCode += digits[(int)(Math.random() * digits.length)];
+        }
+        return hexCode;
+    }
 
     //-----setter-----
 

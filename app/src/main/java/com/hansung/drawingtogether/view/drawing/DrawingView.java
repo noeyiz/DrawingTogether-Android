@@ -345,7 +345,7 @@ public class DrawingView extends View {
 
                 //publish
                 //down에서는 DrawingComponent 자체를 보내고, move, up에서는 추가된 점에 관한 정보만 보낸다.
-                sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), dComponent, event.getAction()));
+                sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), dComponent.cloneAttribute(), event.getAction()));
 
                 segment = 0;
                 movable = true;
@@ -388,8 +388,9 @@ public class DrawingView extends View {
                     segment++;
 
                     // fixme nayeon
-                    if(client.isSaveStroke()) {
+                    if(client.isCheckSegmentCount()) {
                         segmentCountArray.add(segment); // 스트로크들의 세그먼트 개수 저장
+                        Log.e("segment", "stroke count = " + segmentCountArray.size());
                     }
 
                     Log.e("segment", "count = " + segment);

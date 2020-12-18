@@ -55,19 +55,37 @@
                 android:id="@+id/count_segment"
                 android:title="세그먼트 개수 측정 시작"
                 app:showAsAction="withText"
-                android:icon="@drawable/stopwatch" />
+                android:icon="@drawable/segment" />
 
             <item
-                android:id="@+id/n_stroke"
-                android:title="자유곡선 N개"
+                android:id="@+id/save_stroke"
+                android:title="스트로크 저장 시작"
                 app:showAsAction="withText"
-                android:icon="@drawable/stopwatch" />
+                android:icon="@drawable/save_stroke" />
 
             <item
                 android:id="@+id/one_stroke"
-                android:title="자유곡선 1개"
+                android:title="스트로크 1개"
                 app:showAsAction="withText"
-                android:icon="@drawable/stopwatch" />
+                android:icon="@drawable/one_stroke" />
+
+            <item
+                android:id="@+id/n_stroke"
+                android:title="스트로크 N개"
+                app:showAsAction="withText"
+                android:icon="@drawable/n_stroke" />
+<!--
+            <item
+                android:id="@+id/drawing_hide"
+                android:title="숨기기"
+                app:showAsAction="withText"/>
+
+            <item
+                android:id="@+id/drawing_show"
+                android:title="보이기"
+                app:showAsAction="withText"/>
+
+-->
         </menu>
     </item>
 </menu>
