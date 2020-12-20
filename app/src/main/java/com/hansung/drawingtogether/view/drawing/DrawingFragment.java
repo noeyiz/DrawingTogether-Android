@@ -50,7 +50,6 @@ import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 
 import com.hansung.drawingtogether.monitoring.MonitoringRunnable;
 
-import com.hansung.drawingtogether.tester.DrawingTester;
 import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.main.AutoDrawMessage;
 import com.hansung.drawingtogether.view.main.JoinMessage;
@@ -159,10 +158,6 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
         binding.drawBtn.setBackgroundColor(Color.rgb(233, 233, 233)); // 초기 얇은 펜으로 설정
         binding.drawingViewContainer.setOnDragListener(new FrameLayoutDragListener());
         inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
-
-        // todo nayeon
-        /* 테스트 객체 초기화 */
-        DrawingTester.getInstance().init(this);
 
         // 디바이스 화면 size 구하기
         Display display = getActivity().getWindowManager().getDefaultDisplay();
@@ -624,19 +619,9 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
                 drawingViewModel.clickSave();
                 break;
 
-
                 // fixme nayeon for performance
             case R.id.count_segment: // 내가 그린 스트로크의 세그먼트 개수 측정 버튼
                 drawingViewModel.clickCountSegment(item);
-                break;
-            case R.id.save_stroke: // 하나의 스트로크를 저장하는 버튼
-                drawingViewModel.clickSaveStroke(item);
-                break;
-            case R.id.one_stroke: // 하나의 스트로크를 전송하는 버튼
-                drawingViewModel.clickDrawOneStroke(item);
-                break;
-            case R.id.n_stroke: // 여러개의 스트로크를 저장하는 버튼 [클릭 시 스트로크 입력 다이얼로그 출력]
-                drawingViewModel.clickDrawNStrokes(item);
                 break;
 
 

@@ -11,17 +11,14 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 
-import android.text.InputType;
 import android.util.Log;
 
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -37,10 +34,7 @@ import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.DialogAutoDrawBinding;
-import com.hansung.drawingtogether.tester.DrawingTester;
-import com.hansung.drawingtogether.tester.PerformanceData;
 import com.hansung.drawingtogether.tester.PerformanceDataWriter;
-import com.hansung.drawingtogether.tester.TesterDialog;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
@@ -51,13 +45,8 @@ import com.kakao.message.template.ButtonObject;
 import com.kakao.message.template.ContentObject;
 import com.kakao.message.template.FeedTemplate;
 import com.kakao.message.template.LinkObject;
-import com.kakao.message.template.TextTemplate;
 import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
-
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -598,14 +587,6 @@ public class DrawingViewModel extends BaseViewModel {
         return image;
     }
 
-    /**
-     * drawing performance
-     * 저장된 stroke 메시지 반복적으로 publish
-     */
-    String usersComponentId = "";
-    String strokeColor = "\"strokeColor\":\"#000000\"";
-    int delay = 50;
-
     // segment 개수 측정하기
     public void clickCountSegment(MenuItem menuItem) {
         if(!client.isCheckSegmentCount()) {
@@ -632,121 +613,24 @@ public class DrawingViewModel extends BaseViewModel {
         }
     }
 
-    //stroke 메시지 저장하기
-    public void clickSaveStroke(MenuItem menuItem) {
-        if(!client.isSaveStroke()) {
-            menuItem.setTitle("스트로크 저장 완료");
-            client.setSaveStroke(true);
-        } else {
-            menuItem.setTitle("스트로크 저장 시작");
-            client.setSaveStroke(false);
-
-            usersComponentId = de.getUsersComponentId();
-            for(MqttMessageFormat messageFormat : client.getStrokeMessages()) {
-                MyLog.i("segment", parser.jsonWrite(messageFormat));
-            }
-        }
-    }
-
-    //저장된 stroke 메시지 배열 1개 publish
-    public void clickDrawOneStroke(MenuItem menuItem) {
-        String newUsersComponentId = de.usersComponentIdCounter();
-
-        String str = parser.jsonWrite(client.getStrokeMessages().get(0)).replaceAll(usersComponentId, newUsersComponentId);
-        str = str.replaceAll(strokeColor, "\"strokeColor\":\"" + de.generateRandomHexCode() + "\"");
-        client.publish(client.getTopic_data(), str);
-
-        for(int i=1; i<client.getStrokeMessages().size(); i++) {
-            try {
-                Thread.sleep(delay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            str = parser.jsonWrite(client.getStrokeMessages().get(i)).replaceAll(usersComponentId, newUsersComponentId);
-            client.publish(client.getTopic_data(), str);
-        }
-    }
-
-
-    //저장된 stroke 메시지 배열 다이얼로그 입력값만큼 publish
-    public void clickDrawNStrokes(MenuItem menuItem) {
-
-        final EditText input = new EditText(de.getDrawingFragment().getActivity());
-        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-
-        AlertDialog dialog = new AlertDialog.Builder(de.getDrawingFragment().getActivity())
-                .setTitle("반복할 개수")
-                .setView(input)
-                .setCancelable(true)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        MyLog.i("segment", input.getText() + "개 반복 시작 ");
-                        for(int i=0; i<Integer.parseInt(input.getText().toString()); i++) {
-                            clickDrawOneStroke(null);
-                            try {
-                                Thread.sleep(delay);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        MyLog.i("segment", input.getText() + "개 반복 완료 ");
-                    }
-                })
-                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) { }
-                })
-                .create();
-
-        dialog.show();
-    }
-
-    /* 테스트 파라미터 설정 버튼 클릭 */
-    public void clickSetParameter(View view) {
-        new TesterDialog(de.getDrawingFragment().getContext()).show();
-    }
-
-    /* 테스트 환경 설정 버튼 클릭 */
-    public void clickSetEnv(View view) {
-        ((Button) view).setEnabled(false); // 환경 구축이 완료 될 때까지 버튼 클릭 불가
-
-        de.getDrawingFragment().getBinding().testParameterButton.setEnabled(false); // 파라미터 설정 버튼만 활성화
-
-        DrawingTester.getInstance().setEnv();
-    }
-
     /* 측정 버튼 클릭 [측정 시작 & 측정 완료] */
     public void clickMeasure(View view) {
 
-        if(!DrawingTester.tFinish) {
-            ((Button) view).setEnabled(false); // 테스트가 완료 될 때까지 측정 버튼 클릭 불가
-
-            ((Button) view).setText(R.string.test_finish); // "test start" -> "test finish" 변경
-
-            DrawingTester.getInstance().measure();
+        if(!MQTTClient.msgMeasurement) { // "측정 시작" 버튼 클릭
+            MQTTClient.msgMeasurement = true; // 측정 코드 실행 O
+            ((Button) view).setText(R.string.test_finish);
         }
-        else { // 테스트 완료 tFinish = true
 
-            /* 측정 완료 버튼 누르면, 파일에 데이터 쓰기 */
-            PerformanceDataWriter.getInstance().receiveTimeWrite();
+        else { // "측정 완료" 버튼 클릭
+            MQTTClient.msgMeasurement = false; // 측정 코드 실행 X
+            PerformanceDataWriter.getInstance().displayTimeWriter(); // 파일에 측정 데이터 저장
 
-            ((Button) view).setText(R.string.test_start); // "test finish" -> "test start" 변경
+            // 측정 자료구조 초기화
+            MQTTClient.displayTimeList.clear();
+            MQTTClient.dIdx = -1;
 
-            de.getDrawingFragment().getBinding().measureButton.setEnabled(false);
-            de.getDrawingFragment().getBinding().testEnvClearButton.setEnabled(true);
+            ((Button) view).setText(R.string.test_start);
         }
-    }
-
-    /* 테스트 환경 초기화 버튼 클릭 */
-    // 모든 드로잉 자료구조 초기화 (clear 작업 수행)
-    public void clickEnvClear(View view) {
-        ((Button) view).setEnabled(false);
-
-        de.getDrawingFragment().getBinding().drawingView.clearDrawingView();
-
-        de.getDrawingFragment().getBinding().testParameterButton.setEnabled(true); // 파라미터 설정 버튼만 활성화
     }
 
 //    public void clickHide() {

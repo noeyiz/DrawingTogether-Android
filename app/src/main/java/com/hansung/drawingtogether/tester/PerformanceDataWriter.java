@@ -4,6 +4,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,20 +18,18 @@ import java.util.Vector;
 public enum PerformanceDataWriter {
     INSTANCE;
 
-    /* 측정한 성능 데이터를 csv 파일 형식으로 저장하는 함수 */
-    public void receiveTimeWrite() {
+    /* 측정한 화면 출력 시간을 csv 파일 형식으로 저장하는 함수 */
+    public void displayTimeWriter() {
 
         MQTTClient.getInstance().getProgressDialog().show();
 
         String data = "";
-        Vector<PerformanceData> times = MQTTClient.receiveTimeList;
 
-        // 파일 이름: "MsgReceiveTime_화면스트로크개수_전송스트로크개수_전송스트로크세그먼트개수"
-        String file = "MsgReceiveTime_" + DrawingTester.getInstance().getBackground() + "_"
-                + DrawingTester.getInstance().getSending() + "_" + DrawingTester.getInstance().getSSegment() + ".csv";
+        // 파일 이름: "DisplayTime_화면스트로크개수_전송스트로크개수_전송스트로크세그먼트개수"
+        String file = "DisplayTime_" + DrawingEditor.getInstance().getDrawingComponents().size() + ".csv";
 
-        for(int i=0; i<MQTTClient.receiveTimeList.size(); i++)
-            data += MQTTClient.receiveTimeList.get(i).toString();
+        for(int i=0; i<MQTTClient.displayTimeList.size(); i++)
+            data += MQTTClient.displayTimeList.get(i).toString();
 
 
         File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/performance1220"); // 저장 경로
@@ -43,13 +42,7 @@ public enum PerformanceDataWriter {
             dir.mkdir(); // 폴더 생성
         }
         try {
-            long now = System.currentTimeMillis(); // 현재시간 받아오기
-            Date date = new Date(now); // Date 객체 생성
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String nowTime = sdf.format(date) + "\n";
-
             BufferedWriter buf = new BufferedWriter(new FileWriter(dir + "/"+ file, true));
-            buf.append(nowTime + " "); // 날짜 쓰기
             buf.append(data); // 파일 쓰기
             buf.newLine(); // 개행
             buf.close();
@@ -60,7 +53,7 @@ public enum PerformanceDataWriter {
             Log.e("tester", "data save file io exception!");
             ioe.printStackTrace();
         } finally {
-          MQTTClient.getInstance().getProgressDialog().dismiss();
+            MQTTClient.getInstance().getProgressDialog().dismiss();
         }
     }
 
