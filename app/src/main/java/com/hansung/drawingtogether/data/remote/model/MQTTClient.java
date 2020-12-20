@@ -426,43 +426,6 @@ public enum MQTTClient {
                     receiveTimeList.get(++rIdx).record(System.currentTimeMillis(), payload.getBytes("euc-kr").length);
                 }
 
-
-                // todo [화면 출력 시간 측정 시작] only for receiver
-//                MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(payload);
-//                if(msgMeasurement && !mmf.getUsername().equals(myName)) {
-//                    switch (mmf.getAction()) {
-//                        case MotionEvent.ACTION_DOWN:
-//                            displayTimeList.add(new PerformanceData("ss", System.currentTimeMillis())); // start segment
-//                            break;
-//                        case MotionEvent.ACTION_MOVE:
-//                            displayTimeList.add(new PerformanceData("ds", System.currentTimeMillis())); // data segment
-//                            break;
-//                        case MotionEvent.ACTION_UP:
-//                            displayTimeList.add(new PerformanceData("es", System.currentTimeMillis())); // end segment
-//                            break;
-//                    }
-//                }
-
-                // fixme nayeon for performance
-//                if(!newTopic.equals(topic_image)) {
-//                    MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(new String(message.getPayload()));
-//
-//                    if (isMaster() && mmf.getAction() != null && mmf.getMode().equals(Mode.DRAW) /*&& mmf.getAction() == MotionEvent.ACTION_MOVE
-//                            && mmf.getType().equals(ComponentType.STROKE*/) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
-//                        if (mmf.getUsername().equals(myName)) { // 자기 자신이 보낸 메시지일 경우 [메시지를 받는데 걸린 시간 측정]
-//                            System.out.println("here");
-//                            (receiveTimeList.lastElement()).calcTime(System.currentTimeMillis(), message.getPayload().length);
-//                            // printReceiveTimeList();
-//                        }
-//                        else if (!mmf.getUsername().equals(myName)) { // 다른 사람이 보낸 메시지일 경우 [화면에 그리는 시간 측정]
-//                            displayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), message.getPayload().length));
-//                        }
-//                    }
-//
-//                }
-
-
-
                 /* TOPIC_JOIN */
                 if (newTopic.equals(topic_join)) {
 
@@ -1182,19 +1145,6 @@ public enum MQTTClient {
                     } catch(NullPointerException e) {
                         e.printStackTrace();
                     }
-
-                    // fixme nayeon for performance ( draw point )
-//                    if (client.isMaster() && /*message.getAction() == MotionEvent.ACTION_MOVE
-//                            && messageFormat.getType().equals(ComponentType.STROKE)*/ message.getMode().equals(Mode.DRAW)
-//                            && !message.getUsername().equals(de.getMyUsername())) { // 다른 사람이 보낸 메시지일 경우 [마스터가 자신의 화면에 그리는 시간 측정]
-//
-//                        (MQTTClient.displayTimeList.lastElement()).calcTime(System.currentTimeMillis());
-//                        //client.printDisplayTimeList();
-//                    }
-
-                    // todo [화면 출력 시간 측정 종료] only for receiver
-//                    if(msgMeasurement && !message.getUsername().equals(de.getMyUsername()))
-//                        displayTimeList.get(++dIdx).record(System.currentTimeMillis());
 
                     break;
                 case ERASE:

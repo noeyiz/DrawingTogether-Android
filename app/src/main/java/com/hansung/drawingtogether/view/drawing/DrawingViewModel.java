@@ -744,7 +744,20 @@ public class DrawingViewModel extends BaseViewModel {
     public void clickEnvClear(View view) {
         ((Button) view).setEnabled(false);
 
-        de.getDrawingFragment().getBinding().drawingView.clearDrawingView();
+        // 테스트 자료구조 초기화
+        MQTTClient.receiveTimeList.clear();
+        MQTTClient.rIdx = -1;
+
+        // 화면 초기화 = clear
+        de.getDrawingFragment().getBinding().drawingView.sendModeMqttMessage(Mode.CLEAR);
+        de.clearDrawingComponents();
+        de.clearTexts();
+        de.getDrawingFragment().getBinding().redoBtn.setEnabled(false);
+        de.getDrawingFragment().getBinding().undoBtn.setEnabled(false);
+        de.getDrawingFragment().getBinding().drawingView.invalidate();
+
+        MyLog.i("drawing", "history.size()=" + de.getHistory().size());
+        MyLog.i("drawing", "clear");
 
         de.getDrawingFragment().getBinding().testParameterButton.setEnabled(true); // 파라미터 설정 버튼만 활성화
     }

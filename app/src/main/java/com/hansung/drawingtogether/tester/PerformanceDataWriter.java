@@ -43,15 +43,8 @@ public enum PerformanceDataWriter {
             dir.mkdir(); // 폴더 생성
         }
         try {
-            long now = System.currentTimeMillis(); // 현재시간 받아오기
-            Date date = new Date(now); // Date 객체 생성
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String nowTime = sdf.format(date) + "\n";
-
             BufferedWriter buf = new BufferedWriter(new FileWriter(dir + "/"+ file, true));
-            buf.append(nowTime + " "); // 날짜 쓰기
             buf.append(data); // 파일 쓰기
-            buf.newLine(); // 개행
             buf.close();
         } catch (FileNotFoundException fnfe) {
             Log.e("tester", "data save file not found exception!");
