@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -36,6 +37,10 @@ import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.DialogAutoDrawBinding;
+import com.hansung.drawingtogether.tester.DrawingTester;
+import com.hansung.drawingtogether.tester.PerformanceData;
+import com.hansung.drawingtogether.tester.PerformanceDataWriter;
+import com.hansung.drawingtogether.tester.TesterDialog;
 import com.hansung.drawingtogether.view.BaseViewModel;
 import com.hansung.drawingtogether.view.SingleLiveEvent;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
@@ -696,6 +701,52 @@ public class DrawingViewModel extends BaseViewModel {
                 .create();
 
         dialog.show();
+    }
+
+    /* 테스트 파라미터 설정 버튼 클릭 */
+    public void clickSetParameter(View view) {
+        new TesterDialog(de.getDrawingFragment().getContext()).show();
+    }
+
+    /* 테스트 환경 설정 버튼 클릭 */
+    public void clickSetEnv(View view) {
+        ((Button) view).setEnabled(false); // 환경 구축이 완료 될 때까지 버튼 클릭 불가
+
+        de.getDrawingFragment().getBinding().testParameterButton.setEnabled(false); // 파라미터 설정 버튼만 활성화
+
+        DrawingTester.getInstance().setEnv();
+    }
+
+    /* 측정 버튼 클릭 [측정 시작 & 측정 완료] */
+    public void clickMeasure(View view) {
+
+        if(!DrawingTester.tFinish) {
+            ((Button) view).setEnabled(false); // 테스트가 완료 될 때까지 측정 버튼 클릭 불가
+
+            ((Button) view).setText(R.string.test_finish); // "test start" -> "test finish" 변경
+
+            DrawingTester.getInstance().measure();
+        }
+        else { // 테스트 완료 tFinish = true
+
+            /* 측정 완료 버튼 누르면, 파일에 데이터 쓰기 */
+            PerformanceDataWriter.getInstance().receiveTimeWrite();
+
+            ((Button) view).setText(R.string.test_start); // "test finish" -> "test start" 변경
+
+            de.getDrawingFragment().getBinding().measureButton.setEnabled(false);
+            de.getDrawingFragment().getBinding().testEnvClearButton.setEnabled(true);
+        }
+    }
+
+    /* 테스트 환경 초기화 버튼 클릭 */
+    // 모든 드로잉 자료구조 초기화 (clear 작업 수행)
+    public void clickEnvClear(View view) {
+        ((Button) view).setEnabled(false);
+
+        de.getDrawingFragment().getBinding().drawingView.clearDrawingView();
+
+        de.getDrawingFragment().getBinding().testParameterButton.setEnabled(true); // 파라미터 설정 버튼만 활성화
     }
 
 //    public void clickHide() {

@@ -127,6 +127,61 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/testerLayout"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#FFFFFF"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="@+id/drawingMenuLayout"
+            app:layout_constraintEnd_toEndOf="@+id/drawingMenuLayout"
+            app:layout_constraintStart_toStartOf="@+id/drawingMenuLayout"
+            app:layout_constraintTop_toTopOf="@+id/bottom_menu_guideline">
+
+            <Button
+                android:id="@+id/testParameterButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:onClick="@{vm::clickSetParameter}"
+                android:text="@string/set_test_parameter" />
+
+            <Button
+                android:id="@+id/testEnvButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:text="@string/test_env_set"
+                android:enabled="false"
+                android:onClick="@{vm::clickSetEnv}"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/measureButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:onClick="@{vm::clickMeasure}"
+                android:text="@string/test_start" />
+
+            <Button
+                android:id="@+id/testEnvClearButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:text="@string/test_env_clear"
+                android:enabled="false"
+                android:onClick="@{vm::clickEnvClear}"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/textColorButtonLayout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -158,6 +213,7 @@
             android:layout_height="0dp"
             android:layout_weight="0"
             android:orientation="horizontal"
+            android:enabled ="false"
             app:layout_constraintBottom_toTopOf="@+id/bottom_menu_guideline"
             app:layout_constraintTop_toTopOf="@+id/palette_menu_guideline">
 
@@ -200,8 +256,8 @@
                     android:id="@+id/colorLayout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:orientation="horizontal">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/whiteColorBtn"
@@ -209,234 +265,234 @@
                         android:layout_height="40dp"
                         android:layout_weight="1"
                         android:backgroundTint="#FFFFFF"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#FFFFFF"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/blackColorBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#000000"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#000000"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/blueColorButton"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#2196F3"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#2196F3"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/greenColorBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#4CAF50"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#4CAF50"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/yellowColorBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#FFEB3B"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#FFEB3B"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/orangeColorBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#FF9800"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#FF9800"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/redColorBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#F44336"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#F44336"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/brownColorBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#795548"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#795548"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/purpleColorBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#9C27B0"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#9C27B0"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/grayBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#999999"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#999999"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pastelBlueBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#AEE4FF"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#AEE4FF"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pastelNavyBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#CCCCEE"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#CCCCEE"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pastelGreenBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#BEE9B4"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#BEE9B4"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pastelYellowBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#FCFFB0"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#FCFFB0"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pastelOrangeBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#F2CFA5"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#F2CFA5"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pastelRedBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#FFAFB0"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#FFAFB0"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pastelBrownBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#BFA380"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#BFA380"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pastelPurpleBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:backgroundTint="#CAA6FE"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
                         android:text="#CAA6FE"
                         android:textSize="0sp"
-                        app:cornerRadius="25dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:insetTop="0dp"/>
+                        app:cornerRadius="25dp" />
 
                 </LinearLayout>
             </HorizontalScrollView>

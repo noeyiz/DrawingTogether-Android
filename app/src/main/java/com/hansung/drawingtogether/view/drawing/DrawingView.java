@@ -14,7 +14,6 @@ import android.widget.Toast;
 
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
-import com.hansung.drawingtogether.monitoring.Velocity;
 
 import androidx.annotation.Nullable;
 
@@ -98,6 +97,8 @@ public class DrawingView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+//        Log.e("tester", "call drawing view onDraw()");
 
         drawingViewCanvas = canvas;
 
@@ -314,7 +315,7 @@ public class DrawingView extends View {
                 segment++;
             }
             sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, MotionEvent.ACTION_UP));
-            MyLog.i("segment", dComponent.getUsersComponentId() + " | " + segment);
+//            MyLog.i("segment", dComponent.getUsersComponentId() + " | " + segment);
 
             isExit = true;
             MyLog.i("mqtt", "isExit2 = " + isExit);
@@ -397,7 +398,7 @@ public class DrawingView extends View {
 
                 }
                 sendMqttMessage.putMqttMessage(new MqttMessageFormat(de.getMyUsername(), /*de.getUpdatedDrawingComponentId(dComponent), */dComponent.getUsersComponentId(), de.getCurrentMode(), de.getCurrentType(), point, event.getAction()));
-                MyLog.i("segment", dComponent.getUsersComponentId() + " | " + segment);
+//                MyLog.i("segment", dComponent.getUsersComponentId() + " | " + segment);
 
                 if(de.isIntercept()) {
                     this.isIntercept = true;

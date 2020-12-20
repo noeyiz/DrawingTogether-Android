@@ -1,4 +1,4 @@
-package com.hansung.drawingtogether.monitoring;
+package com.hansung.drawingtogether.tester;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

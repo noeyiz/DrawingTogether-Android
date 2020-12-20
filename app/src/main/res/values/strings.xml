@@ -9,10 +9,31 @@
     <string name="kakao_scheme">kakao1c67e4a427399c4e4f83d2bd9ff1ba48</string>
     <string name="kakaolink_host">kakaolink</string>
 
+    <!-- Dialog Content -->
     <string name="master_exit">종료하시겠습니까?</string>
     <string name="joiner_exit">나가시겠습니까?</string>
     <string name="success_save">갤러리에 대화 이미지를 저장 완료했습니다</string>
+    <string name="ok">확인</string>
+    <string name="cancel">취소</string>
+    <string name="save_exit">저장 후 종료</string>
 
+
+    <!-- Tester -->
+    <!-- Button -->
+    <string name="set_test_parameter">파라미터 설정</string>
+    <string name="test_start">측정 시작</string>
+    <string name="test_finish">측정 완료</string>
+    <string name="test_env_set">환경 구축</string>
+    <string name="test_env_clear">초기화</string>
+
+    <!-- Dialog -->
+    <string name="background_title">화면 스트로크 개수</string>
+    <string name="background_segment_title">화면 스트로크 세그먼트 개수</string>
+    <string name="sending_title">전송 스트로크 개수</string>
+    <string name="sending_segment_title">전송 스트로크 세그먼트 개수</string>
+    <string name="count_title">반복 횟수</string>
+    <string name="test_parameter_validation_text">유효한 값을 입력해주세요</string>
+    <string name="msg_sending_start">측정 메시지 전송 시작</string>
 
     <!-- App Info -->
     <string name="info_title"><font color='#15A0E8'>사용 방법 및 설명</font></string>

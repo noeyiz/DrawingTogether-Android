@@ -1,19 +1,18 @@
 package com.hansung.drawingtogether.view.drawing;
 
+import android.util.Log;
+import android.view.MotionEvent;
+
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
-
-import com.hansung.drawingtogether.monitoring.Velocity;
-import com.hansung.drawingtogether.view.main.MainActivity;
+import com.hansung.drawingtogether.tester.PerformanceData;
 
 
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import lombok.Getter;
 
@@ -88,6 +87,25 @@ public class SendMqttMessage {    //consumer  //queue 가 비어있을때까지 
 //                                && messageFormat.getType().equals(ComponentType.STROKE)*/) { // 자유 곡선, 사각형, 원 모두 포함 ( only DRAW mode )
 //                                MQTTClient.receiveTimeList.add(new Velocity(System.currentTimeMillis()));
 //                            }
+
+                            // todo for performance
+                            // todo [메시지 수신 시간 측정 시작] only for sender
+                            // 보낸 스트로크에 대한 메시지 수신 시간 측정 (테스트 환경을 위한 지우기 메시지는 측정에서 제외)
+                            long start = System.currentTimeMillis();
+                            if(MQTTClient.msgMeasurement && messageFormat.getMode() == Mode.DRAW) {
+                                switch (messageFormat.getAction()) {
+                                    case MotionEvent.ACTION_DOWN:
+                                        MQTTClient.receiveTimeList.add(new PerformanceData("ss", System.currentTimeMillis())); // start segment
+                                        break;
+                                    case MotionEvent.ACTION_MOVE:
+                                        MQTTClient.receiveTimeList.add(new PerformanceData("ds", System.currentTimeMillis())); // data segment
+                                        break;
+                                    case MotionEvent.ACTION_UP:
+                                        MQTTClient.receiveTimeList.add(new PerformanceData("es", System.currentTimeMillis())); // end segment
+                                        break;
+                                }
+                                Log.i("tester", "send mqtt thread check routine time (receive time) = " + (System.currentTimeMillis() - start)/1000.0);
+                            }
 
                             client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));
                             //MyLog.i("segment", "publish | " + parser.jsonWrite(messageFormat));

@@ -18,6 +18,7 @@
         android:id="@+id/drawing_image"
         android:title="이미지"
         app:showAsAction="always"
+        android:visibility="invisible"
         android:icon="@drawable/photo">
         <menu>
             <item
@@ -49,6 +50,7 @@
                 android:id="@+id/drawing_invite"
                 android:title="친구 초대"
                 app:showAsAction="withText"
+                android:visibility="invisible"
                 android:icon="@drawable/plus_person"/>
 
             <item
@@ -61,18 +63,21 @@
                 android:id="@+id/save_stroke"
                 android:title="스트로크 저장 시작"
                 app:showAsAction="withText"
+                android:visibility="invisible"
                 android:icon="@drawable/save_stroke" />
 
             <item
                 android:id="@+id/one_stroke"
                 android:title="스트로크 1개"
                 app:showAsAction="withText"
+                android:visibility="invisible"
                 android:icon="@drawable/one_stroke" />
 
             <item
                 android:id="@+id/n_stroke"
                 android:title="스트로크 N개"
                 app:showAsAction="withText"
+                android:visibility="invisible"
                 android:icon="@drawable/n_stroke" />
 <!--
             <item

@@ -16,13 +16,10 @@ import android.widget.Toast;
 
 import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
-import com.hansung.drawingtogether.monitoring.ComponentCount;
-import com.hansung.drawingtogether.monitoring.MonitoringDataWriter;
-import com.hansung.drawingtogether.monitoring.Velocity;
+import com.hansung.drawingtogether.tester.PerformanceData;
+import com.hansung.drawingtogether.tester.Velocity;
 import com.hansung.drawingtogether.view.WarpingControlView;
-import com.hansung.drawingtogether.view.drawing.AudioPlayThread;
 import com.hansung.drawingtogether.view.drawing.AutoDraw;
-import com.hansung.drawingtogether.view.drawing.ComponentType;
 import com.hansung.drawingtogether.view.drawing.DrawingComponent;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 import com.hansung.drawingtogether.view.drawing.DrawingFragment;
@@ -54,16 +51,14 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
-
-import com.hansung.drawingtogether.monitoring.Velocity;
 
 import lombok.Getter;
 
@@ -129,15 +124,25 @@ public enum MQTTClient {
 //    private Thread monitoringThread;
 
     // [Key] UUID [Value] Velocity
-    public static Vector<Velocity> receiveTimeList = new Vector<Velocity>();  // 메시지를 수신하는데 걸린 속도 데이터
-    public static Vector<Velocity> displayTimeList = new Vector<Velocity>();  // 화면에 출력하는데 걸린 속도 데이터
-    public static Vector<Velocity> deliveryTimeList = new Vector<Velocity>(); // 중간 참여자에게 메시지를 전송하는데 걸린 속도 데이터
+//    public static Vector<Velocity> receiveTimeList = new Vector<Velocity>();  // 메시지를 수신하는데 걸린 속도 데이터
+//    public static Vector<Velocity> displayTimeList = new Vector<Velocity>();  // 화면에 출력하는데 걸린 속도 데이터
+//    public static Vector<Velocity> deliveryTimeList = new Vector<Velocity>(); // 중간 참여자에게 메시지를 전송하는데 걸린 속도 데이터
 
     /* drawing performance 관련 변수 */
     private boolean checkSegmentCount = false;
     private boolean isSaveStroke = false;
     private ArrayList<MqttMessageFormat> strokeMessages = new ArrayList<>();
 
+    /* 성능평가 관련 변수 */
+    public static Vector<PerformanceData> receiveTimeList = new Vector<>(); // only measurement sender
+    public static int rIdx = -1; // receive time list index
+
+    public static Vector<PerformanceData> displayTimeList = new Vector<>(); // only measurement receiver
+    public static int dIdx = -1; // display time list index
+
+    // both sender and receiver
+    public static boolean msgMeasurement = false;
+    public static boolean midMeasurement = false;
 
 
     public static MQTTClient getInstance() {
@@ -408,6 +413,36 @@ public enum MQTTClient {
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
 
+                // 메시지 내용 출력
+//                String msgStr = new String(message.getPayload());
+//                System.out.println(msgStr);
+//                Log.e("tester", "message payload size = " + message.getPayload().length); // utf-8 일 경우 한글 3byte
+//                Log.e("tester","message string size = " + msgStr.getBytes("euc-kr").length); // euc-kr 일 경우 한글 2Byte
+
+                // todo for performance
+                // todo [메시지 수신 시간 측정 완료] only for sender
+                String payload = new String(message.getPayload());
+                if(msgMeasurement && payload.contains("DRAW")) {
+                    receiveTimeList.get(++rIdx).record(System.currentTimeMillis(), payload.getBytes("euc-kr").length);
+                }
+
+
+                // todo [화면 출력 시간 측정 시작] only for receiver
+//                MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(payload);
+//                if(msgMeasurement && !mmf.getUsername().equals(myName)) {
+//                    switch (mmf.getAction()) {
+//                        case MotionEvent.ACTION_DOWN:
+//                            displayTimeList.add(new PerformanceData("ss", System.currentTimeMillis())); // start segment
+//                            break;
+//                        case MotionEvent.ACTION_MOVE:
+//                            displayTimeList.add(new PerformanceData("ds", System.currentTimeMillis())); // data segment
+//                            break;
+//                        case MotionEvent.ACTION_UP:
+//                            displayTimeList.add(new PerformanceData("es", System.currentTimeMillis())); // end segment
+//                            break;
+//                    }
+//                }
+
                 // fixme nayeon for performance
 //                if(!newTopic.equals(topic_image)) {
 //                    MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(new String(message.getPayload()));
@@ -426,9 +461,6 @@ public enum MQTTClient {
 //
 //                }
 
-                // 메시지 내용 출력
-                System.out.println(new String(message.getPayload()));
-//                Log.e("performance", "message size = " + message.getPayload());
 
 
                 /* TOPIC_JOIN */
@@ -1160,6 +1192,10 @@ public enum MQTTClient {
 //                        //client.printDisplayTimeList();
 //                    }
 
+                    // todo [화면 출력 시간 측정 종료] only for receiver
+//                    if(msgMeasurement && !message.getUsername().equals(de.getMyUsername()))
+//                        displayTimeList.get(++dIdx).record(System.currentTimeMillis());
+
                     break;
                 case ERASE:
                     MyLog.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString() + ", id=" + message.getComponentIds().toString());
@@ -1336,9 +1372,9 @@ public enum MQTTClient {
                     dComponent.setId(de.componentIdCounter());
 
                     if(dComponent.getUsersComponentId() == null) {
-                        MyLog.i("segment", "***");
+//                        MyLog.i("segment", "***");
                     } else {
-                        MyLog.i("segment", "***" + dComponent.getUsersComponentId());
+//                        MyLog.i("segment", "***" + dComponent.getUsersComponentId());
                     }
 
                     de.addCurrentComponents(dComponent);
