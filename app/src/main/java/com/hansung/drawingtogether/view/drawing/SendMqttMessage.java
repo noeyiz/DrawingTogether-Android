@@ -104,7 +104,7 @@ public class SendMqttMessage {    //consumer  //queue 가 비어있을때까지 
                                         MQTTClient.receiveTimeList.add(new PerformanceData("es", System.currentTimeMillis())); // end segment
                                         break;
                                 }
-                                Log.i("tester", "send mqtt thread check routine time (receive time) = " + (System.currentTimeMillis() - start)/1000.0);
+//                                Log.i("tester", "send mqtt thread check routine time (receive time) = " + (System.currentTimeMillis() - start)/1000.0);
                             }
 
                             client.publish(client.getTopic_data(), parser.jsonWrite(messageFormat));

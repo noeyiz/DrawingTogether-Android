@@ -33,7 +33,7 @@ public enum PerformanceDataWriter {
             data += MQTTClient.receiveTimeList.get(i).toString();
 
 
-        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/performance1220"); // 저장 경로
+        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/performance1221"); // 저장 경로
 
         Log.i("tester", "performance data save path = " + dir);
         Log.i("tester", "performance data file name = " + file);
@@ -45,6 +45,7 @@ public enum PerformanceDataWriter {
         try {
             BufferedWriter buf = new BufferedWriter(new FileWriter(dir + "/"+ file, true));
             buf.append(data); // 파일 쓰기
+            buf.newLine(); // 개행
             buf.close();
         } catch (FileNotFoundException fnfe) {
             Log.e("tester", "data save file not found exception!");

@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
+import com.hansung.drawingtogether.view.drawing.DrawingComponent;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 import com.hansung.drawingtogether.view.drawing.DrawingFragment;
 import com.hansung.drawingtogether.view.drawing.DrawingView;
@@ -125,6 +126,7 @@ public enum DrawingTester {
     // 드로잉 코드 호출
     public void measure() {
         tFinish = false;
+        DrawingComponent dc; // 현재 그린 스트로크
 
         new Thread(new Runnable() {
             @Override
@@ -175,9 +177,8 @@ public enum DrawingTester {
                         dView.dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, rX2, rY2, 0));
 
                         // sleep 시간이 짧으면, 아이디 처리 이상 -> 선을 지우고 그리는 과정에서 문제 발생
-                        try { Thread.sleep(1000); } // wait before erase
+                        try { Thread.sleep(2000); } // wait before erase
                         catch(InterruptedException ie) { ie.printStackTrace(); }
-
 
                         Log.e("tester", "before erase drawing components size = " + de.getDrawingComponents().size());
                         Log.e("tester", "before erase last drawing components id = " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getId() + ", users component id = " + de.getDrawingComponents().get(de.getDrawingComponents().size()-1).getUsersComponentId());
