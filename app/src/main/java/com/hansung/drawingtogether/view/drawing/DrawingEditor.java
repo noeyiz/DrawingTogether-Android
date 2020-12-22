@@ -10,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.ViewManager;
 import android.widget.ImageView;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.Vector;
 
 import lombok.Getter;
@@ -179,14 +181,21 @@ public enum DrawingEditor {
 
     public static DrawingEditor getInstance() { return INSTANCE; }
 
-    public void drawAllDrawingComponents() {   //drawingComponents draw
-        for (DrawingComponent drawingComponent : drawingComponents) {
-            drawingComponent.drawComponent(getMainCanvas());
-        }
+    public synchronized void drawAllDrawingComponents() {   //drawingComponents draw
+//        for (DrawingComponent drawingComponent : drawingComponents) {
+//            drawingComponent.drawComponent(getMainCanvas());
+//        }
         /*for (DrawingComponent currentComponent : currentComponents) {
             MyLog.i("drawing", "cc.size() = " + currentComponents.size());
             currentComponent.drawComponent(getBackCanvas());
         }*/
+        try {
+            Iterator<DrawingComponent> it = drawingComponents.iterator();
+            while (it.hasNext())
+                it.next().drawComponent(getMainCanvas());
+        }catch(ConcurrentModificationException cme) {
+            Log.e("tester", "occur ConcurrentModificationException in DrawingEditor's drawAllDrawingComponents func.");
+        }
     }
 
     public void drawAllUnselectedDrawingComponents() {   //drawingComponents draw

@@ -95,6 +95,6 @@ public class TesterDialog extends Dialog {
 
     /* 입력 값 유효성 검사 */
     public boolean checkValidation(int background, int bSegment, int sending, int sSegment, int count) {
-        return (background > 0 && bSegment > 0 && sending > 0 && sSegment > 0 && count > 0);
+        return (background >= 0 && bSegment >= 0 && sending >= 0 && sSegment >= 0 && count >= 0);
     }
 }

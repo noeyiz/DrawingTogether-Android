@@ -33,7 +33,7 @@ public enum PerformanceDataWriter {
             data += MQTTClient.receiveTimeList.get(i).toString();
 
 
-        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/performance1221"); // 저장 경로
+        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/performance1222"); // 저장 경로
 
         Log.i("tester", "performance data save path = " + dir);
         Log.i("tester", "performance data file name = " + file);

@@ -177,7 +177,7 @@ public enum DrawingTester {
                         dView.dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, rX2, rY2, 0));
 
                         // sleep 시간이 짧으면, 아이디 처리 이상 -> 선을 지우고 그리는 과정에서 문제 발생
-                        try { Thread.sleep(2000); } // wait before erase
+                        try { Thread.sleep(1000); } // wait before erase
                         catch(InterruptedException ie) { ie.printStackTrace(); }
 
                         Log.e("tester", "before erase drawing components size = " + de.getDrawingComponents().size());
@@ -194,8 +194,8 @@ public enum DrawingTester {
 
                         de.setCurrentMode(Mode.DRAW);
 
-//                        try { Thread.sleep(1000); } // wait after erase
-//                        catch (InterruptedException ie) { ie.printStackTrace(); }
+                        try { Thread.sleep(1000); } // wait after erase
+                        catch (InterruptedException ie) { ie.printStackTrace(); }
 
                     }
 
