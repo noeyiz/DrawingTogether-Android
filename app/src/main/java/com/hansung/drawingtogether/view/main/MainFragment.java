@@ -36,6 +36,7 @@ public class MainFragment extends Fragment {
 
         mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
+        /*
         inputMethodManager = (InputMethodManager) Objects.requireNonNull(getActivity()).getSystemService(Context.INPUT_METHOD_SERVICE);
         binding.topic.requestFocus();
         binding.name.getEditText().setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -50,6 +51,7 @@ public class MainFragment extends Fragment {
                 return false;
             }
         });
+         */
 
         mainViewModel.navigationCommands.observe(getViewLifecycleOwner(), new Observer<NavigationCommand>() {
             @Override

@@ -63,9 +63,11 @@ public class MainViewModel extends BaseViewModel {
 //        ip.setValue("54.180.55.246"); // 클라우드 [나연]
 //        ip.setValue("192.168.0.36"); // 모니터링
         port.postValue("1883");
-        setTopic("");
-        setPassword("");
-        setName("");
+
+        // todo 새 참가자 성능 측정
+        setTopic("0");
+        setPassword("1");
+        setName("participant3");
 
         setIpError("");
         setPortError("");

@@ -16,13 +16,10 @@ import android.widget.Toast;
 
 import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
-import com.hansung.drawingtogether.monitoring.ComponentCount;
-import com.hansung.drawingtogether.monitoring.MonitoringDataWriter;
-import com.hansung.drawingtogether.monitoring.Velocity;
+import com.hansung.drawingtogether.tester.PerformanceData;
+import com.hansung.drawingtogether.tester.PerformanceDataWriter;
 import com.hansung.drawingtogether.view.WarpingControlView;
-import com.hansung.drawingtogether.view.drawing.AudioPlayThread;
 import com.hansung.drawingtogether.view.drawing.AutoDraw;
-import com.hansung.drawingtogether.view.drawing.ComponentType;
 import com.hansung.drawingtogether.view.drawing.DrawingComponent;
 import com.hansung.drawingtogether.view.drawing.DrawingEditor;
 import com.hansung.drawingtogether.view.drawing.DrawingFragment;
@@ -55,15 +52,12 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
-
-import com.hansung.drawingtogether.monitoring.Velocity;
 
 import lombok.Getter;
 
@@ -128,10 +122,9 @@ public enum MQTTClient {
 //    private ComponentCount componentCount;
 //    private Thread monitoringThread;
 
-    // [Key] UUID [Value] Velocity
-    public static Vector<Velocity> receiveTimeList = new Vector<Velocity>();  // 메시지를 수신하는데 걸린 속도 데이터
-    public static Vector<Velocity> displayTimeList = new Vector<Velocity>();  // 화면에 출력하는데 걸린 속도 데이터
-    public static Vector<Velocity> deliveryTimeList = new Vector<Velocity>(); // 중간 참여자에게 메시지를 전송하는데 걸린 속도 데이터
+    /* 새 참가자 관련 성능 측정 변수 [실험3, 실험4] */
+    public static Vector<PerformanceData> propagationTimeList = new Vector<>(); // 메시지 수신 시간
+    public static Vector<PerformanceData> drawingTimeList = new Vector<>(); // 드로잉 시간
 
     /* drawing performance 관련 변수 */
     private boolean checkSegmentCount = false;
@@ -408,29 +401,6 @@ public enum MQTTClient {
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
 
-                // fixme nayeon for performance
-//                if(!newTopic.equals(topic_image)) {
-//                    MqttMessageFormat mmf = (MqttMessageFormat) parser.jsonReader(new String(message.getPayload()));
-//
-//                    if (isMaster() && mmf.getAction() != null && mmf.getMode().equals(Mode.DRAW) /*&& mmf.getAction() == MotionEvent.ACTION_MOVE
-//                            && mmf.getType().equals(ComponentType.STROKE*/) { // 마스터가 STROKE 의 MOVE 이벤트에 대한 메시지를 받았을 경우
-//                        if (mmf.getUsername().equals(myName)) { // 자기 자신이 보낸 메시지일 경우 [메시지를 받는데 걸린 시간 측정]
-//                            System.out.println("here");
-//                            (receiveTimeList.lastElement()).calcTime(System.currentTimeMillis(), message.getPayload().length);
-//                            // printReceiveTimeList();
-//                        }
-//                        else if (!mmf.getUsername().equals(myName)) { // 다른 사람이 보낸 메시지일 경우 [화면에 그리는 시간 측정]
-//                            displayTimeList.add(new Velocity(System.currentTimeMillis(), de.getDrawingComponents().size(), message.getPayload().length));
-//                        }
-//                    }
-//
-//                }
-
-                // 메시지 내용 출력
-                System.out.println(new String(message.getPayload()));
-//                Log.e("performance", "message size = " + message.getPayload());
-
-
                 /* TOPIC_JOIN */
                 if (newTopic.equals(topic_join)) {
 
@@ -543,20 +513,16 @@ public enum MQTTClient {
                         String name = joinAckMessage.getName();
                         String target = joinAckMessage.getTarget();
 
-                        // fixme nayeon for performance
-//                        if(isMaster()) {
-//                            for(Velocity v: deliveryTimeList) { // 해당 중간 참여자에게 메시지를 보낼때 생성한 속도
-//                                if(v.getParticipant().equals(target)) {
-//                                    v.calcTime(System.currentTimeMillis());
-////                                    printDeliveryTimeList();
-//                                    break;
-//                                }
-//                            }
-//                        }
-
                         if (target.equals(myName)) {
                             if (name.equals(masterName)) {
                                 /* master가 보낸 메시지인 경우 */
+
+                                // todo [새 참가자 메시지 수신 시간 측정 완료]
+                                propagationTimeList.lastElement().record(System.currentTimeMillis(),
+                                        (new String(message.getPayload())).getBytes("euc-kr").length);
+
+                                // todo [새 참가자 드로잉 시간 측정 시작]
+                                drawingTimeList.add(new PerformanceData(System.currentTimeMillis()));
 
                                 /* 드로잉에 필요한 구조체들 저장하는 부분 */
                                 /* 필요한 배열 리스트들과 배경 이미지 세팅 */
@@ -759,6 +725,7 @@ public enum MQTTClient {
                     /* 이 시점 중간자에게는 모든 데이터 저장 완료 후 */
                     de.setMidEntered(false);
                 }
+
 
                 /* TOPIC_AUDIO */
                 if (newTopic.equals(topic_audio)) {
@@ -1151,15 +1118,6 @@ public enum MQTTClient {
                         e.printStackTrace();
                     }
 
-                    // fixme nayeon for performance ( draw point )
-//                    if (client.isMaster() && /*message.getAction() == MotionEvent.ACTION_MOVE
-//                            && messageFormat.getType().equals(ComponentType.STROKE)*/ message.getMode().equals(Mode.DRAW)
-//                            && !message.getUsername().equals(de.getMyUsername())) { // 다른 사람이 보낸 메시지일 경우 [마스터가 자신의 화면에 그리는 시간 측정]
-//
-//                        (MQTTClient.displayTimeList.lastElement()).calcTime(System.currentTimeMillis());
-//                        //client.printDisplayTimeList();
-//                    }
-
                     break;
                 case ERASE:
                     MyLog.i("mqtt", "MESSAGE ARRIVED message: username=" + username + ", mode=" + mode.toString() + ", id=" + message.getComponentIds().toString());
@@ -1539,6 +1497,11 @@ public enum MQTTClient {
 
             de.drawAllDrawingComponentsForMid();
             de.addAllTextViewToFrameLayoutForMid();
+
+            // todo [새 참가자 드로잉 시간 측정 완료]
+            // invalidate 호출 전에 측정
+            MQTTClient.drawingTimeList.lastElement().record(System.currentTimeMillis());
+
             client.getDrawingView().invalidate();
 
             for (int i = 0; i < de.getAutoDrawList().size(); i++) {
@@ -1558,6 +1521,12 @@ public enum MQTTClient {
 
             client.getProgressDialog().dismiss();
             MyLog.i("mqtt", "mid progressDialog dismiss");
+
+            client.getProgressDialog().setTitle("성능측정");
+            client.getProgressDialog().setMessage("성능 측정 데이터 파일 저장중...");
+            client.getProgressDialog().show();
+            PerformanceDataWriter.getInstance().write();
+            client.getProgressDialog().dismiss();
         }
     }
 

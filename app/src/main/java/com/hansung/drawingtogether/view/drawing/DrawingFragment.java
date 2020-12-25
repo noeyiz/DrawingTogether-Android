@@ -2,7 +2,6 @@ package com.hansung.drawingtogether.view.drawing;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,14 +10,11 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
-import android.media.AudioManager;
 import android.media.ExifInterface;
-import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.text.Layout;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
@@ -45,39 +41,30 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou;
-import com.google.firebase.database.DatabaseError;
 import com.hansung.drawingtogether.R;
 import com.hansung.drawingtogether.data.remote.model.AliveThread;
-import com.hansung.drawingtogether.data.remote.model.ExitType;
 import com.hansung.drawingtogether.data.remote.model.Logger;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
 
-import com.hansung.drawingtogether.monitoring.MonitoringDataWriter;
-import com.hansung.drawingtogether.monitoring.Velocity;
-import com.hansung.drawingtogether.monitoring.ComponentCount;
 import com.hansung.drawingtogether.monitoring.MonitoringRunnable;
 
+import com.hansung.drawingtogether.tester.PerformanceData;
 import com.hansung.drawingtogether.view.NavigationCommand;
 import com.hansung.drawingtogether.view.main.AutoDrawMessage;
-import com.hansung.drawingtogether.view.main.DatabaseTransaction;
 import com.hansung.drawingtogether.view.main.JoinMessage;
 import com.hansung.drawingtogether.view.main.MQTTSettingData;
 import com.hansung.drawingtogether.view.main.MainActivity;
 
-import com.hansung.drawingtogether.view.NavigationCommand;
-
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.UnsupportedEncodingException;
 import java.util.Objects;
 
 import lombok.Getter;
-import lombok.Setter;
 
 
 @Getter
@@ -206,6 +193,15 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             /* Join Message Publish */
             JoinMessage joinMessage = new JoinMessage(data.getName());
             MqttMessageFormat messageFormat = new MqttMessageFormat(joinMessage);
+
+            // todo [새 참가자 메시지 수신 시간 측정 시작]
+            try {
+                MQTTClient.propagationTimeList.add(new PerformanceData(System.currentTimeMillis(), JSONParser.getInstance().jsonWrite(messageFormat).getBytes("euc-kr").length));
+//                Log.e("tester", "acc msg size (drawing fragment) = " + JSONParser.getInstance().jsonWrite(messageFormat).getBytes("euc-kr").length);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
             client.publish(data.getTopic() + "_join", JSONParser.getInstance().jsonWrite(messageFormat));
             MyLog.i("Login", data.getName() + " Join Message Publish");
 
