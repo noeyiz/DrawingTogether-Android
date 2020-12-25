@@ -16,8 +16,6 @@ import android.widget.Toast;
 
 import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou;
 import com.hansung.drawingtogether.databinding.FragmentDrawingBinding;
-import com.hansung.drawingtogether.tester.PerformanceData;
-import com.hansung.drawingtogether.tester.Velocity;
 import com.hansung.drawingtogether.view.WarpingControlView;
 import com.hansung.drawingtogether.view.drawing.AutoDraw;
 import com.hansung.drawingtogether.view.drawing.DrawingComponent;
@@ -51,7 +49,6 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -132,17 +129,6 @@ public enum MQTTClient {
     private boolean checkSegmentCount = false;
     private boolean isSaveStroke = false;
     private ArrayList<MqttMessageFormat> strokeMessages = new ArrayList<>();
-
-    /* 성능평가 관련 변수 */
-    public static Vector<PerformanceData> receiveTimeList = new Vector<>(); // only measurement sender
-    public static int rIdx = -1; // receive time list index
-
-    public static Vector<PerformanceData> displayTimeList = new Vector<>(); // only measurement receiver
-    public static int dIdx = -1; // display time list index
-
-    // both sender and receiver
-    public static boolean msgMeasurement = false;
-    public static boolean midMeasurement = false;
 
 
     public static MQTTClient getInstance() {
@@ -418,13 +404,6 @@ public enum MQTTClient {
 //                System.out.println(msgStr);
 //                Log.e("tester", "message payload size = " + message.getPayload().length); // utf-8 일 경우 한글 3byte
 //                Log.e("tester","message string size = " + msgStr.getBytes("euc-kr").length); // euc-kr 일 경우 한글 2Byte
-
-                // todo for performance
-                // todo [메시지 수신 시간 측정 완료] only for sender
-                String payload = new String(message.getPayload());
-                if(msgMeasurement && payload.contains("DRAW")) {
-                    receiveTimeList.get(++rIdx).record(System.currentTimeMillis(), payload.getBytes("euc-kr").length);
-                }
 
                 /* TOPIC_JOIN */
                 if (newTopic.equals(topic_join)) {

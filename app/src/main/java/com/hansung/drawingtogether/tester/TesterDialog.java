@@ -42,9 +42,6 @@ public class TesterDialog extends Dialog {
 
         backgroundEditText = findViewById(R.id.tester_background);
         bSegmentEditText = findViewById(R.id.tester_background_segment);
-        sendingEditText = findViewById(R.id.tester_sending);
-        sSegmentEditText = findViewById(R.id.tester_sending_segment);
-        countEditText = findViewById(R.id.tester_count);
 
         // 다이얼로그 사이즈 조절 하기
         ViewGroup.LayoutParams params = this.getWindow().getAttributes();
@@ -67,16 +64,13 @@ public class TesterDialog extends Dialog {
 
                 int background = Integer.parseInt(backgroundEditText.getText().toString());
                 int bSegment = Integer.parseInt(bSegmentEditText.getText().toString());
-                int sending = Integer.parseInt(sendingEditText.getText().toString());
-                int sSegment = Integer.parseInt(sSegmentEditText.getText().toString());
-                int count = Integer.parseInt(countEditText.getText().toString());
 
-                if(!checkValidation(background, bSegment, sending, sSegment, count)) {
+                if(!checkValidation(background, bSegment)) {
                     Toast.makeText(getContext(), R.string.test_parameter_validation_text, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                DrawingTester.getInstance().set(background, bSegment, sending, sSegment, count); // 테스트 파라미터 설정
+                DrawingTester.getInstance().set(background, bSegment); // 테스트 파라미터 설정
                 DrawingEditor.getInstance().getDrawingFragment().getBinding().testEnvButton.setEnabled(true); // 테스트 환경 구축 버튼 활성화
 
                 dismiss();
@@ -94,7 +88,7 @@ public class TesterDialog extends Dialog {
 
 
     /* 입력 값 유효성 검사 */
-    public boolean checkValidation(int background, int bSegment, int sending, int sSegment, int count) {
-        return (background >= 0 && bSegment >= 0 && sending >= 0 && sSegment >= 0 && count >= 0);
+    public boolean checkValidation(int background, int bSegment) {
+        return (background >= 0 && bSegment >= 0);
     }
 }

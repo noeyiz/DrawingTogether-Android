@@ -153,32 +153,10 @@
                 android:layout_gravity="center"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
-                android:text="@string/test_env_set"
-                android:enabled="false"
                 android:onClick="@{vm::clickSetEnv}"
+                android:text="@string/test_env_set"
                 android:textSize="14sp" />
 
-            <Button
-                android:id="@+id/measureButton"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="5dp"
-                android:layout_weight="1"
-                android:enabled="false"
-                android:onClick="@{vm::clickMeasure}"
-                android:text="@string/test_start" />
-
-            <Button
-                android:id="@+id/testEnvClearButton"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:layout_margin="5dp"
-                android:layout_weight="1"
-                android:text="@string/test_env_clear"
-                android:enabled="false"
-                android:onClick="@{vm::clickEnvClear}"
-                android:textSize="14sp" />
         </LinearLayout>
 
         <LinearLayout
