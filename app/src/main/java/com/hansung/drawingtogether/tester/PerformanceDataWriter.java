@@ -45,7 +45,7 @@ public enum PerformanceDataWriter {
         }
 
 
-        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/chart3(1)"); // 저장 경로
+        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/chart3(2)"); // 저장 경로
 
         Log.i("tester", "performance data save path = " + dir);
         Log.i("tester", "performance data file name = " + file);

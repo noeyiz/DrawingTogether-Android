@@ -1522,11 +1522,7 @@ public enum MQTTClient {
             client.getProgressDialog().dismiss();
             MyLog.i("mqtt", "mid progressDialog dismiss");
 
-            client.getProgressDialog().setTitle("성능측정");
-            client.getProgressDialog().setMessage("성능 측정 데이터 파일 저장중...");
-            client.getProgressDialog().show();
             PerformanceDataWriter.getInstance().write();
-            client.getProgressDialog().dismiss();
         }
     }
 
