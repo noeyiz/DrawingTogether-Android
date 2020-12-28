@@ -5,12 +5,20 @@ import lombok.Getter;
 @Getter
 public class PerformanceData {
 
+    private String sTag;
+    private String eTag;
+
     private int size; // msg size
 
     private long start;
     private double time;
 
     public PerformanceData(long start) {
+        this.start = start;
+    }
+
+    public PerformanceData(String sTag, long start) {
+        this.sTag = sTag;
         this.start = start;
     }
 
@@ -29,6 +37,15 @@ public class PerformanceData {
     // 화면 출력 시간 측정
     public void record(long end) {
         this.time = (end - this.start)/1000.0; // 경과 시간 측정
+    }
+
+    public void record(String eTag, long end) {
+        this.eTag = eTag;
+        this.time = (end - this.start)/1000.0; // 경과 시간 측정
+    }
+
+    public void setTime(double time) {
+        this.time = time;
     }
 
     public String toStringPropagation() {

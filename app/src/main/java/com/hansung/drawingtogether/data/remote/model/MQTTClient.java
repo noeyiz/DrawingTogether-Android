@@ -125,6 +125,13 @@ public enum MQTTClient {
     /* 새 참가자 관련 성능 측정 변수 [실험3, 실험4] */
     public static Vector<PerformanceData> propagationTimeList = new Vector<>(); // 메시지 수신 시간
     public static Vector<PerformanceData> drawingTimeList = new Vector<>(); // 드로잉 시간
+    public static boolean record = false; // onSizeChanged
+
+    public static Vector<PerformanceData> parsingTimeList = new Vector<>(); // 파싱 시간
+    public static Vector<PerformanceData> drawingCodeTimeList = new Vector<>(); // 드로잉 코드 시간
+
+    public static int pIdx = -1;
+    public static int dIdx = -1;
 
     /* drawing performance 관련 변수 */
     private boolean checkSegmentCount = false;
@@ -401,11 +408,19 @@ public enum MQTTClient {
             @Override
             public void messageArrived(String newTopic, MqttMessage message) throws Exception {
 
+                // 메시지 출력
+                System.out.println(new String(message.getPayload()));
+
                 /* TOPIC_JOIN */
                 if (newTopic.equals(topic_join)) {
 
                     String msg = new String(message.getPayload());
+
+//                    // todo [파싱 시간 측정 시작]
+//                    parsingTimeList.add(new PerformanceData("parsing topic join", System.currentTimeMillis()));
                     MqttMessageFormat mqttMessageFormat = (MqttMessageFormat) parser.jsonReader(msg);
+//                    // todo [파싱 시간 측정 완료]
+//                    parsingTimeList.get(++pIdx).record(System.currentTimeMillis());
 
                     JoinMessage joinMessage = mqttMessageFormat.getJoinMessage();
                     JoinAckMessage joinAckMessage = mqttMessageFormat.getJoinAckMessage();
@@ -517,12 +532,26 @@ public enum MQTTClient {
                             if (name.equals(masterName)) {
                                 /* master가 보낸 메시지인 경우 */
 
+//                                //todo [파싱 시간 측정 시작]
+//                                parsingTimeList.add(new PerformanceData("parsing mid propagation", System.currentTimeMillis()));
+
                                 // todo [새 참가자 메시지 수신 시간 측정 완료]
                                 propagationTimeList.lastElement().record(System.currentTimeMillis(),
                                         (new String(message.getPayload())).getBytes("euc-kr").length);
 
+//                                // todo [파싱 시간 측정 완료]
+//                                parsingTimeList.get(++pIdx).record(System.currentTimeMillis());
+
                                 // todo [새 참가자 드로잉 시간 측정 시작]
+                                // 측정 시작 전 시점에 onSizeChanged 가 호출된 경우에만 드로잉타임 측정
+                                if(DrawingView.checkOnSizeChangedCall)
+                                    record = true;
+
+                                Log.e("tester", "drawing time count start");
                                 drawingTimeList.add(new PerformanceData(System.currentTimeMillis()));
+
+//                                // todo [드로잉 코드 시간 측정 시작]
+//                                drawingCodeTimeList.add(new PerformanceData("drawing code set data structures", System.currentTimeMillis()));
 
                                 /* 드로잉에 필요한 구조체들 저장하는 부분 */
                                 /* 필요한 배열 리스트들과 배경 이미지 세팅 */
@@ -534,6 +563,7 @@ public enum MQTTClient {
 
                                 de.setTexts(mqttMessageFormat.getTexts());
                                 if (mqttMessageFormat.getBitmapByteArray() != null) {
+                                    Log.e("tester", "bitmap byte array not null");
                                     de.byteArrayToBitmap(mqttMessageFormat.getBitmapByteArray());
                                 }
 
@@ -542,6 +572,11 @@ public enum MQTTClient {
                                 // de.setTextId(mqttMessageFormat.getMaxTextId()); // 텍스트 아이디는 "사용자이름-textIdCount" 이므로 textIdCount 가 같아도 고유
                                 MyLog.i("drawing", "component id = " + mqttMessageFormat.getMaxComponentId() + ", text id = " + mqttMessageFormat.getMaxTextId());
 
+//                                // todo [드로잉 코드 시간 측정 완료]
+//                                drawingCodeTimeList.get(++dIdx).record("drawing code set data structures", System.currentTimeMillis());
+
+//                                // todo [드로잉 코드 시간 측정 시작]
+//                                drawingCodeTimeList.add(new PerformanceData("drawing code publish topic mid", System.currentTimeMillis()));
                                 client2.publish(topic_mid, new MqttMessage(JSONParser.getInstance().jsonWrite(new MqttMessageFormat(myName, Mode.MID)).getBytes()));
                             }
                             else if (!isContainsUserList(name)) {
@@ -713,6 +748,10 @@ public enum MQTTClient {
 
                     MyLog.i("mqtt", "isMid=" + isMid() + ", " + de.getMyUsername());
                     if (isMid && messageFormat.getUsername().equals(de.getMyUsername())) {
+
+//                        // todo [드로잉 코드 시간 측정 완료]
+//                        drawingCodeTimeList.get(++dIdx).record("drawing code publish topic mid", System.currentTimeMillis());
+
                         isMid = false;
                         MyLog.i("mqtt", "mid username=" + messageFormat.getUsername());
                         new MidTask().execute();
@@ -1034,29 +1073,36 @@ public enum MQTTClient {
 //    public void setComponentCount(ComponentCount componentCount) { this.componentCount = componentCount; }
 
     // fixme nayeon for performance
-    /* monitoring print function */
-    /*
-    public void printReceiveTimeList() {
-        System.out.println("-------------------- Receive Time List --------------------");
 
-        for(int i=0; i<receiveTimeList.size(); i++)
-            System.out.println(i + ". " + receiveTimeList.get(i).toString());
+    public void printPropagationTimeList() {
+        System.out.println("-------------------- Propagation Time List --------------------");
+
+        for(int i=0; i<propagationTimeList.size(); i++)
+            System.out.println((i+1) + ". " + propagationTimeList.get(i).getTime());
     }
 
-    public void printDisplayTimeList() {
-        System.out.println("-------------------- Display Time List --------------------");
+    public void printDrawingTimeList() {
+        System.out.println("-------------------- Drawing Time List --------------------");
 
-        for(int i=0; i<displayTimeList.size(); i++)
-            System.out.println(i + ". " + displayTimeList.get(i).toString());
+        for(int i=0; i<drawingTimeList.size(); i++)
+            System.out.println((i+1) + ". " + drawingTimeList.get(i).getTime());
     }
 
-    public void printDeliveryTimeList() {
-        System.out.println("-------------------- Delivery Time List --------------------");
+    public void printParsingTimeList() {
+        System.out.println("-------------------- Parsing Time List --------------------");
 
-        for(int i=0; i<deliveryTimeList.size(); i++)
-            System.out.println(i + ". " + deliveryTimeList.get(i).toString());
+        for(int i=0; i<parsingTimeList.size(); i++)
+            System.out.println((i+1) + ". " + parsingTimeList.get(i).getSTag() + " : " + parsingTimeList.get(i).getTime());
     }
-     */
+
+    public void printDrawingCodeTimeList() {
+        System.out.println("-------------------- Drawing Code Time List --------------------");
+
+        Log.e("tester", "drawing code time list size = " + drawingCodeTimeList.size());
+
+        for(int i=0; i<drawingCodeTimeList.size(); i++)
+            System.out.println((i+1) + ". " + drawingCodeTimeList.get(i).getSTag() + " - " + drawingCodeTimeList.get(i).getETag() + ": "  + drawingCodeTimeList.get(i).getTime());
+    }
 
     /* drawing performance */
     // 세그먼트 개수 측정 플래그
@@ -1489,6 +1535,10 @@ public enum MQTTClient {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+
+//            // todo [드로잉 코드 시간 측정 시작]
+//            client.drawingCodeTimeList.add(new PerformanceData("drawing code mid task", System.currentTimeMillis()));
+
             MyLog.i("mqtt", "mid onPostExecute()");
             if (de.getHistory().size() > 0)
                 client.getBinding().undoBtn.setEnabled(true);
@@ -1498,9 +1548,24 @@ public enum MQTTClient {
             de.drawAllDrawingComponentsForMid();
             de.addAllTextViewToFrameLayoutForMid();
 
+//            // todo [드로잉 코드 시간 측정 완료]
+//            client.drawingCodeTimeList.get(++dIdx).record("drawing code mid task", System.currentTimeMillis());
+
             // todo [새 참가자 드로잉 시간 측정 완료]
             // invalidate 호출 전에 측정
+            Log.e("tester", "drawing time count finish");
             MQTTClient.drawingTimeList.lastElement().record(System.currentTimeMillis());
+
+            // onSizeChanged 가 호출되기 전에 측정을 시작한 경우
+            // 측정값 버리기
+            if(!MQTTClient.record) {
+                MQTTClient.drawingTimeList.lastElement().setTime(0.0);
+            }
+
+//            client.printPropagationTimeList();
+//            client.printDrawingTimeList();
+//            client.printParsingTimeList();
+//            client.printDrawingCodeTimeList();
 
             client.getDrawingView().invalidate();
 
@@ -1523,6 +1588,8 @@ public enum MQTTClient {
             MyLog.i("mqtt", "mid progressDialog dismiss");
 
             PerformanceDataWriter.getInstance().write();
+            drawingTimeList.clear();
+            propagationTimeList.clear();
         }
     }
 

@@ -65,7 +65,7 @@ public class MainViewModel extends BaseViewModel {
         port.postValue("1883");
 
         // todo 새 참가자 성능 측정
-        setTopic("0");
+        setTopic("30");
         setPassword("1");
         setName("participant3");
 
@@ -230,7 +230,7 @@ public class MainViewModel extends BaseViewModel {
                     data.setMasterName(masterName);
                     data.setMaster(true);
 
-                    clearData();
+//                    clearData();
 
                     navigate(R.id.action_mainFragment_to_drawingFragment);
                 }
@@ -304,7 +304,7 @@ public class MainViewModel extends BaseViewModel {
                         data.setMasterName(masterName);
                         data.setMaster(false);
 
-                        clearData();
+//                        clearData();
 
                         navigate(R.id.action_mainFragment_to_drawingFragment);
                     }

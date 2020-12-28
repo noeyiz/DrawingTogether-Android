@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.hansung.drawingtogether.data.remote.model.MQTTClient;
 import com.hansung.drawingtogether.data.remote.model.MyLog;
 import com.hansung.drawingtogether.monitoring.Velocity;
+import com.hansung.drawingtogether.tester.PerformanceData;
 
 import androidx.annotation.Nullable;
 
@@ -51,6 +52,8 @@ public class DrawingView extends View {
 
     public static ArrayList<Integer> segmentCountArray = new ArrayList<Integer>(); // fixme nayeon performance
 
+    public static boolean checkOnSizeChangedCall = false;
+
     public DrawingView(Context context) {
         super(context);
     }
@@ -67,6 +70,8 @@ public class DrawingView extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         MyLog.e("DrawingView", "call onSizeChanged" + " w = " + w + ", h = " + h);
+
+//        MQTTClient.drawingCodeTimeList.add(new PerformanceData("drawing code onSizeChanged", System.currentTimeMillis()));
 
         topicData = client.getTopic_data();
         canvasWidth = w;
@@ -93,6 +98,10 @@ public class DrawingView extends View {
             MyLog.i("mqtt", "progressDialog dismiss");
             client.getProgressDialog().dismiss();
         }
+
+//        MQTTClient.drawingCodeTimeList.get(++MQTTClient.dIdx).record("drawing code onSizeChanged", System.currentTimeMillis());
+
+        checkOnSizeChangedCall = true;
     }
 
     @Override

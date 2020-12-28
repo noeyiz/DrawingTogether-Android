@@ -30,8 +30,8 @@ public enum PerformanceDataWriter {
     private void write(Vector<PerformanceData> timeList, String tag) {
         // 파일 이름: "propagation_화면스트로크개수"
         // 파일 이름: "propagation_참가자수" (중간 참가자가 참가하기 전에 있던 참가자 수)
-        String file = tag + "_" + DrawingEditor.getInstance().getDrawingComponents().size() + ".csv";
-        //String file = tag + "_" + (MQTTClient.getInstance().getUserList().size() - 1) + ".csv";
+        //String file = tag + "_" + DrawingEditor.getInstance().getDrawingComponents().size() + ".csv";
+        String file = tag + "_" + (MQTTClient.getInstance().getUserList().size() - 1) + ".csv";
 
         String data = "";
 
@@ -45,7 +45,7 @@ public enum PerformanceDataWriter {
         }
 
 
-        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/chart3(2)"); // 저장 경로
+        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/chart4(4)"); // 저장 경로
 
         Log.i("tester", "performance data save path = " + dir);
         Log.i("tester", "performance data file name = " + file);
