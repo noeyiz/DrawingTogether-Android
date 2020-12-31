@@ -205,10 +205,10 @@ public class MainActivity extends AppCompatActivity {
         MyLog.i("LifeCycle", "MainActivity onStart()");
 
         startTime = System.currentTimeMillis();
-        if (de.getMainBitmap() != null && startTime - stopTime > 60000) {
+        if (de.getMainBitmap() != null && startTime - stopTime > 300000) {
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setTitle("시간 경과")
-                    .setMessage("1분 이상 접속하지 않아 메인 화면으로 이동합니다.")
+                    .setMessage("5분 이상 접속하지 않아 메인 화면으로 이동합니다.")
                     .setCancelable(false)
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override

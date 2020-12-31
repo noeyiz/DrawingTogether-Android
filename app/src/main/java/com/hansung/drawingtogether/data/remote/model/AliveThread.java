@@ -19,7 +19,7 @@ public enum AliveThread implements Runnable {
     private MQTTClient client = MQTTClient.getInstance();
 
     private DrawingViewModel drawingViewModel;
-    private int second = 10000;
+    private int second = 60000;
     public static AliveThread getInstance() {
         return INSTANCE;
     }

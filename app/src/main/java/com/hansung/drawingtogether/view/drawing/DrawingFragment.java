@@ -210,8 +210,8 @@ public class DrawingFragment extends Fragment implements MainActivity.OnRightBot
             MyLog.i("Login", data.getName() + " Join Message Publish");
 
             /* Alive Thread Start */
-            /* T초(예: 10초)에 한번씩 Alive Message Publish */
-            aliveTh.setSecond(10000);
+            /* T초(예: 60초)에 한번씩 Alive Message Publish */
+            aliveTh.setSecond(60000);
             Thread th = new Thread(aliveTh);
             th.start();
             client.setThread(th);

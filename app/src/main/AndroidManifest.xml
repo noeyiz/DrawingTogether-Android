@@ -64,9 +64,6 @@
         <service
             android:name=".data.remote.model.TaskService"
             android:stopWithTask="false" />
-        <service
-            android:name=".data.remote.model.AliveBackgroundService"
-            android:stopWithTask="false" />
     </application>
 
 </manifest>
